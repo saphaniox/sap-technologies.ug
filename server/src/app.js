@@ -457,7 +457,7 @@ const server = app.listen(PORT, () => {
    • Contacts (Rate Limited): http://localhost:${PORT}/api/contacts/*
    • Admin (Restricted): http://localhost:${PORT}/api/admin/*
 
-📝 Frontend URL: ${process.env.FRONTEND_URL || "http://localhost:5173"}
+📝 Frontend URL: ${process.env.FRONTEND_URL || "http://sap-technologies.com"}
 
 🏗️  Architecture: Secure Model-View-Controller (MVC)
 💾 Database: MongoDB with Injection Protection

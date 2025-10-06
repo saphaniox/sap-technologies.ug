@@ -1138,7 +1138,7 @@ ${JSON.stringify(alertData.details, null, 2)}
 
                             <!-- CTA Button -->
                             <div style="text-align: center; margin-top: 35px;">
-                                <a href="http://localhost:5173/products" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+                                <a href="http://sap-technologies.com/products" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
                                     🛍️ Explore More Products
                                 </a>
                             </div>
@@ -1365,7 +1365,7 @@ ${JSON.stringify(alertData.details, null, 2)}
 
                             <!-- CTA Button -->
                             <div style="text-align: center; margin-top: 35px;">
-                                <a href="http://localhost:5173/services" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
+                                <a href="http://sap-technologies.com/services" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
                                     🛠️ Explore Our Services
                                 </a>
                             </div>
