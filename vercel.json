@@ -17,7 +17,7 @@
     },
     {
       "src": "/api/(.*)",
-      "dest": "https://sap-technologies-api.onrender.com/api/$1"
+      "dest": "https://sas-i5ji.onrender.com/api/$1"
     },
     {
       "src": "/(.*)",
