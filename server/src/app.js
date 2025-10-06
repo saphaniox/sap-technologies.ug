@@ -368,23 +368,42 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // Serve static files from the React app build directory
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === 'production' && !process.env.RENDER) {
+    // Only serve frontend files in production when NOT on Render
+    // (Render backend should be API-only, frontend deployed separately to Vercel)
+    const frontendPath = path.join(__dirname, '../../frontend/sap-technologies/dist');
+    
     // Serve static files from React build
-    app.use(express.static(path.join(__dirname, '../../frontend/sap-technologies/dist')));
+    app.use(express.static(frontendPath));
     
     // Handle React Router routes - this must come AFTER all API routes
     app.get(/^(?!\/api).*/, (req, res) => {
-        res.sendFile(path.join(__dirname, '../../frontend/sap-technologies/dist/index.html'));
+        res.sendFile(path.join(frontendPath, 'index.html'));
     });
 } else {
-    // In development, serve the React dev server or provide helpful message
+    // In development or on Render (API-only), provide helpful message
     app.get('/', (req, res) => {
+        const isProduction = process.env.NODE_ENV === 'production';
+        const isRender = process.env.RENDER;
+        
         res.json({
             status: "success",
-            message: "SAP Technologies Backend Server",
-            environment: "development",
-            frontend: "Run 'npm run dev' in frontend/sap-technologies directory",
-            api: "http://localhost:5000/api"
+            message: "SAP Technologies Backend API Server",
+            environment: isProduction ? "production" : "development",
+            platform: isRender ? "Render" : "Local",
+            frontend: isRender 
+                ? "Frontend deployed separately on Vercel" 
+                : "Run 'npm run dev' in frontend/sap-technologies directory",
+            api: isRender 
+                ? `${req.protocol}://${req.get('host')}/api`
+                : "http://localhost:5000/api",
+            endpoints: {
+                health: "/api/health",
+                auth: "/api/auth",
+                products: "/api/products",
+                services: "/api/services",
+                contact: "/api/contact"
+            }
         });
     });
 }
