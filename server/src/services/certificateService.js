@@ -1,0 +1,1047 @@
+const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+const QRCode = require('qrcode');
+const fs = require('fs').promises;
+const path = require('path');
+const { Certificate } = require('../models');
+
+class CertificateService {
+    constructor() {
+        this.certificatesDir = path.join(__dirname, '../../uploads/certificates');
+        this.ensureCertificatesDirectory();
+    }
+
+    async ensureCertificatesDirectory() {
+        try {
+            await fs.mkdir(this.certificatesDir, { recursive: true });
+        } catch (error) {
+            console.error('Error creating certificates directory:', error);
+        }
+    }
+
+    /**
+     * Generate a professional certificate for award winners
+     * @param {Object} certificateData - Data for certificate generation
+     * @returns {Promise<string>} - Path to generated certificate
+     */
+    async generateWinnerCertificate(certificateData) {
+        const {
+            nomineeName,
+            categoryName,
+            awardYear = '2025',
+            issueDate = new Date(),
+            certificateId
+        } = certificateData;
+
+        try {
+            // Create a new PDF document
+            const pdfDoc = await PDFDocument.create();
+            const page = pdfDoc.addPage([842, 595]); // A4 landscape
+
+            // Load fonts
+            const timesRomanBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+            const timesRoman = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+            const timesRomanItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
+            const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+            const { width, height } = page.getSize();
+
+            // Draw decorative border (gold/amber color)
+            const borderColor = rgb(0.96, 0.62, 0.07); // Gold color
+            const borderWidth = 15;
+            const innerBorderWidth = 3;
+
+            // Outer border
+            page.drawRectangle({
+                x: 20,
+                y: 20,
+                width: width - 40,
+                height: height - 40,
+                borderColor: borderColor,
+                borderWidth: borderWidth,
+            });
+
+            // Inner border
+            page.drawRectangle({
+                x: 40,
+                y: 40,
+                width: width - 80,
+                height: height - 80,
+                borderColor: borderColor,
+                borderWidth: innerBorderWidth,
+            });
+
+            // Decorative corner elements
+            this.drawCornerDecorations(page, width, height, borderColor);
+
+            // Draw logo at top center
+            const logoHeight = await this.drawLogo(pdfDoc, page, width, height);
+            const headerYOffset = logoHeight > 0 ? logoHeight + 15 : 0;
+
+            // Header - SAPHANIOX Awards logo/text
+            page.drawText('SAPHANIOX AWARDS', {
+                x: width / 2 - 180,
+                y: height - 100 - headerYOffset,
+                size: 40,
+                font: timesRomanBold,
+                color: rgb(0.96, 0.62, 0.07), // Gold
+            });
+
+            page.drawText('2025', {
+                x: width / 2 - 30,
+                y: height - 135 - headerYOffset,
+                size: 28,
+                font: helveticaBold,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            // Certificate of Achievement text
+            page.drawText('CERTIFICATE OF ACHIEVEMENT', {
+                x: width / 2 - 155,
+                y: height - 180 - headerYOffset,
+                size: 18,
+                font: timesRoman,
+                color: rgb(0.3, 0.3, 0.3),
+            });
+
+            // Divider line
+            page.drawLine({
+                start: { x: width / 2 - 200, y: height - 195 - headerYOffset },
+                end: { x: width / 2 + 200, y: height - 195 - headerYOffset },
+                thickness: 2,
+                color: borderColor,
+            });
+
+            // "This is to certify that" text
+            page.drawText('This is to certify that', {
+                x: width / 2 - 100,
+                y: height - 230 - headerYOffset,
+                size: 15,
+                font: timesRomanItalic,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            // Winner's name (large and prominent)
+            const nameSize = 34;
+            const nameWidth = timesRomanBold.widthOfTextAtSize(nomineeName, nameSize);
+            page.drawText(nomineeName, {
+                x: width / 2 - nameWidth / 2,
+                y: height - 270 - headerYOffset,
+                size: nameSize,
+                font: timesRomanBold,
+                color: rgb(0.1, 0.1, 0.5), // Deep blue
+            });
+
+            // Underline for name
+            page.drawLine({
+                start: { x: width / 2 - nameWidth / 2 - 10, y: height - 280 - headerYOffset },
+                end: { x: width / 2 + nameWidth / 2 + 10, y: height - 280 - headerYOffset },
+                thickness: 2,
+                color: borderColor,
+            });
+
+            // Achievement text
+            page.drawText('has been awarded the', {
+                x: width / 2 - 80,
+                y: height - 310 - headerYOffset,
+                size: 14,
+                font: timesRomanItalic,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            // Trophy symbol using asterisks
+            page.drawText('* * * WINNER * * *', {
+                x: width / 2 - 95,
+                y: height - 338 - headerYOffset,
+                size: 17,
+                font: timesRomanBold,
+                color: rgb(0.96, 0.62, 0.07),
+            });
+
+            // Category name
+            const categoryText = `WINNER - ${categoryName}`;
+            const categorySize = 20;
+            const categoryWidth = timesRomanBold.widthOfTextAtSize(categoryText, categorySize);
+            page.drawText(categoryText, {
+                x: width / 2 - categoryWidth / 2,
+                y: height - 370 - headerYOffset,
+                size: categorySize,
+                font: timesRomanBold,
+                color: rgb(0.8, 0.1, 0.1), // Red
+            });
+
+            // Recognition text
+            page.drawText('in recognition of outstanding excellence in engineering and technology', {
+                x: width / 2 - 215,
+                y: height - 400 - headerYOffset,
+                size: 12,
+                font: timesRomanItalic,
+                color: rgb(0.3, 0.3, 0.3),
+            });
+
+            // Website and Powered by text (below recognition)
+            page.drawText('Powered by SAP Technologies', {
+                x: width / 2 - 85,
+                y: height - 435 - headerYOffset,
+                size: 9,
+                font: timesRomanItalic,
+                color: rgb(0.5, 0.5, 0.5),
+            });
+
+            page.drawText('www.sap-technologies.com', {
+                x: width / 2 - 85,
+                y: height - 455 - headerYOffset,
+                size: 11,
+                font: timesRoman,
+                color: rgb(0.4, 0.4, 0.4),
+            });
+
+            // Date
+            const formattedDate = issueDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            page.drawText(`Date: ${formattedDate}`, {
+                x: 100,
+                y: 145,
+                size: 12,
+                font: timesRoman,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            // Certificate ID
+            if (certificateId) {
+                page.drawText(`Certificate ID: ${certificateId}`, {
+                    x: 100,
+                    y: 120,
+                    size: 10,
+                    font: timesRoman,
+                    color: rgb(0.5, 0.5, 0.5),
+                });
+            }
+
+            // Generate and embed QR code (bottom right corner)
+            if (certificateId) {
+                const verificationUrl = `https://sap-technologies.com/verify/${certificateId}`;
+                await this.embedQRCode(pdfDoc, page, verificationUrl, width - 150, 60, 80);
+                
+                // Add "Scan to Verify" text below QR code
+                page.drawText('Scan to Verify', {
+                    x: width - 140,
+                    y: 45,
+                    size: 8,
+                    font: timesRomanItalic,
+                    color: rgb(0.4, 0.4, 0.4),
+                });
+            }
+
+            // Signature line (right side)
+            page.drawLine({
+                start: { x: width - 250, y: 165 },
+                end: { x: width - 100, y: 165 },
+                thickness: 1,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            page.drawText('Authorized Signature', {
+                x: width - 230,
+                y: 145,
+                size: 11,
+                font: timesRomanItalic,
+                color: rgb(0.3, 0.3, 0.3),
+            });
+
+            page.drawText('SAPHANIOX Awards Committee', {
+                x: width - 250,
+                y: 125,
+                size: 10,
+                font: timesRoman,
+                color: rgb(0.4, 0.4, 0.4),
+            });
+
+            // Save PDF
+            const pdfBytes = await pdfDoc.save();
+            const filename = `certificate_${certificateId || Date.now()}.pdf`;
+            const filepath = path.join(this.certificatesDir, filename);
+
+            await fs.writeFile(filepath, pdfBytes);
+
+            // Save certificate record to database
+            if (certificateId) {
+                await this.saveCertificateRecord({
+                    certificateId,
+                    recipientName: nomineeName,
+                    recipientEmail: certificateData.recipientEmail || null,
+                    categoryName,
+                    type: 'winner',
+                    awardYear,
+                    issueDate,
+                    filename
+                });
+            }
+
+            console.log(`✅ Winner certificate generated: ${filename}`);
+            return filepath;
+
+        } catch (error) {
+            console.error('Error generating winner certificate:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Generate a certificate for finalists
+     */
+    async generateFinalistCertificate(certificateData) {
+        const {
+            nomineeName,
+            categoryName,
+            awardYear = '2025',
+            issueDate = new Date(),
+            certificateId
+        } = certificateData;
+
+        try {
+            const pdfDoc = await PDFDocument.create();
+            const page = pdfDoc.addPage([842, 595]);
+
+            const timesRomanBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+            const timesRoman = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+            const timesRomanItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
+            const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+            const { width, height } = page.getSize();
+
+            // Purple/Silver theme for finalist
+            const borderColor = rgb(0.55, 0.35, 0.85); // Purple
+            const borderWidth = 15;
+
+            page.drawRectangle({
+                x: 20,
+                y: 20,
+                width: width - 40,
+                height: height - 40,
+                borderColor: borderColor,
+                borderWidth: borderWidth,
+            });
+
+            page.drawRectangle({
+                x: 40,
+                y: 40,
+                width: width - 80,
+                height: height - 80,
+                borderColor: borderColor,
+                borderWidth: 3,
+            });
+
+            this.drawCornerDecorations(page, width, height, borderColor);
+
+            // Draw logo at top center
+            const logoHeight = await this.drawLogo(pdfDoc, page, width, height);
+            const headerYOffset = logoHeight > 0 ? logoHeight + 20 : 0;
+
+            // Header
+            page.drawText('SAPHANIOX AWARDS', {
+                x: width / 2 - 180,
+                y: height - 110 - headerYOffset,
+                size: 38,
+                font: timesRomanBold,
+                color: rgb(0.55, 0.35, 0.85),
+            });
+
+            page.drawText('2025', {
+                x: width / 2 - 30,
+                y: height - 145 - headerYOffset,
+                size: 26,
+                font: helveticaBold,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            page.drawText('CERTIFICATE OF EXCELLENCE', {
+                x: width / 2 - 150,
+                y: height - 185 - headerYOffset,
+                size: 17,
+                font: timesRoman,
+                color: rgb(0.3, 0.3, 0.3),
+            });
+
+            page.drawLine({
+                start: { x: width / 2 - 200, y: height - 200 - headerYOffset },
+                end: { x: width / 2 + 200, y: height - 200 - headerYOffset },
+                thickness: 2,
+                color: borderColor,
+            });
+
+            page.drawText('This is to certify that', {
+                x: width / 2 - 100,
+                y: height - 230 - headerYOffset,
+                size: 15,
+                font: timesRomanItalic,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            const nameSize = 34;
+            const nameWidth = timesRomanBold.widthOfTextAtSize(nomineeName, nameSize);
+            page.drawText(nomineeName, {
+                x: width / 2 - nameWidth / 2,
+                y: height - 270 - headerYOffset,
+                size: nameSize,
+                font: timesRomanBold,
+                color: rgb(0.35, 0.15, 0.65),
+            });
+
+            page.drawLine({
+                start: { x: width / 2 - nameWidth / 2 - 10, y: height - 280 - headerYOffset },
+                end: { x: width / 2 + nameWidth / 2 + 10, y: height - 280 - headerYOffset },
+                thickness: 2,
+                color: borderColor,
+            });
+
+            page.drawText('has been recognized as', {
+                x: width / 2 - 90,
+                y: height - 310 - headerYOffset,
+                size: 14,
+                font: timesRomanItalic,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            // Finalist recognition symbol
+            page.drawText('* * FINALIST * *', {
+                x: width / 2 - 80,
+                y: height - 338 - headerYOffset,
+                size: 17,
+                font: timesRomanBold,
+                color: rgb(0.55, 0.35, 0.85),
+            });
+
+            const categoryText = `FINALIST - ${categoryName}`;
+            const categorySize = 20;
+            const categoryWidth = timesRomanBold.widthOfTextAtSize(categoryText, categorySize);
+            page.drawText(categoryText, {
+                x: width / 2 - categoryWidth / 2,
+                y: height - 370 - headerYOffset,
+                size: categorySize,
+                font: timesRomanBold,
+                color: rgb(0.55, 0.35, 0.85),
+            });
+
+            page.drawText('in recognition of exceptional excellence in engineering and technology', {
+                x: width / 2 - 215,
+                y: height - 400 - headerYOffset,
+                size: 12,
+                font: timesRomanItalic,
+                color: rgb(0.3, 0.3, 0.3),
+            });
+
+            // Website and Powered by text (below recognition)
+            page.drawText('Powered by SAP Technologies', {
+                x: width / 2 - 85,
+                y: height - 435 - headerYOffset,
+                size: 9,
+                font: timesRomanItalic,
+                color: rgb(0.5, 0.5, 0.5),
+            });
+
+            page.drawText('www.sap-technologies.com', {
+                x: width / 2 - 85,
+                y: height - 455 - headerYOffset,
+                size: 11,
+                font: timesRoman,
+                color: rgb(0.4, 0.4, 0.4),
+            });
+
+            const formattedDate = issueDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            page.drawText(`Date: ${formattedDate}`, {
+                x: 100,
+                y: 145,
+                size: 12,
+                font: timesRoman,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            if (certificateId) {
+                page.drawText(`Certificate ID: ${certificateId}`, {
+                    x: 100,
+                    y: 120,
+                    size: 10,
+                    font: timesRoman,
+                    color: rgb(0.5, 0.5, 0.5),
+                });
+            }
+
+            // Generate and embed QR code for finalist certificate
+            if (certificateId) {
+                const verificationUrl = `https://sap-technologies.com/verify/${certificateId}`;
+                await this.embedQRCode(pdfDoc, page, verificationUrl, width - 150, 60, 80);
+                
+                page.drawText('Scan to Verify', {
+                    x: width - 140,
+                    y: 45,
+                    size: 8,
+                    font: timesRomanItalic,
+                    color: rgb(0.4, 0.4, 0.4),
+                });
+            }
+
+            page.drawLine({
+                start: { x: width - 250, y: 165 },
+                end: { x: width - 100, y: 165 },
+                thickness: 1,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            page.drawText('Authorized Signature', {
+                x: width - 230,
+                y: 145,
+                size: 11,
+                font: timesRomanItalic,
+                color: rgb(0.3, 0.3, 0.3),
+            });
+
+            page.drawText('SAPHANIOX Awards Committee', {
+                x: width - 250,
+                y: 125,
+                size: 10,
+                font: timesRoman,
+                color: rgb(0.4, 0.4, 0.4),
+            });
+
+            const pdfBytes = await pdfDoc.save();
+            const filename = `certificate_finalist_${certificateId || Date.now()}.pdf`;
+            const filepath = path.join(this.certificatesDir, filename);
+
+            await fs.writeFile(filepath, pdfBytes);
+
+            // Save certificate record to database
+            if (certificateId) {
+                await this.saveCertificateRecord({
+                    certificateId,
+                    recipientName: nomineeName,
+                    recipientEmail: certificateData.recipientEmail || null,
+                    categoryName,
+                    type: 'finalist',
+                    awardYear,
+                    issueDate,
+                    filename
+                });
+            }
+
+            console.log(`✅ Finalist certificate generated: ${filename}`);
+            return filepath;
+
+        } catch (error) {
+            console.error('Error generating finalist certificate:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Generate a participation certificate
+     */
+    async generateParticipationCertificate(certificateData) {
+        const {
+            nomineeName,
+            categoryName,
+            awardYear = '2025',
+            issueDate = new Date(),
+            certificateId
+        } = certificateData;
+
+        try {
+            const pdfDoc = await PDFDocument.create();
+            const page = pdfDoc.addPage([842, 595]);
+
+            const timesRomanBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+            const timesRoman = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+            const timesRomanItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
+            const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+            const { width, height } = page.getSize();
+
+            // Blue theme for participation
+            const borderColor = rgb(0.2, 0.4, 0.8);
+            const borderWidth = 15;
+
+            page.drawRectangle({
+                x: 20,
+                y: 20,
+                width: width - 40,
+                height: height - 40,
+                borderColor: borderColor,
+                borderWidth: borderWidth,
+            });
+
+            page.drawRectangle({
+                x: 40,
+                y: 40,
+                width: width - 80,
+                height: height - 80,
+                borderColor: borderColor,
+                borderWidth: 3,
+            });
+
+            this.drawCornerDecorations(page, width, height, borderColor);
+
+            // Draw logo at top center
+            const logoHeight = await this.drawLogo(pdfDoc, page, width, height);
+            const headerYOffset = logoHeight > 0 ? logoHeight + 20 : 0;
+
+            page.drawText('SAPHANIOX AWARDS', {
+                x: width / 2 - 180,
+                y: height - 110 - headerYOffset,
+                size: 38,
+                font: timesRomanBold,
+                color: rgb(0.2, 0.4, 0.8),
+            });
+
+            page.drawText('2025', {
+                x: width / 2 - 30,
+                y: height - 145 - headerYOffset,
+                size: 26,
+                font: helveticaBold,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            page.drawText('CERTIFICATE OF PARTICIPATION', {
+                x: width / 2 - 165,
+                y: height - 185 - headerYOffset,
+                size: 17,
+                font: timesRoman,
+                color: rgb(0.3, 0.3, 0.3),
+            });
+
+            page.drawLine({
+                start: { x: width / 2 - 200, y: height - 200 - headerYOffset },
+                end: { x: width / 2 + 200, y: height - 200 - headerYOffset },
+                thickness: 2,
+                color: borderColor,
+            });
+
+            page.drawText('This is to certify that', {
+                x: width / 2 - 100,
+                y: height - 230 - headerYOffset,
+                size: 15,
+                font: timesRomanItalic,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            const nameSize = 34;
+            const nameWidth = timesRomanBold.widthOfTextAtSize(nomineeName, nameSize);
+            page.drawText(nomineeName, {
+                x: width / 2 - nameWidth / 2,
+                y: height - 270 - headerYOffset,
+                size: nameSize,
+                font: timesRomanBold,
+                color: rgb(0.1, 0.3, 0.6),
+            });
+
+            page.drawLine({
+                start: { x: width / 2 - nameWidth / 2 - 10, y: height - 280 - headerYOffset },
+                end: { x: width / 2 + nameWidth / 2 + 10, y: height - 280 - headerYOffset },
+                thickness: 2,
+                color: borderColor,
+            });
+
+            page.drawText('has participated in the', {
+                x: width / 2 - 90,
+                y: height - 310 - headerYOffset,
+                size: 14,
+                font: timesRomanItalic,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            // Participation star symbol
+            page.drawText('* * PARTICIPANT * *', {
+                x: width / 2 - 90,
+                y: height - 338 - headerYOffset,
+                size: 16,
+                font: timesRomanBold,
+                color: rgb(0.2, 0.4, 0.8),
+            });
+
+            const categoryText = categoryName;
+            const categorySize = 20;
+            const categoryWidth = timesRomanBold.widthOfTextAtSize(categoryText, categorySize);
+            page.drawText(categoryText, {
+                x: width / 2 - categoryWidth / 2,
+                y: height - 370 - headerYOffset,
+                size: categorySize,
+                font: timesRomanBold,
+                color: rgb(0.2, 0.4, 0.8),
+            });
+
+            page.drawText('for valuable contribution to excellence in engineering and technology', {
+                x: width / 2 - 215,
+                y: height - 400 - headerYOffset,
+                size: 12,
+                font: timesRomanItalic,
+                color: rgb(0.3, 0.3, 0.3),
+            });
+
+            // Website and Powered by text (below recognition)
+            page.drawText('Powered by SAP Technologies', {
+                x: width / 2 - 85,
+                y: height - 435 - headerYOffset,
+                size: 9,
+                font: timesRomanItalic,
+                color: rgb(0.5, 0.5, 0.5),
+            });
+
+            page.drawText('www.sap-technologies.com', {
+                x: width / 2 - 85,
+                y: height - 455 - headerYOffset,
+                size: 11,
+                font: timesRoman,
+                color: rgb(0.4, 0.4, 0.4),
+            });
+
+            const formattedDate = issueDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            page.drawText(`Date: ${formattedDate}`, {
+                x: 100,
+                y: 145,
+                size: 12,
+                font: timesRoman,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            if (certificateId) {
+                page.drawText(`Certificate ID: ${certificateId}`, {
+                    x: 100,
+                    y: 120,
+                    size: 10,
+                    font: timesRoman,
+                    color: rgb(0.5, 0.5, 0.5),
+                });
+            }
+
+            // Generate and embed QR code for participation certificate
+            if (certificateId) {
+                const verificationUrl = `https://sap-technologies.com/verify/${certificateId}`;
+                await this.embedQRCode(pdfDoc, page, verificationUrl, width - 150, 60, 80);
+                
+                page.drawText('Scan to Verify', {
+                    x: width - 140,
+                    y: 45,
+                    size: 8,
+                    font: timesRomanItalic,
+                    color: rgb(0.4, 0.4, 0.4),
+                });
+            }
+
+            page.drawLine({
+                start: { x: width - 250, y: 165 },
+                end: { x: width - 100, y: 165 },
+                thickness: 1,
+                color: rgb(0.2, 0.2, 0.2),
+            });
+
+            page.drawText('Authorized Signature', {
+                x: width - 230,
+                y: 145,
+                size: 11,
+                font: timesRomanItalic,
+                color: rgb(0.3, 0.3, 0.3),
+            });
+
+            page.drawText('SAPHANIOX Awards Committee', {
+                x: width - 250,
+                y: 125,
+                size: 10,
+                font: timesRoman,
+                color: rgb(0.4, 0.4, 0.4),
+            });
+
+            const pdfBytes = await pdfDoc.save();
+            const filename = `certificate_participation_${certificateId || Date.now()}.pdf`;
+            const filepath = path.join(this.certificatesDir, filename);
+
+            await fs.writeFile(filepath, pdfBytes);
+
+            // Save certificate record to database
+            if (certificateId) {
+                await this.saveCertificateRecord({
+                    certificateId,
+                    recipientName: nomineeName,
+                    recipientEmail: certificateData.recipientEmail || null,
+                    categoryName,
+                    type: 'participation',
+                    awardYear,
+                    issueDate,
+                    filename
+                });
+            }
+
+            console.log(`✅ Participation certificate generated: ${filename}`);
+            return filepath;
+
+        } catch (error) {
+            console.error('Error generating participation certificate:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Draw decorative corner elements
+     */
+    drawCornerDecorations(page, width, height, color) {
+        const cornerSize = 40;
+        const offset = 50;
+
+        // Top-left corner
+        page.drawLine({
+            start: { x: offset, y: height - offset },
+            end: { x: offset + cornerSize, y: height - offset },
+            thickness: 3,
+            color: color,
+        });
+        page.drawLine({
+            start: { x: offset, y: height - offset },
+            end: { x: offset, y: height - offset - cornerSize },
+            thickness: 3,
+            color: color,
+        });
+
+        // Top-right corner
+        page.drawLine({
+            start: { x: width - offset, y: height - offset },
+            end: { x: width - offset - cornerSize, y: height - offset },
+            thickness: 3,
+            color: color,
+        });
+        page.drawLine({
+            start: { x: width - offset, y: height - offset },
+            end: { x: width - offset, y: height - offset - cornerSize },
+            thickness: 3,
+            color: color,
+        });
+
+        // Bottom-left corner
+        page.drawLine({
+            start: { x: offset, y: offset },
+            end: { x: offset + cornerSize, y: offset },
+            thickness: 3,
+            color: color,
+        });
+        page.drawLine({
+            start: { x: offset, y: offset },
+            end: { x: offset, y: offset + cornerSize },
+            thickness: 3,
+            color: color,
+        });
+
+        // Bottom-right corner
+        page.drawLine({
+            start: { x: width - offset, y: offset },
+            end: { x: width - offset - cornerSize, y: offset },
+            thickness: 3,
+            color: color,
+        });
+        page.drawLine({
+            start: { x: width - offset, y: offset },
+            end: { x: width - offset, y: offset + cornerSize },
+            thickness: 3,
+            color: color,
+        });
+    }
+
+    /**
+     * Embed and draw logo on certificate
+     */
+    async drawLogo(pdfDoc, page, width, height) {
+        try {
+            const logoPath = path.join(__dirname, '../../../frontend/sap-technologies/public/images/logo2.jpg');
+            const logoImageBytes = await fs.readFile(logoPath);
+            const logoImage = await pdfDoc.embedJpg(logoImageBytes);
+            
+            // Get logo dimensions
+            const logoDims = logoImage.scale(0.15); // Scale to 15% of original size
+            
+            // Draw logo at top center
+            page.drawImage(logoImage, {
+                x: width / 2 - logoDims.width / 2,
+                y: height - 80,
+                width: logoDims.width,
+                height: logoDims.height,
+            });
+            
+            return logoDims.height + 10; // Return height + spacing for text positioning
+        } catch (error) {
+            console.warn('⚠️ Could not load logo, proceeding without it:', error.message);
+            return 0; // Return 0 if logo can't be loaded
+        }
+    }
+
+    /**
+     * Generate certificate ID
+     */
+    generateCertificateId(nominationId, status) {
+        const prefix = status === 'winner' ? 'WIN' : status === 'finalist' ? 'FIN' : 'PAR';
+        const timestamp = Date.now().toString(36).toUpperCase();
+        return `SAPH-25-${prefix}-${timestamp}`;
+    }
+
+    /**
+     * Generate QR code as PNG buffer
+     * @param {string} data - Data to encode in QR code (URL or text)
+     * @param {number} size - QR code size in pixels
+     * @returns {Promise<Buffer>} - PNG image buffer
+     */
+    async generateQRCode(data, size = 150) {
+        try {
+            const qrCodeDataURL = await QRCode.toDataURL(data, {
+                width: size,
+                margin: 1,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                },
+                errorCorrectionLevel: 'H' // High error correction
+            });
+            
+            // Convert data URL to buffer
+            const base64Data = qrCodeDataURL.replace(/^data:image\/png;base64,/, '');
+            return Buffer.from(base64Data, 'base64');
+        } catch (error) {
+            console.error('Error generating QR code:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Embed QR code in PDF page
+     * @param {PDFDocument} pdfDoc - PDF document
+     * @param {PDFPage} page - PDF page
+     * @param {string} qrData - Data to encode in QR code
+     * @param {number} x - X position
+     * @param {number} y - Y position
+     * @param {number} size - QR code size
+     */
+    async embedQRCode(pdfDoc, page, qrData, x, y, size = 80) {
+        try {
+            const qrBuffer = await this.generateQRCode(qrData, size * 2); // Generate at 2x for clarity
+            const qrImage = await pdfDoc.embedPng(qrBuffer);
+            
+            page.drawImage(qrImage, {
+                x: x,
+                y: y,
+                width: size,
+                height: size,
+            });
+            
+            return size;
+        } catch (error) {
+            console.error('Error embedding QR code:', error);
+            return 0; // Return 0 if QR code fails (certificate still generates)
+        }
+    }
+
+    /**
+     * Get certificate by filename
+     */
+    async getCertificate(filename) {
+        try {
+            const filepath = path.join(this.certificatesDir, filename);
+            const pdfBuffer = await fs.readFile(filepath);
+            return pdfBuffer;
+        } catch (error) {
+            console.error('Error reading certificate:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Delete certificate
+     */
+    async deleteCertificate(filename) {
+        try {
+            const filepath = path.join(this.certificatesDir, filename);
+            await fs.unlink(filepath);
+            console.log(`🗑️ Certificate deleted: ${filename}`);
+        } catch (error) {
+            console.error('Error deleting certificate:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Save certificate record to database
+     * @param {Object} certData - Certificate data
+     */
+    async saveCertificateRecord(certData) {
+        try {
+            const verificationUrl = `https://sap-technologies.com/verify/${certData.certificateId}`;
+            
+            const certificate = new Certificate({
+                ...certData,
+                verificationUrl,
+                status: 'active'
+            });
+
+            await certificate.save();
+            console.log(`💾 Certificate record saved to database: ${certData.certificateId}`);
+            return certificate;
+        } catch (error) {
+            // If duplicate, update existing record
+            if (error.code === 11000) {
+                console.log(`📝 Updating existing certificate record: ${certData.certificateId}`);
+                const certificate = await Certificate.findOneAndUpdate(
+                    { certificateId: certData.certificateId },
+                    { ...certData, verificationUrl: `https://sap-technologies.com/verify/${certData.certificateId}` },
+                    { new: true }
+                );
+                return certificate;
+            }
+            console.error('Error saving certificate record:', error);
+            // Don't throw - certificate PDF is still generated
+        }
+    }
+
+    /**
+     * Verify certificate by ID
+     * @param {string} certificateId - Certificate ID
+     * @returns {Promise<Object>} - Certificate details
+     */
+    async verifyCertificate(certificateId) {
+        try {
+            const certificate = await Certificate.findValidCertificate(certificateId);
+            
+            if (!certificate) {
+                return {
+                    valid: false,
+                    message: 'Certificate not found or has been revoked'
+                };
+            }
+
+            // Record verification
+            await certificate.recordVerification();
+
+            return {
+                valid: true,
+                certificate: {
+                    certificateId: certificate.certificateId,
+                    recipientName: certificate.recipientName,
+                    categoryName: certificate.categoryName,
+                    type: certificate.type,
+                    awardYear: certificate.awardYear,
+                    issueDate: certificate.issueDate,
+                    filename: certificate.filename,
+                    verificationCount: certificate.verificationCount,
+                    lastVerifiedAt: certificate.lastVerifiedAt
+                }
+            };
+        } catch (error) {
+            console.error('Error verifying certificate:', error);
+            throw error;
+        }
+    }
+}
+
+module.exports = new CertificateService();

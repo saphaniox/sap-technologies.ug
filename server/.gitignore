@@ -1,0 +1,72 @@
+# ============================================
+# SERVER .GITIGNORE - RENDER DEPLOYMENT
+# Backend API for SAP Technologies
+# ============================================
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment variables (NEVER COMMIT)
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+*.env
+.env.free-notifications
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Uploads (use cloud storage like AWS S3, Cloudinary in production)
+uploads/
+uploads/**/*
+*.tmp
+
+# WhatsApp Session (contains authentication data)
+whatsapp-session/
+whatsapp-session/**/*
+session-*.json
+
+# PM2
+.pm2/
+ecosystem.config.js
+
+# Test files (development only)
+test-*.js
+*-test.js
+*.test.js
+*.spec.js
+
+# Development utility scripts
+check-*.js
+seed-*.js
+demo-*.js
+add-admin.js
+create-admin.js
+fix-*.js
+reset-*.js
+assign-*.js
+remove-*.js
+update-*.js
+send-test-*.js
+send-*-samples.js
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+.eslintcache
+*.bak
