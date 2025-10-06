@@ -150,7 +150,7 @@ const Services = () => {
           let imageUrl = "/images/web-design.png"; // fallback image
           
           if (service.image) {
-            imageUrl = service.image.startsWith("http") ? service.image : `http://localhost:5174${service.image}`;
+            imageUrl = service.image.startsWith("http") ? service.image : `${apiService.baseURL}${service.image}`;
           }
           
           return {

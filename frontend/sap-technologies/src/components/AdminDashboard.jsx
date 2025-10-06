@@ -318,7 +318,7 @@ const AdminDashboard = ({ user, onClose }) => {
         status: partnersStatusFilter
       };
       
-      const response = await fetch(`http://localhost:5000/api/partners?${new URLSearchParams(params)}`, {
+      const response = await fetch(`${apiService.baseURL}/api/partners?${new URLSearchParams(params)}`, {
         credentials: "include"
       });
       
@@ -347,7 +347,7 @@ const AdminDashboard = ({ user, onClose }) => {
         status: partnershipRequestsStatusFilter
       };
       
-      const response = await fetch(`http://localhost:5000/api/partnership-requests?${new URLSearchParams(params)}`, {
+      const response = await fetch(`${apiService.baseURL}/api/partnership-requests?${new URLSearchParams(params)}`, {
         credentials: "include"
       });
       
@@ -560,7 +560,7 @@ const AdminDashboard = ({ user, onClose }) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/partners/${partnerId}`, {
+      const response = await fetch(`${apiService.baseURL}/api/partners/${partnerId}`, {
         method: "DELETE",
         credentials: "include"
       });
@@ -582,7 +582,7 @@ const AdminDashboard = ({ user, onClose }) => {
       const partner = partners.find(p => p._id === partnerId);
       if (!partner) return;
 
-      const response = await fetch(`http://localhost:5000/api/partners/${partnerId}`, {
+      const response = await fetch(`${apiService.baseURL}/api/partners/${partnerId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
@@ -609,7 +609,7 @@ const AdminDashboard = ({ user, onClose }) => {
   // Partnership Request Handlers
   const handlePartnershipRequestStatusUpdate = async (requestId, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/partnership-requests/${requestId}/status`, {
+      const response = await fetch(`${apiService.baseURL}/api/partnership-requests/${requestId}/status`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
@@ -652,7 +652,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/partnership-requests/${requestId}`, {
+      const response = await fetch(`${apiService.baseURL}/api/partnership-requests/${requestId}`, {
         method: "DELETE",
         credentials: "include"
       });
@@ -1496,7 +1496,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                           <div className="partner-logo-cell">
                             {partner.logo ? (
                               <img 
-                                src={`http://localhost:5000${partner.logo}`} 
+                                src={`${apiService.baseURL}${partner.logo}`} 
                                 alt={`${partner.name} logo`}
                                 className="partner-logo-thumbnail"
                               />
@@ -1838,7 +1838,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                             <td>
                               <div className="product-image-cell">
                                 <img 
-                                  src={product.image ? `http://localhost:5000${product.image}` : "/images/default-product.jpg"}
+                                  src={product.image ? `${apiService.baseURL}${product.image}` : "/images/default-product.jpg"}
                                   alt={product.name}
                                   className="table-product-image"
                                   onError={(e) => {

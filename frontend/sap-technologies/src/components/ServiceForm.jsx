@@ -115,7 +115,7 @@ const ServiceForm = ({ service, onClose, onSave }) => {
       
       if (service.image) {
         // Convert relative path to full URL for existing image
-        const imageUrl = service.image.startsWith("http") ? service.image : `http://localhost:5000${service.image}`;
+        const imageUrl = service.image.startsWith("http") ? service.image : `${apiService.baseURL}${service.image}`;
         setImagePreview(imageUrl);
       }
       console.log("✅ Form data populated", { 

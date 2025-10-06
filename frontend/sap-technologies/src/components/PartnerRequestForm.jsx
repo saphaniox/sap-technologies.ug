@@ -28,6 +28,7 @@
  */
 
 import { useState } from "react";
+import apiService from "../services/api";
 import "../styles/PartnerRequestForm.css";
 
 const PartnerRequestForm = ({ isOpen, onClose }) => {
@@ -56,7 +57,7 @@ const PartnerRequestForm = ({ isOpen, onClose }) => {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/partnership-requests", {
+      const response = await fetch(`${apiService.baseURL}/api/partnership-requests`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

@@ -86,7 +86,7 @@ const ProductForm = ({ isOpen, onClose, product, onSuccess }) => {
                 features: product.features?.length > 0 ? product.features : [""],
                 tags: product.tags?.length > 0 ? product.tags : [""]
             });
-            setImagePreview(product.image ? `http://localhost:5000${product.image}` : "");
+            setImagePreview(product.image ? `${apiService.baseURL}${product.image}` : "");
         } else {
             // Reset form for new product
             setFormData({

@@ -582,7 +582,7 @@ const AwardsAdmin = () => {
         <div className="nominee-info">
           {nomination.nomineePhoto && (
             <img 
-              src={`http://localhost:5000${nomination.nomineePhoto}`}
+              src={`${apiService.baseURL}${nomination.nomineePhoto}`}
               alt={nomination.nomineeName}
               className="nominee-photo"
               onError={(e) => {

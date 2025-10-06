@@ -30,6 +30,7 @@
  */
 
 import { useState, useEffect } from "react";
+import apiService from "../services/api";
 import "../styles/PartnerForm.css";
 
 const PartnerForm = ({ isOpen, onClose, partner, onSave }) => {
@@ -60,7 +61,7 @@ const PartnerForm = ({ isOpen, onClose, partner, onSave }) => {
         isActive: partner.isActive !== undefined ? partner.isActive : true,
         order: partner.order || 0
       });
-      setLogoPreview(partner.logo ? `http://localhost:5000${partner.logo}` : "");
+      setLogoPreview(partner.logo ? `${apiService.baseURL}${partner.logo}` : "");
     } else {
       setFormData({
         name: "",
@@ -177,8 +178,8 @@ const PartnerForm = ({ isOpen, onClose, partner, onSave }) => {
       }
 
       const url = partner 
-        ? `http://localhost:5000/api/partners/${partner._id}`
-        : "http://localhost:5000/api/partners";
+        ? `${apiService.baseURL}/api/partners/${partner._id}`
+        : `${apiService.baseURL}/api/partners`;
       
       const method = partner ? "PUT" : "POST";
       

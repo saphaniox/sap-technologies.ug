@@ -97,7 +97,7 @@ const ProjectForm = ({ project, onClose, onSave }) => {
       if (project.images && project.images.length > 0) {
         // Convert relative paths to full URLs for existing images
         const imageUrls = project.images.map(img => 
-          img.startsWith("http") ? img : `http://localhost:5000${img}`
+          img.startsWith("http") ? img : `${apiService.baseURL}${img}`
         );
         setImagePreviews(imageUrls);
       }

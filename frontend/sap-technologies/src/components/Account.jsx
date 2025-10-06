@@ -303,7 +303,7 @@ const Account = ({ onClose }) => {
                 <div className="profile-pic-container">
                   {userDetails?.profilePic ? (
                     <img 
-                      src={`http://localhost:5000${userDetails.profilePic}`} 
+                      src={`${apiService.baseURL}${userDetails.profilePic}`} 
                       alt="Profile" 
                       className="profile-pic" 
                     />
