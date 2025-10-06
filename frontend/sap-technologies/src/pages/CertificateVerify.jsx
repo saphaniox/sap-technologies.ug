@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from '../utils/helmet.jsx';
 import apiService from '../services/api';
 import '../styles/CertificateVerify.css';
 
