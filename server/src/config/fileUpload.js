@@ -15,11 +15,13 @@ const profilePicsDir = path.join(baseUploadDir, "profile-pics");
 const servicesDir = path.join(baseUploadDir, "services");
 const projectsDir = path.join(baseUploadDir, "projects");
 const productsDir = path.join(baseUploadDir, "products");
+const signaturesDir = path.join(baseUploadDir, "signatures");
 
 createUploadDir(profilePicsDir);
 createUploadDir(servicesDir);
 createUploadDir(projectsDir);
 createUploadDir(productsDir);
+createUploadDir(signaturesDir);
 
 // Configure storage for different upload types
 const createStorage = (uploadPath) => {
@@ -89,11 +91,20 @@ const productUpload = multer({
   fileFilter: imageFilter
 });
 
+const signatureUpload = multer({
+  storage: createStorage(signaturesDir),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit for signatures
+  },
+  fileFilter: imageFilter
+});
+
 module.exports = {
   profileUpload,
   serviceUpload,
   projectUpload,
   productUpload,
+  signatureUpload,
   // Legacy export for backward compatibility
   upload: profileUpload
 };

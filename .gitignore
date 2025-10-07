@@ -1,0 +1,137 @@
+# ============================================
+# SAP TECHNOLOGIES - PRODUCTION .GITIGNORE
+# For Render (Backend) + Vercel (Frontend)
+# ============================================
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.pnp/
+.pnp.js
+
+# Environment variables (CRITICAL - NEVER COMMIT)
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+.env.*.local
+*.env
+.env.free-notifications
+.env.example
+
+# Build outputs
+dist/
+build/
+.cache/
+*.tsbuildinfo
+out/
+.next/
+.nuxt/
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-workspace
+*.sublime-project
+.history/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Testing & Coverage
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+playwright-report/
+
+# Uploads (use cloud storage in production)
+uploads/
+uploads/**/*
+*.tmp
+*.temp
+
+# WhatsApp Session Data (contains auth credentials)
+whatsapp-session/
+whatsapp-session/**/*
+*.json
+!package.json
+!tsconfig.json
+!vercel.json
+!render.yaml
+
+# PM2 & Process Management
+.pm2/
+ecosystem.config.js
+
+# Misc
+.eslintcache
+.stylelintcache
+.parcel-cache/
+.turbo/
+
+# Frontend specific (Vercel)
+frontend/sap-technologies/dist/
+frontend/sap-technologies/.cache/
+frontend/sap-technologies/build/
+frontend/sap-technologies/.vercel/
+
+# Server specific (Render)
+server/uploads/
+server/logs/
+server/whatsapp-session/
+vercel.json
+render.yaml
+# Test & Development files (DO NOT DEPLOY)
+test-*.js
+*-test.js
+*.test.js
+*.spec.js
+check-*.js
+seed-*.js
+demo-*.js
+add-*.js
+create-*.js
+fix-*.js
+reset-*.js
+assign-*.js
+remove-*.js
+update-*.js
+send-*-test-*.js
+send-*-samples.js
+render.yaml
+# Documentation (keep in repo but optional)
+# *.md files are kept for reference
+
+# Deployment files (optional - can be kept)
+deploy.ps1
+deploy.sh
+
+# Temporary files
+*.bak
+*.backup
+*.draft.md

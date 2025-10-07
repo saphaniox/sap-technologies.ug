@@ -342,3 +342,93 @@ exports.verifyCertificate = async (req, res) => {
         });
     }
 };
+
+/**
+ * Upload signature image for certificates
+ */
+exports.uploadSignature = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ 
+                message: 'No signature image file provided' 
+            });
+        }
+
+        // Delete existing signature if it exists
+        await certificateService.deleteExistingSignature();
+
+        // Save new signature info
+        const signatureInfo = {
+            filename: req.file.filename,
+            originalName: req.file.originalname,
+            mimetype: req.file.mimetype,
+            size: req.file.size,
+            uploadedAt: new Date(),
+            uploadedBy: req.user._id
+        };
+
+        await certificateService.saveSignatureInfo(signatureInfo);
+
+        res.json({ 
+            message: 'Signature uploaded successfully',
+            signature: {
+                filename: req.file.filename,
+                originalName: req.file.originalname,
+                size: req.file.size
+            }
+        });
+
+    } catch (error) {
+        console.error('Error uploading signature:', error);
+        res.status(500).json({ 
+            message: 'Error uploading signature',
+            error: error.message 
+        });
+    }
+};
+
+/**
+ * Get current signature information
+ */
+exports.getCurrentSignature = async (req, res) => {
+    try {
+        const signatureInfo = await certificateService.getCurrentSignature();
+        
+        if (!signatureInfo) {
+            return res.status(404).json({ 
+                message: 'No signature currently configured' 
+            });
+        }
+
+        res.json({ 
+            signature: signatureInfo
+        });
+
+    } catch (error) {
+        console.error('Error getting current signature:', error);
+        res.status(500).json({ 
+            message: 'Error retrieving signature information',
+            error: error.message 
+        });
+    }
+};
+
+/**
+ * Delete current signature
+ */
+exports.deleteSignature = async (req, res) => {
+    try {
+        await certificateService.deleteExistingSignature();
+        
+        res.json({ 
+            message: 'Signature deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Error deleting signature:', error);
+        res.status(500).json({ 
+            message: 'Error deleting signature',
+            error: error.message 
+        });
+    }
+};

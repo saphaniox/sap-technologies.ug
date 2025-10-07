@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test SweetAlert Auto-disappear</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <h1>Test SweetAlert Auto-disappear</h1>
+    <button onclick="testAlert()">Test Success Alert</button>
+    
+    <script>
+        // Configuration matching our updated alerts.jsx
+        const baseConfig = {
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#ef4444',
+            background: '#ffffff',
+            color: '#1f2937',
+            showClass: {
+                popup: 'animate__animated animate__slideInUp'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__slideOutDown'
+            }
+        };
+
+        const swalConfig = {
+            ...baseConfig,
+            timer: 5000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            allowOutsideClick: true,
+            allowEscapeKey: true,
+            width: '350px'
+        };
+
+        function testAlert() {
+            const title = "Our Featured Projects";
+            const text = "Check out our amazing work and successful client projects below!";
+            const options = {};
+            
+            // Same logic as our updated success function
+            const finalOptions = {
+                ...swalConfig,
+                ...options
+            };
+            
+            // Ensure auto-disappear works: if timer exists and showConfirmButton isn't explicitly true, hide button
+            if ((finalOptions.timer || swalConfig.timer) && finalOptions.showConfirmButton !== true) {
+                finalOptions.showConfirmButton = false;
+            }
+            
+            console.log('Final options:', finalOptions);
+            
+            Swal.fire({
+                icon: 'success',
+                title,
+                text,
+                ...finalOptions
+            });
+        }
+    </script>
+</body>
+</html>

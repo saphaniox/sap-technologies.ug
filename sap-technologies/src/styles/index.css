@@ -1,0 +1,333 @@
+/* Import responsive design system */
+@import './responsive.css';
+
+/* Import comprehensive dark mode styles */
+@import './dark-mode.css';
+
+/* ===========================
+   GLOBAL STYLES & RESET
+   =========================== */
+
+:root {
+  /* Font Family */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  line-height: var(--line-height-base);
+  font-weight: 400;
+
+  /* Typography */
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===========================
+   THEME SYSTEM - LIGHT MODE
+   =========================== */
+
+:root,
+[data-theme="light"] {
+  /* Color Scheme */
+  color-scheme: light;
+  
+  /* Core Brand Colors */
+  --primary-color: #3498db;
+  --primary-color-hover: #2980b9;
+  --primary-color-light: #85c1e9;
+  --secondary-color: #2ecc71;
+  --secondary-color-hover: #27ae60;
+  --accent-color: #9b59b6;
+  --accent-color-hover: #8e44ad;
+
+  /* Text Colors */
+  --text-color: #2c3e50;
+  --text-color-secondary: #7f8c8d;
+  --text-color-muted: #95a5a6;
+  --text-color-inverse: #ffffff;
+
+  /* Background Colors */
+  --bg-color: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #e9ecef;
+  --bg-overlay: rgba(255, 255, 255, 0.9);
+  --bg-dark-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Border & Divider Colors */
+  --border-color: #e9ecef;
+  --border-color-light: #f1f3f4;
+  --divider-color: #dee2e6;
+
+  /* Status Colors */
+  --success-color: #27ae60;
+  --success-color-light: #d5f4e6;
+  --warning-color: #f39c12;
+  --warning-color-light: #fef3cd;
+  --danger-color: #e74c3c;
+  --danger-color-light: #f8d7da;
+  --info-color: #3498db;
+  --info-color-light: #d1ecf1;
+
+  /* Shadow & Elevation */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+
+  /* Card & Component Colors */
+  --card-bg: var(--bg-color);
+  --card-border: var(--border-color);
+  --input-bg: var(--bg-color);
+  --input-border: var(--border-color);
+  --input-focus: var(--primary-color);
+}
+
+/* ===========================
+   THEME SYSTEM - DARK MODE
+   =========================== */
+
+[data-theme="dark"] {
+  /* Color Scheme */
+  color-scheme: dark;
+  
+  /* Core Brand Colors (adjusted for dark mode) */
+  --primary-color: #5dade2;
+  --primary-color-hover: #85c1e9;
+  --primary-color-light: #3498db;
+  --secondary-color: #58d68d;
+  --secondary-color-hover: #82e5a8;
+  --accent-color: #bb8fce;
+  --accent-color-hover: #d2b4de;
+
+  /* Text Colors */
+  --text-color: #ecf0f1;
+  --text-color-secondary: #bdc3c7;
+  --text-color-muted: #85929e;
+  --text-color-inverse: #2c3e50;
+
+  /* Background Colors */
+  --bg-color: #1a1a1a;
+  --bg-secondary: #2c3e50;
+  --bg-tertiary: #34495e;
+  --bg-overlay: rgba(26, 26, 26, 0.9);
+  --bg-dark-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Border & Divider Colors */
+  --border-color: #3e4a5c;
+  --border-color-light: #2c3e50;
+  --divider-color: #3e4a5c;
+
+  /* Status Colors (adjusted for dark mode) */
+  --success-color: #58d68d;
+  --success-color-light: rgba(88, 214, 141, 0.2);
+  --warning-color: #f7dc6f;
+  --warning-color-light: rgba(247, 220, 111, 0.2);
+  --danger-color: #ec7063;
+  --danger-color-light: rgba(236, 112, 99, 0.2);
+  --info-color: #5dade2;
+  --info-color-light: rgba(93, 173, 226, 0.2);
+
+  /* Shadow & Elevation (enhanced for dark mode) */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.4);
+
+  /* Card & Component Colors */
+  --card-bg: var(--bg-secondary);
+  --card-border: var(--border-color);
+  --input-bg: var(--bg-tertiary);
+  --input-border: var(--border-color);
+  --input-focus: var(--primary-color);
+}
+
+/* ===========================
+   RESET & BASE STYLES
+   =========================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: inherit;
+  line-height: var(--line-height-base);
+  overflow-x: hidden;
+}
+
+/* Remove default margins and paddings */
+h1, h2, h3, h4, h5, h6,
+p, ul, ol, li,
+blockquote, figure, figcaption {
+  margin: 0;
+  padding: 0;
+}
+
+/* Links */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--secondary-color);
+  text-decoration: underline;
+}
+
+a:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Lists */
+ul, ol {
+  list-style: none;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Form elements */
+input, textarea, select, button {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Buttons */
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-md);
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  user-select: none;
+}
+
+button:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===========================
+   ACCESSIBILITY
+   =========================== */
+
+/* Focus indicators */
+:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===========================
+   SCROLLBAR STYLING
+   =========================== */
+
+/* Webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-color-secondary);
+}
+
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-secondary);
+}

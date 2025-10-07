@@ -7,7 +7,9 @@ const { Certificate } = require('../models');
 class CertificateService {
     constructor() {
         this.certificatesDir = path.join(__dirname, '../../uploads/certificates');
+        this.signaturesDir = path.join(__dirname, '../../uploads/signatures');
         this.ensureCertificatesDirectory();
+        this.ensureSignaturesDirectory();
     }
 
     async ensureCertificatesDirectory() {
@@ -15,6 +17,14 @@ class CertificateService {
             await fs.mkdir(this.certificatesDir, { recursive: true });
         } catch (error) {
             console.error('Error creating certificates directory:', error);
+        }
+    }
+
+    async ensureSignaturesDirectory() {
+        try {
+            await fs.mkdir(this.signaturesDir, { recursive: true });
+        } catch (error) {
+            console.error('Error creating signatures directory:', error);
         }
     }
 
@@ -235,21 +245,29 @@ class CertificateService {
                 });
             }
 
-            // Signature line (right side)
-            page.drawLine({
-                start: { x: width - 250, y: 165 },
-                end: { x: width - 100, y: 165 },
-                thickness: 1,
-                color: rgb(0.2, 0.2, 0.2),
-            });
+            // Signature area (right side)
+            const signatureX = width - 250;
+            const signatureY = 175;
+            const signatureDrawn = await this.drawSignature(pdfDoc, page, signatureX, signatureY, 120, 40);
 
-            page.drawText('Authorized Signature', {
-                x: width - 230,
-                y: 145,
-                size: 11,
-                font: timesRomanItalic,
-                color: rgb(0.3, 0.3, 0.3),
-            });
+            // If signature image wasn't drawn, fall back to text signature
+            if (!signatureDrawn) {
+                // Signature line (right side)
+                page.drawLine({
+                    start: { x: width - 250, y: 165 },
+                    end: { x: width - 100, y: 165 },
+                    thickness: 1,
+                    color: rgb(0.2, 0.2, 0.2),
+                });
+
+                page.drawText('Authorized Signature', {
+                    x: width - 230,
+                    y: 145,
+                    size: 11,
+                    font: timesRomanItalic,
+                    color: rgb(0.3, 0.3, 0.3),
+                });
+            }
 
             page.drawText('SAPHANIOX Awards Committee', {
                 x: width - 250,
@@ -487,20 +505,28 @@ class CertificateService {
                 });
             }
 
-            page.drawLine({
-                start: { x: width - 250, y: 165 },
-                end: { x: width - 100, y: 165 },
-                thickness: 1,
-                color: rgb(0.2, 0.2, 0.2),
-            });
+            // Signature area (right side)
+            const signatureX = width - 250;
+            const signatureY = 175;
+            const signatureDrawn = await this.drawSignature(pdfDoc, page, signatureX, signatureY, 120, 40);
 
-            page.drawText('Authorized Signature', {
-                x: width - 230,
-                y: 145,
-                size: 11,
-                font: timesRomanItalic,
-                color: rgb(0.3, 0.3, 0.3),
-            });
+            // If signature image wasn't drawn, fall back to text signature
+            if (!signatureDrawn) {
+                page.drawLine({
+                    start: { x: width - 250, y: 165 },
+                    end: { x: width - 100, y: 165 },
+                    thickness: 1,
+                    color: rgb(0.2, 0.2, 0.2),
+                });
+
+                page.drawText('Authorized Signature', {
+                    x: width - 230,
+                    y: 145,
+                    size: 11,
+                    font: timesRomanItalic,
+                    color: rgb(0.3, 0.3, 0.3),
+                });
+            }
 
             page.drawText('SAPHANIOX Awards Committee', {
                 x: width - 250,
@@ -736,20 +762,28 @@ class CertificateService {
                 });
             }
 
-            page.drawLine({
-                start: { x: width - 250, y: 165 },
-                end: { x: width - 100, y: 165 },
-                thickness: 1,
-                color: rgb(0.2, 0.2, 0.2),
-            });
+            // Signature area (right side)
+            const signatureX = width - 250;
+            const signatureY = 175;
+            const signatureDrawn = await this.drawSignature(pdfDoc, page, signatureX, signatureY, 120, 40);
 
-            page.drawText('Authorized Signature', {
-                x: width - 230,
-                y: 145,
-                size: 11,
-                font: timesRomanItalic,
-                color: rgb(0.3, 0.3, 0.3),
-            });
+            // If signature image wasn't drawn, fall back to text signature
+            if (!signatureDrawn) {
+                page.drawLine({
+                    start: { x: width - 250, y: 165 },
+                    end: { x: width - 100, y: 165 },
+                    thickness: 1,
+                    color: rgb(0.2, 0.2, 0.2),
+                });
+
+                page.drawText('Authorized Signature', {
+                    x: width - 230,
+                    y: 145,
+                    size: 11,
+                    font: timesRomanItalic,
+                    color: rgb(0.3, 0.3, 0.3),
+                });
+            }
 
             page.drawText('SAPHANIOX Awards Committee', {
                 x: width - 250,
@@ -1040,6 +1074,130 @@ class CertificateService {
         } catch (error) {
             console.error('Error verifying certificate:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Draw signature image on certificate
+     * @param {PDFDocument} pdfDoc - PDF document
+     * @param {PDFPage} page - PDF page
+     * @param {number} x - X position
+     * @param {number} y - Y position
+     * @param {number} width - Signature width
+     * @param {number} height - Signature height
+     * @returns {Promise<boolean>} - Success status
+     */
+    async drawSignature(pdfDoc, page, x, y, width = 120, height = 40) {
+        try {
+            const signatureInfo = await this.getCurrentSignature();
+            
+            if (!signatureInfo) {
+                console.warn('⚠️ No signature configured, using default text signature');
+                return false;
+            }
+
+            const signaturePath = path.join(this.signaturesDir, signatureInfo.filename);
+            
+            // Check if signature file exists
+            try {
+                await fs.access(signaturePath);
+            } catch (error) {
+                console.warn('⚠️ Signature file not found, using default text signature');
+                return false;
+            }
+
+            const signatureImageBytes = await fs.readFile(signaturePath);
+            
+            // Embed image based on file type
+            let signatureImage;
+            const mimeType = signatureInfo.mimetype || '';
+            
+            if (mimeType.includes('png')) {
+                signatureImage = await pdfDoc.embedPng(signatureImageBytes);
+            } else if (mimeType.includes('jpg') || mimeType.includes('jpeg')) {
+                signatureImage = await pdfDoc.embedJpg(signatureImageBytes);
+            } else {
+                console.warn('⚠️ Unsupported signature image format, using default text signature');
+                return false;
+            }
+            
+            // Draw signature image
+            page.drawImage(signatureImage, {
+                x: x,
+                y: y,
+                width: width,
+                height: height,
+            });
+            
+            console.log('✅ Signature image embedded successfully');
+            return true;
+            
+        } catch (error) {
+            console.warn('⚠️ Error embedding signature image, using default text signature:', error.message);
+            return false;
+        }
+    }
+
+    /**
+     * Save signature information to a JSON file
+     * @param {Object} signatureInfo - Signature metadata
+     */
+    async saveSignatureInfo(signatureInfo) {
+        try {
+            const signatureInfoPath = path.join(this.signaturesDir, 'signature-info.json');
+            await fs.writeFile(signatureInfoPath, JSON.stringify(signatureInfo, null, 2));
+            console.log('✅ Signature info saved successfully');
+        } catch (error) {
+            console.error('Error saving signature info:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get current signature information
+     * @returns {Promise<Object|null>} - Signature info or null
+     */
+    async getCurrentSignature() {
+        try {
+            const signatureInfoPath = path.join(this.signaturesDir, 'signature-info.json');
+            const signatureInfoData = await fs.readFile(signatureInfoPath, 'utf8');
+            return JSON.parse(signatureInfoData);
+        } catch (error) {
+            // File doesn't exist or can't be read
+            return null;
+        }
+    }
+
+    /**
+     * Delete existing signature files and info
+     */
+    async deleteExistingSignature() {
+        try {
+            const signatureInfo = await this.getCurrentSignature();
+            
+            if (signatureInfo) {
+                // Delete signature image file
+                const signatureImagePath = path.join(this.signaturesDir, signatureInfo.filename);
+                try {
+                    await fs.unlink(signatureImagePath);
+                    console.log('🗑️ Deleted existing signature image');
+                } catch (error) {
+                    console.warn('⚠️ Could not delete existing signature image:', error.message);
+                }
+            }
+
+            // Delete signature info file
+            const signatureInfoPath = path.join(this.signaturesDir, 'signature-info.json');
+            try {
+                await fs.unlink(signatureInfoPath);
+                console.log('🗑️ Deleted signature info file');
+            } catch (error) {
+                // File doesn't exist, that's okay
+            }
+
+        } catch (error) {
+            console.error('Error deleting existing signature:', error);
+            // Don't throw - we want to continue with upload even if deletion fails
         }
     }
 }
