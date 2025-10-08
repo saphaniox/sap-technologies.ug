@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "sap-technologies": "file:.."
+  }
+}
