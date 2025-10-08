@@ -1,9 +1,6 @@
 {
-  "framework": "vite",
-  "buildCommand": "cd sap-technologies && npm run build",
+  "buildCommand": "cd sap-technologies && npm ci && npm run build",
   "outputDirectory": "sap-technologies/dist",
-  "installCommand": "cd sap-technologies && npm install",
-  "devCommand": "cd sap-technologies && npm run dev",
   "env": {
     "NODE_ENV": "production",
     "VITE_API_URL": "https://sap-technologies-ug.onrender.com"
