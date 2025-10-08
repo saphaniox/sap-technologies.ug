@@ -1,27 +1,13 @@
 {
-  "version": 2,
-  "name": "sap-technologies",
-  "builds": [
-    {
-      "src": "sap-technologies/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "sap-technologies/dist"
-      }
-    }
-  ],
+  "buildCommand": "cd sap-technologies && npm install && npm run build",
+  "outputDirectory": "sap-technologies/dist",
+  "framework": "vite",
+  "installCommand": "cd sap-technologies && npm install",
+  "devCommand": "cd sap-technologies && npm run dev",
   "env": {
     "NODE_ENV": "production",
     "VITE_API_URL": "https://sap-technologies-ug.onrender.com"
   },
-  "build": {
-    "env": {
-      "NODE_ENV": "production"
-    }
-  },
-  "buildCommand": "cd sap-technologies && npm install && npm run build",
-  "outputDirectory": "sap-technologies/dist",
-  "framework": "vite",
   "rewrites": [
     {
       "source": "/api/(.*)",
