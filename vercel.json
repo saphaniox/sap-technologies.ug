@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "name": "sap-technologies-frontend",
+  "name": "sap-technologies",
   "builds": [
     {
-      "src": "frontend/sap-technologies/package.json",
+      "src": "sap-technologies/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "frontend/sap-technologies/dist"
+        "distDir": "sap-technologies/dist"
       }
     }
   ],
@@ -25,15 +25,16 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "VITE_API_URL": "https://sas-i5ji.onrender.com"
   },
   "build": {
     "env": {
       "NODE_ENV": "production"
     }
   },
-  "buildCommand": "cd frontend/sap-technologies && npm install && npm run build",
-  "outputDirectory": "frontend/sap-technologies/dist",
+  "buildCommand": "cd sap-technologies && npm install && npm run build",
+  "outputDirectory": "sap-technologies/dist",
   "framework": "vite",
   "rewrites": [
     {

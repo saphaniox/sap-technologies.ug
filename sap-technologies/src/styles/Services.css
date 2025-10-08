@@ -13,10 +13,52 @@
 .services h2 {
   text-align: center;
   font-size: var(--text-4xl);
-  color: var(--color-primary-600);
+  color: #1a237e; /* Strong blue fallback for light mode */
   margin-bottom: var(--space-12);
   font-weight: 700;
   line-height: var(--leading-tight);
+  position: relative;
+  /* Enhanced gradient with stronger colors for light mode */
+  background: #1a237e; /* Strong fallback */
+  background: linear-gradient(135deg, #1a237e, #3949ab);
+  background: -webkit-linear-gradient(135deg, #1a237e, #3949ab);
+  background: -moz-linear-gradient(135deg, #1a237e, #3949ab);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 3px 6px rgba(26, 35, 126, 0.2);
+  letter-spacing: -0.02em;
+}
+
+/* Fallback for browsers that don't support background-clip: text */
+@supports not (-webkit-background-clip: text) {
+  .services h2 {
+    background: none;
+    color: #1a237e;
+    text-shadow: 0 3px 6px rgba(26, 35, 126, 0.2);
+  }
+}
+
+.services h2::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #1a237e, #3949ab);
+  background: -webkit-linear-gradient(90deg, #1a237e, #3949ab);
+  background: -moz-linear-gradient(90deg, #1a237e, #3949ab);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(26, 35, 126, 0.3);
+}
+
+.services h2:hover::after {
+  width: 80px;
+  height: 5px;
+  box-shadow: 0 3px 6px rgba(26, 35, 126, 0.4);
 }
 
 .services-list {
@@ -29,15 +71,34 @@
   text-align: center;
   padding: var(--space-8);
   border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: all var(--transition-duration-300) var(--transition-timing-ease);
-  background: var(--color-white);
-  border: 1px solid var(--color-gray-100);
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  position: relative;
+  overflow: hidden;
+}
+
+.service::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #1a237e, #3949ab);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.service:hover::before {
+  transform: scaleX(1);
 }
 
 .service:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(26, 35, 126, 0.15);
+  border-color: #3949ab;
 }
 
 .service-img {
@@ -755,8 +816,188 @@
 .services-intro {
   text-align: center;
   font-size: var(--text-lg);
-  color: var(--color-gray-600);
+  color: #424242;
   line-height: var(--leading-relaxed);
   max-width: 700px;
   margin: 0 auto var(--space-12) auto;
+  font-weight: 500;
+  opacity: 1;
+  text-shadow: 0 1px 2px rgba(66, 66, 66, 0.1);
+}
+
+/* Light theme specific enhancements */
+[data-theme="light"] .services h2,
+:root .services h2 {
+  background: linear-gradient(135deg, #1a237e, #3949ab, #5c6bc0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 3px 6px rgba(26, 35, 126, 0.2);
+}
+
+[data-theme="light"] .services h2::after,
+:root .services h2::after {
+  background: linear-gradient(90deg, #1a237e, #3949ab);
+  box-shadow: 0 2px 4px rgba(26, 35, 126, 0.3);
+}
+
+[data-theme="light"] .services-intro,
+:root .services-intro {
+  color: #424242;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(66, 66, 66, 0.1);
+}
+
+/* Desktop-specific enhancements */
+@media (min-width: 1200px) {
+  .services {
+    padding: 120px 0;
+  }
+  
+  .services .container {
+    max-width: 1400px;
+    padding: 0 60px;
+  }
+  
+  .services h2 {
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    margin-bottom: 2rem;
+    letter-spacing: -0.02em;
+  }
+  
+  .services h2::after {
+    width: 80px;
+    height: 5px;
+    bottom: -12px;
+  }
+  
+  .services-intro {
+    font-size: var(--text-xl);
+    max-width: 900px;
+    margin-bottom: 4rem;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+  }
+  
+  .services-list {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2.5rem;
+    margin-top: 2rem;
+  }
+  
+  .service {
+    padding: 2.5rem 2rem;
+    border-radius: 20px;
+  }
+  
+  .service:hover {
+    transform: translateY(-12px) scale(1.02);
+  }
+}
+
+@media (min-width: 1440px) {
+  .services .container {
+    max-width: 1600px;
+    padding: 0 80px;
+  }
+  
+  .services h2 {
+    font-size: clamp(3rem, 4.5vw, 4.5rem);
+    margin-bottom: 2.5rem;
+  }
+  
+  .services-intro {
+    font-size: var(--text-xl);
+    max-width: 1000px;
+    margin-bottom: 5rem;
+  }
+  
+  .services-list {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 3rem;
+  }
+  
+  .service {
+    padding: 3rem 2.5rem;
+    border-radius: 24px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .services {
+    padding: 140px 0;
+  }
+  
+  .services .container {
+    max-width: 1800px;
+    padding: 0 100px;
+  }
+  
+  .services h2 {
+    font-size: 5rem;
+    margin-bottom: 3rem;
+  }
+  
+  .services h2::after {
+    width: 100px;
+    height: 6px;
+    bottom: -16px;
+  }
+  
+  .services-intro {
+    font-size: 1.375rem;
+    max-width: 1200px;
+    margin-bottom: 6rem;
+    line-height: 1.8;
+  }
+  
+  .services-list {
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 4rem;
+  }
+  
+  .service {
+    padding: 3.5rem 3rem;
+    border-radius: 28px;
+  }
+  
+  .service:hover {
+    transform: translateY(-16px) scale(1.03);
+  }
+}
+
+/* Dark theme support */
+[data-theme="dark"] .services {
+  background: var(--color-gray-900);
+}
+
+[data-theme="dark"] .services h2 {
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="dark"] .services h2::after {
+  background: linear-gradient(90deg, #60a5fa, #a78bfa);
+}
+
+[data-theme="dark"] .services-intro {
+  color: var(--color-gray-300);
+}
+
+[data-theme="dark"] .service {
+  background: var(--color-gray-800);
+  border-color: var(--color-gray-700);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .service:hover {
+  background: var(--color-gray-750);
+  border-color: var(--color-primary-500);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .service::before {
+  background: linear-gradient(90deg, #60a5fa, #a78bfa);
 }

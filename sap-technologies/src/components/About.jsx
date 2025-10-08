@@ -18,20 +18,20 @@ const About = () => {
       role: "Founder, CEO & full-stack Engineer",
       image: "/images/me.jpg",
       bio: "Full-stack engineer and entrepreneur with a passion for innovative technology solutions.",
-      skills: ["Leadership", "Strategy", "Automation", "Full-Stack Engineering"]
+      skills: ["Leadership", "Strategy","Electrical", "Automation", "Full-Stack Engineering"]
     },
     {
-      name: "BRIAN CODER",
+      name: "SANE NB CODER",
       role: "UI, UX & Frontend Developer",
       image: "/images/me2.jpg", 
-      bio: "Skilled developers specializing in modern web technologies and mobile applications.",
-      skills: ["React", "Node.js", "Mobile Apps"]
+      bio: "Skilled developer specializing in modern web technologies and mobile applications.",
+      skills: ["React", "Node.js", "Mobile Apps","Electrical"]
     },
     {
       name: "ROBERTO DL",
       role: "Creative Designer",
       image: "/images/me3.jpg",
-      bio: "Creative professionals focused on delivering exceptional user experiences and visual design.",
+      bio: "Creative professional focused on delivering exceptional user experiences and visual design.",
       skills: ["UI/UX", "Graphics", "Branding"]
     }
   ];
@@ -69,7 +69,13 @@ const About = () => {
           >
             <h3><strong>Empowering Uganda, Inspiring Africa By </strong>Transforming your imaginations to real life</h3>
             <p>
-                At SAP Technologies, we believe technology is the catalyst for progress and transformation. Founded in the heart of Kampala, we are more than just a tech company—we are visionaries, innovators and partners in your success. Our multidisciplinary team blends creativity, engineering excellence and deep industry expertise to deliver world-class solutions in web design, branding, electrical engineering, electronic circuits and custom software.
+                At SAP-Technologies, we believe technology is the catalyst for progress and transformation. Founded in the heart of Kampala, we are more than just a tech company—we are visionaries, innovators and partners in your success. Our multidisciplinary team blends creativity, engineering excellence and deep industry expertise to deliver world-class solutions in web design, branding, electrical engineering, electronic circuits and custom software.
+            </p>
+                        <p>
+              Our team of experienced professionals combines creativity with technical 
+              expertise to create solutions that not only meet but exceed our clients&apos; 
+              expectations. We believe in the power of technology to transform businesses 
+              and improve lives.
             </p>
             <p>
                 We are driven by a passion to empower businesses, entrepreneurs and communities across Uganda and beyond. Every project is an opportunity to inspire, to solve real-world challenges and to elevate our clients to new heights. With a relentless commitment to quality, integrity and innovation, SAP Technologies is shaping the digital future of Africa—one idea, one solution, one success story at a time.
@@ -77,12 +83,7 @@ const About = () => {
             <p>
                 <em>Let’s build the future together.</em>
             </p>
-            <p>
-              Our team of experienced professionals combines creativity with technical 
-              expertise to create solutions that not only meet but exceed our clients&apos; 
-              expectations. We believe in the power of technology to transform businesses 
-              and improve lives.
-            </p>
+
           </motion.div>
 
           <motion.div 

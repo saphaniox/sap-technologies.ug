@@ -2,9 +2,13 @@
 // This is like a translator that helps our React app talk to our Express server
 // It handles authentication, error handling, and data formatting
 
-// Figure out which server to talk to - production or local development
-const API_BASE_URL = import.meta.env.VITE_API_URL || 
-  (import.meta.env.PROD ? "" : "http://localhost:5000");
+// API configuration - force proxy usage in development
+const isLocalhost = typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+const API_BASE_URL = isLocalhost 
+  ? "" // Force Vite proxy in development (avoids CORS issues)
+  : (import.meta.env.VITE_API_URL || "https://sap-technologies-ug.onrender.com");
 
 class ApiService {
   constructor() {
