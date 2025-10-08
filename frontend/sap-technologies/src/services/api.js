@@ -2,36 +2,12 @@
 // This is like a translator that helps our React app talk to our Express server
 // It handles authentication, error handling, and data formatting
 
-// API configuration - environment-aware URL selection
-const isLocalhost = typeof window !== 'undefined' && 
-  (window.location.hostname === 'localhost' || 
-   window.location.hostname === '127.0.0.1' || 
-   window.location.hostname === '0.0.0.0');
-
-// Get API URL from environment or use fallback
-const getApiUrl = () => {
-  // In development, use empty string to force Vite proxy
-  if (isLocalhost && import.meta.env.DEV) {
-    return import.meta.env.VITE_API_URL || "";
-  }
-  // In production, use environment variable or fallback
-  return import.meta.env.VITE_API_URL || "https://sap-technologies-ug.onrender.com";
-};
-
-const API_BASE_URL = getApiUrl();
+// Production API configuration - always use production server
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://sap-technologies-ug.onrender.com";
 
 class ApiService {
   constructor() {
     this.baseURL = API_BASE_URL;
-    // Log API configuration in development
-    if (import.meta.env.DEV) {
-      console.log('API Configuration:', {
-        baseURL: this.baseURL,
-        isLocalhost,
-        env: import.meta.env.MODE,
-        envApiUrl: import.meta.env.VITE_API_URL
-      });
-    }
   }
 
   // Main method for making HTTP requests to our backend
