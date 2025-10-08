@@ -18,6 +18,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    chunkSizeWarningLimit: 1500, // Increase chunk size warning limit to 1500kb
     rollupOptions: {
       output: {
         manualChunks: {
