@@ -70,6 +70,53 @@ class EmailService {
         }
     }
 
+    /**
+     * Universal email sender - handles both SendGrid and SMTP
+     * @param {Object} emailOptions - { to, subject, html, replyTo (optional), from (optional) }
+     */
+    async sendEmail(emailOptions) {
+        if (!this.isConfigured) {
+            console.log("Email service not configured, skipping email");
+            return false;
+        }
+
+        try {
+            if (this.useSendGrid) {
+                // SendGrid API
+                const msg = {
+                    to: emailOptions.to,
+                    from: emailOptions.from || this.fromEmail,
+                    replyTo: emailOptions.replyTo || undefined,
+                    subject: emailOptions.subject,
+                    html: emailOptions.html
+                };
+                
+                await sgMail.send(msg);
+                console.log(`✅ Email sent via SendGrid to: ${emailOptions.to}`);
+                return true;
+            } else {
+                // SMTP (for local development)
+                const mailOptions = {
+                    from: emailOptions.from || '"SAP Technologies" <saptechnologies256@gmail.com>',
+                    to: emailOptions.to,
+                    replyTo: emailOptions.replyTo || undefined,
+                    subject: emailOptions.subject,
+                    html: emailOptions.html
+                };
+
+                await this.transporter.sendMail(mailOptions);
+                console.log(`✅ Email sent via SMTP to: ${emailOptions.to}`);
+                return true;
+            }
+        } catch (error) {
+            console.error(`❌ Error sending email to ${emailOptions.to}:`, error.message);
+            if (error.response) {
+                console.error("   Response:", error.response.body);
+            }
+            return false;
+        }
+    }
+
     async sendContactNotification(contactData) {
         if (!this.isConfigured) {
             console.log("Email service not configured, skipping notification");
@@ -331,65 +378,82 @@ ${JSON.stringify(alertData.details, null, 2)}
         }
         
         try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
+            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER || this.fromEmail;
             
-            const mailOptions = {
-                from: '"SAP Technologies" <saptechnologies256@gmail.com>',
-                replyTo: emailUser, // Replies go to your Gmail for support
-                to: contactData.email,
-                subject: "Thank you for contacting SAP Technologies! ✅",
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <h2 style="color: #3b82f6;">Thank you for reaching out! 📧</h2>
-                        <p>Hi ${contactData.name},</p>
-                        <p>We've received your message and wanted to let you know that we'll get back to you within 24 hours.</p>
-                        
-                        <div style="background: #f0f9ff; padding: 20px; border-radius: 5px; border-left: 4px solid #3b82f6; margin: 20px 0;">
-                            <h3 style="color: #1e40af; margin: 0 0 10px 0;">📝 Your Message Summary:</h3>
-                            <p style="margin: 5px 0;"><strong>Name:</strong> ${contactData.name}</p>
-                            <p style="margin: 5px 0;"><strong>Email:</strong> ${contactData.email}</p>
-                            <p style="margin: 15px 0 5px 0;"><strong>Your Message:</strong></p>
-                            <div style="background: white; padding: 15px; border-radius: 3px; font-style: italic;">
-                                "${contactData.message}"
-                            </div>
-                        </div>
-                        
-                        <p>In the meantime, feel free to:</p>
-                        <ul>
-                            <li>🌐 Explore our services and solutions</li>
-                            <li>📱 Follow us on social media</li>
-                            <li>📞 Call us directly for urgent matters</li>
-                        </ul>
-                        
-                        <p>Best regards,<br>The SAP Technologies Team</p>
-                        
-                        <hr style="margin: 30px 0;">
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 5px;">
-                            <h3 style="color: #1f2937; margin: 0 0 15px 0;">📞 Contact Information</h3>
-                            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-                                <div>
-                                    <p style="margin: 5px 0;"><strong>📞 Phone:</strong></p>
-                                    <p style="margin: 0; font-size: 18px; color: #3b82f6; font-weight: bold;">+256706564628</p>
-                                </div>
-                                <div>
-                                    <p style="margin: 5px 0;"><strong>📧 Email:</strong></p>
-                                    <p style="margin: 0; color: #3b82f6;">${emailUser}</p>
-                                </div>
-                            </div>
-                            <p style="margin: 15px 0 5px 0; color: #16a34a; font-weight: bold;">⏰ We typically respond within 24 hours!</p>
-                        </div>
-                        
-                        <div style="margin: 30px 0; padding: 15px; background: #fefce8; border-radius: 5px; border: 1px solid #facc15;">
-                            <p style="margin: 0; font-size: 14px; color: #a16207;">
-                                <strong>💡 Tip:</strong> Save our contact number <strong>+256706564628</strong> for quick access!
-                            </p>
+            const emailHtml = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #3b82f6;">Thank you for reaching out! 📧</h2>
+                    <p>Hi ${contactData.name},</p>
+                    <p>We've received your message and wanted to let you know that we'll get back to you within 24 hours.</p>
+                    
+                    <div style="background: #f0f9ff; padding: 20px; border-radius: 5px; border-left: 4px solid #3b82f6; margin: 20px 0;">
+                        <h3 style="color: #1e40af; margin: 0 0 10px 0;">📝 Your Message Summary:</h3>
+                        <p style="margin: 5px 0;"><strong>Name:</strong> ${contactData.name}</p>
+                        <p style="margin: 5px 0;"><strong>Email:</strong> ${contactData.email}</p>
+                        <p style="margin: 15px 0 5px 0;"><strong>Your Message:</strong></p>
+                        <div style="background: white; padding: 15px; border-radius: 3px; font-style: italic;">
+                            "${contactData.message}"
                         </div>
                     </div>
-                `
-            };
+                    
+                    <p>In the meantime, feel free to:</p>
+                    <ul>
+                        <li>🌐 Explore our services and solutions</li>
+                        <li>📱 Follow us on social media</li>
+                        <li>📞 Call us directly for urgent matters</li>
+                    </ul>
+                    
+                    <p>Best regards,<br>The SAP Technologies Team</p>
+                    
+                    <hr style="margin: 30px 0;">
+                    <div style="background: #f8fafc; padding: 20px; border-radius: 5px;">
+                        <h3 style="color: #1f2937; margin: 0 0 15px 0;">📞 Contact Information</h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                            <div>
+                                <p style="margin: 5px 0;"><strong>📞 Phone:</strong></p>
+                                <p style="margin: 0; font-size: 18px; color: #3b82f6; font-weight: bold;">+256706564628</p>
+                            </div>
+                            <div>
+                                <p style="margin: 5px 0;"><strong>📧 Email:</strong></p>
+                                <p style="margin: 0; color: #3b82f6;">${emailUser}</p>
+                            </div>
+                        </div>
+                        <p style="margin: 15px 0 5px 0; color: #16a34a; font-weight: bold;">⏰ We typically respond within 24 hours!</p>
+                    </div>
+                    
+                    <div style="margin: 30px 0; padding: 15px; background: #fefce8; border-radius: 5px; border: 1px solid #facc15;">
+                        <p style="margin: 0; font-size: 14px; color: #a16207;">
+                            <strong>💡 Tip:</strong> Save our contact number <strong>+256706564628</strong> for quick access!
+                        </p>
+                    </div>
+                </div>
+            `;
 
-            await this.transporter.sendMail(mailOptions);
-            console.log("✅ Contact confirmation email sent to:", contactData.email);
+            if (this.useSendGrid) {
+                // SendGrid API
+                const msg = {
+                    to: contactData.email,
+                    from: this.fromEmail,
+                    replyTo: emailUser,
+                    subject: "Thank you for contacting SAP Technologies! ✅",
+                    html: emailHtml
+                };
+                
+                await sgMail.send(msg);
+                console.log("✅ Contact confirmation email sent via SendGrid to:", contactData.email);
+            } else {
+                // SMTP (for local development)
+                const mailOptions = {
+                    from: '"SAP Technologies" <saptechnologies256@gmail.com>',
+                    replyTo: emailUser,
+                    to: contactData.email,
+                    subject: "Thank you for contacting SAP Technologies! ✅",
+                    html: emailHtml
+                };
+
+                await this.transporter.sendMail(mailOptions);
+                console.log("✅ Contact confirmation email sent via SMTP to:", contactData.email);
+            }
         } catch (error) {
             console.error("Error sending contact confirmation email:", error);
         }
