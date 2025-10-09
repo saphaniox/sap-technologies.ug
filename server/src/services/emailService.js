@@ -43,23 +43,30 @@ class EmailService {
                 socketTimeout: 10000
             });
             this.isConfigured = true;
-            console.log("✅ Email service configured with:", emailUser);
+            console.log("✅ Email service configured with SMTP:", emailUser);
             console.log("📧 SMTP Host:", process.env.SMTP_HOST || "smtp.gmail.com");
             console.log("📧 SMTP Port:", smtpPort, useSecure ? "(SSL)" : "(TLS)");
+            console.log("⚠️  Note: SMTP may be blocked on some hosting platforms. Consider using SendGrid instead.");
             
-            // Test the connection
-            this.transporter.verify((error, success) => {
-                if (error) {
-                    console.error("❌ Email service connection test failed:", error.message);
-                    console.error("   This might prevent emails from being sent.");
-                } else {
-                    console.log("✅ Email service connection verified - ready to send emails!");
-                }
-            });
+            // Test the connection (only in development)
+            if (process.env.NODE_ENV !== 'production') {
+                this.transporter.verify((error, success) => {
+                    if (error) {
+                        console.error("❌ SMTP connection test failed:", error.message);
+                        console.warn("   💡 For production, use SendGrid: Set SENDGRID_API_KEY environment variable");
+                    } else {
+                        console.log("✅ SMTP connection verified - ready to send emails!");
+                    }
+                });
+            } else {
+                console.warn("⚠️  SMTP in production - may not work if port is blocked.");
+                console.warn("   💡 Recommended: Add SENDGRID_API_KEY to environment variables");
+            }
         } else {
             this.isConfigured = false;
             console.log("❌ Email service: No email credentials configured");
-            console.log("   Expected: GMAIL_USER & GMAIL_PASS or SMTP_USER & SMTP_PASS");
+            console.log("   Expected: SENDGRID_API_KEY (recommended) or GMAIL_USER & GMAIL_PASS");
+            console.log("   📚 Setup guide: https://docs.sendgrid.com/for-developers/sending-email/api-getting-started");
         }
     }
 
