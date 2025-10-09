@@ -1,37 +1,5 @@
-/**
- * Service Quote Model
- * 
- * Defines the database schema for customer quote requests for
- * services offered by the company.
- * 
- * Features:
- * - Service reference (optional link to Service model)
- * - Customer information (name, email, phone, company)
- * - Preferred contact method
- * - Project details description
- * - Budget range selection
- * - Timeline/deadline preferences
- * - Status tracking (new, contacted, quoted, accepted, rejected, expired)
- * - Admin notes for internal use
- * - Metadata (IP address, user agent, timestamps)
- * 
- * Budget Ranges:
- * - < $5,000
- * - $5,000 - $10,000
- * - $10,000 - $25,000
- * - $25,000 - $50,000
- * - > $50,000
- * - Not sure
- * 
- * Timeline Options:
- * - ASAP
- * - 1-2 weeks
- * - 1 month
- * - 2-3 months
- * - 3+ months
- * - Flexible
- * 
- * @module models/ServiceQuote
+ 
+ /* @module models/ServiceQuote
  */
 
 const mongoose = require("mongoose");
