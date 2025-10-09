@@ -7,22 +7,29 @@ class EmailService {
         const emailPass = process.env.GMAIL_PASS || process.env.SMTP_PASS;
         
         if (emailUser && emailPass) {
+            // Use port 465 with SSL for better compatibility with cloud hosting platforms
+            const smtpPort = parseInt(process.env.SMTP_PORT || "465");
+            const useSecure = smtpPort === 465;
+            
             this.transporter = nodemailer.createTransport({
                 host: process.env.SMTP_HOST || "smtp.gmail.com",
-                port: process.env.SMTP_PORT || 587,
-                secure: false,
+                port: smtpPort,
+                secure: useSecure, // true for 465, false for other ports
                 auth: {
                     user: emailUser,
                     pass: emailPass
                 },
                 tls: {
                     rejectUnauthorized: false // Allow self-signed certificates (needed for some production environments)
-                }
+                },
+                connectionTimeout: 10000, // 10 seconds
+                greetingTimeout: 10000,
+                socketTimeout: 10000
             });
             this.isConfigured = true;
             console.log("✅ Email service configured with:", emailUser);
             console.log("📧 SMTP Host:", process.env.SMTP_HOST || "smtp.gmail.com");
-            console.log("📧 SMTP Port:", process.env.SMTP_PORT || 587);
+            console.log("📧 SMTP Port:", smtpPort, useSecure ? "(SSL)" : "(TLS)");
             
             // Test the connection
             this.transporter.verify((error, success) => {
