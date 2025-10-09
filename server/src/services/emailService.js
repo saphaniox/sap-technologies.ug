@@ -14,10 +14,25 @@ class EmailService {
                 auth: {
                     user: emailUser,
                     pass: emailPass
+                },
+                tls: {
+                    rejectUnauthorized: false // Allow self-signed certificates (needed for some production environments)
                 }
             });
             this.isConfigured = true;
             console.log("✅ Email service configured with:", emailUser);
+            console.log("📧 SMTP Host:", process.env.SMTP_HOST || "smtp.gmail.com");
+            console.log("📧 SMTP Port:", process.env.SMTP_PORT || 587);
+            
+            // Test the connection
+            this.transporter.verify((error, success) => {
+                if (error) {
+                    console.error("❌ Email service connection test failed:", error.message);
+                    console.error("   This might prevent emails from being sent.");
+                } else {
+                    console.log("✅ Email service connection verified - ready to send emails!");
+                }
+            });
         } else {
             this.isConfigured = false;
             console.log("❌ Email service: No email credentials configured");
@@ -63,7 +78,10 @@ class EmailService {
             await this.transporter.sendMail(mailOptions);
             console.log("✅ Contact notification email sent successfully to:", notifyEmail);
         } catch (error) {
-            console.error("Error sending contact notification email:", error);
+            console.error("❌ Error sending contact notification email:", error.message);
+            console.error("   Error code:", error.code);
+            console.error("   Error response:", error.response);
+            console.error("   Full error:", error);
         }
     }
 
