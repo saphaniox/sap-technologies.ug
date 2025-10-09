@@ -626,6 +626,12 @@ class AwardsController {
                     try {
                         console.log(`🏆 Auto-generating certificate for ${nomination.nomineeName}...`);
                         
+                        // Check if category exists
+                        if (!nomination.category) {
+                            console.error('⚠️ Cannot generate certificate: Category not found for nomination');
+                            return;
+                        }
+                        
                         // Generate certificate ID if not exists
                         if (!nomination.certificateId) {
                             nomination.certificateId = certificateService.generateCertificateId(
@@ -665,18 +671,22 @@ class AwardsController {
             }
 
             // Send email notification to nominator (non-blocking)
-            emailService.sendNominationStatusUpdate({
-                nominatorName: nomination.nominatorName,
-                nominatorEmail: nomination.nominatorEmail,
-                nomineeName: nomination.nomineeName,
-                categoryName: nomination.category.name,
-                status: nomination.status,
-                adminNotes: nomination.adminNotes,
-                certificateFile: nomination.certificateFile
-            }).catch(emailError => {
-                console.error("⚠️ Error sending status update email:", emailError);
-                // Don't fail the request if email fails
-            });
+            if (nomination.category) {
+                emailService.sendNominationStatusUpdate({
+                    nominatorName: nomination.nominatorName,
+                    nominatorEmail: nomination.nominatorEmail,
+                    nomineeName: nomination.nomineeName,
+                    categoryName: nomination.category.name,
+                    status: nomination.status,
+                    adminNotes: nomination.adminNotes,
+                    certificateFile: nomination.certificateFile
+                }).catch(emailError => {
+                    console.error("⚠️ Error sending status update email:", emailError);
+                    // Don't fail the request if email fails
+                });
+            } else {
+                console.warn('⚠️ Skipping email notification: Category not found for nomination');
+            }
 
             res.status(200).json({
                 status: "success",
@@ -706,7 +716,7 @@ class AwardsController {
                 nominatorName: nomination.nominatorName,
                 nominatorEmail: nomination.nominatorEmail,
                 nomineeName: nomination.nomineeName,
-                categoryName: nomination.category.name,
+                categoryName: nomination.category ? nomination.category.name : "Unknown Category",
                 adminNotes: nomination.adminNotes || "No specific reason provided"
             };
 
