@@ -1,8 +1,24 @@
 ﻿const nodemailer = require("nodemailer");
+const sgMail = require('@sendgrid/mail');
 
 class EmailService {
     constructor() {
-        // Check for Gmail credentials first, then fallback to generic SMTP
+        // Check for SendGrid API key first (recommended for production)
+        const sendgridKey = process.env.SENDGRID_API_KEY;
+        
+        if (sendgridKey) {
+            sgMail.setApiKey(sendgridKey);
+            this.useSendGrid = true;
+            this.isConfigured = true;
+            this.fromEmail = process.env.SENDGRID_FROM_EMAIL || process.env.GMAIL_USER || 'saptechnologies256@gmail.com';
+            this.notifyEmail = process.env.NOTIFY_EMAIL || this.fromEmail;
+            console.log("✅ Email service configured with SendGrid");
+            console.log("📧 From Email:", this.fromEmail);
+            console.log("📧 Notify Email:", this.notifyEmail);
+            return;
+        }
+        
+        // Fallback to SMTP for local development
         const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
         const emailPass = process.env.GMAIL_PASS || process.env.SMTP_PASS;
         
@@ -54,36 +70,54 @@ class EmailService {
         }
         
         try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            const notifyEmail = process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || emailUser;
-            
-            const mailOptions = {
-                from: '"SAP Technologies" <saptechnologies256@gmail.com>',
-                replyTo: emailUser, // Replies go to saptechnologies256@gmail.com
-                to: notifyEmail,
-                subject: "New Contact from " + contactData.name,
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <h2 style="color: #3b82f6;">📞 New Contact Form Submission</h2>
-                        <p><strong>Name:</strong> ${contactData.name}</p>
-                        <p><strong>Email:</strong> ${contactData.email}</p>
-                        <p><strong>Message:</strong></p>
-                        <div style="background: #f3f4f6; padding: 15px; border-radius: 5px; margin: 10px 0;">
-                            ${contactData.message}
-                        </div>
-                        <hr style="margin: 30px 0;">
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 5px;">
-                            <h3 style="color: #1f2937; margin: 0 0 10px 0;">📞 SAP Technologies Contact Information</h3>
-                            <p style="margin: 5px 0;"><strong>Phone:</strong> +256706564628</p>
-                            <p style="margin: 5px 0;"><strong>Email:</strong> ${emailUser}</p>
-                            <p style="margin: 5px 0;">Please respond to this inquiry promptly.</p>
-                        </div>
+            // Prepare email content
+            const emailHtml = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <h2 style="color: #3b82f6;">📞 New Contact Form Submission</h2>
+                    <p><strong>Name:</strong> ${contactData.name}</p>
+                    <p><strong>Email:</strong> ${contactData.email}</p>
+                    <p><strong>Message:</strong></p>
+                    <div style="background: #f3f4f6; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                        ${contactData.message}
                     </div>
-                `
-            };
+                    <hr style="margin: 30px 0;">
+                    <div style="background: #f8fafc; padding: 20px; border-radius: 5px;">
+                        <h3 style="color: #1f2937; margin: 0 0 10px 0;">📞 SAP Technologies Contact Information</h3>
+                        <p style="margin: 5px 0;"><strong>Phone:</strong> +256706564628</p>
+                        <p style="margin: 5px 0;"><strong>Email:</strong> ${this.fromEmail}</p>
+                        <p style="margin: 5px 0;">Please respond to this inquiry promptly.</p>
+                    </div>
+                </div>
+            `;
+            
+            if (this.useSendGrid) {
+                // SendGrid API
+                const msg = {
+                    to: this.notifyEmail,
+                    from: this.fromEmail,
+                    replyTo: contactData.email,
+                    subject: `New Contact from ${contactData.name}`,
+                    html: emailHtml
+                };
+                
+                await sgMail.send(msg);
+                console.log("✅ Contact notification email sent via SendGrid to:", this.notifyEmail);
+            } else {
+                // SMTP (for local development)
+                const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
+                const notifyEmail = process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || emailUser;
+            
+                const mailOptions = {
+                    from: '"SAP Technologies" <saptechnologies256@gmail.com>',
+                    replyTo: contactData.email,
+                    to: notifyEmail,
+                    subject: `New Contact from ${contactData.name}`,
+                    html: emailHtml
+                };
 
-            await this.transporter.sendMail(mailOptions);
-            console.log("✅ Contact notification email sent successfully to:", notifyEmail);
+                await this.transporter.sendMail(mailOptions);
+                console.log("✅ Contact notification email sent via SMTP to:", notifyEmail);
+            }
         } catch (error) {
             console.error("❌ Error sending contact notification email:", error.message);
             console.error("   Error code:", error.code);
