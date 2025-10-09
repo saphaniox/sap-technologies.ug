@@ -124,6 +124,19 @@ class AuthController {
             req.session.userId = user._id;
             req.session.userName = user.name;
             
+            // Explicitly save session before sending response
+            await new Promise((resolve, reject) => {
+                req.session.save((err) => {
+                    if (err) {
+                        console.error('Session save error:', err);
+                        reject(err);
+                    } else {
+                        console.log('✅ Session saved successfully. userId:', req.session.userId);
+                        resolve();
+                    }
+                });
+            });
+            
             // Save the updated user info to database
             await user.save();
             

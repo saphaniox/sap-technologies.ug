@@ -25,6 +25,7 @@ const hpp = require("hpp");
 const path = require("path");
 const fs = require("fs");
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const cookieParser = require("cookie-parser");
 
 // Import environment configuration
@@ -156,8 +157,22 @@ app.use(hpp(hppConfig));
 // 9. Suspicious activity detection
 app.use(detectSuspiciousActivity);
 
-// 10. Session configuration
-app.use(session(environmentConfig.getSessionConfig()));
+// 10. Session configuration with MongoDB store
+const sessionConfig = environmentConfig.getSessionConfig();
+// Add MongoStore for persistent sessions in production
+if (process.env.NODE_ENV === 'production') {
+    sessionConfig.store = MongoStore.create({
+        mongoUrl: process.env.MONGODB_URI,
+        collectionName: 'sessions',
+        ttl: 24 * 60 * 60, // 24 hours
+        autoRemove: 'native',
+        touchAfter: 3600 // Lazy session update - update session every 1 hour
+    });
+    console.log('✅ Using MongoDB session store for production');
+} else {
+    console.log('⚠️ Using memory session store for development');
+}
+app.use(session(sessionConfig));
 
 // CORS configuration with enhanced security
 app.use(cors(environmentConfig.getCORSConfig()));
