@@ -44,7 +44,6 @@ const {
 
 // Import other configurations
 const { connectDB, checkDatabaseHealth, auditDatabaseSecurity } = require("./config/database");
-const sessionConfig = require("./config/session");
 const { errorHandler } = require("./middleware/errorHandler");
 const apiRoutes = require("./routes");
 
