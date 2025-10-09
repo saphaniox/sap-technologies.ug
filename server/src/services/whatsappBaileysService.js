@@ -61,7 +61,6 @@ class WhatsAppBaileysService {
             
             this.sock = makeWASocket({
                 auth: state,
-                printQRInTerminal: true,
                 defaultQueryTimeoutMs: undefined,
             });
 
