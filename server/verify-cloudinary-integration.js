@@ -24,10 +24,11 @@ console.log(`\n   Cloudinary Status: ${cloudinaryConfigured ? '✅ CONFIGURED' :
 if (!cloudinaryConfigured) {
   console.log('⚠️  WARNING: Cloudinary is NOT configured!');
   console.log('   All uploads will use LOCAL STORAGE (not recommended for production)\n');
-  console.log('📝 To fix this, add these environment variables:');
-  console.log('   CLOUDINARY_CLOUD_NAME=dctjrjh4h');
-  console.log('   CLOUDINARY_API_KEY=549869326956641');
-  console.log('   CLOUDINARY_API_SECRET=phBVcCAykqTNVSILmALIyVokdbI\n');
+  console.log('📝 To fix this, add Cloudinary environment variables to .env:');
+  console.log('   CLOUDINARY_CLOUD_NAME=your_cloud_name');
+  console.log('   CLOUDINARY_API_KEY=your_api_key');
+  console.log('   CLOUDINARY_API_SECRET=your_api_secret\n');
+  console.log('   Get your credentials from: https://cloudinary.com/console\n');
   process.exit(1);
 }
 
@@ -80,10 +81,7 @@ console.log('╚═════════════════════�
 if (allPassed) {
   console.log('🎉 SUCCESS! All uploads are configured to use Cloudinary!\n');
   console.log('📝 Next Steps:');
-  console.log('   1. Add these same Cloudinary credentials to Render:');
-  console.log('      CLOUDINARY_CLOUD_NAME=dctjrjh4h');
-  console.log('      CLOUDINARY_API_KEY=549869326956641');
-  console.log('      CLOUDINARY_API_SECRET=phBVcCAykqTNVSILmALIyVokdbI');
+  console.log('   1. Add your Cloudinary credentials to Render environment variables');
   console.log('   2. Deploy your code to Render');
   console.log('   3. Upload images via admin panel');
   console.log('   4. Images will automatically go to Cloudinary CDN!\n');

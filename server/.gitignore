@@ -45,9 +45,22 @@ test-*.js
 *.test.js
 *.spec.js
 
+# Documentation with sensitive data
+*-FIXED.md
+IMAGE-*.md
+*-GUIDE-*.md
+
 # Development utility scripts
 check-*.js
 seed-*.js
+verify-*.js
+migrate-*.js
+fix-*.js
+update-*.js
+assign-*.js
+remove-*.js
+reset-*.js
+send-*.js
 demo-*.js
 add-admin.js
 create-admin.js
