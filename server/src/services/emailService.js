@@ -6,6 +6,9 @@ class EmailService {
         // Check for SendGrid API key first (recommended for production)
         const sendgridKey = process.env.SENDGRID_API_KEY;
         
+        // Set reply-to email (always use Gmail for replies)
+        this.replyToEmail = process.env.GMAIL_USER || 'saptechnologies256@gmail.com';
+        
         if (sendgridKey) {
             sgMail.setApiKey(sendgridKey);
             this.useSendGrid = true;
@@ -14,6 +17,7 @@ class EmailService {
             this.notifyEmail = process.env.NOTIFY_EMAIL || this.fromEmail;
             console.log("✅ Email service configured with SendGrid");
             console.log("📧 From Email:", this.fromEmail);
+            console.log("📧 Reply-To Email:", this.replyToEmail);
             console.log("📧 Notify Email:", this.notifyEmail);
             return;
         }
@@ -46,6 +50,7 @@ class EmailService {
             console.log("✅ Email service configured with SMTP:", emailUser);
             console.log("📧 SMTP Host:", process.env.SMTP_HOST || "smtp.gmail.com");
             console.log("📧 SMTP Port:", smtpPort, useSecure ? "(SSL)" : "(TLS)");
+            console.log("📧 Reply-To Email:", this.replyToEmail);
             console.log("⚠️  Note: SMTP may be blocked on some hosting platforms. Consider using SendGrid instead.");
             
             // Test the connection (only in development)
@@ -86,7 +91,7 @@ class EmailService {
                 const msg = {
                     to: emailOptions.to,
                     from: emailOptions.from || this.fromEmail,
-                    replyTo: emailOptions.replyTo || undefined,
+                    replyTo: emailOptions.replyTo || this.replyToEmail, // Always set reply-to
                     subject: emailOptions.subject,
                     html: emailOptions.html
                 };
@@ -99,7 +104,7 @@ class EmailService {
                 const mailOptions = {
                     from: emailOptions.from || '"SAP Technologies" <saptechnologies256@gmail.com>',
                     to: emailOptions.to,
-                    replyTo: emailOptions.replyTo || undefined,
+                    replyTo: emailOptions.replyTo || this.replyToEmail, // Always set reply-to
                     subject: emailOptions.subject,
                     html: emailOptions.html
                 };
