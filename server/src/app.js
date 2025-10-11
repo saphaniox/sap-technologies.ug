@@ -209,22 +209,35 @@ app.use("/api/contact", rateLimits.contact);
 app.use("/api/upload", rateLimits.upload);
 app.use("/api/admin", rateLimits.admin);
 
-// Static files with security headers
+// Static files with security headers - FIX FOR IMAGE LOADING
 app.use("/uploads", express.static(path.join(__dirname, "../uploads"), {
-    setHeaders: (res, path) => {
+    setHeaders: (res, filePath) => {
         // Set appropriate MIME types and security headers for uploads
-        const allowedOrigin = process.env.ALLOWED_ORIGINS?.split(',')[0]?.trim() || 'http://localhost:5174';
+        // Allow ALL configured origins for image serving
+        const origin = res.req.headers.origin;
+        const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || ['http://localhost:5174'];
+        
+        if (origin && allowedOrigins.includes(origin)) {
+            res.set("Access-Control-Allow-Origin", origin);
+        } else if (allowedOrigins.length > 0) {
+            // Fallback to first allowed origin for images
+            res.set("Access-Control-Allow-Origin", allowedOrigins[0]);
+        }
+        
         res.set({
             "X-Content-Type-Options": "nosniff",
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            "Pragma": "no-cache",
-            "Expires": "0",
-            "Access-Control-Allow-Origin": allowedOrigin,
-            "Access-Control-Allow-Credentials": "true"
+            "Cache-Control": "public, max-age=31536000", // 1 year cache for uploaded images
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type"
         });
         
         // Only allow certain file types to be served
-        const ext = path.substring(path.lastIndexOf("."));
+        const ext = filePath.substring(filePath.lastIndexOf(".")).toLowerCase();
+        const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".pdf", ".svg", ".webp"];
+        if (!allowedExtensions.includes(ext)) {
+            console.warn(`Blocked attempt to access disallowed file type: ${ext}`);
+        }
     }
 }));
 
