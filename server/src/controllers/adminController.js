@@ -232,7 +232,8 @@ class AdminController {
             const { contactId } = req.params;
             const { status } = req.body;
 
-            if (!["pending", "read", "responded"].includes(status)) {
+            // Allow: pending, read, replied, archived
+            if (!["pending", "read", "replied", "responded", "archived"].includes(status)) {
                 return next(new AppError("Invalid status", 400));
             }
 
