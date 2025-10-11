@@ -69,7 +69,7 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: false,
     trim: true,
-    default: "/images/default-product.jpg"
+    default: null // No default image - products must have individual images
   },
   category: {
     type: String,
