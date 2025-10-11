@@ -472,7 +472,8 @@ class AwardsController {
                 ipAddress
             });
 
-            res.status(200).json({
+            // Build response with optional email suggestion
+            const response = {
                 status: "success",
                 message: "Vote submitted successfully!",
                 data: {
@@ -482,7 +483,17 @@ class AwardsController {
                         totalVotes: nomination.totalVotes
                     }
                 }
-            });
+            };
+
+            // Include email suggestion if available
+            if (req.emailSuggestion) {
+                response.suggestion = {
+                    message: `Did you mean ${req.emailSuggestion}? Your vote was counted, but you might want to use the correct email next time.`,
+                    suggestedEmail: req.emailSuggestion
+                };
+            }
+
+            res.status(200).json(response);
         } catch (error) {
             if (error.message.includes("already voted")) {
                 return res.status(400).json({
