@@ -1,15 +1,19 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const { isCloudinaryConfigured, storageConfigs } = require("./cloudinary");
 
-// Ensure awards upload directory exists
+// Ensure awards upload directory exists (fallback for local storage)
 const uploadsDir = path.join(__dirname, "../../uploads/awards");
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Configure storage for awards photos
-const storage = multer.diskStorage({
+// Check if Cloudinary is configured
+const useCloudinary = isCloudinaryConfigured();
+
+// Configure LOCAL storage for awards photos (fallback)
+const localStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, uploadsDir);
     },
@@ -19,6 +23,9 @@ const storage = multer.diskStorage({
         cb(null, "nominee-" + uniqueSuffix + path.extname(file.originalname));
     }
 });
+
+// Use Cloudinary if configured, otherwise use local storage
+const storage = useCloudinary ? storageConfigs.awards : localStorage;
 
 // File filter for images only (enhanced validation for award photos)
 const fileFilter = (req, file, cb) => {
