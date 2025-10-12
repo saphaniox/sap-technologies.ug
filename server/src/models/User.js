@@ -88,7 +88,6 @@ const userSchema = new mongoose.Schema({
     email: { 
         type: String, 
         required: [true, "Email is required"],
-        unique: true, // No two users can have the same email
         lowercase: true, // Always store in lowercase for consistency
         trim: true,
         match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please provide a valid email"],
@@ -293,13 +292,6 @@ const userSchema = new mongoose.Schema({
         }
     }
 });
-
-// Compound indexes for better query performance and security
-userSchema.index({ email: 1, isActive: 1 });
-userSchema.index({ createdAt: -1 });
-userSchema.index({ lastActivity: -1 });
-userSchema.index({ accountLocked: 1, accountLockedUntil: 1 });
-userSchema.index({ emailVerified: 1 });
 
 // Text index for search functionality
 userSchema.index({ 
