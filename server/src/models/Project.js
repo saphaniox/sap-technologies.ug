@@ -127,6 +127,12 @@ const projectSchema = new mongoose.Schema({
       trim: true
     }
   }],
+  // Main project image (single field for primary image)
+  image: {
+    type: String,
+    trim: true
+  },
+  // Project image gallery (array for multiple images)
   images: [{
     url: {
       type: String,
