@@ -37,7 +37,7 @@
 const { Service, Project } = require("../models");
 const fs = require("fs");
 const path = require("path");
-const { useCloudinary } = require("../middleware/fileUpload");
+const { useCloudinary } = require("../config/fileUpload");
 
 // Helper function to get correct file URL (Cloudinary or local)
 const getFileUrl = (file, folder = 'services') => {

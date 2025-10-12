@@ -36,7 +36,7 @@ const path = require("path");
 const fs = require("fs").promises;
 const emailService = require("../services/emailService");
 const certificateService = require("../services/certificateService");
-const { useCloudinary } = require("../middleware/fileUpload");
+const { useCloudinary } = require("../config/fileUpload");
 
 // Helper function to get correct file URL (Cloudinary or local)
 const getFileUrl = (file, folder = 'awards') => {
