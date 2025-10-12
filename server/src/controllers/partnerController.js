@@ -28,10 +28,6 @@
 const Partner = require("../models/Partner");
 const path = require("path");
 const fs = require("fs").promises;
-
-const Partner = require("../models/Partner");
-const fs = require("fs").promises;
-const path = require("path");
 const { useCloudinary } = require("../config/fileUpload");
 
 /**
@@ -48,7 +44,7 @@ const getFileUrl = (file, folder = 'partners') => {
   
   // Local storage: construct path
   return `/uploads/${folder}/${file.filename}`;
-};
+};;
 
 // Get active partners (public)
 const getPartners = async (req, res) => {
