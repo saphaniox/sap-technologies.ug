@@ -201,13 +201,6 @@ const nominationSchema = new mongoose.Schema({
     toObject: { virtuals: true }
 });
 
-// Indexes for better performance
-nominationSchema.index({ status: 1, category: 1 });
-nominationSchema.index({ votes: -1 });
-nominationSchema.index({ createdAt: -1 });
-nominationSchema.index({ "publicVotes.voterEmail": 1 });
-nominationSchema.index({ nomineeCountry: 1 });
-
 // Virtual for total votes count
 nominationSchema.virtual("totalVotes").get(function() {
     return this.publicVotes.length;
@@ -305,6 +298,7 @@ nominationSchema.index({ votes: -1 }); // Top voted nominations (createdAt alrea
 nominationSchema.index({ featured: -1, displayOrder: 1 }); // Featured nominations display
 nominationSchema.index({ slug: 1 }, { unique: true, sparse: true }); // SEO slug lookup
 nominationSchema.index({ nominatorEmail: 1 }); // Nominator's submissions
+nominationSchema.index({ nomineeCountry: 1 }); // Country filtering
 nominationSchema.index({ "publicVotes.voterEmail": 1 }); // Vote duplicate checking
 nominationSchema.index({ nomineeName: "text", nominationReason: "text", achievements: "text" }); // Text search
 
