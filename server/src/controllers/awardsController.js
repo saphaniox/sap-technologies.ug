@@ -723,6 +723,78 @@ class AwardsController {
         }
     }
 
+    // Update nomination details including photo (admin only)
+    async updateNomination(req, res, next) {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "Validation failed",
+                    errors: errors.array()
+                });
+            }
+
+            const { id } = req.params;
+            const nomination = await Nomination.findById(id);
+
+            if (!nomination) {
+                return res.status(404).json({
+                    status: "error",
+                    message: "Nomination not found"
+                });
+            }
+
+            // Handle photo upload if provided
+            let photoPath = nomination.nomineePhoto;
+            if (req.file) {
+                // Delete old photo if exists and is local
+                if (nomination.nomineePhoto && !nomination.nomineePhoto.startsWith('http')) {
+                    const oldPhotoPath = path.join(__dirname, '../../uploads/awards', path.basename(nomination.nomineePhoto));
+                    fs.unlink(oldPhotoPath, (err) => {
+                        if (err) console.error('Error deleting old photo:', err);
+                    });
+                }
+
+                // Use Cloudinary URL if available, otherwise use local path
+                photoPath = req.file.path || `/uploads/awards/${req.file.filename}`;
+            }
+
+            // Update nomination fields
+            const updateData = {
+                nomineeName: req.body.nomineeName || nomination.nomineeName,
+                nomineeTitle: req.body.nomineeTitle || nomination.nomineeTitle,
+                nomineeCompany: req.body.nomineeCompany || nomination.nomineeCompany,
+                nomineeCountry: req.body.nomineeCountry || nomination.nomineeCountry,
+                category: req.body.category || nomination.category,
+                nominationReason: req.body.nominationReason || nomination.nominationReason,
+                achievements: req.body.achievements || nomination.achievements,
+                impactDescription: req.body.impactDescription || nomination.impactDescription,
+                nominatorName: req.body.nominatorName || nomination.nominatorName,
+                nominatorEmail: req.body.nominatorEmail || nomination.nominatorEmail,
+                nominatorPhone: req.body.nominatorPhone || nomination.nominatorPhone,
+                nominatorOrganization: req.body.nominatorOrganization || nomination.nominatorOrganization,
+                nomineePhoto: photoPath,
+                updatedBy: req.user._id,
+                updatedAt: new Date()
+            };
+
+            const updatedNomination = await Nomination.findByIdAndUpdate(
+                id,
+                updateData,
+                { new: true, runValidators: true }
+            ).populate("category");
+
+            res.status(200).json({
+                status: "success",
+                message: "Nomination updated successfully",
+                data: { nomination: updatedNomination }
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     // Delete nomination (admin only)
     async deleteNomination(req, res, next) {
         try {

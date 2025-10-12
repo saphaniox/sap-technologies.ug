@@ -198,6 +198,15 @@ router.patch(
     awardsController.updateNominationStatus
 );
 
+// Update nomination details (including photo)
+router.put(
+    "/admin/nominations/:id",
+    adminAuth,
+    param("id").isMongoId().withMessage("Invalid nomination ID"),
+    awardPhotoUpload,
+    awardsController.updateNomination
+);
+
 // Delete nomination
 router.delete(
     "/admin/nominations/:id",
