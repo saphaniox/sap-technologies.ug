@@ -8,10 +8,16 @@ const authMiddleware = async (req, res, next) => {
         console.log("Session ID:", req.sessionID);
         console.log("Session userId:", req.session.userId);
         console.log("Session data:", JSON.stringify(req.session, null, 2));
+        console.log("Cookies:", req.headers.cookie);
+        console.log("Origin:", req.headers.origin);
         
         if (!req.session.userId) {
-            console.log("❌ No session userId found");
-            return next(new AppError("Authentication required", 401));
+            console.log("❌ No session userId found - User needs to log in");
+            return res.status(401).json({
+                status: "error",
+                message: "Authentication required. Please log in.",
+                needsLogin: true
+            });
         }
 
         const user = await User.findById(req.session.userId);
@@ -19,7 +25,12 @@ const authMiddleware = async (req, res, next) => {
         
         if (!user || !user.isActive) {
             console.log("❌ User not found or inactive");
-            return next(new AppError("User not found or inactive", 401));
+            req.session.destroy(); // Clear invalid session
+            return res.status(401).json({
+                status: "error",
+                message: "User not found or inactive. Please log in again.",
+                needsLogin: true
+            });
         }
 
         req.user = user;
@@ -27,7 +38,11 @@ const authMiddleware = async (req, res, next) => {
         next();
     } catch (error) {
         console.log("❌ Authentication error:", error.message);
-        next(new AppError("Authentication failed", 401));
+        return res.status(401).json({
+            status: "error",
+            message: "Authentication failed. Please log in.",
+            needsLogin: true
+        });
     }
 };
 
