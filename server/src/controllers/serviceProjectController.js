@@ -37,6 +37,20 @@
 const { Service, Project } = require("../models");
 const fs = require("fs");
 const path = require("path");
+const { useCloudinary } = require("../middleware/fileUpload");
+
+// Helper function to get correct file URL (Cloudinary or local)
+const getFileUrl = (file, folder = 'services') => {
+  if (!file) return null;
+  
+  if (useCloudinary && file.path) {
+    // Cloudinary returns full URL in file.path
+    return file.path;
+  }
+  
+  // Local storage - construct relative path
+  return file ? `/uploads/${folder}/${file.filename}` : null;
+};
 
 // Service Management Controllers
 class ServiceController {
@@ -137,9 +151,9 @@ class ServiceController {
     try {
       const serviceData = req.body;
       
-      // Handle file upload
+      // Handle file upload with Cloudinary support
       if (req.file) {
-        serviceData.image = `/uploads/services/${req.file.filename}`;
+        serviceData.image = getFileUrl(req.file, 'services');
       }
       
       // Parse JSON fields that come as strings from FormData
@@ -228,20 +242,22 @@ class ServiceController {
         const existingService = await Service.findById(id);
         
         if (existingService && existingService.image) {
-          // Delete old image file
-          const oldImagePath = path.join(__dirname, "../..", existingService.image);
-          
-          if (fs.existsSync(oldImagePath)) {
-            try {
-              fs.unlinkSync(oldImagePath);
-              console.log("🗑️ Deleted old image:", existingService.image);
-            } catch (err) {
-              console.error("❌ Failed to delete old image:", err.message);
+          // Only delete if it's a local file (not Cloudinary URL)
+          if (!existingService.image.startsWith('http')) {
+            const oldImagePath = path.join(__dirname, "../..", existingService.image);
+            
+            if (fs.existsSync(oldImagePath)) {
+              try {
+                fs.unlinkSync(oldImagePath);
+                console.log("🗑️ Deleted old image:", existingService.image);
+              } catch (err) {
+                console.error("❌ Failed to delete old image:", err.message);
+              }
             }
           }
         }
         
-        updateData.image = `/uploads/services/${req.file.filename}`;
+        updateData.image = getFileUrl(req.file, 'services');
         console.log("📸 New image uploaded:", updateData.image);
       }
       
@@ -548,9 +564,9 @@ class ProjectController {
     try {
       const projectData = req.body;
       
-      // Handle multiple file uploads
+      // Handle multiple file uploads with Cloudinary support
       if (req.files && req.files.length > 0) {
-        projectData.images = req.files.map(file => `/uploads/projects/${file.filename}`);
+        projectData.images = req.files.map(file => getFileUrl(file, 'projects'));
         // Set first image as main image if not specified
         if (!projectData.image && projectData.images.length > 0) {
           projectData.image = projectData.images[0];
@@ -666,22 +682,24 @@ class ProjectController {
         const existingProject = await Project.findById(id);
         
         if (existingProject && existingProject.images && existingProject.images.length > 0) {
-          // Delete all old project images
+          // Delete old project images (only local files, not Cloudinary URLs)
           for (const oldImage of existingProject.images) {
-            const oldImagePath = path.join(__dirname, "../..", oldImage);
-            
-            if (fs.existsSync(oldImagePath)) {
-              try {
-                fs.unlinkSync(oldImagePath);
-                console.log("🗑️ Deleted old project image:", oldImage);
-              } catch (err) {
-                console.error("❌ Failed to delete old project image:", err.message);
+            if (!oldImage.startsWith('http')) {
+              const oldImagePath = path.join(__dirname, "../..", oldImage);
+              
+              if (fs.existsSync(oldImagePath)) {
+                try {
+                  fs.unlinkSync(oldImagePath);
+                  console.log("🗑️ Deleted old project image:", oldImage);
+                } catch (err) {
+                  console.error("❌ Failed to delete old project image:", err.message);
+                }
               }
             }
           }
         }
         
-        updateData.images = req.files.map(file => `/uploads/projects/${file.filename}`);
+        updateData.images = req.files.map(file => getFileUrl(file, 'projects'));
         console.log("📸 New project images uploaded:", updateData.images);
       }
       
