@@ -274,7 +274,6 @@ const projectSchema = new mongoose.Schema({
 projectSchema.index({ category: 1, status: 1, visibility: 1 });
 projectSchema.index({ featured: 1, order: 1 });
 projectSchema.index({ title: "text", description: "text", tags: "text" });
-projectSchema.index({ createdAt: -1 });
 
 // Virtual for primary image
 projectSchema.virtual("primaryImage").get(function() {

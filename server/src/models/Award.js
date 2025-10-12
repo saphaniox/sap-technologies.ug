@@ -171,8 +171,7 @@ const nominationSchema = new mongoose.Schema({
     
     // SEO and Display
     slug: {
-        type: String,
-        sparse: true
+        type: String
     },
     featured: {
         type: Boolean,
