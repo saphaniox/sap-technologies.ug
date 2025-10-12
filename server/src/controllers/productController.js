@@ -18,6 +18,23 @@ const { Product } = require("../models");
 const { validationResult } = require("express-validator");
 const path = require("path");
 const fs = require("fs").promises;
+const { useCloudinary } = require("../config/fileUpload");
+
+/**
+ * Get the correct file path/URL for uploaded file
+ * Works with both Cloudinary and local storage
+ */
+const getFileUrl = (file, folder = 'products') => {
+    if (!file) return null;
+    
+    // If using Cloudinary, file.path contains the full Cloudinary URL
+    if (useCloudinary && file.path && file.path.includes('cloudinary.com')) {
+        return file.path;
+    }
+    
+    // Local storage: construct path
+    return `/uploads/${folder}/${file.filename}`;
+};
 
 /**
  * Product Controller Class
@@ -208,7 +225,7 @@ class ProductController {
 
             const productData = {
                 ...req.body,
-                image: req.file ? `/uploads/products/${req.file.filename}` : ""
+                image: getFileUrl(req.file, 'products')
             };
 
             // Parse JSON fields
@@ -282,15 +299,16 @@ class ProductController {
 
             // Handle file upload
             if (req.file) {
-                updateData.image = `/uploads/products/${req.file.filename}`;
+                updateData.image = getFileUrl(req.file, 'products');
                 
-                // Delete old image if it exists
-                const oldProduct = await Product.findById(id);
-                if (oldProduct && oldProduct.image && oldProduct.image.startsWith("/uploads/products/")) {
-                    const oldImagePath = path.join(__dirname, "../..", oldProduct.image);
-                    try {
-                        await fs.unlink(oldImagePath);
-                    } catch (error) {
+                // Delete old image if it exists (only for local storage)
+                if (!useCloudinary) {
+                    const oldProduct = await Product.findById(id);
+                    if (oldProduct && oldProduct.image && oldProduct.image.startsWith("/uploads/products/")) {
+                        const oldImagePath = path.join(__dirname, "../..", oldProduct.image);
+                        try {
+                            await fs.unlink(oldImagePath);
+                        } catch (error) {
                         console.log("Could not delete old image:", error.message);
                     }
                 }

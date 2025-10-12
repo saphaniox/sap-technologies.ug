@@ -45,6 +45,23 @@ const { User } = require("../models");
 const { AppError } = require("../middleware/errorHandler");
 const fs = require("fs");
 const path = require("path");
+const { useCloudinary } = require("../config/fileUpload");
+
+/**
+ * Get the correct file path/URL for uploaded file
+ * Works with both Cloudinary and local storage
+ */
+const getFileUrl = (file, folder = 'profile-pics') => {
+    if (!file) return null;
+    
+    // If using Cloudinary, file.path contains the full Cloudinary URL
+    if (useCloudinary && file.path && file.path.includes('cloudinary.com')) {
+        return file.path;
+    }
+    
+    // Local storage: construct path
+    return `/uploads/${folder}/${file.filename}`;
+};
 
 // Main user controller class for handling user account operations
 class UserController {
@@ -211,8 +228,8 @@ class UserController {
                 return next(new AppError("User not found", 404));
             }
 
-            // Delete old profile picture if exists
-            if (user.profilePic) {
+            // Delete old profile picture if exists (only for local storage)
+            if (!useCloudinary && user.profilePic) {
                 const oldPicPath = path.join(__dirname, "../..", user.profilePic);
                 
                 if (fs.existsSync(oldPicPath)) {
@@ -226,7 +243,7 @@ class UserController {
             }
 
             // Save the file path so we can serve the image later
-            const profilePicUrl = `/uploads/profile-pics/${req.file.filename}`;
+            const profilePicUrl = getFileUrl(req.file, 'profile-pics');
             user.profilePic = profilePicUrl;
             await user.save();
             

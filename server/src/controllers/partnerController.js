@@ -29,7 +29,28 @@ const Partner = require("../models/Partner");
 const path = require("path");
 const fs = require("fs").promises;
 
-// Get all partners (public)
+const Partner = require("../models/Partner");
+const fs = require("fs").promises;
+const path = require("path");
+const { useCloudinary } = require("../config/fileUpload");
+
+/**
+ * Get the correct file path/URL for uploaded file
+ * Works with both Cloudinary and local storage
+ */
+const getFileUrl = (file, folder = 'partners') => {
+  if (!file) return null;
+  
+  // If using Cloudinary, file.path contains the full Cloudinary URL
+  if (useCloudinary && file.path && file.path.includes('cloudinary.com')) {
+    return file.path;
+  }
+  
+  // Local storage: construct path
+  return `/uploads/${folder}/${file.filename}`;
+};
+
+// Get active partners (public)
 const getPartners = async (req, res) => {
   try {
     const partners = await Partner.find({ isActive: true })
@@ -94,7 +115,7 @@ const createPartner = async (req, res) => {
 
     const partner = new Partner({
       name,
-      logo: `/uploads/partners/${req.file.filename}`,
+      logo: getFileUrl(req.file, 'partners'),
       website,
       description,
       isActive: isActive !== undefined ? isActive : true,
@@ -159,10 +180,10 @@ const updatePartner = async (req, res) => {
 
     // Update logo if new file uploaded
     if (req.file) {
-      partner.logo = `/uploads/partners/${req.file.filename}`;
+      partner.logo = getFileUrl(req.file, 'partners');
       
-      // Delete old logo file
-      if (oldLogoPath && oldLogoPath.startsWith("/uploads/partners/")) {
+      // Delete old logo file (only for local storage)
+      if (!useCloudinary && oldLogoPath && oldLogoPath.startsWith("/uploads/partners/")) {
         try {
           const oldFilePath = path.join(__dirname, "../../uploads/partners", path.basename(oldLogoPath));
           await fs.unlink(oldFilePath);
