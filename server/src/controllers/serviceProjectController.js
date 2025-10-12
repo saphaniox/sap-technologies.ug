@@ -38,6 +38,8 @@ const { Service, Project } = require("../models");
 const fs = require("fs");
 const path = require("path");
 const { useCloudinary } = require("../config/fileUpload");
+const cache = require("../services/cacheService");
+const logger = require("../utils/logger");
 
 // Helper function to get correct file URL (Cloudinary or local)
 const getFileUrl = (file, folder = 'services') => {
@@ -201,13 +203,18 @@ class ServiceController {
       const service = new Service(serviceData);
       await service.save();
 
+      // Invalidate service caches
+      cache.invalidateServices();
+      cache.del('services:categories');
+      logger.logInfo('ServiceController', 'Service created, cache invalidated', { serviceId: service._id });
+
       res.status(201).json({
         success: true,
         message: "Service created successfully",
         data: { service }
       });
     } catch (error) {
-      console.error("Create service error:", error);
+      logger.logError('ServiceController', error, { context: 'createService' });
       res.status(400).json({
         success: false,
         message: "Failed to create service",
@@ -320,14 +327,19 @@ class ServiceController {
         });
       }
 
+      // Invalidate service caches
+      cache.invalidateServices();
+      cache.del(`service:${id}`);
+      cache.del('services:categories');
+      logger.logInfo('ServiceController', 'Service updated, cache invalidated', { serviceId: id });
+
       res.json({
         success: true,
         message: "Service updated successfully",
         data: { service }
       });
     } catch (error) {
-      console.error("❌ Update service error:", error);
-      console.error("❌ Error stack:", error.stack);
+      logger.logError('ServiceController', error, { context: 'updateService', serviceId: req.params.id });
       res.status(500).json({
         success: false,
         message: "Failed to update service",
@@ -358,19 +370,25 @@ class ServiceController {
         if (fs.existsSync(imagePath)) {
           try {
             fs.unlinkSync(imagePath);
-            console.log("🗑️ Deleted service image:", service.image);
+            logger.logInfo('ServiceController', 'Deleted service image', { path: service.image });
           } catch (err) {
-            console.error("❌ Failed to delete service image:", err.message);
+            logger.logError('ServiceController', err, { context: 'deleteServiceImage', path: service.image });
           }
         }
       }
+
+      // Invalidate service caches
+      cache.invalidateServices();
+      cache.del(`service:${id}`);
+      cache.del('services:categories');
+      logger.logInfo('ServiceController', 'Service deleted, cache invalidated', { serviceId: id });
 
       res.json({
         success: true,
         message: "Service deleted successfully"
       });
     } catch (error) {
-      console.error("Delete service error:", error);
+      logger.logError('ServiceController', error, { context: 'deleteService', serviceId: req.params.id });
       res.status(500).json({
         success: false,
         message: "Failed to delete service",
@@ -650,13 +668,18 @@ class ProjectController {
       const project = new Project(projectData);
       await project.save();
 
+      // Invalidate project caches
+      cache.invalidateProjects();
+      cache.del('projects:categories');
+      logger.logInfo('ProjectController', 'Project created, cache invalidated', { projectId: project._id });
+
       res.status(201).json({
         success: true,
         message: "Project created successfully",
         data: { project }
       });
     } catch (error) {
-      console.error("Create project error:", error);
+      logger.logError('ProjectController', error, { context: 'createProject' });
       res.status(400).json({
         success: false,
         message: "Failed to create project",
@@ -783,19 +806,23 @@ class ProjectController {
         });
       }
 
+      // Invalidate project caches
+      cache.invalidateProjects();
+      cache.del(`project:${id}`);
+      cache.del('projects:categories');
+      logger.logInfo('ProjectController', 'Project updated, cache invalidated', { projectId: id });
+
       res.json({
         success: true,
         message: "Project updated successfully",
         data: { project }
       });
     } catch (error) {
-      console.error("=== UPDATE PROJECT ERROR ===");
-      console.error("Error message:", error.message);
-      console.error("Error stack:", error.stack);
-      if (error.errors) {
-        console.error("Validation errors:", JSON.stringify(error.errors, null, 2));
-      }
-      console.error("=== END UPDATE PROJECT ERROR ===");
+      logger.logError('ProjectController', error, { 
+        context: 'updateProject', 
+        projectId: req.params.id,
+        validationErrors: error.errors 
+      });
       
       res.status(400).json({
         success: false,
@@ -827,20 +854,26 @@ class ProjectController {
           if (fs.existsSync(imagePath)) {
             try {
               fs.unlinkSync(imagePath);
-              console.log("🗑️ Deleted project image:", image);
+              logger.logInfo('ProjectController', 'Deleted project image', { path: image });
             } catch (err) {
-              console.error("❌ Failed to delete project image:", err.message);
+              logger.logError('ProjectController', err, { context: 'deleteProjectImage', path: image });
             }
           }
         }
       }
+
+      // Invalidate project caches
+      cache.invalidateProjects();
+      cache.del(`project:${id}`);
+      cache.del('projects:categories');
+      logger.logInfo('ProjectController', 'Project deleted, cache invalidated', { projectId: id });
 
       res.json({
         success: true,
         message: "Project deleted successfully"
       });
     } catch (error) {
-      console.error("Delete project error:", error);
+      logger.logError('ProjectController', error, { context: 'deleteProject', projectId: req.params.id });
       res.status(500).json({
         success: false,
         message: "Failed to delete project",

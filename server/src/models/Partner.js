@@ -54,7 +54,8 @@ const partnerSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for ordering
-partnerSchema.index({ order: 1, createdAt: -1 });
+// Indexes for performance optimization
+partnerSchema.index({ isActive: 1, order: 1 }); // Active partners by display order
+partnerSchema.index({ createdAt: -1 }); // Recent partners
 
 module.exports = mongoose.model("Partner", partnerSchema);

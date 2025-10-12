@@ -371,6 +371,15 @@ projectSchema.methods.getProjectProgress = function() {
   return Math.round((completed / this.timeline.milestones.length) * 100);
 };
 
+// Indexes for performance optimization
+projectSchema.index({ category: 1, status: 1 }); // Category + status filtering
+projectSchema.index({ status: 1, visibility: 1 }); // Public/private filtering
+projectSchema.index({ featured: -1, order: 1 }); // Featured projects display
+projectSchema.index({ createdAt: -1 }); // Recent projects
+projectSchema.index({ "timeline.startDate": -1 }); // Sort by start date
+projectSchema.index({ "metrics.views": -1 }); // Popular projects
+projectSchema.index({ title: "text", shortDescription: "text", longDescription: "text" }); // Text search
+
 const Project = mongoose.model("Project", projectSchema);
 
 module.exports = Project;

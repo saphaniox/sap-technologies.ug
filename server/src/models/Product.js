@@ -202,6 +202,14 @@ productSchema.pre("save", function(next) {
   next();
 });
 
+// Indexes for performance optimization
+productSchema.index({ category: 1, isActive: 1 }); // Category filtering
+productSchema.index({ isFeatured: -1, displayOrder: 1 }); // Featured products display
+productSchema.index({ isActive: 1, createdAt: -1 }); // Active products by date
+productSchema.index({ name: "text", shortDescription: "text", technicalDescription: "text" }); // Text search
+productSchema.index({ "price.amount": 1 }); // Price range queries
+productSchema.index({ "metadata.views": -1 }); // Popular products
+
 const Product = mongoose.model("Product", productSchema);
 
 module.exports = Product;

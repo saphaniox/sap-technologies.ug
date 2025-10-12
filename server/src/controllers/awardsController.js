@@ -37,6 +37,8 @@ const fs = require("fs").promises;
 const emailService = require("../services/emailService");
 const certificateService = require("../services/certificateService");
 const { useCloudinary } = require("../config/fileUpload");
+const cache = require("../services/cacheService");
+const logger = require("../utils/logger");
 
 // Helper function to get correct file URL (Cloudinary or local)
 const getFileUrl = (file, folder = 'awards') => {
@@ -59,6 +61,19 @@ class AwardsController {
     // Get all award categories
     async getCategories(req, res, next) {
         try {
+            // Try to get from cache
+            const cachedCategories = cache.getCachedAwardCategories();
+            if (cachedCategories) {
+                logger.logDebug('AwardsController', 'Serving cached award categories');
+                return res.status(200).json({
+                    status: "success",
+                    data: {
+                        categories: cachedCategories
+                    },
+                    cached: true
+                });
+            }
+            
             const categories = await AwardCategory.find({ isActive: true })
                 .sort({ name: 1 });
             
@@ -81,6 +96,10 @@ class AwardsController {
                 })
             );
 
+            // Cache for 1 hour
+            cache.cacheAwardCategories(categoriesWithCounts);
+            logger.logDebug('AwardsController', 'Award categories cached', { count: categoriesWithCounts.length });
+
             res.status(200).json({
                 status: "success",
                 data: {
@@ -88,6 +107,7 @@ class AwardsController {
                 }
             });
         } catch (error) {
+            logger.logError('AwardsController', error, { context: 'getCategories' });
             next(error);
         }
     }
@@ -119,6 +139,10 @@ class AwardsController {
 
             console.log("✅ Category created successfully:", category);
 
+            // Invalidate award categories cache
+            cache.invalidateAwardCategories();
+            logger.logInfo('AwardsController', 'Category created, cache invalidated', { categoryId: category._id });
+
             res.status(201).json({
                 status: "success",
                 message: "Award category created successfully",
@@ -126,6 +150,7 @@ class AwardsController {
             });
         } catch (error) {
             console.error("❌ Error in createCategory:", error);
+            logger.logError('AwardsController', error, { context: 'createCategory' });
             if (error.code === 11000) {
                 return res.status(400).json({
                     status: "error",
@@ -170,12 +195,17 @@ class AwardsController {
                 });
             }
 
+            // Invalidate award categories cache
+            cache.invalidateAwardCategories();
+            logger.logInfo('AwardsController', 'Category updated, cache invalidated', { categoryId });
+
             res.status(200).json({
                 status: "success",
                 message: "Award category updated successfully",
                 data: { category }
             });
         } catch (error) {
+            logger.logError('AwardsController', error, { context: 'updateCategory', categoryId: req.params.id });
             if (error.code === 11000) {
                 return res.status(400).json({
                     status: "error",
@@ -210,12 +240,17 @@ class AwardsController {
                 });
             }
 
+            // Invalidate award categories cache
+            cache.invalidateAwardCategories();
+            logger.logInfo('AwardsController', 'Category deleted, cache invalidated', { categoryId });
+
             res.status(200).json({
                 status: "success",
                 message: "Award category deleted successfully",
                 data: { category }
             });
         } catch (error) {
+            logger.logError('AwardsController', error, { context: 'deleteCategory', categoryId: req.params.id });
             next(error);
         }
     }
@@ -321,12 +356,17 @@ class AwardsController {
                 // Don't fail the request if emails fail
             });
 
+            // Invalidate nominations cache
+            cache.invalidateNominations();
+            logger.logInfo('AwardsController', 'Nomination submitted, cache invalidated', { nominationId: nomination._id });
+
             res.status(201).json({
                 status: "success",
                 message: "Nomination submitted successfully! It will be reviewed before being published.",
                 data: { nomination }
             });
         } catch (error) {
+            logger.logError('AwardsController', error, { context: 'submitNomination' });
             // Clean up uploaded file if database save fails
             if (req.file) {
                 try {
@@ -352,6 +392,20 @@ class AwardsController {
                 sortOrder = "desc",
                 search
             } = req.query;
+
+            // Create cache key based on query params
+            const cacheKey = `${category || 'all'}:${status}:${country || 'all'}:${page}:${limit}:${sortBy}:${sortOrder}:${search || 'all'}`;
+            
+            // Try to get from cache
+            const cachedNominations = cache.getCachedNominations(cacheKey);
+            if (cachedNominations) {
+                logger.logDebug('AwardsController', 'Serving cached nominations', { cacheKey });
+                return res.status(200).json({
+                    status: "success",
+                    data: cachedNominations,
+                    cached: true
+                });
+            }
 
             // Build filter object
             const filter = {};
@@ -380,25 +434,33 @@ class AwardsController {
                 .populate("category", "name description icon")
                 .sort(sort)
                 .skip(skip)
-                .limit(parseInt(limit));
+                .limit(parseInt(limit))
+                .lean();
 
             const total = await Nomination.countDocuments(filter);
             const totalPages = Math.ceil(total / parseInt(limit));
 
+            const responseData = {
+                nominations,
+                pagination: {
+                    currentPage: parseInt(page),
+                    totalPages,
+                    totalItems: total,
+                    hasNextPage: parseInt(page) < totalPages,
+                    hasPrevPage: parseInt(page) > 1
+                }
+            };
+
+            // Cache for 5 minutes (voting updates frequently)
+            cache.cacheNominations(responseData, cacheKey);
+            logger.logDebug('AwardsController', 'Nominations cached', { count: nominations.length, cacheKey });
+
             res.status(200).json({
                 status: "success",
-                data: {
-                    nominations,
-                    pagination: {
-                        currentPage: parseInt(page),
-                        totalPages,
-                        totalItems: total,
-                        hasNextPage: parseInt(page) < totalPages,
-                        hasPrevPage: parseInt(page) > 1
-                    }
-                }
+                data: responseData
             });
         } catch (error) {
+            logger.logError('AwardsController', error, { context: 'getNominations' });
             next(error);
         }
     }
@@ -486,6 +548,13 @@ class AwardsController {
                 ipAddress
             });
 
+            // Invalidate nominations cache after vote
+            cache.invalidateNominations();
+            logger.logInfo('AwardsController', 'Vote submitted, cache invalidated', { 
+                nominationId: nomination._id,
+                voterEmail 
+            });
+
             // Build response with optional email suggestion
             const response = {
                 status: "success",
@@ -509,6 +578,10 @@ class AwardsController {
 
             res.status(200).json(response);
         } catch (error) {
+            logger.logError('AwardsController', 'Error submitting vote', { 
+                error: error.message, 
+                nominationId: req.params.id 
+            });
             if (error.message.includes("already voted")) {
                 return res.status(400).json({
                     status: "error",
@@ -713,12 +786,23 @@ class AwardsController {
                 console.warn('⚠️ Skipping email notification: Category not found for nomination');
             }
 
+            // Invalidate nominations cache after status update
+            cache.invalidateNominations();
+            logger.logInfo('AwardsController', 'Nomination status updated, cache invalidated', { 
+                nominationId: nomination._id,
+                newStatus: status 
+            });
+
             res.status(200).json({
                 status: "success",
                 message: `Nomination status updated to ${status}`,
                 data: { nomination }
             });
         } catch (error) {
+            logger.logError('AwardsController', 'Error updating nomination status', { 
+                error: error.message, 
+                nominationId: req.params.id 
+            });
             next(error);
         }
     }
@@ -785,12 +869,22 @@ class AwardsController {
                 { new: true, runValidators: true }
             ).populate("category");
 
+            // Invalidate nominations cache after update
+            cache.invalidateNominations();
+            logger.logInfo('AwardsController', 'Nomination updated, cache invalidated', { 
+                nominationId: updatedNomination._id 
+            });
+
             res.status(200).json({
                 status: "success",
                 message: "Nomination updated successfully",
                 data: { nomination: updatedNomination }
             });
         } catch (error) {
+            logger.logError('AwardsController', 'Error updating nomination', { 
+                error: error.message, 
+                nominationId: req.params.id 
+            });
             next(error);
         }
     }
@@ -837,11 +931,21 @@ class AwardsController {
                 // Don't fail the request if email fails
             });
 
+            // Invalidate nominations cache after deletion
+            cache.invalidateNominations();
+            logger.logInfo('AwardsController', 'Nomination deleted, cache invalidated', { 
+                nominationId: id 
+            });
+
             res.status(200).json({
                 status: "success",
                 message: "Nomination deleted successfully"
             });
         } catch (error) {
+            logger.logError('AwardsController', 'Error deleting nomination', { 
+                error: error.message, 
+                nominationId: req.params.id 
+            });
             next(error);
         }
     }

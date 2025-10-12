@@ -446,4 +446,11 @@ userSchema.post('save', function(doc) {
     }
 });
 
+// Indexes for performance optimization
+userSchema.index({ email: 1 }, { unique: true }); // Primary lookup field
+userSchema.index({ role: 1 }); // For admin/user filtering
+userSchema.index({ isActive: 1, createdAt: -1 }); // For active users list
+userSchema.index({ "activity.lastLogin": -1 }); // For recent activity tracking
+userSchema.index({ accountLocked: 1, accountLockedUntil: 1 }); // For locked account queries
+
 module.exports = mongoose.model("User", userSchema);

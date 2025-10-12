@@ -296,6 +296,20 @@ nominationSchema.methods.hasVoted = function(email) {
     return this.publicVotes.some(vote => vote.voterEmail === email.toLowerCase());
 };
 
+// Indexes for performance optimization - AwardCategory
+awardCategorySchema.index({ isActive: 1, name: 1 }); // Active categories lookup
+
+// Indexes for performance optimization - Nomination
+nominationSchema.index({ category: 1, status: 1 }); // Category + status filtering
+nominationSchema.index({ status: 1, votes: -1 }); // Status with vote sorting (leaderboard)
+nominationSchema.index({ votes: -1, createdAt: -1 }); // Top voted nominations
+nominationSchema.index({ featured: -1, displayOrder: 1 }); // Featured nominations display
+nominationSchema.index({ slug: 1 }, { unique: true, sparse: true }); // SEO slug lookup
+nominationSchema.index({ nominatorEmail: 1 }); // Nominator's submissions
+nominationSchema.index({ "publicVotes.voterEmail": 1 }); // Vote duplicate checking
+nominationSchema.index({ createdAt: -1 }); // Recent nominations
+nominationSchema.index({ nomineeName: "text", nominationReason: "text", achievements: "text" }); // Text search
+
 const AwardCategory = mongoose.model("AwardCategory", awardCategorySchema);
 const Nomination = mongoose.model("Nomination", nominationSchema);
 

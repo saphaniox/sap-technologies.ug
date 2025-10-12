@@ -110,6 +110,10 @@ const serviceSchema = new mongoose.Schema({
       default: "days"
     }
   },
+  image: {
+    type: String,
+    trim: true
+  },
   images: [{
     url: {
       type: String,

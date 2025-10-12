@@ -66,10 +66,10 @@ const contactSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Index for better query performance
-contactSchema.index({ submittedAt: -1 });
-contactSchema.index({ status: 1 });
-contactSchema.index({ email: 1 });
+// Indexes for performance optimization
+contactSchema.index({ submittedAt: -1 }); // Recent submissions
+contactSchema.index({ status: 1, createdAt: -1 }); // Status filtering with date sorting
+contactSchema.index({ email: 1 }); // Email lookup
 
 module.exports = mongoose.model("Contact", contactSchema);
 
