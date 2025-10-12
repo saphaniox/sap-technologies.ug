@@ -309,7 +309,8 @@ class ProductController {
                         try {
                             await fs.unlink(oldImagePath);
                         } catch (error) {
-                        console.log("Could not delete old image:", error.message);
+                            console.log("Could not delete old image:", error.message);
+                        }
                     }
                 }
             }
