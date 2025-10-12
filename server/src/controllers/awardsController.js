@@ -36,6 +36,20 @@ const path = require("path");
 const fs = require("fs").promises;
 const emailService = require("../services/emailService");
 const certificateService = require("../services/certificateService");
+const { useCloudinary } = require("../middleware/fileUpload");
+
+// Helper function to get correct file URL (Cloudinary or local)
+const getFileUrl = (file, folder = 'awards') => {
+  if (!file) return null;
+  
+  if (useCloudinary && file.path) {
+    // Cloudinary returns full URL in file.path
+    return file.path;
+  }
+  
+  // Local storage - construct relative path
+  return file ? `/uploads/${folder}/${file.filename}` : null;
+};
 
 class AwardsController {
     // =====================
@@ -242,11 +256,11 @@ class AwardsController {
                 nominatorOrganization
             } = req.body;
 
-            // Handle photo upload
+            // Handle photo upload with Cloudinary support
             let nomineePhotoPath = "";
             if (req.file) {
-                // Store relative path for serving static files
-                nomineePhotoPath = `/uploads/awards/${req.file.filename}`;
+                // Store relative path for serving static files or Cloudinary URL
+                nomineePhotoPath = getFileUrl(req.file, 'awards');
                 console.log("📸 Photo uploaded successfully:", nomineePhotoPath);
             } else {
                 console.log("❌ No photo uploaded");
@@ -763,6 +777,8 @@ class AwardsController {
     // Get awards statistics
     async getAwardsStats(req, res, next) {
         try {
+            console.log("📊 Getting awards statistics...");
+            
             const stats = await Nomination.aggregate([
                 {
                     $group: {
@@ -784,6 +800,8 @@ class AwardsController {
                     }
                 }
             ]);
+            
+            console.log("✅ General stats:", stats);
 
             const categoryStats = await Nomination.aggregate([
                 {
@@ -802,7 +820,10 @@ class AwardsController {
                     }
                 },
                 {
-                    $unwind: "$category"
+                    $unwind: {
+                        path: "$category",
+                        preserveNullAndEmptyArrays: true
+                    }
                 },
                 {
                     $project: {
@@ -812,12 +833,16 @@ class AwardsController {
                     }
                 }
             ]);
+            
+            console.log("✅ Category stats:", categoryStats);
 
             const topNominations = await Nomination.find({ status: "approved" })
                 .sort({ votes: -1 })
                 .limit(10)
                 .populate("category", "name")
                 .select("nomineeName nomineePhoto votes category");
+            
+            console.log("✅ Top nominations:", topNominations?.length);
 
             res.status(200).json({
                 status: "success",
@@ -830,12 +855,17 @@ class AwardsController {
                         ugandanNominees: 0,
                         internationalNominees: 0
                     },
-                    categoryStats,
-                    topNominations
+                    categoryStats: categoryStats || [],
+                    topNominations: topNominations || []
                 }
             });
         } catch (error) {
-            next(error);
+            console.error("❌ Error getting awards stats:", error);
+            res.status(500).json({
+                status: "error",
+                message: "Failed to load statistics",
+                error: error.message
+            });
         }
     }
 }
