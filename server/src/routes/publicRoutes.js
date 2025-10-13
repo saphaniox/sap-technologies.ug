@@ -1,4 +1,4 @@
-const express = require("express");
+﻿const express = require("express");
 const { Service, Project } = require("../models");
 const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
@@ -48,6 +48,42 @@ router.get("/services", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch services",
+      error: error.message
+    });
+  }
+});
+
+// GET /api/public/services/categories - Get all service categories
+// NOTE: This MUST be before /services/:id to avoid route conflict
+router.get("/services/categories", async (req, res) => {
+  try {
+    // Try to get from cache
+    const cacheKey = 'services:categories';
+    const cachedCategories = cache.get(cacheKey);
+    if (cachedCategories) {
+      logger.logDebug('PublicRoutes', 'Serving cached service categories');
+      return res.json({
+        success: true,
+        data: { categories: cachedCategories },
+        cached: true
+      });
+    }
+    
+    const categories = await Service.distinct("category", { status: "active" });
+    
+    // Cache for 1 hour (categories change rarely)
+    cache.set(cacheKey, categories, 3600);
+    logger.logDebug('PublicRoutes', 'Service categories cached', { count: categories.length });
+    
+    res.json({
+      success: true,
+      data: { categories }
+    });
+  } catch (error) {
+    logger.logError('PublicRoutes', error, { context: 'getServiceCategories' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch categories",
       error: error.message
     });
   }
@@ -148,6 +184,42 @@ router.get("/projects", async (req, res) => {
   }
 });
 
+// GET /api/public/projects/categories - Get all project categories
+// NOTE: This MUST be before /projects/:id to avoid route conflict
+router.get("/projects/categories", async (req, res) => {
+  try {
+    // Try to get from cache
+    const cacheKey = 'projects:categories';
+    const cachedCategories = cache.get(cacheKey);
+    if (cachedCategories) {
+      logger.logDebug('PublicRoutes', 'Serving cached project categories');
+      return res.json({
+        success: true,
+        data: { categories: cachedCategories },
+        cached: true
+      });
+    }
+    
+    const categories = await Project.distinct("category", { status: "completed" });
+    
+    // Cache for 1 hour (categories change rarely)
+    cache.set(cacheKey, categories, 3600);
+    logger.logDebug('PublicRoutes', 'Project categories cached', { count: categories.length });
+    
+    res.json({
+      success: true,
+      data: { categories }
+    });
+  } catch (error) {
+    logger.logError('PublicRoutes', error, { context: 'getProjectCategories' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch categories",
+      error: error.message
+    });
+  }
+});
+
 // GET /api/public/projects/:id - Get project by ID for public display
 router.get("/projects/:id", async (req, res) => {
   try {
@@ -190,76 +262,6 @@ router.get("/projects/:id", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch project",
-      error: error.message
-    });
-  }
-});
-
-// GET /api/public/services/categories - Get all service categories
-router.get("/services/categories", async (req, res) => {
-  try {
-    // Try to get from cache
-    const cacheKey = 'services:categories';
-    const cachedCategories = cache.get(cacheKey);
-    if (cachedCategories) {
-      logger.logDebug('PublicRoutes', 'Serving cached service categories');
-      return res.json({
-        success: true,
-        data: { categories: cachedCategories },
-        cached: true
-      });
-    }
-    
-    const categories = await Service.distinct("category", { status: "active" });
-    
-    // Cache for 1 hour (categories change rarely)
-    cache.set(cacheKey, categories, 3600);
-    logger.logDebug('PublicRoutes', 'Service categories cached', { count: categories.length });
-    
-    res.json({
-      success: true,
-      data: { categories }
-    });
-  } catch (error) {
-    logger.logError('PublicRoutes', error, { context: 'getServiceCategories' });
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch categories",
-      error: error.message
-    });
-  }
-});
-
-// GET /api/public/projects/categories - Get all project categories
-router.get("/projects/categories", async (req, res) => {
-  try {
-    // Try to get from cache
-    const cacheKey = 'projects:categories';
-    const cachedCategories = cache.get(cacheKey);
-    if (cachedCategories) {
-      logger.logDebug('PublicRoutes', 'Serving cached project categories');
-      return res.json({
-        success: true,
-        data: { categories: cachedCategories },
-        cached: true
-      });
-    }
-    
-    const categories = await Project.distinct("category", { status: "completed" });
-    
-    // Cache for 1 hour (categories change rarely)
-    cache.set(cacheKey, categories, 3600);
-    logger.logDebug('PublicRoutes', 'Project categories cached', { count: categories.length });
-    
-    res.json({
-      success: true,
-      data: { categories }
-    });
-  } catch (error) {
-    logger.logError('PublicRoutes', error, { context: 'getProjectCategories' });
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch categories",
       error: error.message
     });
   }
