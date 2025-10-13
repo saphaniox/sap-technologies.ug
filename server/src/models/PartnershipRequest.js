@@ -54,6 +54,11 @@ const partnershipRequestSchema = new mongoose.Schema({
     trim: true,
     maxlength: 200
   },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null
+  },
   status: {
     type: String,
     enum: ["pending", "reviewed", "approved", "rejected"],

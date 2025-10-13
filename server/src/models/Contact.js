@@ -45,6 +45,11 @@ const contactSchema = new mongoose.Schema({
         minlength: [10, "Message must be at least 10 characters long"],
         maxlength: [1000, "Message cannot exceed 1000 characters"]
     },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null
+    },
     status: {
         type: String,
         enum: ["pending", "read", "replied", "archived"],

@@ -54,6 +54,11 @@ const productInquirySchema = new mongoose.Schema({
     type: String,
     maxlength: 1000
   },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null
+  },
   status: {
     type: String,
     enum: ["new", "contacted", "resolved", "closed"],

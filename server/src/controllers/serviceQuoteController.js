@@ -36,7 +36,7 @@ class ServiceQuoteController {
   // Create a new service quote request
   static async createQuote(req, res) {
     try {
-      const { 
+      let { 
         serviceId, 
         serviceName,
         customerName,
@@ -49,10 +49,18 @@ class ServiceQuoteController {
         timeline
       } = req.body;
 
+      // Auto-fill user data if logged in
+      if (req.user) {
+        customerName = customerName || `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email;
+        customerEmail = customerEmail || req.user.email;
+        customerPhone = customerPhone || req.user.phone || "";
+      }
+
       console.log("📬 New service quote request received");
       console.log("Service ID:", serviceId);
       console.log("Service Name:", serviceName);
       console.log("Customer Email:", customerEmail);
+      console.log("Auto-filled:", !!req.user);
 
       // Validate required fields
       if (!serviceId || !serviceName || !customerName || !customerEmail) {
@@ -94,6 +102,7 @@ class ServiceQuoteController {
         projectDetails: projectDetails?.trim() || "",
         budget: budget || "Not sure",
         timeline: timeline || "Flexible",
+        user: req.user ? req.user._id : null,
         metadata: {
           ipAddress: req.ip || req.connection.remoteAddress,
           userAgent: req.headers["user-agent"],
@@ -142,6 +151,7 @@ class ServiceQuoteController {
       res.status(201).json({
         success: true,
         message: "Quote request submitted successfully! We'll get back to you soon.",
+        autoFilled: !!req.user,
         data: {
           quoteId: quote._id,
           serviceName: serviceName

@@ -37,11 +37,18 @@ class ProductInquiryController {
   // Create a new product inquiry
   static async createInquiry(req, res) {
     try {
-      const { productId, customerEmail, customerPhone, preferredContact, message } = req.body;
+      let { productId, customerEmail, customerPhone, preferredContact, message } = req.body;
+
+      // Auto-fill user data if logged in
+      if (req.user) {
+        customerEmail = customerEmail || req.user.email;
+        customerPhone = customerPhone || req.user.phone || "";
+      }
 
       console.log("📬 New product inquiry received");
       console.log("Product ID:", productId);
       console.log("Customer Email:", customerEmail);
+      console.log("Auto-filled:", !!req.user);
 
       // Validate required fields
       if (!productId || !customerEmail) {
@@ -68,6 +75,7 @@ class ProductInquiryController {
         customerPhone: customerPhone?.trim() || "",
         preferredContact: preferredContact || "email",
         message: message?.trim() || "",
+        user: req.user ? req.user._id : null,
         metadata: {
           ipAddress: req.ip || req.connection.remoteAddress,
           userAgent: req.headers["user-agent"],
@@ -111,6 +119,7 @@ class ProductInquiryController {
       res.status(201).json({
         success: true,
         message: "Inquiry submitted successfully! We'll get back to you soon.",
+        autoFilled: !!req.user,
         data: {
           inquiryId: inquiry._id,
           productName: product.name

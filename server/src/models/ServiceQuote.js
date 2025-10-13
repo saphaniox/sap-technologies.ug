@@ -52,6 +52,11 @@ const serviceQuoteSchema = new mongoose.Schema({
     enum: ["ASAP", "1-2 weeks", "1 month", "2-3 months", "3+ months", "Flexible"],
     default: "Flexible"
   },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null
+  },
   status: {
     type: String,
     enum: ["new", "contacted", "quoted", "converted", "closed"],

@@ -2,12 +2,12 @@ const express = require("express");
 const partnershipRequestController = require("../controllers/partnershipRequestController");
 const { validatePartnershipRequest } = require("../middleware/validation");
 const { contactLimiter } = require("../middleware/rateLimiter");
-const { authMiddleware, adminMiddleware } = require("../middleware/auth");
+const { authMiddleware, adminMiddleware, optionalAuthMiddleware } = require("../middleware/auth");
 
 const router = express.Router();
 
 // Public routes
-router.post("/", contactLimiter, validatePartnershipRequest, partnershipRequestController.submitPartnershipRequest);
+router.post("/", optionalAuthMiddleware, contactLimiter, validatePartnershipRequest, partnershipRequestController.submitPartnershipRequest);
 
 // Admin routes (protected)
 router.get("/", authMiddleware, adminMiddleware, partnershipRequestController.getAllPartnershipRequests);

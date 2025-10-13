@@ -2,12 +2,12 @@ const express = require("express");
 const newsletterController = require("../controllers/newsletterController");
 const { validateNewsletter } = require("../middleware/validation");
 const { newsletterLimiter } = require("../middleware/rateLimiter");
-const { authMiddleware, adminMiddleware } = require("../middleware/auth");
+const { authMiddleware, adminMiddleware, optionalAuthMiddleware } = require("../middleware/auth");
 
 const router = express.Router();
 
 // Public routes
-router.post("/subscribe", newsletterLimiter, validateNewsletter, newsletterController.subscribe);
+router.post("/subscribe", optionalAuthMiddleware, newsletterLimiter, validateNewsletter, newsletterController.subscribe);
 router.post("/unsubscribe", newsletterLimiter, validateNewsletter, newsletterController.unsubscribe);
 
 // Admin routes (protected)

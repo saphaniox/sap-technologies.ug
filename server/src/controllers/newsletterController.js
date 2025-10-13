@@ -32,7 +32,12 @@ class NewsletterController {
     // Subscribe to newsletter
     async subscribe(req, res, next) {
         try {
-            const { email } = req.body;
+            let { email } = req.body;
+
+            // Auto-fill email if user is logged in
+            if (req.user && !email) {
+                email = req.user.email;
+            }
 
             if (!email) {
                 return next(new AppError("Email is required", 400));
@@ -44,18 +49,23 @@ class NewsletterController {
                 if (existingSubscriber.isActive) {
                     return res.status(200).json({
                         status: "success",
-                        message: "You are already subscribed to our newsletter"
+                        message: "You are already subscribed to our newsletter",
+                        autoFilled: !!req.user
                     });
                 } else {
                     // Reactivate subscription
                     existingSubscriber.isActive = true;
                     existingSubscriber.subscribedAt = new Date();
                     existingSubscriber.unsubscribedAt = null;
+                    if (req.user) {
+                        existingSubscriber.user = req.user._id;
+                    }
                     await existingSubscriber.save();
 
                     return res.status(200).json({
                         status: "success",
-                        message: "Welcome back! Your subscription has been reactivated"
+                        message: "Welcome back! Your subscription has been reactivated",
+                        autoFilled: !!req.user
                     });
                 }
             }
@@ -63,6 +73,7 @@ class NewsletterController {
             // Create new subscription
             const subscriber = new Newsletter({
                 email,
+                user: req.user ? req.user._id : null,
                 source: "website"
             });
 
@@ -71,6 +82,7 @@ class NewsletterController {
             res.status(201).json({
                 status: "success",
                 message: "Thank you for subscribing to our newsletter!",
+                autoFilled: !!req.user,
                 data: {
                     subscriber: {
                         id: subscriber._id,

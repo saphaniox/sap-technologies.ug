@@ -33,6 +33,11 @@ const newsletterSchema = new mongoose.Schema({
         trim: true,
         match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please provide a valid email"]
     },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null
+    },
     subscribedAt: {
         type: Date,
         default: Date.now

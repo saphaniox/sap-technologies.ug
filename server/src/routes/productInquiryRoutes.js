@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const ProductInquiryController = require("../controllers/productInquiryController");
-const { authMiddleware, adminMiddleware } = require("../middleware/auth");
+const { authMiddleware, adminMiddleware, optionalAuthMiddleware } = require("../middleware/auth");
 const { rateLimits } = require("../config/security");
 
 // Public route - Create inquiry (with rate limiting)
-router.post("/inquiries", rateLimits.inquiry, (req, res) => ProductInquiryController.createInquiry(req, res));
+router.post("/inquiries", optionalAuthMiddleware, rateLimits.inquiry, (req, res) => ProductInquiryController.createInquiry(req, res));
 
 // Admin routes - Manage inquiries
 router.get("/admin/inquiries", authMiddleware, adminMiddleware, (req, res) => ProductInquiryController.getAllInquiries(req, res));

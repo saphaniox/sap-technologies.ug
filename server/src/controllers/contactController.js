@@ -25,7 +25,17 @@ class ContactController {
     // Submit contact form
     async submitContact(req, res, next) {
         try {
-            const { name, email, message } = req.body;
+            let { name, email, message } = req.body;
+
+            // Auto-fill user data if logged in
+            if (req.user) {
+                // If user is logged in, use their info (they can still override)
+                name = name || `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email;
+                email = email || req.user.email;
+                
+                // Add user reference
+                req.body.user = req.user._id;
+            }
 
             // Validation
             if (!name || !email || !message) {
@@ -37,6 +47,7 @@ class ContactController {
                 name,
                 email,
                 message,
+                user: req.body.user, // Link to user if logged in
                 ipAddress: req.ip || req.connection.remoteAddress,
                 userAgent: req.get("User-Agent")
             });

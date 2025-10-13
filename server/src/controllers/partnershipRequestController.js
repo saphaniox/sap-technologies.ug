@@ -39,7 +39,13 @@ class PartnershipRequestController {
     // Submit partnership request
     async submitPartnershipRequest(req, res, next) {
         try {
-            const { companyName, contactEmail, website, description, contactPerson } = req.body;
+            let { companyName, contactEmail, website, description, contactPerson } = req.body;
+
+            // Auto-fill user data if logged in
+            if (req.user) {
+                contactEmail = contactEmail || req.user.email;
+                contactPerson = contactPerson || `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() || req.user.email;
+            }
 
             // Validation
             if (!companyName || !contactEmail || !description || !contactPerson) {
@@ -53,6 +59,7 @@ class PartnershipRequestController {
                 website,
                 description,
                 contactPerson,
+                user: req.user ? req.user._id : null,
                 status: "pending"
             });
 
@@ -107,6 +114,7 @@ class PartnershipRequestController {
             res.status(201).json({
                 status: "success",
                 message: "Partnership request submitted successfully",
+                autoFilled: !!req.user,
                 data: {
                     partnershipRequest: {
                         id: partnershipRequest._id,
