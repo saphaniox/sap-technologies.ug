@@ -45,10 +45,14 @@ test-*.js
 *.test.js
 *.spec.js
 
-# Documentation with sensitive data
+# Documentation files (keep only README.md)
 *-FIXED.md
+*-FEATURE.md
+*-REPORT.md
 IMAGE-*.md
 *-GUIDE-*.md
+AUTO-*.md
+FEATURE-*.md
 
 # Development utility scripts
 check-*.js
