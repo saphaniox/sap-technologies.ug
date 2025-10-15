@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { User } = require("../models");
-const { logger } = require('../config/security');
+const { securityLogger: logger } = require('../config/security');
 
 // Enhanced authentication middleware with JWT and session support
 const authMiddleware = async (req, res, next) => {
