@@ -27,45 +27,53 @@ class EmailService {
         const emailPass = process.env.GMAIL_PASS || process.env.SMTP_PASS;
         
         if (emailUser && emailPass) {
-            // Use port 465 with SSL for better compatibility with cloud hosting platforms
-            const smtpPort = parseInt(process.env.SMTP_PORT || "465");
-            const useSecure = smtpPort === 465;
+            // Use port 587 with STARTTLS for better cloud platform compatibility (Render, Heroku, etc.)
+            const smtpPort = parseInt(process.env.SMTP_PORT || "587");
+            const useSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
             
             this.transporter = nodemailer.createTransport({
                 host: process.env.SMTP_HOST || "smtp.gmail.com",
                 port: smtpPort,
-                secure: useSecure, // true for 465, false for other ports
+                secure: useSecure, // true for 465 (SSL), false for 587 (STARTTLS)
                 auth: {
                     user: emailUser,
                     pass: emailPass
                 },
                 tls: {
-                    rejectUnauthorized: false // Allow self-signed certificates (needed for some production environments)
+                    rejectUnauthorized: false, // Allow self-signed certificates
+                    ciphers: 'SSLv3' // Fallback cipher for compatibility
                 },
-                connectionTimeout: 10000, // 10 seconds
-                greetingTimeout: 10000,
-                socketTimeout: 10000
+                connectionTimeout: 30000, // 30 seconds for slow connections
+                greetingTimeout: 30000,
+                socketTimeout: 30000,
+                pool: true, // Use connection pooling
+                maxConnections: 5,
+                maxMessages: 100,
+                rateDelta: 1000,
+                rateLimit: 5
             });
             this.isConfigured = true;
-            console.log("? Email service configured with SMTP:", emailUser);
-            console.log("?? SMTP Host:", process.env.SMTP_HOST || "smtp.gmail.com");
-            console.log("?? SMTP Port:", smtpPort, useSecure ? "(SSL)" : "(TLS)");
-            console.log("?? Reply-To Email:", this.replyToEmail);
-            console.log("??  Note: SMTP may be blocked on some hosting platforms. Consider using SendGrid instead.");
+            console.log("✅ Email service configured with Gmail SMTP:", emailUser);
+            console.log("📧 SMTP Host:", process.env.SMTP_HOST || "smtp.gmail.com");
+            console.log("🔌 SMTP Port:", smtpPort, useSecure ? "(SSL)" : "(STARTTLS)");
+            console.log("↩️  Reply-To Email:", this.replyToEmail);
             
             // Test the connection (only in development)
             if (process.env.NODE_ENV !== 'production') {
                 this.transporter.verify((error, success) => {
                     if (error) {
-                        console.error("? SMTP connection test failed:", error.message);
-                        console.warn("   ?? For production, use SendGrid: Set SENDGRID_API_KEY environment variable");
+                        console.error("❌ SMTP connection test failed:", error.message);
+                        console.warn("   💡 Troubleshooting:");
+                        console.warn("   1. Check your Gmail App Password is correct");
+                        console.warn("   2. Try port 587 instead of 465");
+                        console.warn("   3. For production, use SendGrid: Set SENDGRID_API_KEY");
                     } else {
-                        console.log("? SMTP connection verified - ready to send emails!");
+                        console.log("✅ SMTP connection verified - ready to send emails!");
                     }
                 });
             } else {
-                console.warn("??  SMTP in production - may not work if port is blocked.");
-                console.warn("   ?? Recommended: Add SENDGRID_API_KEY to environment variables");
+                console.log("🚀 SMTP running in production with port", smtpPort);
+                console.log("   Note: Using connection pooling and extended timeouts for cloud hosting");
             }
         } else {
             this.isConfigured = false;
