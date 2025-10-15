@@ -27,6 +27,7 @@
 
 const { Newsletter } = require("../models");
 const { AppError } = require("../middleware/errorHandler");
+const emailService = require("../services/emailService");
 
 class NewsletterController {
     // Subscribe to newsletter
@@ -62,6 +63,20 @@ class NewsletterController {
                     }
                     await existingSubscriber.save();
 
+                    console.log("✅ Newsletter subscription reactivated:", email);
+
+                    // Send welcome back email (non-blocking)
+                    setImmediate(async () => {
+                        try {
+                            await emailService.sendNewsletterWelcome({
+                                email: existingSubscriber.email
+                            });
+                            console.log("✅ Newsletter reactivation email sent");
+                        } catch (emailError) {
+                            console.error("❌ Error sending newsletter reactivation email:", emailError);
+                        }
+                    });
+
                     return res.status(200).json({
                         status: "success",
                         message: "Welcome back! Your subscription has been reactivated",
@@ -78,6 +93,20 @@ class NewsletterController {
             });
 
             await subscriber.save();
+
+            console.log("✅ Newsletter subscription saved:", email);
+
+            // Send welcome email (non-blocking)
+            setImmediate(async () => {
+                try {
+                    await emailService.sendNewsletterWelcome({
+                        email: subscriber.email
+                    });
+                    console.log("✅ Newsletter welcome email sent");
+                } catch (emailError) {
+                    console.error("❌ Error sending newsletter welcome email:", emailError);
+                }
+            });
 
             res.status(201).json({
                 status: "success",

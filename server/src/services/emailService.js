@@ -285,44 +285,144 @@ class EmailService {
         }
         
         try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            
             const mailOptions = {
                 from: '"SAP Technologies" <saptechnologies256@gmail.com>',
-                replyTo: emailUser, // Replies go to your Gmail
                 to: subscriberData.email,
-                subject: "Welcome to SAP Technologies Newsletter! 🚀",
+                subject: "🎉 Welcome to SAP Technologies Newsletter!",
                 html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <h2 style="color: #3b82f6;">Welcome to SAP Technologies! 🎉</h2>
-                        <p>Hi there!</p>
-                        <p>Thank you for subscribing to our newsletter. We're excited to have you on board!</p>
-                        <p>You'll receive updates about:</p>
-                        <ul>
-                            <li>🚀 Latest technology solutions</li>
-                            <li>💡 Industry insights and tips</li>
-                            <li>🎯 New services and products</li>
-                            <li>📈 Success stories and case studies</li>
-                        </ul>
-                        <p>Stay tuned for amazing content!</p>
-                        <p>Best regards,<br>The SAP Technologies Team</p>
-                        <hr style="margin: 30px 0;">
-                        <div style="background: #f8fafc; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                            <h4 style="color: #1f2937; margin: 0 0 10px 0;">📞 Contact Us</h4>
-                            <p style="margin: 5px 0; font-size: 14px;"><strong>Phone:</strong> +256706564628</p>
-                            <p style="margin: 5px 0; font-size: 14px;"><strong>Email:</strong> ${emailUser}</p>
+                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 20px; border-radius: 15px;">
+                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+                            <!-- Header -->
+                            <div style="text-align: center; margin-bottom: 35px;">
+                                <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
+                                    <span style="font-size: 35px;">🎉</span>
+                                </div>
+                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Welcome to SAP Technologies!</h1>
+                                <p style="color: #718096; margin: 0; font-size: 16px;">Thank you for joining our community</p>
+                            </div>
+
+                            <!-- Welcome Message -->
+                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #3b82f6; text-align: center;">
+                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">You're Now Part of Something Special! ✨</h2>
+                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
+                                    We're thrilled to have you on board! Get ready to receive exclusive updates, industry insights, and valuable content delivered straight to your inbox.
+                                </p>
+                            </div>
+
+                            <!-- What You'll Receive -->
+                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">📬 What You'll Receive</h2>
+                                
+                                <div style="margin-bottom: 15px;">
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <span style="font-size: 24px; margin-right: 12px;">🚀</span>
+                                        <div>
+                                            <p style="margin: 0; color: #2d3748; font-weight: 600; font-size: 15px;">Latest Technology Solutions</p>
+                                            <p style="margin: 5px 0 0 0; color: #718096; font-size: 14px;">Stay updated with cutting-edge tech and innovations</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom: 15px;">
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <span style="font-size: 24px; margin-right: 12px;">💡</span>
+                                        <div>
+                                            <p style="margin: 0; color: #2d3748; font-weight: 600; font-size: 15px;">Industry Insights & Tips</p>
+                                            <p style="margin: 5px 0 0 0; color: #718096; font-size: 14px;">Expert advice to help grow your business</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom: 15px;">
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <span style="font-size: 24px; margin-right: 12px;">🎯</span>
+                                        <div>
+                                            <p style="margin: 0; color: #2d3748; font-weight: 600; font-size: 15px;">New Services & Products</p>
+                                            <p style="margin: 5px 0 0 0; color: #718096; font-size: 14px;">Be the first to know about our launches</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <span style="font-size: 24px; margin-right: 12px;">📈</span>
+                                        <div>
+                                            <p style="margin: 0; color: #2d3748; font-weight: 600; font-size: 15px;">Success Stories & Case Studies</p>
+                                            <p style="margin: 5px 0 0 0; color: #718096; font-size: 14px;">Learn from real-world implementations</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Special Offer -->
+                            <div style="background: linear-gradient(135deg, #10b98115 0%, #05966915 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #10b981; text-align: center;">
+                                <h2 style="color: #10b981; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">🎁 Welcome Gift</h2>
+                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
+                                    As a thank you, enjoy <strong>10% off</strong> your first service or product purchase! Use code <strong style="background: #10b98120; padding: 4px 12px; border-radius: 6px; color: #10b981;">WELCOME10</strong> at checkout.
+                                </p>
+                            </div>
+
+                            <!-- Contact Info -->
+                            <div style="background: linear-gradient(135deg, #f59e0b15 0%, #d9770615 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #f59e0b; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">📞 Get in Touch</h2>
+                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
+                                    <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
+                                </p>
+                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
+                                    <strong>Phone:</strong> <a href="tel:+256706564628" style="color: #3b82f6; text-decoration: none;">+256 706 564 628</a>
+                                </p>
+                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
+                                    <strong>WhatsApp:</strong> <a href="https://wa.me/256706564628" style="color: #25D366; text-decoration: none;">+256 706 564 628</a>
+                                </p>
+                                <p style="color: #718096; margin-top: 15px; font-size: 14px; line-height: 1.6;">
+                                    Have questions or need assistance? We're here to help!
+                                </p>
+                            </div>
+
+                            <!-- CTA Button -->
+                            <div style="text-align: center; margin-top: 35px;">
+                                <a href="https://sap-technologies.com" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
+                                    🌐 Visit Our Website
+                                </a>
+                            </div>
+
+                            <!-- Social Media -->
+                            <div style="text-align: center; margin-top: 30px; padding-top: 25px; border-top: 2px solid #e2e8f0;">
+                                <p style="color: #718096; margin: 0 0 15px 0; font-size: 14px;">Follow us on social media</p>
+                                <div style="display: flex; justify-content: center; gap: 15px;">
+                                    <a href="#" style="color: #3b82f6; text-decoration: none; font-size: 24px;">📘</a>
+                                    <a href="#" style="color: #1DA1F2; text-decoration: none; font-size: 24px;">🐦</a>
+                                    <a href="#" style="color: #0A66C2; text-decoration: none; font-size: 24px;">💼</a>
+                                    <a href="#" style="color: #E4405F; text-decoration: none; font-size: 24px;">📷</a>
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
+                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
+                                    SAP Technologies
+                                </p>
+                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
+                                    Innovative Solutions for Your Business
+                                </p>
+                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
+                                    You're receiving this because you subscribed to our newsletter at sap-technologies.com
+                                </p>
+                                <p style="color: #cbd5e0; margin: 5px 0; font-size: 12px;">
+                                    <a href="https://sap-technologies.com/unsubscribe" style="color: #3b82f6; text-decoration: none;">Unsubscribe</a> | 
+                                    <a href="https://sap-technologies.com/privacy" style="color: #3b82f6; text-decoration: none;">Privacy Policy</a>
+                                </p>
+                            </div>
                         </div>
-                        <p style="font-size: 12px; color: #666;">
-                            If you no longer wish to receive these emails, you can unsubscribe at any time.
-                        </p>
                     </div>
                 `
             };
 
-            await this.transporter.sendMail(mailOptions);
+            await this.sendEmail(mailOptions);
             console.log("✅ Newsletter welcome email sent to:", subscriberData.email);
         } catch (error) {
-            console.error("Error sending newsletter welcome email:", error);
+            console.error("❌ Error sending newsletter welcome email:", error);
+            throw error;
         }
     }
 
