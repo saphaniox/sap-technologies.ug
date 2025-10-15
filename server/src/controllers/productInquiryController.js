@@ -138,11 +138,21 @@ class ProductInquiryController {
   // Get all inquiries (Admin only)
   static async getAllInquiries(req, res) {
     try {
-      const { page = 1, limit = 20, status, productId } = req.query;
+      const { page = 1, limit = 20, status, productId, search } = req.query;
 
       const filter = {};
       if (status && status !== "all") filter.status = status;
       if (productId) filter.product = productId;
+      
+      // Add search functionality
+      if (search) {
+        filter.$or = [
+          { customerEmail: { $regex: search, $options: "i" } },
+          { customerPhone: { $regex: search, $options: "i" } },
+          { productName: { $regex: search, $options: "i" } },
+          { message: { $regex: search, $options: "i" } }
+        ];
+      }
 
       const inquiries = await ProductInquiry.find(filter)
         .populate("product", "name category image")

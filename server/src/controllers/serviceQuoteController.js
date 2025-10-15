@@ -170,11 +170,23 @@ class ServiceQuoteController {
   // Get all quote requests (admin)
   static async getAllQuotes(req, res) {
     try {
-      const { status, serviceId, page = 1, limit = 20 } = req.query;
+      const { status, serviceId, page = 1, limit = 20, search } = req.query;
 
       let query = {};
       if (status) query.status = status;
       if (serviceId) query.service = serviceId;
+      
+      // Add search functionality
+      if (search) {
+        query.$or = [
+          { customerName: { $regex: search, $options: "i" } },
+          { customerEmail: { $regex: search, $options: "i" } },
+          { customerPhone: { $regex: search, $options: "i" } },
+          { companyName: { $regex: search, $options: "i" } },
+          { serviceName: { $regex: search, $options: "i" } },
+          { projectDetails: { $regex: search, $options: "i" } }
+        ];
+      }
 
       const quotes = await ServiceQuote.find(query)
         .populate("service", "name category")
