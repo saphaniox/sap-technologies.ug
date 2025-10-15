@@ -78,14 +78,7 @@ Your server now supports **3 email providers**. Choose the one that works best f
    SMTP_SECURE=false
    ```
 
-**Your existing Gmail credentials:**
-```
-GMAIL_USER=saptechnologies256@gmail.com
-GMAIL_PASS=iovxfnawehrylxuj
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_SECURE=false
-```
+**Note:** Use your actual Gmail App Password from https://myaccount.google.com/apppasswords
 
 ⚠️ **WARNING**: Gmail SMTP often doesn't work on Render due to port blocking.
 
