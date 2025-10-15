@@ -1,28 +1,44 @@
 const nodemailer = require("nodemailer");
 const sgMail = require('@sendgrid/mail');
+const { Resend } = require('resend');
 
 class EmailService {
     constructor() {
-        // Check for SendGrid API key first (recommended for production)
-        const sendgridKey = process.env.SENDGRID_API_KEY;
-        
         // Set reply-to email (always use Gmail for replies)
         this.replyToEmail = process.env.GMAIL_USER || 'saptechnologies256@gmail.com';
         
+        // Priority 1: Check for Resend API key (easiest, most reliable)
+        const resendKey = process.env.RESEND_API_KEY;
+        if (resendKey) {
+            this.resend = new Resend(resendKey);
+            this.useResend = true;
+            this.isConfigured = true;
+            this.fromEmail = process.env.RESEND_FROM_EMAIL || process.env.GMAIL_USER || 'saptechnologies256@gmail.com';
+            this.notifyEmail = process.env.NOTIFY_EMAIL || this.fromEmail;
+            console.log("✅ Email service configured with Resend");
+            console.log("📧 From Email:", this.fromEmail);
+            console.log("↩️  Reply-To Email:", this.replyToEmail);
+            console.log("📬 Notify Email:", this.notifyEmail);
+            console.log("💡 Resend: 3,000 emails/month free, excellent deliverability");
+            return;
+        }
+        
+        // Priority 2: Check for SendGrid API key
+        const sendgridKey = process.env.SENDGRID_API_KEY;
         if (sendgridKey) {
             sgMail.setApiKey(sendgridKey);
             this.useSendGrid = true;
             this.isConfigured = true;
             this.fromEmail = process.env.SENDGRID_FROM_EMAIL || process.env.GMAIL_USER || 'saptechnologies256@gmail.com';
             this.notifyEmail = process.env.NOTIFY_EMAIL || this.fromEmail;
-            console.log("? Email service configured with SendGrid");
-            console.log("?? From Email:", this.fromEmail);
-            console.log("?? Reply-To Email:", this.replyToEmail);
-            console.log("?? Notify Email:", this.notifyEmail);
+            console.log("✅ Email service configured with SendGrid");
+            console.log("📧 From Email:", this.fromEmail);
+            console.log("↩️  Reply-To Email:", this.replyToEmail);
+            console.log("📬 Notify Email:", this.notifyEmail);
             return;
         }
         
-        // Fallback to SMTP for local development
+        // Priority 3: Fallback to SMTP for local development
         const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
         const emailPass = process.env.GMAIL_PASS || process.env.SMTP_PASS;
         
@@ -112,7 +128,26 @@ class EmailService {
         }
 
         try {
-            if (this.useSendGrid) {
+            if (this.useResend) {
+                // Resend API - Simple and reliable
+                const resendOptions = {
+                    from: emailOptions.from || this.fromEmail,
+                    to: emailOptions.to,
+                    subject: emailOptions.subject,
+                    html: emailOptions.html,
+                    reply_to: emailOptions.replyTo || this.replyToEmail,
+                };
+
+                // Add tags for tracking
+                if (emailOptions.category) {
+                    resendOptions.tags = [{ name: 'category', value: emailOptions.category }];
+                }
+
+                await this.resend.emails.send(resendOptions);
+                console.log(`✅ Email sent via Resend to: ${emailOptions.to}`);
+                return true;
+                
+            } else if (this.useSendGrid) {
                 // SendGrid API with anti-spam configuration
                 const msg = {
                     to: emailOptions.to,
@@ -155,7 +190,7 @@ class EmailService {
                 }
                 
                 await sgMail.send(msg);
-                console.log(`? Email sent via SendGrid to: ${emailOptions.to}`);
+                console.log(`✅ Email sent via SendGrid to: ${emailOptions.to}`);
                 return true;
             } else {
                 // SMTP (for local development)
