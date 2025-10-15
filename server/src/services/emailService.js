@@ -76,8 +76,26 @@ class EmailService {
     }
 
     /**
+     * Convert HTML to plain text (simple version)
+     */
+    htmlToText(html) {
+        return html
+            .replace(/<style[^>]*>.*<\/style>/gmi, '')
+            .replace(/<script[^>]*>.*<\/script>/gmi, '')
+            .replace(/<[^>]+>/gm, '')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/\n\s*\n\s*\n/g, '\n\n')
+            .trim();
+    }
+
+    /**
      * Universal email sender - handles both SendGrid and SMTP
-     * @param {Object} emailOptions - { to, subject, html, replyTo (optional), from (optional) }
+     * @param {Object} emailOptions - { to, subject, html, replyTo (optional), from (optional), category (optional) }
      */
     async sendEmail(emailOptions) {
         if (!this.isConfigured) {
@@ -87,14 +105,46 @@ class EmailService {
 
         try {
             if (this.useSendGrid) {
-                // SendGrid API
+                // SendGrid API with anti-spam configuration
                 const msg = {
                     to: emailOptions.to,
-                    from: emailOptions.from || this.fromEmail,
-                    replyTo: emailOptions.replyTo || this.replyToEmail, // Always set reply-to
+                    from: {
+                        email: emailOptions.from || this.fromEmail,
+                        name: emailOptions.fromName || process.env.SENDGRID_FROM_NAME || 'SAP Technologies'
+                    },
+                    replyTo: emailOptions.replyTo || this.replyToEmail,
                     subject: emailOptions.subject,
-                    html: emailOptions.html
+                    html: emailOptions.html,
+                    text: emailOptions.text || this.htmlToText(emailOptions.html), // Plain text version
+                    
+                    // Anti-spam settings
+                    trackingSettings: {
+                        clickTracking: { enable: true, enableText: false },
+                        openTracking: { enable: true },
+                        subscriptionTracking: { enable: false } // Disable default unsubscribe
+                    },
+                    
+                    // Mail settings for better deliverability
+                    mailSettings: {
+                        bypassListManagement: { enable: false },
+                        footer: { enable: false },
+                        sandboxMode: { enable: false }
+                    },
+                    
+                    // Category for tracking (helps SendGrid reputation)
+                    categories: emailOptions.category ? [emailOptions.category] : ['transactional'],
+                    
+                    // Custom headers for better deliverability
+                    headers: {
+                        'X-Entity-Ref-ID': `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+                    }
                 };
+
+                // Add List-Unsubscribe header for newsletters/marketing
+                if (emailOptions.unsubscribeUrl) {
+                    msg.headers['List-Unsubscribe'] = `<${emailOptions.unsubscribeUrl}>`;
+                    msg.headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+                }
                 
                 await sgMail.send(msg);
                 console.log(`✅ Email sent via SendGrid to: ${emailOptions.to}`);
@@ -150,16 +200,15 @@ class EmailService {
             `;
             
             if (this.useSendGrid) {
-                // SendGrid API
-                const msg = {
+                // SendGrid API with category
+                await this.sendEmail({
                     to: this.notifyEmail,
-                    from: this.fromEmail,
+                    subject: `🔔 New Contact from ${contactData.name}`,
+                    html: emailHtml,
                     replyTo: contactData.email,
-                    subject: `New Contact from ${contactData.name}`,
-                    html: emailHtml
-                };
-                
-                await sgMail.send(msg);
+                    category: 'contact-notification',
+                    fromName: 'SAP Technologies Contact Form'
+                });
                 console.log("✅ Contact notification email sent via SendGrid to:", this.notifyEmail);
             } else {
                 // SMTP (for local development)
