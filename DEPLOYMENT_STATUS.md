@@ -9,7 +9,7 @@
 
 ### 1. Email Service (PRODUCTION READY)
 - ✅ **Resend Integration**: Primary email provider configured
-- ✅ **API Key**: `re_PXk2b7fA_H2LM2ivHxFbgkart4NnbQoRr` 
+- ✅ **API Key**: Set in environment variables (not shown for security)
 - ✅ **From Email**: `saptechnologies256@gmail.com`
 - ✅ **Notify Email**: `muganzasaphan@gmail.com`
 - ✅ **Free Tier**: 3,000 emails/month
@@ -74,7 +74,7 @@ info: Server started with enhanced security
 ## 🔧 Environment Variables (Set on Render)
 
 ```env
-RESEND_API_KEY=re_PXk2b7fA_H2LM2ivHxFbgkart4NnbQoRr
+RESEND_API_KEY=<your-resend-api-key>
 RESEND_FROM_EMAIL=saptechnologies256@gmail.com
 NOTIFY_EMAIL=muganzasaphan@gmail.com
 MONGODB_URI=<your-mongodb-atlas-uri>
