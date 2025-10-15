@@ -6,7 +6,7 @@
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
     "dev:inspect": "nodemon --inspect src/app.js",
-    "build": "npm install",
+    "build": "npm ci --include=dev || npm install",
     "postinstall": "echo 'Backend dependencies installed successfully'",
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:performance": "node test-performance.js",
