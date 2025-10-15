@@ -685,52 +685,124 @@ ${JSON.stringify(alertData.details, null, 2)}
         }
         
         try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            
             const mailOptions = {
-                from: '"SAP Technologies Partnerships" <saptechnologies256@gmail.com>',
-                replyTo: emailUser, // Replies go to your Gmail
+                from: '"SAP Technologies" <saptechnologies256@gmail.com>',
                 to: partnershipData.contactEmail,
-                subject: "Partnership Request Received - SAP Technologies 🤝",
+                subject: "🤝 Partnership Request Received - SAP Technologies",
                 html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <h2 style="color: #3b82f6;">Thank you for your partnership interest! 🤝</h2>
-                        <p>Hello ${partnershipData.contactPerson},</p>
-                        <p>We've received your partnership request for <strong>${partnershipData.companyName}</strong> and are excited about the potential collaboration!</p>
-                        
-                        <div style="background: #f0fdf4; padding: 20px; border-radius: 5px; border-left: 4px solid #22c55e; margin: 20px 0;">
-                            <h3 style="color: #15803d; margin: 0 0 10px 0;">📋 Request Summary:</h3>
-                            <p style="margin: 5px 0;"><strong>Company:</strong> ${partnershipData.companyName}</p>
-                            <p style="margin: 5px 0;"><strong>Contact:</strong> ${partnershipData.contactPerson}</p>
-                            <p style="margin: 5px 0;"><strong>Email:</strong> ${partnershipData.contactEmail}</p>
-                            ${partnershipData.website ? `<p style="margin: 5px 0;"><strong>Website:</strong> <a href="${partnershipData.website}">${partnershipData.website}</a></p>` : ''}
-                        </div>
-                        
-                        <h3 style="color: #1f2937;">🚀 Next Steps:</h3>
-                        <ol>
-                            <li>Our partnerships team will review your request</li>
-                            <li>We'll schedule a discovery call within 48 hours</li>
-                            <li>We'll discuss potential collaboration opportunities</li>
-                            <li>If aligned, we'll move forward with partnership agreements</li>
-                        </ol>
-                        
-                        <p>Best regards,<br>The SAP Technologies Partnerships Team</p>
-                        
-                        <hr style="margin: 30px 0;">
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 5px;">
-                            <h3 style="color: #1f2937; margin: 0 0 15px 0;">📞 Direct Contact</h3>
-                            <p style="margin: 5px 0;"><strong>📞 Phone:</strong> +256706564628</p>
-                            <p style="margin: 5px 0;"><strong>📧 Email:</strong> ${emailUser}</p>
-                            <p style="margin: 15px 0 0 0; color: #059669; font-weight: bold;">⏰ Partnership team response: Within 48 hours</p>
+                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 40px 20px; border-radius: 15px;">
+                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+                            <!-- Header -->
+                            <div style="text-align: center; margin-bottom: 35px;">
+                                <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
+                                    <span style="font-size: 35px;">🤝</span>
+                                </div>
+                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Thank You, ${partnershipData.contactPerson}!</h1>
+                                <p style="color: #718096; margin: 0; font-size: 16px;">Your partnership request has been received</p>
+                            </div>
+
+                            <!-- Success Message -->
+                            <div style="background: linear-gradient(135deg, #8b5cf615 0%, #7c3aed15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #8b5cf6; text-align: center;">
+                                <h2 style="color: #8b5cf6; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Your Partnership Request is Being Reviewed!</h2>
+                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
+                                    We're excited about the potential collaboration with <strong>${partnershipData.companyName}</strong>. Our partnerships team will carefully review your proposal.
+                                </p>
+                            </div>
+
+                            <!-- Request Summary -->
+                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">📋 Your Request Summary</h2>
+                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
+                                    <strong>Company:</strong> ${partnershipData.companyName}
+                                </p>
+                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
+                                    <strong>Contact Person:</strong> ${partnershipData.contactPerson}
+                                </p>
+                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
+                                    <strong>Email:</strong> ${partnershipData.contactEmail}
+                                </p>
+                                ${partnershipData.website ? `
+                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
+                                    <strong>Website:</strong> <a href="${partnershipData.website}" style="color: #8b5cf6; text-decoration: none;">${partnershipData.website}</a>
+                                </p>
+                                ` : ''}
+                            </div>
+
+                            <!-- Next Steps -->
+                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">🚀 What Happens Next?</h2>
+                                <div style="margin-bottom: 15px;">
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <span style="background: #8b5cf6; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">1</span>
+                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Our partnerships team will review your request and proposal</p>
+                                    </div>
+                                </div>
+                                <div style="margin-bottom: 15px;">
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <span style="background: #8b5cf6; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">2</span>
+                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">We'll schedule a discovery call within <strong>48 hours</strong></p>
+                                    </div>
+                                </div>
+                                <div style="margin-bottom: 15px;">
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <span style="background: #8b5cf6; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">3</span>
+                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">We'll discuss potential collaboration opportunities and synergies</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <span style="background: #8b5cf6; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">4</span>
+                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">If aligned, we'll move forward with partnership agreements</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contact Info -->
+                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">📞 Partnership Team Contact</h2>
+                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
+                                    <strong>Phone:</strong> <a href="tel:+256706564628" style="color: #3b82f6; text-decoration: none;">+256 706 564 628</a>
+                                </p>
+                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
+                                    <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
+                                </p>
+                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
+                                    <strong>WhatsApp:</strong> <a href="https://wa.me/256706564628" style="color: #25D366; text-decoration: none;">+256 706 564 628</a>
+                                </p>
+                                <p style="color: #718096; margin-top: 15px; font-size: 14px; line-height: 1.6;">
+                                    Have questions? Don't hesitate to reach out!
+                                </p>
+                            </div>
+
+                            <!-- CTA Button -->
+                            <div style="text-align: center; margin-top: 35px;">
+                                <a href="https://sap-technologies.com/partners" style="display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
+                                    🤝 Learn About Our Partnerships
+                                </a>
+                            </div>
+
+                            <!-- Footer -->
+                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
+                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
+                                    SAP Technologies
+                                </p>
+                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
+                                    Building Partnerships for Success
+                                </p>
+                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
+                                    This is an automated confirmation email. Please do not reply directly to this message.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 `
             };
 
-            await this.transporter.sendMail(mailOptions);
+            await this.sendEmail(mailOptions);
             console.log("✅ Partnership confirmation email sent to:", partnershipData.contactEmail);
         } catch (error) {
-            console.error("Error sending partnership confirmation email:", error);
+            console.error("❌ Error sending partnership confirmation email:", error);
+            throw error;
         }
     }
 
@@ -741,77 +813,130 @@ ${JSON.stringify(alertData.details, null, 2)}
         }
         
         try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            
             const mailOptions = {
                 from: '"SAP Technologies" <saptechnologies256@gmail.com>',
-                replyTo: emailUser, // Replies go to your Gmail for support
                 to: userData.email,
-                subject: "Welcome to SAP Technologies! Your account is ready 🎉",
+                subject: "🎉 Welcome to SAP Technologies - Account Created!",
                 html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <h2 style="color: #3b82f6;">Welcome to SAP Technologies! 🎉</h2>
-                        <p>Hi ${userData.name},</p>
-                        <p>Congratulations! Your SAP Technologies account has been successfully created and is ready to use.</p>
-                        
-                        <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #22c55e; margin: 20px 0;">
-                            <h3 style="color: #15803d; margin: 0 0 15px 0;">📝 Account Details</h3>
-                            <p style="margin: 5px 0;"><strong>Name:</strong> ${userData.name}</p>
-                            <p style="margin: 5px 0;"><strong>Email:</strong> ${userData.email}</p>
-                            <p style="margin: 5px 0;"><strong>Account Created:</strong> ${new Date().toLocaleDateString()}</p>
-                            <p style="margin: 15px 0 5px 0; color: #059669; font-weight: bold;">✅ Your account is now active and ready to use!</p>
-                        </div>
-                        
-                        <h3 style="color: #1f2937;">🚀 What you can do now:</h3>
-                        <ul style="color: #374151;">
-                            <li>📊 Access your personalized dashboard</li>
-                            <li>🤝 Submit partnership requests</li>
-                            <li>📞 Connect directly with our team</li>
-                            <li>🎯 Submit project inquiries</li>
-                            <li>📧 Receive priority support and updates</li>
-                            <li>📋 Manage your profile and preferences</li>
-                        </ul>
-                        
-                        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; border: 1px solid #f59e0b; margin: 20px 0;">
-                            <h4 style="color: #92400e; margin: 0 0 10px 0;">🔒 Account Security</h4>
-                            <p style="margin: 5px 0; color: #92400e;">Your password has been securely encrypted and stored. Please keep your login credentials safe.</p>
-                            <p style="margin: 10px 0 0 0; color: #92400e; font-size: 14px;">If you forget your password, you can reset it anytime using the "Forgot Password" option.</p>
-                        </div>
-                        
-                        <h3 style="color: #1f2937;">🎆 Next Steps:</h3>
-                        <ol style="color: #374151;">
-                            <li>Log in to your account using your email and password</li>
-                            <li>Complete your profile information</li>
-                            <li>Explore our services and solutions</li>
-                            <li>Contact us for any assistance you need</li>
-                        </ol>
-                        
-                        <p>We're excited to have you as part of the SAP Technologies community!</p>
-                        <p>Best regards,<br>The SAP Technologies Team</p>
-                        
-                        <hr style="margin: 30px 0;">
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
-                            <h3 style="color: #1f2937; margin: 0 0 15px 0;">📞 Need Help? Contact Us</h3>
-                            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-                                <div>
-                                    <p style="margin: 5px 0;"><strong>📞 Phone:</strong></p>
-                                    <p style="margin: 0; font-size: 18px; color: #3b82f6; font-weight: bold;">+256706564628</p>
+                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); padding: 40px 20px; border-radius: 15px;">
+                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+                            <!-- Header -->
+                            <div style="text-align: center; margin-bottom: 35px;">
+                                <div style="background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);">
+                                    <span style="font-size: 35px;">👋</span>
                                 </div>
-                                <div>
-                                    <p style="margin: 5px 0;"><strong>📧 Email Support:</strong></p>
-                                    <p style="margin: 0; color: #3b82f6;">${emailUser}</p>
+                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Welcome, ${userData.name}! 🎉</h1>
+                                <p style="color: #718096; margin: 0; font-size: 16px;">Your SAP Technologies account is ready</p>
+                            </div>
+
+                            <!-- Success Message -->
+                            <div style="background: linear-gradient(135deg, #14b8a615 0%, #0d948815 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #14b8a6; text-align: center;">
+                                <h2 style="color: #14b8a6; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Account Successfully Created!</h2>
+                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
+                                    You're now part of the SAP Technologies community. Start exploring our services and solutions.
+                                </p>
+                            </div>
+
+                            <!-- Account Details -->
+                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">👤 Your Account Details</h2>
+                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
+                                    <strong>Name:</strong> ${userData.name}
+                                </p>
+                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
+                                    <strong>Email:</strong> ${userData.email}
+                                </p>
+                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
+                                    <strong>Created:</strong> ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                </p>
+                                <div style="background: #14b8a615; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                                    <p style="margin: 0; color: #14b8a6; font-weight: 600;">✅ Your account is now active!</p>
                                 </div>
                             </div>
-                            <p style="margin: 15px 0 0 0; color: #16a34a; font-weight: bold;">💬 Our team is here to help you succeed!</p>
+
+                            <!-- Features -->
+                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">🚀 What You Can Do Now</h2>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #14b8a6; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Access your personalized dashboard</p>
+                                </div>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #14b8a6; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Submit partnership requests and proposals</p>
+                                </div>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #14b8a6; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Request quotes for products and services</p>
+                                </div>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #14b8a6; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Connect directly with our expert team</p>
+                                </div>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #14b8a6; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Receive priority support and updates</p>
+                                </div>
+                                <div style="display: flex; align-items: flex-start;">
+                                    <span style="color: #14b8a6; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Manage your profile and preferences</p>
+                                </div>
+                            </div>
+
+                            <!-- Security Notice -->
+                            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #f59e0b;">
+                                <h3 style="color: #92400e; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">🔒 Security Notice</h3>
+                                <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
+                                    Your password has been securely encrypted. Keep your credentials safe and use the "Forgot Password" option if needed.
+                                </p>
+                            </div>
+
+                            <!-- Contact Info -->
+                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">📞 Need Help?</h2>
+                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
+                                    <strong>Phone:</strong> <a href="tel:+256706564628" style="color: #3b82f6; text-decoration: none;">+256 706 564 628</a>
+                                </p>
+                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
+                                    <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
+                                </p>
+                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
+                                    <strong>WhatsApp:</strong> <a href="https://wa.me/256706564628" style="color: #25D366; text-decoration: none;">+256 706 564 628</a>
+                                </p>
+                                <p style="color: #718096; margin-top: 15px; font-size: 14px; line-height: 1.6;">
+                                    Our team is here to help you succeed!
+                                </p>
+                            </div>
+
+                            <!-- CTA Button -->
+                            <div style="text-align: center; margin-top: 35px;">
+                                <a href="https://sap-technologies.com/account" style="display: inline-block; background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);">
+                                    🚀 Go to Dashboard
+                                </a>
+                            </div>
+
+                            <!-- Footer -->
+                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
+                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
+                                    SAP Technologies
+                                </p>
+                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
+                                    Empowering Innovation, Delivering Excellence
+                                </p>
+                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
+                                    This is an automated welcome email. Please do not reply directly to this message.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 `
             };
 
-            await this.transporter.sendMail(mailOptions);
+            await this.sendEmail(mailOptions);
             console.log("✅ User signup notification sent to:", userData.email);
         } catch (error) {
-            console.error("Error sending user signup notification:", error);
+            console.error("❌ Error sending user signup notification:", error);
+            throw error;
         }
     }
 
@@ -822,73 +947,151 @@ ${JSON.stringify(alertData.details, null, 2)}
         }
         
         try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            const notifyEmail = process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || emailUser;
+            const notifyEmail = process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || 'saptechnologies256@gmail.com';
             
             const mailOptions = {
                 from: '"SAP Technologies System" <saptechnologies256@gmail.com>',
-                replyTo: emailUser, // Replies go to saptechnologies256@gmail.com
                 to: notifyEmail,
-                subject: `🎆 New User Registration: ${userData.name}`,
+                subject: `👤 New User Registration: ${userData.name}`,
                 html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <h2 style="color: #3b82f6;">🎆 New User Registration Alert</h2>
-                        <p>A new user has successfully registered on the SAP Technologies platform.</p>
-                        
-                        <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 20px 0;">
-                            <h3 style="color: #1e40af; margin: 0 0 15px 0;">📝 New User Details</h3>
-                            <p style="margin: 5px 0;"><strong>Name:</strong> ${userData.name}</p>
-                            <p style="margin: 5px 0;"><strong>Email:</strong> ${userData.email}</p>
-                            <p style="margin: 5px 0;"><strong>Registration Date:</strong> ${new Date().toLocaleString()}</p>
-                            <p style="margin: 5px 0;"><strong>User ID:</strong> ${userData.id || 'Generated after save'}</p>
-                            <p style="margin: 15px 0 5px 0; color: #1d4ed8; font-weight: bold;">✅ Account Status: Active</p>
-                        </div>
-                        
-                        <h3 style="color: #1f2937;">📊 Registration Summary:</h3>
-                        <ul style="color: #374151;">
-                            <li>✅ Email validation: Passed</li>
-                            <li>🔒 Password: Securely encrypted</li>
-                            <li>📧 Welcome email: Sent to user</li>
-                            <li>📋 User profile: Created</li>
-                            <li>📝 Activity log: Initialized</li>
-                        </ul>
-                        
-                        <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #22c55e; margin: 20px 0;">
-                            <h4 style="color: #15803d; margin: 0 0 10px 0;">🚀 User Access Granted</h4>
-                            <p style="margin: 5px 0; color: #15803d;">The user can now:</p>
-                            <ul style="color: #15803d; margin: 10px 0;">
-                                <li>Access their dashboard</li>
-                                <li>Submit contact forms and partnership requests</li>
-                                <li>Manage their profile</li>
-                                <li>Receive notifications and updates</li>
-                            </ul>
-                        </div>
-                        
-                        <h3 style="color: #1f2937;">🔍 Admin Actions Available:</h3>
-                        <ul style="color: #374151;">
-                            <li>View user profile in admin dashboard</li>
-                            <li>Monitor user activity and engagement</li>
-                            <li>Send targeted communications</li>
-                            <li>Manage user permissions if needed</li>
-                        </ul>
-                        
-                        <p style="color: #374151;">You can review the user's profile and activity in the admin dashboard.</p>
-                        
-                        <hr style="margin: 30px 0;">
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
-                            <h3 style="color: #1f2937; margin: 0 0 15px 0;">📞 SAP Technologies Admin Contact</h3>
-                            <p style="margin: 5px 0;"><strong>📞 Phone:</strong> +256706564628</p>
-                            <p style="margin: 5px 0;"><strong>📧 Admin Email:</strong> ${notifyEmail}</p>
-                            <p style="margin: 15px 0 0 0; color: #059669; font-size: 14px;">System notification - User registration successful</p>
+                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 20px; border-radius: 15px;">
+                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+                            <!-- Header -->
+                            <div style="text-align: center; margin-bottom: 35px;">
+                                <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
+                                    <span style="font-size: 35px;">👤</span>
+                                </div>
+                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">New User Registration</h1>
+                                <p style="color: #718096; margin: 0; font-size: 16px;">A new user has joined the platform</p>
+                            </div>
+
+                            <!-- Alert Message -->
+                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #3b82f6; text-align: center;">
+                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Account Successfully Created!</h2>
+                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
+                                    A new user account has been registered on the SAP Technologies platform. The user has been sent a welcome email.
+                                </p>
+                            </div>
+
+                            <!-- User Details -->
+                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">📝 User Details</h2>
+                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
+                                    <strong>Name:</strong> ${userData.name}
+                                </p>
+                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
+                                    <strong>Email:</strong> <a href="mailto:${userData.email}" style="color: #3b82f6; text-decoration: none;">${userData.email}</a>
+                                </p>
+                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
+                                    <strong>Registration Date:</strong> ${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
+                                </p>
+                                ${userData.id ? `
+                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
+                                    <strong>User ID:</strong> ${userData.id}
+                                </p>
+                                ` : ''}
+                                <div style="background: #10b98115; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                                    <p style="margin: 0; color: #10b981; font-weight: 600;">✅ Account Status: Active</p>
+                                </div>
+                            </div>
+
+                            <!-- Registration Summary -->
+                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">📊 Registration Summary</h2>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Email validation passed</p>
+                                </div>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Password securely encrypted</p>
+                                </div>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Welcome email sent to user</p>
+                                </div>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">User profile created</p>
+                                </div>
+                                <div style="display: flex; align-items: flex-start;">
+                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Activity log initialized</p>
+                                </div>
+                            </div>
+
+                            <!-- User Access Box -->
+                            <div style="background: linear-gradient(135deg, #10b98115 0%, #059e6915 100%); padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #10b981;">
+                                <h3 style="color: #10b981; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">🚀 User Access Granted</h3>
+                                <p style="margin: 0 0 12px 0; color: #2d3748; font-size: 14px;">The user can now:</p>
+                                <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+                                    <span style="color: #10b981; font-size: 16px; margin-right: 8px;">•</span>
+                                    <p style="margin: 0; color: #4a5568; font-size: 14px;">Access their personalized dashboard</p>
+                                </div>
+                                <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+                                    <span style="color: #10b981; font-size: 16px; margin-right: 8px;">•</span>
+                                    <p style="margin: 0; color: #4a5568; font-size: 14px;">Submit contact forms and partnership requests</p>
+                                </div>
+                                <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+                                    <span style="color: #10b981; font-size: 16px; margin-right: 8px;">•</span>
+                                    <p style="margin: 0; color: #4a5568; font-size: 14px;">Manage their profile and preferences</p>
+                                </div>
+                                <div style="display: flex; align-items: flex-start;">
+                                    <span style="color: #10b981; font-size: 16px; margin-right: 8px;">•</span>
+                                    <p style="margin: 0; color: #4a5568; font-size: 14px;">Receive notifications and updates</p>
+                                </div>
+                            </div>
+
+                            <!-- Admin Actions -->
+                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">🔍 Admin Actions Available</h2>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #3b82f6; font-size: 18px; margin-right: 10px;">→</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">View user profile in admin dashboard</p>
+                                </div>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #3b82f6; font-size: 18px; margin-right: 10px;">→</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Monitor user activity and engagement</p>
+                                </div>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #3b82f6; font-size: 18px; margin-right: 10px;">→</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Send targeted communications</p>
+                                </div>
+                                <div style="display: flex; align-items: flex-start;">
+                                    <span style="color: #3b82f6; font-size: 18px; margin-right: 10px;">→</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Manage user permissions if needed</p>
+                                </div>
+                            </div>
+
+                            <!-- CTA Button -->
+                            <div style="text-align: center; margin-top: 35px;">
+                                <a href="https://sap-technologies.com/admin" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
+                                    👥 View in Admin Dashboard
+                                </a>
+                            </div>
+
+                            <!-- Footer -->
+                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
+                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
+                                    SAP Technologies Admin System
+                                </p>
+                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
+                                    System notification - User registration successful
+                                </p>
+                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
+                                    This is an automated system notification for administrators.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 `
             };
 
-            await this.transporter.sendMail(mailOptions);
+            await this.sendEmail(mailOptions);
             console.log("✅ Admin user signup alert sent to:", notifyEmail);
         } catch (error) {
-            console.error("Error sending admin user signup alert:", error);
+            console.error("❌ Error sending admin user signup alert:", error);
+            throw error;
         }
     }
 
@@ -1755,81 +1958,126 @@ ${JSON.stringify(alertData.details, null, 2)}
 
         try {
             const mailOptions = {
-                from: '"SAP Technologies - No Reply" <noreply@sap-technologies.com>',
-                replyTo: process.env.GMAIL_USER || process.env.SMTP_USER,
+                from: '"SAP Technologies Security" <saptechnologies256@gmail.com>',
                 to: userEmail,
-                subject: "Password Reset Verification Code",
+                subject: "🔒 Password Reset Code - SAP Technologies",
                 html: `
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>Password Reset</title>
-                    </head>
-                    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
-                        <div style="max-width: 600px; margin: 40px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 40px 20px; border-radius: 15px;">
+                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
                             <!-- Header -->
-                            <div style="background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%); padding: 40px 30px; text-align: center;">
-                                <h1 style="margin: 0; color: white; font-size: 28px; font-weight: 700;">🔐 Password Reset</h1>
-                                <p style="margin: 10px 0 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">SAP Technologies</p>
+                            <div style="text-align: center; margin-bottom: 35px;">
+                                <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
+                                    <span style="font-size: 35px;">🔒</span>
+                                </div>
+                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Password Reset Request</h1>
+                                <p style="color: #718096; margin: 0; font-size: 16px;">Hello, ${userName}</p>
                             </div>
 
-                            <!-- Content -->
-                            <div style="padding: 40px 30px;">
-                                <p style="margin: 0 0 20px 0; color: #1f2937; font-size: 16px; line-height: 1.6;">
-                                    Hi <strong>${userName}</strong>,
+                            <!-- Message -->
+                            <div style="background: linear-gradient(135deg, #ef444415 0%, #dc262615 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #ef4444; text-align: center;">
+                                <h2 style="color: #ef4444; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Password Reset Requested</h2>
+                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
+                                    We received a request to reset your password. Use the verification code below to complete the process.
                                 </p>
+                            </div>
 
-                                <p style="margin: 0 0 30px 0; color: #4b5563; font-size: 15px; line-height: 1.6;">
-                                    We received a request to reset your password. Use the verification code below to complete the password reset process:
+                            <!-- Verification Code Box -->
+                            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 3px dashed #f59e0b; border-radius: 12px; padding: 35px; text-align: center; margin: 30px 0;">
+                                <p style="margin: 0 0 15px 0; color: #92400e; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px;">
+                                    YOUR VERIFICATION CODE
                                 </p>
-
-                                <!-- Verification Code Box -->
-                                <div style="background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%); border: 2px dashed #3b82f6; border-radius: 12px; padding: 30px; text-align: center; margin: 30px 0;">
-                                    <p style="margin: 0 0 10px 0; color: #1e40af; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
-                                        Your Verification Code
+                                <div style="font-size: 42px; font-weight: 800; color: #dc2626; letter-spacing: 10px; font-family: 'Courier New', monospace; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+                                    ${verificationCode}
+                                </div>
+                                <div style="margin-top: 20px; padding: 12px; background: white; border-radius: 8px;">
+                                    <p style="margin: 0; color: #f59e0b; font-size: 14px; font-weight: 600;">
+                                        ⏱️ Expires in 10 minutes
                                     </p>
-                                    <div style="font-size: 36px; font-weight: 800; color: #1a237e; letter-spacing: 8px; font-family: 'Courier New', monospace;">
-                                        ${verificationCode}
+                                </div>
+                            </div>
+
+                            <!-- Instructions -->
+                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">📋 How to Use This Code</h2>
+                                <div style="margin-bottom: 15px;">
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <span style="background: #ef4444; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">1</span>
+                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Go to the password reset page</p>
                                     </div>
-                                    <p style="margin: 15px 0 0 0; color: #3b82f6; font-size: 13px;">
-                                        ⏱️ Valid for 10 minutes
-                                    </p>
                                 </div>
-
-                                <!-- Instructions -->
-                                <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 30px 0;">
-                                    <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
-                                        <strong>⚠️ Security Notice:</strong><br>
-                                        • This code expires in 10 minutes<br>
-                                        • Never share this code with anyone<br>
-                                        • If you didn't request this reset, please ignore this email
-                                    </p>
+                                <div style="margin-bottom: 15px;">
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <span style="background: #ef4444; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">2</span>
+                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Enter the 6-digit verification code above</p>
+                                    </div>
                                 </div>
+                                <div style="margin-bottom: 15px;">
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <span style="background: #ef4444; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">3</span>
+                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Create your new secure password</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <span style="background: #ef4444; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">4</span>
+                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Log in with your new password</p>
+                                    </div>
+                                </div>
+                            </div>
 
-                                <p style="margin: 30px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
-                                    If you have any concerns about your account security, please contact our support team immediately.
+                            <!-- Security Warning -->
+                            <div style="background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%); padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #dc2626;">
+                                <h3 style="color: #991b1b; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">⚠️ Security Notice</h3>
+                                <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+                                    <span style="color: #991b1b; font-size: 16px; margin-right: 8px;">•</span>
+                                    <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.6;">This code expires in 10 minutes</p>
+                                </div>
+                                <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+                                    <span style="color: #991b1b; font-size: 16px; margin-right: 8px;">•</span>
+                                    <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.6;">Never share this code with anyone</p>
+                                </div>
+                                <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
+                                    <span style="color: #991b1b; font-size: 16px; margin-right: 8px;">•</span>
+                                    <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.6;">Our team will NEVER ask for this code</p>
+                                </div>
+                                <div style="display: flex; align-items: flex-start;">
+                                    <span style="color: #991b1b; font-size: 16px; margin-right: 8px;">•</span>
+                                    <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.6;">If you didn't request this, ignore this email</p>
+                                </div>
+                            </div>
+
+                            <!-- Contact Info -->
+                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">🛡️ Security Concerns?</h2>
+                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px; line-height: 1.6;">
+                                    If you suspect unauthorized access to your account, contact our security team immediately:
+                                </p>
+                                <p style="color: #2d3748; margin: 12px 0 8px 0; font-size: 15px;">
+                                    <strong>Phone:</strong> <a href="tel:+256706564628" style="color: #3b82f6; text-decoration: none;">+256 706 564 628</a>
+                                </p>
+                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
+                                    <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
                                 </p>
                             </div>
 
                             <!-- Footer -->
-                            <div style="background: #f9fafb; padding: 30px; border-top: 1px solid #e5e7eb;">
-                                <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 13px; text-align: center;">
-                                    This is an automated message from SAP Technologies
+                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
+                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
+                                    SAP Technologies Security Team
                                 </p>
-                                <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
-                                    Kampala, Uganda | +256706564628<br>
-                                    <a href="mailto:${process.env.GMAIL_USER || process.env.SMTP_USER}" style="color: #3b82f6; text-decoration: none;">${process.env.GMAIL_USER || process.env.SMTP_USER}</a>
+                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
+                                    Protecting Your Account
+                                </p>
+                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
+                                    This is an automated security email. Please do not reply directly to this message.
                                 </p>
                             </div>
                         </div>
-                    </body>
-                    </html>
+                    </div>
                 `
             };
 
-            await this.transporter.sendMail(mailOptions);
+            await this.sendEmail(mailOptions);
             console.log("✅ Password reset code sent to:", userEmail);
         } catch (error) {
             console.error("❌ Error sending password reset code:", error);
@@ -1848,87 +2096,132 @@ ${JSON.stringify(alertData.details, null, 2)}
 
         try {
             const mailOptions = {
-                from: '"SAP Technologies - No Reply" <noreply@sap-technologies.com>',
-                replyTo: process.env.GMAIL_USER || process.env.SMTP_USER,
+                from: '"SAP Technologies Security" <saptechnologies256@gmail.com>',
                 to: userEmail,
-                subject: "Password Changed Successfully",
+                subject: "✅ Password Changed Successfully - SAP Technologies",
                 html: `
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>Password Changed</title>
-                    </head>
-                    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
-                        <div style="max-width: 600px; margin: 40px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 20px; border-radius: 15px;">
+                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
                             <!-- Header -->
-                            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center;">
-                                <div style="font-size: 48px; margin-bottom: 10px;">✅</div>
-                                <h1 style="margin: 0; color: white; font-size: 28px; font-weight: 700;">Password Changed</h1>
-                                <p style="margin: 10px 0 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">SAP Technologies</p>
+                            <div style="text-align: center; margin-bottom: 35px;">
+                                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+                                    <span style="font-size: 35px;">🔐</span>
+                                </div>
+                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Password Changed Successfully!</h1>
+                                <p style="color: #718096; margin: 0; font-size: 16px;">Hello, ${userName}</p>
                             </div>
 
-                            <!-- Content -->
-                            <div style="padding: 40px 30px;">
-                                <p style="margin: 0 0 20px 0; color: #1f2937; font-size: 16px; line-height: 1.6;">
-                                    Hi <strong>${userName}</strong>,
+                            <!-- Success Message -->
+                            <div style="background: linear-gradient(135deg, #10b98115 0%, #05966915 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #10b981; text-align: center;">
+                                <h2 style="color: #10b981; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Your Password Has Been Updated!</h2>
+                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
+                                    Your password was successfully changed. You can now log in to your account using your new password.
                                 </p>
+                            </div>
 
-                                <p style="margin: 0 0 30px 0; color: #4b5563; font-size: 15px; line-height: 1.6;">
-                                    Your password has been changed successfully. You can now log in to your account using your new password.
+                            <!-- Success Box -->
+                            <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981; border-radius: 12px; padding: 30px; text-align: center; margin: 30px 0;">
+                                <p style="margin: 0 0 15px 0; color: #065f46; font-size: 18px; font-weight: 600;">
+                                    🎉 Password Update Confirmed
                                 </p>
+                                <p style="margin: 0; color: #047857; font-size: 14px;">
+                                    <strong>Changed on:</strong><br>
+                                    ${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
+                                </p>
+                            </div>
 
-                                <!-- Success Box -->
-                                <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981; border-radius: 12px; padding: 25px; text-align: center; margin: 30px 0;">
-                                    <p style="margin: 0; color: #065f46; font-size: 16px; font-weight: 600;">
-                                        🎉 Your password has been updated
-                                    </p>
-                                    <p style="margin: 10px 0 0 0; color: #047857; font-size: 14px;">
-                                        Changed on: ${new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}
-                                    </p>
-                                </div>
+                            <!-- Security Alert -->
+                            <div style="background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%); padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #dc2626;">
+                                <h3 style="color: #991b1b; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">🛡️ Didn't Make This Change?</h3>
+                                <p style="margin: 0 0 15px 0; color: #991b1b; font-size: 14px; line-height: 1.6;">
+                                    If you didn't change your password, someone else may have access to your account. Please contact our support team immediately:
+                                </p>
+                                <p style="margin: 0; color: #991b1b; font-size: 14px;">
+                                    <strong>Emergency Contact:</strong> <a href="tel:+256706564628" style="color: #dc2626; font-weight: 600; text-decoration: none;">+256 706 564 628</a>
+                                </p>
+                            </div>
 
-                                <!-- Security Alert -->
-                                <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 20px; border-radius: 8px; margin: 30px 0;">
-                                    <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.6;">
-                                        <strong>🛡️ Didn't make this change?</strong><br>
-                                        If you didn't change your password, please contact our support team immediately at 
-                                        <a href="tel:+256706564628" style="color: #dc2626; font-weight: 600;">+256706564628</a> 
-                                        to secure your account.
-                                    </p>
+                            <!-- Security Tips -->
+                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">🔐 Security Best Practices</h2>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Use a unique password for your SAP Technologies account</p>
                                 </div>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Never share your password with anyone</p>
+                                </div>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Use a combination of letters, numbers, and special characters</p>
+                                </div>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Change your password regularly (every 90 days)</p>
+                                </div>
+                                <div style="display: flex; align-items: flex-start;">
+                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">✓</span>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Be cautious of phishing emails and suspicious links</p>
+                                </div>
+                            </div>
 
-                                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 20px; margin: 30px 0;">
-                                    <p style="margin: 0 0 10px 0; color: #0c4a6e; font-size: 14px; font-weight: 600;">
-                                        🔐 Security Tips:
-                                    </p>
-                                    <ul style="margin: 0; padding-left: 20px; color: #0369a1; font-size: 13px; line-height: 1.8;">
-                                        <li>Use a unique password for your SAP Technologies account</li>
-                                        <li>Never share your password with anyone</li>
-                                        <li>Enable two-factor authentication for extra security</li>
-                                        <li>Change your password regularly</li>
-                                    </ul>
+                            <!-- What's Next -->
+                            <div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">📋 Next Steps</h2>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="background: #3b82f6; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">1</span>
+                                    <p style="margin: 0; padding-top: 4px; color: #1e40af; line-height: 1.6;">Log in using your new password</p>
                                 </div>
+                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                                    <span style="background: #3b82f6; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">2</span>
+                                    <p style="margin: 0; padding-top: 4px; color: #1e40af; line-height: 1.6;">Update your password manager if you use one</p>
+                                </div>
+                                <div style="display: flex; align-items: flex-start;">
+                                    <span style="background: #3b82f6; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">3</span>
+                                    <p style="margin: 0; padding-top: 4px; color: #1e40af; line-height: 1.6;">Review your account activity for any suspicious behavior</p>
+                                </div>
+                            </div>
+
+                            <!-- Contact Info -->
+                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
+                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">📞 Need Help?</h2>
+                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
+                                    <strong>Phone:</strong> <a href="tel:+256706564628" style="color: #3b82f6; text-decoration: none;">+256 706 564 628</a>
+                                </p>
+                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
+                                    <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
+                                </p>
+                                <p style="color: #718096; margin-top: 15px; font-size: 14px; line-height: 1.6;">
+                                    Our security team is here to help protect your account.
+                                </p>
+                            </div>
+
+                            <!-- CTA Button -->
+                            <div style="text-align: center; margin-top: 35px;">
+                                <a href="https://sap-technologies.com/login" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+                                    🔓 Log In to Your Account
+                                </a>
                             </div>
 
                             <!-- Footer -->
-                            <div style="background: #f9fafb; padding: 30px; border-top: 1px solid #e5e7eb;">
-                                <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 13px; text-align: center;">
-                                    This is an automated security notification from SAP Technologies
+                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
+                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
+                                    SAP Technologies Security Team
                                 </p>
-                                <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
-                                    Kampala, Uganda | +256706564628<br>
-                                    <a href="mailto:${process.env.GMAIL_USER || process.env.SMTP_USER}" style="color: #3b82f6; text-decoration: none;">${process.env.GMAIL_USER || process.env.SMTP_USER}</a>
+                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
+                                    Keeping Your Account Safe
+                                </p>
+                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
+                                    This is an automated security notification. Please do not reply directly to this message.
                                 </p>
                             </div>
                         </div>
-                    </body>
-                    </html>
+                    </div>
                 `
             };
 
-            await this.transporter.sendMail(mailOptions);
+            await this.sendEmail(mailOptions);
             console.log("✅ Password change confirmation sent to:", userEmail);
         } catch (error) {
             console.error("❌ Error sending password change confirmation:", error);
