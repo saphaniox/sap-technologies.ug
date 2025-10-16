@@ -13,13 +13,19 @@ class EmailService {
             this.resend = new Resend(resendKey);
             this.useResend = true;
             this.isConfigured = true;
-            this.fromEmail = process.env.RESEND_FROM_EMAIL || process.env.GMAIL_USER || 'saptechnologies256@gmail.com';
-            this.notifyEmail = process.env.NOTIFY_EMAIL || this.fromEmail;
+            // IMPORTANT: Resend requires using verified domain or onboarding@resend.dev
+            this.fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+            this.notifyEmail = process.env.NOTIFY_EMAIL || process.env.GMAIL_USER || 'saptechnologies256@gmail.com';
             console.log("✅ Email service configured with Resend");
             console.log("📧 From Email:", this.fromEmail);
             console.log("↩️  Reply-To Email:", this.replyToEmail);
             console.log("📬 Notify Email:", this.notifyEmail);
             console.log("💡 Resend: 3,000 emails/month free, excellent deliverability");
+            
+            if (this.fromEmail !== 'onboarding@resend.dev' && !this.fromEmail.includes('@')) {
+                console.warn("⚠️  WARNING: RESEND_FROM_EMAIL must be a valid email address");
+                console.warn("   Use 'onboarding@resend.dev' for testing or verify your domain");
+            }
             return;
         }
         
@@ -123,11 +129,16 @@ class EmailService {
      */
     async sendEmail(emailOptions) {
         if (!this.isConfigured) {
-            console.log("Email service not configured, skipping email");
-            return false;
+            const errorMsg = "❌ Email service not configured - No email provider found (RESEND_API_KEY, SENDGRID_API_KEY, or GMAIL credentials required)";
+            console.error(errorMsg);
+            throw new Error(errorMsg);
         }
 
         try {
+            console.log(`📧 Attempting to send email to: ${emailOptions.to}`);
+            console.log(`   Subject: ${emailOptions.subject}`);
+            console.log(`   Provider: ${this.useResend ? 'Resend' : this.useSendGrid ? 'SendGrid' : 'SMTP'}`);
+            
             if (this.useResend) {
                 // Resend API - Simple and reliable
                 const resendOptions = {
@@ -143,8 +154,12 @@ class EmailService {
                     resendOptions.tags = [{ name: 'category', value: emailOptions.category }];
                 }
 
-                await this.resend.emails.send(resendOptions);
-                console.log(`✅ Email sent via Resend to: ${emailOptions.to}`);
+                console.log(`   From: ${resendOptions.from}`);
+                console.log(`   Reply-To: ${resendOptions.reply_to}`);
+                
+                const result = await this.resend.emails.send(resendOptions);
+                console.log(`✅ Email sent successfully via Resend`);
+                console.log(`   Email ID: ${result.id}`);
                 return true;
                 
             } else if (this.useSendGrid) {
@@ -190,7 +205,8 @@ class EmailService {
                 }
                 
                 await sgMail.send(msg);
-                console.log(`✅ Email sent via SendGrid to: ${emailOptions.to}`);
+                console.log(`✅ Email sent successfully via SendGrid`);
+                console.log(`   Message ID: ${msg.messageId || 'N/A'}`);
                 return true;
             } else {
                 // SMTP (for local development)
@@ -202,16 +218,28 @@ class EmailService {
                     html: emailOptions.html
                 };
 
-                await this.transporter.sendMail(mailOptions);
-                console.log(`? Email sent via SMTP to: ${emailOptions.to}`);
+                const info = await this.transporter.sendMail(mailOptions);
+                console.log(`✅ Email sent successfully via SMTP`);
+                console.log(`   Message ID: ${info.messageId}`);
                 return true;
             }
         } catch (error) {
-            console.error(`? Error sending email to ${emailOptions.to}:`, error.message);
+            console.error(`❌ CRITICAL: Email sending failed!`);
+            console.error(`   To: ${emailOptions.to}`);
+            console.error(`   Subject: ${emailOptions.subject}`);
+            console.error(`   Provider: ${this.useResend ? 'Resend' : this.useSendGrid ? 'SendGrid' : 'SMTP'}`);
+            console.error(`   Error Type: ${error.name}`);
+            console.error(`   Error Message: ${error.message}`);
+            
             if (error.response) {
-                console.error("   Response:", error.response.body);
+                console.error(`   API Response:`, JSON.stringify(error.response.body || error.response, null, 2));
             }
-            return false;
+            if (error.stack) {
+                console.error(`   Stack Trace:`, error.stack);
+            }
+            
+            // Throw the error so calling code knows it failed
+            throw new Error(`Failed to send email: ${error.message}`);
         }
     }
 
