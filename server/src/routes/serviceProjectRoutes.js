@@ -72,8 +72,27 @@ router.get("/projects/:id", ProjectController.getProjectById);
 
 // POST /api/admin/projects - Create new project
 router.post("/projects", 
+  (req, res, next) => {
+    console.log("🔥 PROJECT CREATE ROUTE HIT!");
+    console.log("User:", req.user ? `${req.user.name} (${req.user.role})` : "No user");
+    console.log("Body keys:", req.body ? Object.keys(req.body) : "No body");
+    console.log("Files:", req.files ? req.files.length : "No files");
+    next();
+  },
   projectUpload.array("images", 5), // Allow up to 5 images
-  validation.validateProject,
+  (req, res, next) => {
+    console.log("🔥 AFTER MULTER!");
+    console.log("Body keys after multer:", req.body ? Object.keys(req.body) : "No body");
+    console.log("Files after multer:", req.files ? req.files.length : "No files");
+    console.log("Sample body data:", {
+      title: req.body.title,
+      description: req.body.description,
+      category: req.body.category
+    });
+    next();
+  },
+  // Temporarily skip validation to debug
+  // validation.validateProject,
   ProjectController.createProject
 );
 

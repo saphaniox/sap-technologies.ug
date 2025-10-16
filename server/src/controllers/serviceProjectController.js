@@ -580,14 +580,22 @@ class ProjectController {
   // Create new project
   static async createProject(req, res) {
     try {
+      console.log("=== CREATE PROJECT CONTROLLER START ===");
+      console.log("User:", req.user ? `${req.user.name} (${req.user.email})` : "No user");
+      console.log("Body:", JSON.stringify(req.body, null, 2));
+      console.log("Files:", req.files ? req.files.length : "No files");
+      
       const projectData = req.body;
       
       // Handle multiple file uploads with Cloudinary support
       if (req.files && req.files.length > 0) {
+        console.log("Processing uploaded files...");
         projectData.images = req.files.map(file => getFileUrl(file, 'projects'));
+        console.log("Images URLs:", projectData.images);
         // Set first image as main image if not specified
         if (!projectData.image && projectData.images.length > 0) {
           projectData.image = projectData.images[0];
+          console.log("Set main image:", projectData.image);
         }
       }
       
@@ -658,27 +666,35 @@ class ProjectController {
       
       // Validate required fields
       const { title, description, category } = projectData;
+      console.log("Validating required fields:", { title, description, category });
       if (!title || !description || !category) {
+        console.log("❌ Missing required fields!");
         return res.status(400).json({
           success: false,
           message: "Missing required fields: title, description, category"
         });
       }
 
+      console.log("Creating project with data:", JSON.stringify(projectData, null, 2));
       const project = new Project(projectData);
       await project.save();
+      console.log("✅ Project saved successfully:", project._id);
 
       // Invalidate project caches
       cache.invalidateProjects();
       cache.del('projects:categories');
       logger.logInfo('ProjectController', 'Project created, cache invalidated', { projectId: project._id });
 
+      console.log("=== CREATE PROJECT CONTROLLER END (SUCCESS) ===");
       res.status(201).json({
         success: true,
         message: "Project created successfully",
         data: { project }
       });
     } catch (error) {
+      console.log("=== CREATE PROJECT CONTROLLER END (ERROR) ===");
+      console.error("❌ Error details:", error);
+      console.error("Error stack:", error.stack);
       logger.logError('ProjectController', error, { context: 'createProject' });
       res.status(400).json({
         success: false,
