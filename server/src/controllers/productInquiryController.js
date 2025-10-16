@@ -158,21 +158,24 @@ class ProductInquiryController {
         .populate("product", "name category image")
         .sort({ createdAt: -1 })
         .limit(limit * 1)
-        .skip((page - 1) * limit);
+        .skip((page - 1) * limit)
+        .lean();
 
       const count = await ProductInquiry.countDocuments(filter);
+
+      console.log(`✅ Found ${inquiries.length} inquiries (total: ${count})`);
 
       res.json({
         success: true,
         data: {
           inquiries,
           totalPages: Math.ceil(count / limit),
-          currentPage: page,
+          currentPage: parseInt(page),
           total: count
         }
       });
     } catch (error) {
-      console.error("Get inquiries error:", error);
+      console.error("❌ Get inquiries error:", error);
       res.status(500).json({
         success: false,
         message: "Failed to fetch inquiries",
@@ -187,6 +190,23 @@ class ProductInquiryController {
       const { id } = req.params;
       const { status, adminNotes } = req.body;
 
+      // Validate MongoDB ObjectId
+      if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid inquiry ID format"
+        });
+      }
+
+      // Validate status
+      const validStatuses = ["pending", "contacted", "resolved"];
+      if (status && !validStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid status. Must be one of: ${validStatuses.join(", ")}`
+        });
+      }
+
       const inquiry = await ProductInquiry.findByIdAndUpdate(
         id,
         {
@@ -194,7 +214,7 @@ class ProductInquiryController {
           adminNotes,
           "metadata.respondedAt": status === "contacted" ? new Date() : undefined
         },
-        { new: true }
+        { new: true, runValidators: true }
       ).populate("product", "name category");
 
       if (!inquiry) {
@@ -210,7 +230,7 @@ class ProductInquiryController {
         data: { inquiry }
       });
     } catch (error) {
-      console.error("Update inquiry error:", error);
+      console.error("❌ Update inquiry error:", error);
       res.status(500).json({
         success: false,
         message: "Failed to update inquiry",
@@ -223,6 +243,14 @@ class ProductInquiryController {
   static async deleteInquiry(req, res) {
     try {
       const { id } = req.params;
+
+      // Validate MongoDB ObjectId
+      if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid inquiry ID format"
+        });
+      }
 
       const inquiry = await ProductInquiry.findByIdAndDelete(id);
 
@@ -238,7 +266,7 @@ class ProductInquiryController {
         message: "Inquiry deleted successfully"
       });
     } catch (error) {
-      console.error("Delete inquiry error:", error);
+      console.error("❌ Delete inquiry error:", error);
       res.status(500).json({
         success: false,
         message: "Failed to delete inquiry",

@@ -173,7 +173,7 @@ class ServiceQuoteController {
       const { status, serviceId, page = 1, limit = 20, search } = req.query;
 
       let query = {};
-      if (status) query.status = status;
+      if (status && status !== "all") query.status = status;
       if (serviceId) query.service = serviceId;
       
       // Add search functionality
@@ -192,9 +192,12 @@ class ServiceQuoteController {
         .populate("service", "name category")
         .sort({ createdAt: -1 })
         .limit(parseInt(limit))
-        .skip((parseInt(page) - 1) * parseInt(limit));
+        .skip((parseInt(page) - 1) * parseInt(limit))
+        .lean();
 
       const total = await ServiceQuote.countDocuments(query);
+
+      console.log(`✅ Found ${quotes.length} quotes (total: ${total})`);
 
       res.status(200).json({
         success: true,
@@ -223,6 +226,23 @@ class ServiceQuoteController {
     try {
       const { id } = req.params;
       const { status, adminNotes } = req.body;
+
+      // Validate MongoDB ObjectId
+      if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid quote ID format"
+        });
+      }
+
+      // Validate status
+      const validStatuses = ["pending", "contacted", "quoted", "accepted", "rejected"];
+      if (status && !validStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid status. Must be one of: ${validStatuses.join(", ")}`
+        });
+      }
 
       const quote = await ServiceQuote.findById(id);
       if (!quote) {
@@ -260,6 +280,14 @@ class ServiceQuoteController {
   static async deleteQuote(req, res) {
     try {
       const { id } = req.params;
+
+      // Validate MongoDB ObjectId
+      if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid quote ID format"
+        });
+      }
 
       const quote = await ServiceQuote.findByIdAndDelete(id);
       if (!quote) {
