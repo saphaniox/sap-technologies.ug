@@ -349,6 +349,74 @@ exports.verifyCertificate = async (req, res) => {
 };
 
 /**
+ * Get all certificates (admin only)
+ */
+exports.getAllCertificates = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const search = req.query.search || '';
+        const type = req.query.type || ''; // winner, finalist, participation
+
+        // Query nominations that have certificates
+        const query = { certificateFile: { $exists: true, $ne: null } };
+        
+        if (search) {
+            query.$or = [
+                { nomineeName: { $regex: search, $options: 'i' } },
+                { certificateId: { $regex: search, $options: 'i' } }
+            ];
+        }
+        
+        if (type) {
+            query.status = type;
+        }
+
+        const total = await Nomination.countDocuments(query);
+        const certificates = await Nomination.find(query)
+            .populate('category', 'name')
+            .select('nomineeName certificateId certificateFile certificateUrl certificateCloudinaryId status createdAt certificateGeneratedAt')
+            .sort({ certificateGeneratedAt: -1 })
+            .limit(limit)
+            .skip((page - 1) * limit);
+
+        res.json({
+            success: true,
+            data: {
+                certificates: certificates.map(cert => ({
+                    id: cert._id,
+                    nomineeName: cert.nomineeName,
+                    categoryName: cert.category?.name || 'N/A',
+                    certificateId: cert.certificateId,
+                    type: cert.status,
+                    filename: cert.certificateFile,
+                    downloadUrl: cert.certificateUrl || `/api/certificates/download/${cert.certificateFile}`,
+                    cloudinaryId: cert.certificateCloudinaryId,
+                    storage: cert.certificateUrl && cert.certificateUrl.includes('cloudinary') ? 'cloudinary' : 'local',
+                    generatedAt: cert.certificateGeneratedAt || cert.createdAt,
+                    verificationUrl: `${process.env.FRONTEND_URL || 'https://saptechnologies.ug'}/verify/${cert.certificateId}`
+                })),
+                pagination: {
+                    currentPage: page,
+                    totalPages: Math.ceil(total / limit),
+                    totalCertificates: total,
+                    hasNextPage: page < Math.ceil(total / limit),
+                    hasPrevPage: page > 1
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error getting all certificates:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Error retrieving certificates',
+            error: error.message 
+        });
+    }
+};
+
+/**
  * Upload signature image for certificates
  */
 exports.uploadSignature = async (req, res) => {

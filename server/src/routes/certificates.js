@@ -12,6 +12,7 @@ router.get('/download/:filename', certificateController.downloadCertificate);
 router.get('/info/:nominationId', authMiddleware, certificateController.getCertificateInfo);
 
 // Admin routes
+router.get('/all', authMiddleware, adminMiddleware, certificateController.getAllCertificates);
 router.post('/generate/:nominationId', authMiddleware, adminMiddleware, certificateController.generateCertificate);
 router.post('/regenerate/:nominationId', authMiddleware, adminMiddleware, certificateController.regenerateCertificate);
 router.post('/bulk-generate', authMiddleware, adminMiddleware, certificateController.bulkGenerateCertificates);
