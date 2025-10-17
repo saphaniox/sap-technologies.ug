@@ -191,6 +191,14 @@ const nominationSchema = new mongoose.Schema({
     certificateFile: {
         type: String
     },
+    certificateUrl: {
+        type: String,
+        default: null
+    },
+    certificateCloudinaryId: {
+        type: String,
+        default: null
+    },
     certificateGeneratedAt: {
         type: Date
     }

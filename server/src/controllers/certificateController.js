@@ -68,27 +68,32 @@ exports.generateCertificate = async (req, res) => {
             certificateId: nomination.certificateId
         };
 
-        let certificatePath;
+        let certificateResult;
 
         // Generate appropriate certificate based on status
         if (nomination.status === 'winner') {
-            certificatePath = await certificateService.generateWinnerCertificate(certificateData);
+            certificateResult = await certificateService.generateWinnerCertificate(certificateData);
         } else if (nomination.status === 'finalist') {
-            certificatePath = await certificateService.generateFinalistCertificate(certificateData);
+            certificateResult = await certificateService.generateFinalistCertificate(certificateData);
         } else {
-            certificatePath = await certificateService.generateParticipationCertificate(certificateData);
+            certificateResult = await certificateService.generateParticipationCertificate(certificateData);
         }
 
-        // Save certificate filename to nomination
-        const filename = certificatePath.split('\\').pop();
+        // Save certificate info to nomination
+        const filename = certificateResult.filepath.split('\\').pop();
         nomination.certificateFile = filename;
+        nomination.certificateUrl = certificateResult.url;
+        nomination.certificateCloudinaryId = certificateResult.cloudinaryId;
         await nomination.save();
 
         res.json({
             message: 'Certificate generated successfully',
             certificateId: nomination.certificateId,
             filename: filename,
-            downloadUrl: `/api/certificates/download/${filename}`
+            downloadUrl: certificateResult.url, // Use Cloudinary URL if available
+            storage: certificateResult.storage,
+            localPath: `server/uploads/certificates/${filename}`,
+            cloudinaryUrl: certificateResult.storage === 'cloudinary' ? certificateResult.url : null
         });
 
     } catch (error) {

@@ -3,13 +3,34 @@ const QRCode = require('qrcode');
 const fs = require('fs').promises;
 const path = require('path');
 const { Certificate } = require('../models');
+const cloudinary = require('cloudinary').v2;
 
 class CertificateService {
     constructor() {
         this.certificatesDir = path.join(__dirname, '../../uploads/certificates');
         this.signaturesDir = path.join(__dirname, '../../uploads/signatures');
+        this.useCloudinary = this.isCloudinaryConfigured();
         this.ensureCertificatesDirectory();
         this.ensureSignaturesDirectory();
+    }
+
+    /**
+     * Check if Cloudinary is properly configured
+     */
+    isCloudinaryConfigured() {
+        const configured = !!(
+            process.env.CLOUDINARY_CLOUD_NAME &&
+            process.env.CLOUDINARY_API_KEY &&
+            process.env.CLOUDINARY_API_SECRET
+        );
+        
+        if (configured) {
+            console.log('✅ Certificate Service: Cloudinary storage enabled');
+        } else {
+            console.log('📁 Certificate Service: Using local storage (Cloudinary not configured)');
+        }
+        
+        return configured;
     }
 
     async ensureCertificatesDirectory() {
@@ -26,6 +47,80 @@ class CertificateService {
         } catch (error) {
             console.error('Error creating signatures directory:', error);
         }
+    }
+
+    /**
+     * Upload PDF to Cloudinary
+     * @param {Buffer} pdfBuffer - PDF file buffer
+     * @param {string} filename - Filename for the certificate
+     * @returns {Promise<Object>} - Cloudinary upload result
+     */
+    async uploadToCloudinary(pdfBuffer, filename) {
+        return new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    folder: 'sap-technologies/certificates',
+                    resource_type: 'raw', // For PDFs
+                    public_id: filename.replace('.pdf', ''),
+                    format: 'pdf',
+                    access_mode: 'public'
+                },
+                (error, result) => {
+                    if (error) {
+                        console.error('❌ Cloudinary upload error:', error);
+                        reject(error);
+                    } else {
+                        console.log('☁️ Certificate uploaded to Cloudinary:', result.secure_url);
+                        resolve(result);
+                    }
+                }
+            );
+            
+            // Write buffer to stream
+            uploadStream.end(pdfBuffer);
+        });
+    }
+
+    /**
+     * Save certificate (to Cloudinary or local storage)
+     * @param {Buffer} pdfBytes - PDF buffer
+     * @param {string} filename - Certificate filename
+     * @returns {Promise<Object>} - { filepath, url, cloudinaryId }
+     */
+    async saveCertificate(pdfBytes, filename) {
+        const filepath = path.join(this.certificatesDir, filename);
+        
+        // Always save locally as backup
+        await fs.writeFile(filepath, pdfBytes);
+        console.log('💾 Certificate saved locally:', filepath);
+        
+        // Upload to Cloudinary if configured
+        if (this.useCloudinary) {
+            try {
+                const cloudinaryResult = await this.uploadToCloudinary(pdfBytes, filename);
+                return {
+                    filepath,
+                    url: cloudinaryResult.secure_url,
+                    cloudinaryId: cloudinaryResult.public_id,
+                    storage: 'cloudinary'
+                };
+            } catch (error) {
+                console.warn('⚠️ Cloudinary upload failed, using local storage:', error.message);
+                return {
+                    filepath,
+                    url: `/api/certificates/download/${filename}`,
+                    cloudinaryId: null,
+                    storage: 'local'
+                };
+            }
+        }
+        
+        return {
+            filepath,
+            url: `/api/certificates/download/${filename}`,
+            cloudinaryId: null,
+            storage: 'local'
+        };
     }
 
     /**
@@ -280,9 +375,10 @@ class CertificateService {
             // Save PDF
             const pdfBytes = await pdfDoc.save();
             const filename = `certificate_${certificateId || Date.now()}.pdf`;
-            const filepath = path.join(this.certificatesDir, filename);
-
-            await fs.writeFile(filepath, pdfBytes);
+            
+            // Save certificate (Cloudinary + local backup)
+            const saveResult = await this.saveCertificate(pdfBytes, filename);
+            const filepath = saveResult.filepath;
 
             // Save certificate record to database
             if (certificateId) {
@@ -294,12 +390,15 @@ class CertificateService {
                     type: 'winner',
                     awardYear,
                     issueDate,
-                    filename
+                    filename,
+                    url: saveResult.url,
+                    cloudinaryId: saveResult.cloudinaryId,
+                    storage: saveResult.storage
                 });
             }
 
-            console.log(`✅ Winner certificate generated: ${filename}`);
-            return filepath;
+            console.log(`✅ Winner certificate generated: ${filename} (${saveResult.storage})`);
+            return saveResult;
 
         } catch (error) {
             console.error('Error generating winner certificate:', error);
@@ -538,9 +637,10 @@ class CertificateService {
 
             const pdfBytes = await pdfDoc.save();
             const filename = `certificate_finalist_${certificateId || Date.now()}.pdf`;
-            const filepath = path.join(this.certificatesDir, filename);
-
-            await fs.writeFile(filepath, pdfBytes);
+            
+            // Save certificate (Cloudinary + local backup)
+            const saveResult = await this.saveCertificate(pdfBytes, filename);
+            const filepath = saveResult.filepath;
 
             // Save certificate record to database
             if (certificateId) {
@@ -552,12 +652,15 @@ class CertificateService {
                     type: 'finalist',
                     awardYear,
                     issueDate,
-                    filename
+                    filename,
+                    url: saveResult.url,
+                    cloudinaryId: saveResult.cloudinaryId,
+                    storage: saveResult.storage
                 });
             }
 
-            console.log(`✅ Finalist certificate generated: ${filename}`);
-            return filepath;
+            console.log(`✅ Finalist certificate generated: ${filename} (${saveResult.storage})`);
+            return saveResult;
 
         } catch (error) {
             console.error('Error generating finalist certificate:', error);
@@ -795,9 +898,10 @@ class CertificateService {
 
             const pdfBytes = await pdfDoc.save();
             const filename = `certificate_participation_${certificateId || Date.now()}.pdf`;
-            const filepath = path.join(this.certificatesDir, filename);
-
-            await fs.writeFile(filepath, pdfBytes);
+            
+            // Save certificate (Cloudinary + local backup)
+            const saveResult = await this.saveCertificate(pdfBytes, filename);
+            const filepath = saveResult.filepath;
 
             // Save certificate record to database
             if (certificateId) {
@@ -809,12 +913,15 @@ class CertificateService {
                     type: 'participation',
                     awardYear,
                     issueDate,
-                    filename
+                    filename,
+                    url: saveResult.url,
+                    cloudinaryId: saveResult.cloudinaryId,
+                    storage: saveResult.storage
                 });
             }
 
-            console.log(`✅ Participation certificate generated: ${filename}`);
-            return filepath;
+            console.log(`✅ Participation certificate generated: ${filename} (${saveResult.storage})`);
+            return saveResult;
 
         } catch (error) {
             console.error('Error generating participation certificate:', error);
