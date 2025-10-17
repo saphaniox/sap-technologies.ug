@@ -28,6 +28,7 @@
  * @module controllers/certificateController
  */
 
+const path = require('path');
 const certificateService = require('../services/certificateService');
 const { Nomination, AwardCategory } = require('../models/Award');
 
@@ -390,7 +391,7 @@ exports.getAllCertificates = async (req, res) => {
                     certificateId: cert.certificateId,
                     type: cert.status,
                     filename: cert.certificateFile,
-                    downloadUrl: cert.certificateUrl || `/api/certificates/download/${cert.certificateFile}`,
+                    downloadUrl: cert.certificateUrl || `/api/certificates/download/${path.basename(cert.certificateFile)}`,
                     cloudinaryId: cert.certificateCloudinaryId,
                     storage: cert.certificateUrl && cert.certificateUrl.includes('cloudinary') ? 'cloudinary' : 'local',
                     generatedAt: cert.certificateGeneratedAt || cert.createdAt,
