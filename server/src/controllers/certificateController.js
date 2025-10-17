@@ -81,7 +81,7 @@ exports.generateCertificate = async (req, res) => {
         }
 
         // Save certificate info to nomination
-        const filename = certificateResult.filepath.split('\\').pop();
+        const filename = path.basename(certificateResult.filepath);
         nomination.certificateFile = filename;
         nomination.certificateUrl = certificateResult.url;
         nomination.certificateCloudinaryId = certificateResult.cloudinaryId;
