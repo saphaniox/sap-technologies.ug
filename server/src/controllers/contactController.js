@@ -57,8 +57,8 @@ class ContactController {
             // Send notifications (don't wait for them to complete)
             const notificationPromises = [];
 
-            // Send email notification to admin
-            if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
+            // Send email notification to admin (works with Resend, SendGrid, or Gmail)
+            if (emailService.isConfigured) {
                 notificationPromises.push(
                     emailService.sendContactNotification({ name, email, message })
                         .catch(error => console.error("Admin email notification failed:", error))

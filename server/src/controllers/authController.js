@@ -57,8 +57,8 @@ class AuthController {
             // Send signup notifications (don't wait for them to complete)
             const notificationPromises = [];
             
-            // Send welcome email to the new user
-            if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
+            // Send welcome email to the new user (works with Resend, SendGrid, or Gmail)
+            if (emailService.isConfigured) {
                 notificationPromises.push(
                     emailService.sendUserSignupNotification({ 
                         name, 
