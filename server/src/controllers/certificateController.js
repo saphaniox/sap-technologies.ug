@@ -417,6 +417,62 @@ exports.getAllCertificates = async (req, res) => {
 };
 
 /**
+ * Delete certificate (admin only)
+ */
+exports.deleteCertificate = async (req, res) => {
+    try {
+        const { nominationId } = req.params;
+
+        const nomination = await Nomination.findById(nominationId);
+        
+        if (!nomination) {
+            return res.status(404).json({ message: 'Nomination not found' });
+        }
+
+        if (!nomination.certificateFile) {
+            return res.status(404).json({ message: 'No certificate found for this nomination' });
+        }
+
+        // Delete certificate file from storage
+        try {
+            await certificateService.deleteCertificate(nomination.certificateFile);
+        } catch (error) {
+            console.log('Certificate file not found in storage, continuing with database cleanup');
+        }
+
+        // Delete from Cloudinary if exists
+        if (nomination.certificateCloudinaryId) {
+            try {
+                const cloudinary = require('cloudinary').v2;
+                await cloudinary.uploader.destroy(nomination.certificateCloudinaryId);
+            } catch (error) {
+                console.log('Certificate not found in Cloudinary, continuing with cleanup');
+            }
+        }
+
+        // Clear certificate data from nomination
+        nomination.certificateFile = null;
+        nomination.certificateUrl = null;
+        nomination.certificateCloudinaryId = null;
+        nomination.certificateId = null;
+        nomination.certificateGeneratedAt = null;
+        await nomination.save();
+
+        res.json({
+            message: 'Certificate deleted successfully',
+            nominationId: nomination._id
+        });
+
+    } catch (error) {
+        console.error('Error deleting certificate:', error);
+        res.status(500).json({ 
+            message: 'Error deleting certificate',
+            error: error.message 
+        });
+    }
+};
+
+/**
  * Upload signature image for certificates
  */
 exports.uploadSignature = async (req, res) => {

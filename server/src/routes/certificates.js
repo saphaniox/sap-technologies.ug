@@ -15,6 +15,7 @@ router.get('/info/:nominationId', authMiddleware, certificateController.getCerti
 router.get('/all', authMiddleware, adminMiddleware, certificateController.getAllCertificates);
 router.post('/generate/:nominationId', authMiddleware, adminMiddleware, certificateController.generateCertificate);
 router.post('/regenerate/:nominationId', authMiddleware, adminMiddleware, certificateController.regenerateCertificate);
+router.delete('/delete/:nominationId', authMiddleware, adminMiddleware, certificateController.deleteCertificate);
 router.post('/bulk-generate', authMiddleware, adminMiddleware, certificateController.bulkGenerateCertificates);
 
 // Signature management routes (admin only)
