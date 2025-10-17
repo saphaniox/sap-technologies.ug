@@ -22,7 +22,7 @@
 
 // Admin panel controller - handles all administrative functions
 // This is where admins manage users, content, and get system insights
-const { User, Contact, Newsletter, Service, Project } = require("../models");
+const { User, Contact, Newsletter, Service, Project, Partner, PartnershipRequest, Product, ProductInquiry, ServiceQuote, Nomination } = require("../models");
 const { AppError } = require("../middleware/errorHandler");
 
 // Main admin controller for managing the application
@@ -31,6 +31,10 @@ class AdminController {
     // This gives admins a bird's eye view of what's happening in the app
     async getDashboardStats(req, res, next) {
         try {
+            // Calculate date for 30 days ago for growth metrics
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
             // Count all the important stuff in our database
             const totalUsers = await User.countDocuments();
             const totalAdmins = await User.countDocuments({ role: "admin" });
@@ -41,15 +45,39 @@ class AdminController {
             const featuredServices = await Service.countDocuments({ featured: true });
             const completedProjects = await Project.countDocuments({ status: "completed" });
             
+            // Partners statistics
+            const totalPartners = await Partner.countDocuments();
+            const activePartners = await Partner.countDocuments({ status: "active" });
+            
+            // Partnership requests statistics
+            const totalPartnershipRequests = await PartnershipRequest.countDocuments();
+            const pendingPartnershipRequests = await PartnershipRequest.countDocuments({ status: "pending" });
+            
+            // Products statistics
+            const totalProducts = await Product.countDocuments();
+            const featuredProducts = await Product.countDocuments({ featured: true });
+            
+            // Product inquiries statistics
+            const totalProductInquiries = await ProductInquiry.countDocuments();
+            const newProductInquiriesLast30Days = await ProductInquiry.countDocuments({
+                createdAt: { $gte: thirtyDaysAgo }
+            });
+            
+            // Service quotes statistics
+            const totalServiceQuotes = await ServiceQuote.countDocuments();
+            const newServiceQuotesLast30Days = await ServiceQuote.countDocuments({
+                createdAt: { $gte: thirtyDaysAgo }
+            });
+            
+            // Awards statistics
+            const totalAwards = await Nomination.countDocuments();
+            const approvedAwards = await Nomination.countDocuments({ status: "approved" });
+            
             // Get the 5 most recent users for the "Recent Activity" section
             const recentUsers = await User.find()
                 .sort({ createdAt: -1 })
                 .limit(5)
                 .select("name email createdAt role loginCount");
-
-            // Calculate growth metrics - how many new users/contacts in last 30 days
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             
             const newUsersLast30Days = await User.countDocuments({
                 createdAt: { $gte: thirtyDaysAgo }
@@ -71,6 +99,18 @@ class AdminController {
                         totalProjects,
                         featuredServices,
                         completedProjects,
+                        totalPartners,
+                        activePartners,
+                        totalPartnershipRequests,
+                        pendingPartnershipRequests,
+                        totalProducts,
+                        featuredProducts,
+                        totalProductInquiries,
+                        newProductInquiriesLast30Days,
+                        totalServiceQuotes,
+                        newServiceQuotesLast30Days,
+                        totalAwards,
+                        approvedAwards,
                         newUsersLast30Days,
                         newContactsLast30Days
                     },
