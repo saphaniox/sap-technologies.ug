@@ -16,8 +16,15 @@ class CertificateService {
 
     /**
      * Check if Cloudinary is properly configured
+     * Note: Disabled for certificates - Cloudinary raw/PDF files require authentication
+     * Certificates are served via local API endpoint for public access
      */
     isCloudinaryConfigured() {
+        // Force disable Cloudinary for certificates (authentication issues with raw PDFs)
+        console.log('📁 Certificate Service: Using local storage (Cloudinary disabled for public PDF access)');
+        return false;
+        
+        /* Original Cloudinary detection code - kept for reference
         const configured = !!(
             process.env.CLOUDINARY_CLOUD_NAME &&
             process.env.CLOUDINARY_API_KEY &&
@@ -31,6 +38,7 @@ class CertificateService {
         }
         
         return configured;
+        */
     }
 
     async ensureCertificatesDirectory() {
