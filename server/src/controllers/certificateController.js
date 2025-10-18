@@ -29,6 +29,7 @@
  */
 
 const path = require('path');
+const fs = require('fs').promises;
 const certificateService = require('../services/certificateService');
 const { Nomination, AwardCategory } = require('../models/Award');
 
@@ -492,6 +493,51 @@ exports.uploadSignature = async (req, res) => {
             });
         }
 
+        // Validate file size (minimum 1KB, maximum 5MB)
+        const minSize = 1024; // 1KB
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        
+        if (req.file.size < minSize) {
+            // Delete the invalid uploaded file
+            try {
+                await fs.unlink(req.file.path);
+            } catch (err) {
+                console.error('Error deleting invalid file:', err);
+            }
+            
+            return res.status(400).json({ 
+                message: `Signature file is too small (${req.file.size} bytes). Minimum size is 1KB. The file may be corrupted. Please upload a valid signature image.` 
+            });
+        }
+        
+        if (req.file.size > maxSize) {
+            // Delete the oversized file
+            try {
+                await fs.unlink(req.file.path);
+            } catch (err) {
+                console.error('Error deleting oversized file:', err);
+            }
+            
+            return res.status(400).json({ 
+                message: `Signature file is too large (${(req.file.size / 1024 / 1024).toFixed(2)}MB). Maximum size is 5MB.` 
+            });
+        }
+
+        // Validate file type
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+        if (!allowedTypes.includes(req.file.mimetype)) {
+            // Delete the invalid file
+            try {
+                await fs.unlink(req.file.path);
+            } catch (err) {
+                console.error('Error deleting invalid file:', err);
+            }
+            
+            return res.status(400).json({ 
+                message: `Invalid file type: ${req.file.mimetype}. Only PNG and JPEG images are allowed.` 
+            });
+        }
+
         // Delete existing signature if it exists
         await certificateService.deleteExistingSignature();
 
@@ -507,12 +553,15 @@ exports.uploadSignature = async (req, res) => {
 
         await certificateService.saveSignatureInfo(signatureInfo);
 
+        console.log(`✅ Signature uploaded successfully: ${req.file.filename} (${(req.file.size / 1024).toFixed(2)}KB)`);
+
         res.json({ 
             message: 'Signature uploaded successfully',
             signature: {
                 filename: req.file.filename,
                 originalName: req.file.originalname,
-                size: req.file.size
+                size: req.file.size,
+                sizeFormatted: `${(req.file.size / 1024).toFixed(2)}KB`
             }
         });
 
