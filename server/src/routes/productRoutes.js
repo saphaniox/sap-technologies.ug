@@ -37,8 +37,10 @@ const validateProduct = [
             "Software Solutions", 
             "Web Applications", 
             "Mobile Apps", 
-            "Hardware", 
+            "Hardware",
+            "Electricals",
             "Electronics", 
+            "Automation",
             "AI/ML Products",
             "Other"
         ])
@@ -86,8 +88,10 @@ const validateProductUpdate = [
             "Software Solutions", 
             "Web Applications", 
             "Mobile Apps", 
-            "Hardware", 
+            "Hardware",
+            "Electricals",
             "Electronics", 
+            "Automation",
             "AI/ML Products",
             "Other"
         ])
