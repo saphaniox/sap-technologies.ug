@@ -33,15 +33,42 @@ const validateProduct = [
         .notEmpty()
         .withMessage("Category is required")
         .isIn([
-            "IoT Devices", 
-            "Software Solutions", 
+            // Software & Digital
+            "Software Solutions",
             "Web Applications", 
-            "Mobile Apps", 
+            "Mobile Apps",
+            "Desktop Applications",
+            "Enterprise Software",
+            "SaaS Products",
+            
+            // Hardware & Electronics
+            "IoT Devices",
             "Hardware",
-            "Electricals",
             "Electronics", 
-            "Automation",
+            "Electricals",
+            "Networking Equipment",
+            "Computer Hardware",
+            "Smart Home Devices",
+            
+            // Emerging Tech
             "AI/ML Products",
+            "Automation Solutions",
+            "Robotics",
+            "Blockchain Solutions",
+            "Cloud Services",
+            
+            // Industry Specific
+            "Security Solutions",
+            "POS Systems",
+            "Medical Devices",
+            "Agricultural Tech",
+            "Educational Tech",
+            "Financial Tech",
+            
+            // General
+            "Accessories",
+            "Components",
+            "Tools & Equipment",
             "Other"
         ])
         .withMessage("Invalid category"),
@@ -84,15 +111,42 @@ const validateProductUpdate = [
     body("category")
         .optional()
         .isIn([
-            "IoT Devices", 
-            "Software Solutions", 
+            // Software & Digital
+            "Software Solutions",
             "Web Applications", 
-            "Mobile Apps", 
+            "Mobile Apps",
+            "Desktop Applications",
+            "Enterprise Software",
+            "SaaS Products",
+            
+            // Hardware & Electronics
+            "IoT Devices",
             "Hardware",
-            "Electricals",
             "Electronics", 
-            "Automation",
+            "Electricals",
+            "Networking Equipment",
+            "Computer Hardware",
+            "Smart Home Devices",
+            
+            // Emerging Tech
             "AI/ML Products",
+            "Automation Solutions",
+            "Robotics",
+            "Blockchain Solutions",
+            "Cloud Services",
+            
+            // Industry Specific
+            "Security Solutions",
+            "POS Systems",
+            "Medical Devices",
+            "Agricultural Tech",
+            "Educational Tech",
+            "Financial Tech",
+            
+            // General
+            "Accessories",
+            "Components",
+            "Tools & Equipment",
             "Other"
         ])
         .withMessage("Invalid category"),
