@@ -1211,17 +1211,38 @@ class CertificateService {
                 return false;
             }
 
-            const signaturePath = path.join(this.signaturesDir, signatureInfo.filename);
-            
-            // Check if signature file exists
-            try {
-                await fs.access(signaturePath);
-            } catch (error) {
-                console.warn('⚠️ Signature file not found, using default text signature');
-                return false;
-            }
+            let signatureImageBytes;
 
-            const signatureImageBytes = await fs.readFile(signaturePath);
+            // Check if signature is stored in Cloudinary
+            if (signatureInfo.isCloudinary && signatureInfo.cloudinaryUrl) {
+                console.log('📥 Fetching signature from Cloudinary:', signatureInfo.cloudinaryUrl);
+                
+                try {
+                    const axios = require('axios');
+                    const response = await axios.get(signatureInfo.cloudinaryUrl, {
+                        responseType: 'arraybuffer'
+                    });
+                    
+                    signatureImageBytes = Buffer.from(response.data);
+                    console.log('✅ Signature fetched from Cloudinary successfully');
+                } catch (fetchError) {
+                    console.error('❌ Error fetching signature from Cloudinary:', fetchError.message);
+                    return false;
+                }
+            } else {
+                // Use local file
+                const signaturePath = path.join(this.signaturesDir, signatureInfo.filename);
+                
+                // Check if signature file exists
+                try {
+                    await fs.access(signaturePath);
+                    signatureImageBytes = await fs.readFile(signaturePath);
+                    console.log('✅ Signature loaded from local storage');
+                } catch (error) {
+                    console.warn('⚠️ Signature file not found locally, using default text signature');
+                    return false;
+                }
+            }
             
             // Embed image based on file type
             let signatureImage;
@@ -1244,7 +1265,7 @@ class CertificateService {
                 height: height,
             });
             
-            console.log('✅ Signature image embedded successfully');
+            console.log('✅ Signature image embedded successfully in PDF');
             return true;
             
         } catch (error) {
@@ -1278,7 +1299,13 @@ class CertificateService {
             const signatureInfoData = await fs.readFile(signatureInfoPath, 'utf8');
             const signatureInfo = JSON.parse(signatureInfoData);
             
-            // Validate that the signature file actually exists and has valid size
+            // If it's a Cloudinary signature, we don't need to check local file
+            if (signatureInfo && signatureInfo.isCloudinary) {
+                console.log('✅ Cloudinary signature info loaded:', signatureInfo.cloudinaryUrl);
+                return signatureInfo;
+            }
+            
+            // Validate that the signature file actually exists and has valid size (for local files)
             if (signatureInfo && signatureInfo.filename) {
                 const signatureFilePath = path.join(this.signaturesDir, signatureInfo.filename);
                 try {
@@ -1290,7 +1317,7 @@ class CertificateService {
                         signatureInfo.actualSize = stats.size;
                     }
                 } catch (fileError) {
-                    console.warn('⚠️ Signature info exists but file is missing:', signatureInfo.filename);
+                    console.warn('⚠️ Signature info exists but local file is missing:', signatureInfo.filename);
                     return null; // File referenced in info doesn't exist
                 }
             }
@@ -1310,13 +1337,24 @@ class CertificateService {
             const signatureInfo = await this.getCurrentSignature();
             
             if (signatureInfo) {
-                // Delete signature image file
-                const signatureImagePath = path.join(this.signaturesDir, signatureInfo.filename);
-                try {
-                    await fs.unlink(signatureImagePath);
-                    console.log('🗑️ Deleted existing signature image');
-                } catch (error) {
-                    console.warn('⚠️ Could not delete existing signature image:', error.message);
+                // Delete from Cloudinary if applicable
+                if (signatureInfo.isCloudinary && signatureInfo.cloudinaryPublicId) {
+                    try {
+                        const cloudinary = require('cloudinary').v2;
+                        await cloudinary.uploader.destroy(signatureInfo.cloudinaryPublicId);
+                        console.log('🗑️ Deleted signature from Cloudinary:', signatureInfo.cloudinaryPublicId);
+                    } catch (cloudError) {
+                        console.warn('⚠️ Could not delete signature from Cloudinary:', cloudError.message);
+                    }
+                } else {
+                    // Delete local signature image file
+                    const signatureImagePath = path.join(this.signaturesDir, signatureInfo.filename);
+                    try {
+                        await fs.unlink(signatureImagePath);
+                        console.log('🗑️ Deleted existing local signature image');
+                    } catch (error) {
+                        console.warn('⚠️ Could not delete local signature image:', error.message);
+                    }
                 }
             }
 

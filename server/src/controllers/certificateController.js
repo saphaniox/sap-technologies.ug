@@ -498,11 +498,13 @@ exports.uploadSignature = async (req, res) => {
         const maxSize = 5 * 1024 * 1024; // 5MB
         
         if (req.file.size < minSize) {
-            // Delete the invalid uploaded file
-            try {
-                await fs.unlink(req.file.path);
-            } catch (err) {
-                console.error('Error deleting invalid file:', err);
+            // Delete the invalid uploaded file if it's local
+            if (req.file.path && !req.file.path.startsWith('http')) {
+                try {
+                    await fs.unlink(req.file.path);
+                } catch (err) {
+                    console.error('Error deleting invalid file:', err);
+                }
             }
             
             return res.status(400).json({ 
@@ -511,11 +513,13 @@ exports.uploadSignature = async (req, res) => {
         }
         
         if (req.file.size > maxSize) {
-            // Delete the oversized file
-            try {
-                await fs.unlink(req.file.path);
-            } catch (err) {
-                console.error('Error deleting oversized file:', err);
+            // Delete the oversized file if it's local
+            if (req.file.path && !req.file.path.startsWith('http')) {
+                try {
+                    await fs.unlink(req.file.path);
+                } catch (err) {
+                    console.error('Error deleting oversized file:', err);
+                }
             }
             
             return res.status(400).json({ 
@@ -526,11 +530,13 @@ exports.uploadSignature = async (req, res) => {
         // Validate file type
         const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
         if (!allowedTypes.includes(req.file.mimetype)) {
-            // Delete the invalid file
-            try {
-                await fs.unlink(req.file.path);
-            } catch (err) {
-                console.error('Error deleting invalid file:', err);
+            // Delete the invalid file if it's local
+            if (req.file.path && !req.file.path.startsWith('http')) {
+                try {
+                    await fs.unlink(req.file.path);
+                } catch (err) {
+                    console.error('Error deleting invalid file:', err);
+                }
             }
             
             return res.status(400).json({ 
@@ -541,6 +547,9 @@ exports.uploadSignature = async (req, res) => {
         // Delete existing signature if it exists
         await certificateService.deleteExistingSignature();
 
+        // Check if file is from Cloudinary (has 'path' as URL) or local storage
+        const isCloudinary = req.file.path && req.file.path.startsWith('http');
+        
         // Save new signature info
         const signatureInfo = {
             filename: req.file.filename,
@@ -548,12 +557,19 @@ exports.uploadSignature = async (req, res) => {
             mimetype: req.file.mimetype,
             size: req.file.size,
             uploadedAt: new Date(),
-            uploadedBy: req.user._id
+            uploadedBy: req.user._id,
+            // Store Cloudinary info if available
+            cloudinaryUrl: isCloudinary ? req.file.path : null,
+            cloudinaryPublicId: isCloudinary ? req.file.filename : null,
+            isCloudinary: isCloudinary
         };
 
         await certificateService.saveSignatureInfo(signatureInfo);
 
-        console.log(`✅ Signature uploaded successfully: ${req.file.filename} (${(req.file.size / 1024).toFixed(2)}KB)`);
+        console.log(`✅ Signature uploaded successfully: ${isCloudinary ? 'Cloudinary' : 'Local'} - ${req.file.filename} (${(req.file.size / 1024).toFixed(2)}KB)`);
+        if (isCloudinary) {
+            console.log(`   📍 Cloudinary URL: ${req.file.path}`);
+        }
 
         res.json({ 
             message: 'Signature uploaded successfully',
@@ -561,7 +577,9 @@ exports.uploadSignature = async (req, res) => {
                 filename: req.file.filename,
                 originalName: req.file.originalname,
                 size: req.file.size,
-                sizeFormatted: `${(req.file.size / 1024).toFixed(2)}KB`
+                sizeFormatted: `${(req.file.size / 1024).toFixed(2)}KB`,
+                storageType: isCloudinary ? 'cloudinary' : 'local',
+                url: isCloudinary ? req.file.path : null
             }
         });
 
