@@ -1276,7 +1276,26 @@ class CertificateService {
         try {
             const signatureInfoPath = path.join(this.signaturesDir, 'signature-info.json');
             const signatureInfoData = await fs.readFile(signatureInfoPath, 'utf8');
-            return JSON.parse(signatureInfoData);
+            const signatureInfo = JSON.parse(signatureInfoData);
+            
+            // Validate that the signature file actually exists and has valid size
+            if (signatureInfo && signatureInfo.filename) {
+                const signatureFilePath = path.join(this.signaturesDir, signatureInfo.filename);
+                try {
+                    const stats = await fs.stat(signatureFilePath);
+                    // Check if file exists and is larger than 1KB (corrupted files are usually very small)
+                    if (stats.size < 1024) {
+                        console.warn('⚠️ Signature file exists but appears corrupted (size:', stats.size, 'bytes). Minimum size: 1KB');
+                        signatureInfo.isCorrupted = true;
+                        signatureInfo.actualSize = stats.size;
+                    }
+                } catch (fileError) {
+                    console.warn('⚠️ Signature info exists but file is missing:', signatureInfo.filename);
+                    return null; // File referenced in info doesn't exist
+                }
+            }
+            
+            return signatureInfo;
         } catch (error) {
             // File doesn't exist or can't be read
             return null;

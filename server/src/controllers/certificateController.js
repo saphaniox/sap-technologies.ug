@@ -582,8 +582,11 @@ exports.getCurrentSignature = async (req, res) => {
         const signatureInfo = await certificateService.getCurrentSignature();
         
         if (!signatureInfo) {
-            return res.status(404).json({ 
-                message: 'No signature currently configured' 
+            // Return 200 with null signature instead of 404
+            // This allows the frontend to handle "no signature" gracefully
+            return res.status(200).json({ 
+                signature: null,
+                message: 'No signature currently configured'
             });
         }
 
