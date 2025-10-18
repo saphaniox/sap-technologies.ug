@@ -955,70 +955,90 @@ class AwardsController {
         try {
             console.log("📊 Getting awards statistics...");
             
-            const stats = await Nomination.aggregate([
-                {
-                    $group: {
-                        _id: null,
-                        totalNominations: { $sum: 1 },
-                        approvedNominations: {
-                            $sum: { $cond: [{ $eq: ["$status", "approved"] }, 1, 0] }
-                        },
-                        pendingNominations: {
-                            $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] }
-                        },
-                        totalVotes: { $sum: "$votes" },
-                        ugandanNominees: {
-                            $sum: { $cond: [{ $eq: ["$nomineeCountry", "Uganda"] }, 1, 0] }
-                        },
-                        internationalNominees: {
-                            $sum: { $cond: [{ $ne: ["$nomineeCountry", "Uganda"] }, 1, 0] }
+            // Get general stats with error handling
+            let stats = [];
+            try {
+                stats = await Nomination.aggregate([
+                    {
+                        $group: {
+                            _id: null,
+                            totalNominations: { $sum: 1 },
+                            approvedNominations: {
+                                $sum: { $cond: [{ $eq: ["$status", "approved"] }, 1, 0] }
+                            },
+                            pendingNominations: {
+                                $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] }
+                            },
+                            totalVotes: { $sum: "$votes" },
+                            ugandanNominees: {
+                                $sum: { $cond: [{ $eq: ["$nomineeCountry", "Uganda"] }, 1, 0] }
+                            },
+                            internationalNominees: {
+                                $sum: { $cond: [{ $ne: ["$nomineeCountry", "Uganda"] }, 1, 0] }
+                            }
                         }
                     }
-                }
-            ]);
-            
-            console.log("✅ General stats:", stats);
+                ]);
+                console.log("✅ General stats:", stats);
+            } catch (statsError) {
+                console.error("❌ Error getting general stats:", statsError);
+                stats = [];
+            }
 
-            const categoryStats = await Nomination.aggregate([
-                {
-                    $group: {
-                        _id: "$category",
-                        count: { $sum: 1 },
-                        totalVotes: { $sum: "$votes" }
+            // Get category stats with error handling
+            let categoryStats = [];
+            try {
+                categoryStats = await Nomination.aggregate([
+                    {
+                        $group: {
+                            _id: "$category",
+                            count: { $sum: 1 },
+                            totalVotes: { $sum: "$votes" }
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "awardcategories",
+                            localField: "_id",
+                            foreignField: "_id",
+                            as: "category"
+                        }
+                    },
+                    {
+                        $unwind: {
+                            path: "$category",
+                            preserveNullAndEmptyArrays: true
+                        }
+                    },
+                    {
+                        $project: {
+                            categoryName: "$category.name",
+                            count: 1,
+                            totalVotes: 1
+                        }
                     }
-                },
-                {
-                    $lookup: {
-                        from: "awardcategories",
-                        localField: "_id",
-                        foreignField: "_id",
-                        as: "category"
-                    }
-                },
-                {
-                    $unwind: {
-                        path: "$category",
-                        preserveNullAndEmptyArrays: true
-                    }
-                },
-                {
-                    $project: {
-                        categoryName: "$category.name",
-                        count: 1,
-                        totalVotes: 1
-                    }
-                }
-            ]);
-            
-            console.log("✅ Category stats:", categoryStats);
+                ]);
+                console.log("✅ Category stats:", categoryStats ? categoryStats.length : 0, "categories");
+            } catch (categoryError) {
+                console.error("❌ Error getting category stats:", categoryError);
+                categoryStats = [];
+            }
 
-            const topNominations = await Nomination.find({ status: "approved" })
-                .sort({ votes: -1 })
-                .limit(10)
-                .populate("category", "name")
-                .select("nomineeName nomineePhoto votes category");
-            
-            console.log("✅ Top nominations:", topNominations?.length);
+            // Get top nominations with error handling
+            let topNominations = [];
+            try {
+                topNominations = await Nomination.find({ status: "approved" })
+                    .sort({ votes: -1 })
+                    .limit(10)
+                    .populate("category", "name")
+                    .select("nomineeName nomineePhoto votes category")
+                    .lean(); // Use lean for better performance
+                
+                console.log("✅ Top nominations:", topNominations ? topNominations.length : 0);
+            } catch (topError) {
+                console.error("❌ Error getting top nominations:", topError);
+                topNominations = [];
+            }
 
             res.status(200).json({
                 status: "success",
