@@ -212,6 +212,12 @@ class ProductController {
     async createProduct(req, res, next) {
         try {
             console.log("🏷️ Creating product with data:", req.body);
+            console.log("📁 File uploaded:", req.file ? {
+                filename: req.file.filename,
+                size: req.file.size,
+                mimetype: req.file.mimetype,
+                path: req.file.path
+            } : "No file");
             
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -225,8 +231,10 @@ class ProductController {
 
             const productData = {
                 ...req.body,
-                image: getFileUrl(req.file, 'products')
+                image: req.file ? getFileUrl(req.file, 'products') : null
             };
+
+            console.log("📸 Image URL set to:", productData.image);
 
             // Parse JSON fields
             if (typeof productData.technicalSpecs === "string") {
@@ -285,6 +293,13 @@ class ProductController {
     // Update product (admin only)
     async updateProduct(req, res, next) {
         try {
+            console.log("🔄 Updating product:", req.params.id);
+            console.log("📁 File uploaded:", req.file ? {
+                filename: req.file.filename,
+                size: req.file.size,
+                mimetype: req.file.mimetype
+            } : "No new file");
+            
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({
@@ -300,6 +315,7 @@ class ProductController {
             // Handle file upload
             if (req.file) {
                 updateData.image = getFileUrl(req.file, 'products');
+                console.log("📸 New image URL:", updateData.image);
                 
                 // Delete old image if it exists (only for local storage)
                 if (!useCloudinary) {

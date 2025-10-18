@@ -95,12 +95,19 @@ const productSchema = new mongoose.Schema({
     },
     currency: {
       type: String,
-      default: "USD",
-      enum: ["USD", "EUR", "GBP", "UGX"]
+      default: "UGX",
+      enum: [
+        // Popular Currencies
+        "UGX", "USD", "EUR", "GBP",
+        // African Currencies
+        "KES", "TZS", "RWF", "ZAR", "NGN", "GHS",
+        // Other Major Currencies
+        "CAD", "AUD", "JPY", "CNY", "INR", "AED", "SAR"
+      ]
     },
     type: {
       type: String,
-      enum: ["fixed", "starting-from", "contact-for-price"],
+      enum: ["fixed", "negotiable", "contact-for-price"],
       default: "contact-for-price"
     }
   },

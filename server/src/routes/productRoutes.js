@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
 const { body, param, query } = require("express-validator");
 const productController = require("../controllers/productController");
 const { adminAuth } = require("../middleware/adminAuth");
@@ -162,11 +163,34 @@ router.get(
     productController.getProductAnalytics
 );
 
+// Multer error handling middleware
+const handleMulterError = (err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+                status: "error",
+                message: "File size too large. Maximum size is 10MB."
+            });
+        }
+        return res.status(400).json({
+            status: "error",
+            message: `File upload error: ${err.message}`
+        });
+    } else if (err) {
+        return res.status(400).json({
+            status: "error",
+            message: err.message || "File upload failed"
+        });
+    }
+    next();
+};
+
 // Create new product
 router.post(
     "/admin/products",
     adminAuth,
     productUpload.single("productImage"),
+    handleMulterError,
     validateProduct,
     productController.createProduct
 );
@@ -177,6 +201,7 @@ router.put(
     adminAuth,
     param("id").isMongoId().withMessage("Invalid product ID"),
     productUpload.single("productImage"),
+    handleMulterError,
     validateProductUpdate,
     productController.updateProduct
 );
