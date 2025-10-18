@@ -622,3 +622,68 @@ exports.deleteSignature = async (req, res) => {
         });
     }
 };
+
+/**
+ * Diagnostic endpoint to check signature file system status
+ */
+exports.checkSignatureStatus = async (req, res) => {
+    try {
+        const fs = require('fs').promises;
+        const path = require('path');
+        
+        const signaturesDir = path.join(__dirname, '../../uploads/signatures');
+        const signatureInfoPath = path.join(signaturesDir, 'signature-info.json');
+        
+        const status = {
+            signaturesDirectory: signaturesDir,
+            directoryExists: false,
+            signatureInfoExists: false,
+            signatureInfo: null,
+            signatureFileExists: false,
+            signatureFileSize: null,
+            allFiles: []
+        };
+        
+        // Check if signatures directory exists
+        try {
+            await fs.access(signaturesDir);
+            status.directoryExists = true;
+            
+            // List all files in directory
+            const files = await fs.readdir(signaturesDir);
+            status.allFiles = files;
+            
+            // Check for signature-info.json
+            if (files.includes('signature-info.json')) {
+                status.signatureInfoExists = true;
+                const infoContent = await fs.readFile(signatureInfoPath, 'utf8');
+                status.signatureInfo = JSON.parse(infoContent);
+                
+                // Check if signature file exists
+                if (status.signatureInfo && status.signatureInfo.filename) {
+                    const signatureFilePath = path.join(signaturesDir, status.signatureInfo.filename);
+                    try {
+                        const stats = await fs.stat(signatureFilePath);
+                        status.signatureFileExists = true;
+                        status.signatureFileSize = stats.size;
+                        status.isCorrupted = stats.size < 1024; // Less than 1KB
+                    } catch (err) {
+                        status.signatureFileExists = false;
+                    }
+                }
+            }
+        } catch (err) {
+            status.directoryExists = false;
+            status.error = err.message;
+        }
+        
+        res.json(status);
+        
+    } catch (error) {
+        console.error('Error checking signature status:', error);
+        res.status(500).json({ 
+            message: 'Error checking signature status',
+            error: error.message 
+        });
+    }
+};

@@ -21,6 +21,7 @@ router.post('/bulk-generate', authMiddleware, adminMiddleware, certificateContro
 // Signature management routes (admin only)
 router.post('/signature/upload', authMiddleware, adminMiddleware, signatureUpload.single('signature'), certificateController.uploadSignature);
 router.get('/signature/current', authMiddleware, adminMiddleware, certificateController.getCurrentSignature);
+router.get('/signature/status', authMiddleware, adminMiddleware, certificateController.checkSignatureStatus);
 router.delete('/signature/current', authMiddleware, adminMiddleware, certificateController.deleteSignature);
 
 module.exports = router;
