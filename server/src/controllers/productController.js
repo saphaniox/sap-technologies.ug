@@ -280,12 +280,29 @@ class ProductController {
             });
         } catch (error) {
             console.error("❌ Error in createProduct:", error);
+            
+            // Handle duplicate key error
             if (error.code === 11000) {
                 return res.status(400).json({
                     status: "error",
                     message: "Product with this name already exists"
                 });
             }
+            
+            // Handle validation errors
+            if (error.name === 'ValidationError') {
+                const validationErrors = Object.values(error.errors).map(err => ({
+                    field: err.path,
+                    message: err.message
+                }));
+                
+                return res.status(400).json({
+                    status: "error",
+                    message: "Validation failed",
+                    errors: validationErrors
+                });
+            }
+            
             next(error);
         }
     }
@@ -350,7 +367,11 @@ class ProductController {
                 id,
                 updateData,
                 { new: true, runValidators: true }
-            );
+            ).catch(validationError => {
+                console.error("❌ Mongoose validation error:", validationError);
+                console.error("❌ Validation errors:", validationError.errors);
+                throw validationError;
+            });
 
             if (!product) {
                 return res.status(404).json({
@@ -365,6 +386,22 @@ class ProductController {
                 data: { product }
             });
         } catch (error) {
+            console.error("❌ Error in updateProduct:", error);
+            
+            // Handle validation errors specifically
+            if (error.name === 'ValidationError') {
+                const validationErrors = Object.values(error.errors).map(err => ({
+                    field: err.path,
+                    message: err.message
+                }));
+                
+                return res.status(400).json({
+                    status: "error",
+                    message: "Validation failed",
+                    errors: validationErrors
+                });
+            }
+            
             next(error);
         }
     }
