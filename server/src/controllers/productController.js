@@ -390,10 +390,19 @@ class ProductController {
             
             // Handle validation errors specifically
             if (error.name === 'ValidationError') {
-                const validationErrors = Object.values(error.errors).map(err => ({
-                    field: err.path,
-                    message: err.message
-                }));
+                console.log("🔍 Validation error details:", error.errors);
+                
+                const validationErrors = Object.values(error.errors).map(err => {
+                    console.log("🔍 Processing error:", { path: err.path, message: err.message, kind: err.kind });
+                    return {
+                        field: err.path,
+                        message: err.message,
+                        kind: err.kind,
+                        value: err.value
+                    };
+                });
+                
+                console.log("🔍 Formatted validation errors:", validationErrors);
                 
                 return res.status(400).json({
                     status: "error",
