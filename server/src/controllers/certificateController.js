@@ -215,7 +215,8 @@ exports.regenerateCertificate = async (req, res) => {
             certificatePath = await certificateService.generateParticipationCertificate(certificateData);
         }
 
-        const filename = certificatePath.split('\\').pop();
+        // Extract just the filename using path.basename (works on both Windows and Unix)
+        const filename = path.basename(certificatePath);
         nomination.certificateFile = filename;
         nomination.certificateId = certificateData.certificateId;
         await nomination.save();
@@ -283,7 +284,8 @@ exports.bulkGenerateCertificates = async (req, res) => {
                     certificatePath = await certificateService.generateParticipationCertificate(certificateData);
                 }
 
-                const filename = certificatePath.split('\\').pop();
+                // Extract just the filename using path.basename (works on both Windows and Unix)
+                const filename = path.basename(certificatePath);
                 nomination.certificateFile = filename;
                 await nomination.save();
 
