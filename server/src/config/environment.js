@@ -193,14 +193,22 @@ class EnvironmentConfig {
                     return callback(null, true);
                 }
                 
+                // Check if origin is in allowed list
                 if (allowedOrigins.includes(origin)) {
                     console.log('✅ CORS: Origin allowed:', origin);
                     return callback(null, true);
-                } else {
-                    console.log('❌ CORS: Origin rejected:', origin);
-                    console.log('📝 CORS: Allowed origins:', allowedOrigins);
-                    return callback(new Error(`CORS: Origin ${origin} not allowed`), false);
                 }
+                
+                // Allow Vercel preview deployments (e.g., sap-technologies-uganda-*.vercel.app)
+                if (origin.includes('sap-technologies-uganda') && origin.includes('.vercel.app')) {
+                    console.log('✅ CORS: Vercel preview deployment allowed:', origin);
+                    return callback(null, true);
+                }
+                
+                // Reject all other origins
+                console.log('❌ CORS: Origin rejected:', origin);
+                console.log('📝 CORS: Allowed origins:', allowedOrigins);
+                return callback(new Error(`CORS: Origin ${origin} not allowed`), false);
             },
             credentials: true,
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
