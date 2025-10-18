@@ -955,9 +955,24 @@ class AwardsController {
         try {
             console.log("📊 Getting awards statistics...");
             
+            // Check if Nomination model is available
+            if (!Nomination) {
+                console.error("❌ Nomination model is not defined!");
+                return res.status(500).json({
+                    status: "error",
+                    message: "Failed to load statistics",
+                    error: "Nomination model not available"
+                });
+            }
+            
             // Get general stats with error handling
             let stats = [];
             try {
+                // Try simple count first to test database connection
+                const totalCount = await Nomination.countDocuments();
+                console.log("✅ Total nominations count:", totalCount);
+                
+                // Now try the aggregation
                 stats = await Nomination.aggregate([
                     {
                         $group: {
@@ -979,9 +994,10 @@ class AwardsController {
                         }
                     }
                 ]);
-                console.log("✅ General stats:", stats);
+                console.log("✅ General stats aggregation completed:", stats ? stats.length : 0);
             } catch (statsError) {
-                console.error("❌ Error getting general stats:", statsError);
+                console.error("❌ Error getting general stats:", statsError.message);
+                console.error("❌ Stats error details:", statsError);
                 stats = [];
             }
 
@@ -1056,11 +1072,17 @@ class AwardsController {
                 }
             });
         } catch (error) {
-            console.error("❌ Error getting awards stats:", error);
+            console.error("❌ Error getting awards stats (outer catch):", error);
+            console.error("❌ Error stack:", error.stack);
+            console.error("❌ Error name:", error.name);
+            console.error("❌ Error message:", error.message);
+            
             res.status(500).json({
                 status: "error",
                 message: "Failed to load statistics",
-                error: error.message
+                error: error.message,
+                errorType: error.name,
+                details: process.env.NODE_ENV === 'development' ? error.stack : undefined
             });
         }
     }
