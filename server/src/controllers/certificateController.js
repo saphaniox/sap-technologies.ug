@@ -111,7 +111,10 @@ exports.generateCertificate = async (req, res) => {
  */
 exports.downloadCertificate = async (req, res) => {
     try {
-        const { filename } = req.params;
+        let { filename } = req.params;
+        
+        // Extract just the filename from any full path
+        filename = path.basename(filename);
 
         const pdfBuffer = await certificateService.getCertificate(filename);
 
@@ -147,13 +150,16 @@ exports.getCertificateInfo = async (req, res) => {
             });
         }
 
+        // Extract just the filename to ensure compatibility
+        const filename = path.basename(nomination.certificateFile);
+
         res.json({
             certificateId: nomination.certificateId,
-            filename: nomination.certificateFile,
+            filename: filename,
             nomineeName: nomination.nomineeName,
             categoryName: nomination.category.name,
             status: nomination.status,
-            downloadUrl: `/api/certificates/download/${nomination.certificateFile}`
+            downloadUrl: `/api/certificates/download/${filename}`
         });
 
     } catch (error) {
