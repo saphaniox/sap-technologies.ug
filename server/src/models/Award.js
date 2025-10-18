@@ -42,6 +42,15 @@ const awardCategorySchema = new mongoose.Schema({
         type: String,
         default: "🏆"
     },
+    iconName: {
+        type: String,
+        default: "trophy",
+        enum: [
+            "trophy", "star", "medal", "crown", "rocket", "lightbulb",
+            "heart", "users", "globe", "flag", "chart", "shield",
+            "target", "briefcase", "sparkles", "check", "clock", "ballot"
+        ]
+    },
     isActive: {
         type: Boolean,
         default: true
