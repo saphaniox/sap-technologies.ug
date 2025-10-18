@@ -51,7 +51,7 @@ Run the diagnostic script to find products with invalid currencies:
 
 ```bash
 cd server
-node check-product-currencies.js
+node scripts/check-product-currencies.js
 ```
 
 This will show:
@@ -63,13 +63,13 @@ This will show:
 
 **Option A: Dry Run (Safe)**
 ```bash
-node migrate-product-currencies.js
+node scripts/migrate-product-currencies.js
 ```
 This shows what would be changed without actually changing anything.
 
 **Option B: Apply Changes**
 ```bash
-node migrate-product-currencies.js --apply
+node scripts/migrate-product-currencies.js --apply
 ```
 This will:
 - 💾 Create a backup in `server/backups/`
