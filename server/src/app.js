@@ -1,20 +1,3 @@
-/**
- * SAP Technologies Server Application
- * 
- * Main Express application server for SAP Technologies platform.
- * Handles all backend operations including:
- * - User authentication and authorization
- * - Contact form submissions
- * - Newsletter subscriptions
- * - Product/service management
- * - Admin dashboard API endpoints
- * - File uploads and static assets
- * - Security middleware and rate limiting
- * - Database connections and health checks
- * 
- * @module app
- */
-
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -28,10 +11,7 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const cookieParser = require("cookie-parser");
 
-// Import environment configuration
 const environmentConfig = require("./config/environment");
-
-// Import security configurations
 const {
     helmetConfig,
     rateLimits,
@@ -41,60 +21,34 @@ const {
     securityLogger,
     detectSuspiciousActivity
 } = require("./config/security");
-
-// Import other configurations
 const { connectDB, checkDatabaseHealth, auditDatabaseSecurity } = require("./config/database");
 const { errorHandler } = require("./middleware/errorHandler");
 const apiRoutes = require("./routes");
 
-/**
- * Initialize Express Application
- * Creates the main Express app instance
- */
 const app = express();
 
-/**
- * Database Connection Setup
- * Establishes MongoDB connection with error handling and fallback
- */
+// Initialize database connection
 (async () => {
     try {
-        console.log("🚀 Initializing SAP Technologies Secure Server...");
+        console.log("🚀 Initializing SAP Technologies Server...");
         
-        // Test database connection
         const dbConnected = await environmentConfig.testDatabaseConnection();
         
         if (dbConnected) {
-            // Database connection is already established in testDatabaseConnection
-            console.log("✅ Database connection ready");
+            console.log("✅ Database connected");
         } else {
-            console.warn("⚠️  Starting server without database connection...");
-            console.log("📝 Server will function in limited mode for frontend development");
+            console.warn("⚠️  Running without database");
         }
     } catch (error) {
-        console.error("❌ Database initialization failed:", error.message);
-        console.log("📝 Server will start without database features...");
+        console.error("❌ Database error:", error.message);
     }
 })();
 
-/**
- * Proxy Configuration
- * Trust proxy for accurate IP addresses behind reverse proxy (important for rate limiting)
- */
+// Trust proxy for rate limiting behind reverse proxies
 app.set("trust proxy", 1);
 
-/**
- * Security Middleware Stack
- * Order of middleware is critical for proper security and functionality
- */
-
-// 1. Compression middleware (should be early)
 app.use(compression(compressionConfig));
-
-// 2. Cookie parser (needed for JWT tokens)
 app.use(cookieParser());
-
-// 3. Request logging
 app.use(morgan("combined", {
     stream: {
         write: (message) => securityLogger.info(message.trim())

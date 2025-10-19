@@ -1,51 +1,21 @@
-/**
- * Product Controller
- * 
- * Manages product catalog and operations.
- * Features:
- * - Get all products with filtering (category, featured)
- * - Get product by ID with full details
- * - Create new products with image upload
- * - Update existing products
- * - Delete products and cleanup images
- * - Get product categories
- * - Handle product images and metadata
- * 
- * @module controllers/productController
- */
-
 const { Product } = require("../models");
 const { validationResult } = require("express-validator");
 const path = require("path");
 const fs = require("fs").promises;
 const { useCloudinary } = require("../config/fileUpload");
 
-/**
- * Get the correct file path/URL for uploaded file
- * Works with both Cloudinary and local storage
- */
+// Helper to get file URL (Cloudinary or local)
 const getFileUrl = (file, folder = 'products') => {
     if (!file) return null;
     
-    // If using Cloudinary, file.path contains the full Cloudinary URL
     if (useCloudinary && file.path && file.path.includes('cloudinary.com')) {
         return file.path;
     }
     
-    // Local storage: construct path
     return `/uploads/${folder}/${file.filename}`;
 };
 
-/**
- * Product Controller Class
- * Handles product CRUD operations
- */
 class ProductController {
-    // =====================
-    // PUBLIC ENDPOINTS
-    // =====================
-
-    // Get all active products (public endpoint)
     async getProducts(req, res, next) {
         try {
             const {
@@ -57,7 +27,6 @@ class ProductController {
 
             let query = { isActive: true };
 
-            // Apply filters
             if (category && category !== "all") {
                 query.category = category;
             }

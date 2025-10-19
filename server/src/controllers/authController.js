@@ -1,63 +1,35 @@
-﻿/**
- * Authentication Controller
- * 
- * Handles all user authentication operations including:
- * - User registration with email verification
- * - Login with password verification
- * - Logout and session management
- * - Activity logging for security
- * - Email notifications for auth events
- * 
- * @module controllers/authController
- */
-
-const bcrypt = require('bcryptjs');
+﻿const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 const { AppError } = require('../middleware/errorHandler');
 const emailService = require('../services/emailService');
 
-/**
- * Authentication Controller Class
- * Contains methods for user authentication operations
- */
 class AuthController {
-    // Handle new user registration
     async register(req, res, next) {
         try {
-            // Extract user details from request
             const { name, email, password } = req.body;
             
-            // Basic validation - make sure we have all required fields
             if (!name || !email || !password) {
                 return next(new AppError('All fields are required', 400));
             }
             
-            // Check if someone already registered with this email
             const existingUser = await User.findOne({ email });
             if (existingUser) {
                 return next(new AppError('Email already registered', 400));
             }
             
-            // Hash the password for security (never store plain text passwords!)
             const hashedPassword = await bcrypt.hash(password, 12);
-            
-            // Create and save the new user
             const user = new User({ name, email, password: hashedPassword });
             await user.save();
             
-            // Log this registration in user's activity history
-            // We wrap this in try-catch so registration doesn't fail if activity logging fails
+            // Track registration activity
             try {
                 await user.addActivity('Account created');
             } catch (activityError) {
                 console.error('Failed to log activity:', activityError);
-                // Don't fail the whole registration just because activity logging failed
             }
             
-            // Send signup notifications (don't wait for them to complete)
             const notificationPromises = [];
             
-            // Send welcome email to the new user (works with Resend, SendGrid, or Gmail)
             if (emailService.isConfigured) {
                 notificationPromises.push(
                     emailService.sendUserSignupNotification({ 
