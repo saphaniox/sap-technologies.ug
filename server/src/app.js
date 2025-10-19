@@ -112,16 +112,15 @@ app.use(detectSuspiciousActivity);
 
 // 10. Session configuration with MongoDB store
 const sessionConfig = environmentConfig.getSessionConfig();
-// Add MongoStore for persistent sessions in production
 if (process.env.NODE_ENV === 'production') {
     sessionConfig.store = MongoStore.create({
         mongoUrl: process.env.MONGODB_URI,
         collectionName: 'sessions',
-        ttl: 24 * 60 * 60, // 24 hours
+        ttl: 30 * 24 * 60 * 60, // 30 days (1 month)
         autoRemove: 'native',
-        touchAfter: 3600 // Lazy session update - update session every 1 hour
+        touchAfter: 24 * 3600 // Update session once per day
     });
-    console.log('✅ Using MongoDB session store for production');
+    console.log('✅ Using MongoDB session store (30-day sessions)');
 } else {
     console.log('⚠️ Using memory session store for development');
 }
