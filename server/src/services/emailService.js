@@ -105,28 +105,6 @@ class EmailService {
         }
     }
 
-    /**
-     * Convert HTML to plain text (simple version)
-     */
-    htmlToText(html) {
-        return html
-            .replace(/<style[^>]*>.*<\/style>/gmi, '')
-            .replace(/<script[^>]*>.*<\/script>/gmi, '')
-            .replace(/<[^>]+>/gm, '')
-            .replace(/&nbsp;/g, ' ')
-            .replace(/&amp;/g, '&')
-            .replace(/&lt;/g, '<')
-            .replace(/&gt;/g, '>')
-            .replace(/&quot;/g, '"')
-            .replace(/&#39;/g, "'")
-            .replace(/\n\s*\n\s*\n/g, '\n\n')
-            .trim();
-    }
-
-    /**
-     * Universal email sender - handles both SendGrid and SMTP
-     * @param {Object} emailOptions - { to, subject, html, replyTo (optional), from (optional), category (optional) }
-     */
     async sendEmail(emailOptions) {
         if (!this.isConfigured) {
             const errorMsg = "❌ Email service not configured - No email provider found (RESEND_API_KEY, SENDGRID_API_KEY, or GMAIL credentials required)";
@@ -2378,8 +2356,4 @@ ${JSON.stringify(alertData.details, null, 2)}
 }
 
 module.exports = new EmailService();
-
-
-
-
 

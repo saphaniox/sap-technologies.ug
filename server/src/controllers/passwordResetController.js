@@ -1,36 +1,3 @@
-/**
- * Password Reset Controller
- * 
- * Handles secure password reset flow with email verification codes.
- * 
- * Features:
- * - Forgot password request handling
- * - 6-digit verification code generation
- * - Code verification and validation
- * - Password reset with security checks
- * - Code expiration (10 minutes)
- * - SHA-256 hashing for codes
- * - Email enumeration protection
- * - Rate limiting friendly
- * 
- * Security Features:
- * - Verification codes hashed before storage
- * - Time-limited codes (10 minutes)
- * - No email enumeration (same response for valid/invalid emails)
- * - Codes invalidated after use
- * - Strong password requirements
- * 
- * Reset Flow:
- * 1. User requests reset with email
- * 2. System sends 6-digit code to email
- * 3. User verifies code
- * 4. User enters new password
- * 5. System validates and updates password
- * 6. Code is invalidated
- * 
- * @module controllers/passwordResetController
- */
-
 // Password Reset Controller
 // Handles forgot password requests and password resets with verification codes
 

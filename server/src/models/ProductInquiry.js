@@ -1,27 +1,3 @@
-/**
- * Product Inquiry Model
- * 
- * Defines the database schema for customer inquiries about
- * specific products in the catalog.
- * 
- * Features:
- * - Product reference (ObjectId link to Product model)
- * - Customer contact information (email, phone)
- * - Preferred contact method (email, phone, both)
- * - Inquiry message
- * - Status tracking (new, contacted, resolved, closed)
- * - Admin notes for follow-up
- * - Metadata (IP address, user agent, timestamps)
- * 
- * Status Workflow:
- * 1. new - Fresh inquiry submitted
- * 2. contacted - Admin has reached out to customer
- * 3. resolved - Inquiry answered successfully
- * 4. closed - Inquiry no longer active
- * 
- * @module models/ProductInquiry
- */
-
 const mongoose = require("mongoose");
 
 const productInquirySchema = new mongoose.Schema({

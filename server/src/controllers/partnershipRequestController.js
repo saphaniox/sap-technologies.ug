@@ -1,35 +1,3 @@
-/**
- * Partnership Request Controller
- * 
- * Manages partnership and sponsorship requests from companies
- * interested in collaborating.
- * 
- * Features:
- * - Partnership request submission
- * - Status management (pending, reviewed, approved, rejected)
- * - Email notifications (admin and requester)
- * - WhatsApp notifications (optional)
- * - Admin notes and internal comments
- * - Request history tracking
- * - Batch operations (admin)
- * 
- * Notification System:
- * - Sends confirmation email to company contact
- * - Notifies admin of new partnership request
- * - Optional WhatsApp alerts to admin
- * 
- * Public Endpoints:
- * - POST /partnership-requests - Submit new request
- * 
- * Admin Endpoints:
- * - GET /admin/partnership-requests - List all requests
- * - GET /admin/partnership-requests/:id - Get single request
- * - PUT /admin/partnership-requests/:id - Update status
- * - DELETE /admin/partnership-requests/:id - Delete request
- * 
- * @module controllers/partnershipRequestController
- */
-
 const { PartnershipRequest } = require("../models");
 const { AppError } = require("../middleware/errorHandler");
 const emailService = require("../services/emailService");

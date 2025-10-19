@@ -1,30 +1,3 @@
-/**
- * Award Model
- * 
- * Defines the database schema for awards management system including
- * award categories, nominations, winners, and voting.
- * 
- * Features:
- * - Award category management with icons and descriptions
- * - Nomination system (nominee info, evidence, achievements)
- * - Winner selection and tracking
- * - Vote counting and statistics
- * - Email notifications for winners and nominees
- * - Status tracking (pending, approved, rejected, winner, finalist)
- * - Photo uploads for nominees
- * - Evidence and achievements documentation
- * - Timestamps for all entries
- * 
- * Nomination Workflow:
- * 1. pending - Newly submitted nomination
- * 2. approved - Reviewed and accepted
- * 3. rejected - Not accepted for this cycle
- * 4. winner - Selected as category winner
- * 5. finalist - Runner-up in category
- * 
- * @module models/Award
- */
-
 const mongoose = require("mongoose");
 
 const awardCategorySchema = new mongoose.Schema({

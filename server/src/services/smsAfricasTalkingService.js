@@ -1,33 +1,3 @@
-/**
- * Africa's Talking SMS Service
- * 
- * Affordable SMS service for African countries.
- * FREE test credits + very cheap rates (~$0.01/SMS).
- * 
- * Features:
- * - FREE test sandbox
- * - Cheap production rates
- * - Great coverage in East/West Africa
- * - Bulk SMS support
- * - Delivery reports
- * 
- * Coverage:
- * - Kenya, Uganda, Tanzania, Rwanda, Nigeria, Ghana, South Africa, and more
- * 
- * Pricing (Production):
- * - Uganda: ~$0.01 per SMS
- * - Kenya: ~$0.008 per SMS
- * - Nigeria: ~$0.012 per SMS
- * 
- * Setup:
- * 1. Sign up at https://africastalking.com
- * 2. Get API key from dashboard
- * 3. Use 'sandbox' username for testing (FREE)
- * 4. Add your app name for production
- * 
- * @module smsAfricasTalkingService
- */
-
 const AfricasTalking = require('africastalking');
 
 class SMSAfricasTalkingService {
@@ -61,11 +31,6 @@ class SMSAfricasTalkingService {
         }
     }
 
-    /**
-     * Format phone number for Africa's Talking
-     * @param {string} number - Phone number
-     * @returns {string} Formatted number with +
-     */
     formatNumber(number) {
         // Remove all non-numeric characters except +
         let formatted = number.replace(/[^\d+]/g, '');
@@ -78,12 +43,6 @@ class SMSAfricasTalkingService {
         return formatted;
     }
 
-    /**
-     * Send SMS message
-     * @param {string|array} to - Phone number(s) with country code
-     * @param {string} message - SMS message (max 160 chars for single SMS)
-     * @returns {Promise<object>} SMS sending result
-     */
     async sendSMS(to, message) {
         try {
             if (!this.isConfigured) {
@@ -119,99 +78,56 @@ class SMSAfricasTalkingService {
         }
     }
 
-    /**
-     * Send bulk SMS to multiple numbers
-     * @param {array} numbers - Array of phone numbers
-     * @param {string} message - SMS message
-     * @returns {Promise<object>}
-     */
     async sendBulkSMS(numbers, message) {
         return await this.sendSMS(numbers, message);
     }
 
-    /**
-     * Send contact form notification SMS to admin
-     * @param {object} contactData - Contact form data
-     */
     async sendContactNotification(contactData) {
         const message = `SAP TECH: New contact from ${contactData.name}. Email: ${contactData.email}. Check admin dashboard.`;
         
         return await this.sendSMS(this.adminNumber, message);
     }
 
-    /**
-     * Send partnership request notification SMS
-     * @param {object} partnershipData - Partnership data
-     */
     async sendPartnershipNotification(partnershipData) {
         const message = `SAP TECH: New partnership request from ${partnershipData.companyName}. Contact: ${partnershipData.contactEmail}`;
         
         return await this.sendSMS(this.adminNumber, message);
     }
 
-    /**
-     * Send new user registration notification SMS
-     * @param {object} userData - User data
-     */
     async sendRegistrationNotification(userData) {
         const message = `SAP TECH: New user registered - ${userData.name} (${userData.email})`;
         
         return await this.sendSMS(this.adminNumber, message);
     }
 
-    /**
-     * Send newsletter subscription notification SMS
-     * @param {string} email - Subscriber email
-     */
     async sendNewsletterNotification(email) {
         const message = `SAP TECH: New newsletter subscriber: ${email}`;
         
         return await this.sendSMS(this.adminNumber, message);
     }
 
-    /**
-     * Send product inquiry notification SMS
-     * @param {object} inquiryData - Inquiry data
-     */
     async sendProductInquiryNotification(inquiryData) {
         const message = `SAP TECH: Product inquiry from ${inquiryData.name} for ${inquiryData.productName}. Email: ${inquiryData.email}`;
         
         return await this.sendSMS(this.adminNumber, message);
     }
 
-    /**
-     * Send service quote notification SMS
-     * @param {object} quoteData - Quote request data
-     */
     async sendServiceQuoteNotification(quoteData) {
         const message = `SAP TECH: Service quote request from ${quoteData.name} for ${quoteData.serviceName}. Contact: ${quoteData.email}`;
         
         return await this.sendSMS(this.adminNumber, message);
     }
 
-    /**
-     * Send awards nomination notification SMS
-     * @param {object} nominationData - Nomination data
-     */
     async sendAwardsNotification(nominationData) {
         const message = `SAP TECH AWARDS: New nomination for ${nominationData.nomineeName} in ${nominationData.categoryName}. Check dashboard.`;
         
         return await this.sendSMS(this.adminNumber, message);
     }
 
-    /**
-     * Send custom SMS
-     * @param {string} to - Recipient number
-     * @param {string} message - Message text
-     */
     async sendCustomSMS(to, message) {
         return await this.sendSMS(to, message);
     }
 
-    /**
-     * Check account balance (production only)
-     * @returns {Promise<object>} Balance information
-     */
     async checkBalance() {
         try {
             if (!this.isConfigured) {
@@ -246,10 +162,6 @@ class SMSAfricasTalkingService {
         }
     }
 
-    /**
-     * Get service status and pricing
-     * @returns {object}
-     */
     getStatus() {
         return {
             configured: this.isConfigured,
@@ -272,11 +184,6 @@ class SMSAfricasTalkingService {
         };
     }
 
-    /**
-     * Test SMS functionality
-     * @param {string} testNumber - Number to send test SMS
-     * @returns {Promise<object>}
-     */
     async testSMS(testNumber = null) {
         const number = testNumber || this.adminNumber;
         const message = `Test message from SAP Technologies SMS system. Time: ${new Date().toLocaleString()}`;

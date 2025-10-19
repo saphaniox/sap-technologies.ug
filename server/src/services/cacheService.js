@@ -1,43 +1,3 @@
-/**
- * Cache Service
- * 
- * High-performance in-memory caching layer using node-cache.
- * Provides automatic TTL, cache invalidation, and statistics.
- * 
- * Features:
- * - Fast in-memory storage (no Redis dependency)
- * - Automatic expiration (TTL)
- * - Cache invalidation by key or pattern
- * - Cache statistics and monitoring
- * - Namespaced cache keys
- * - Compression for large objects
- * 
- * Cache Strategy:
- * - Products: 10 minutes (frequently viewed, rarely change)
- * - Services: 15 minutes (rarely change)
- * - Projects: 10 minutes (moderate changes)
- * - Partners: 30 minutes (rarely change)
- * - Awards: 5 minutes (frequent voting updates)
- * - Categories: 1 hour (very stable)
- * - Public lists: 5 minutes (balance between freshness and speed)
- * 
- * Usage:
- * const cache = require('./cacheService');
- * 
- * // Get or set
- * let products = cache.get('products:active');
- * if (!products) {
- *     products = await Product.find({ isActive: true });
- *     cache.set('products:active', products, 600); // 10 min
- * }
- * 
- * // Invalidate on update
- * cache.del('products:active');
- * cache.deletePattern('products:*');
- * 
- * @module services/cacheService
- */
-
 const NodeCache = require('node-cache');
 const logger = require('../utils/logger');
 
@@ -71,11 +31,6 @@ class CacheService {
         });
     }
 
-    /**
-     * Get value from cache
-     * @param {string} key - Cache key
-     * @returns {any|null} Cached value or null if not found/expired
-     */
     get(key) {
         const value = this.cache.get(key);
         
@@ -90,13 +45,6 @@ class CacheService {
         return null;
     }
 
-    /**
-     * Set value in cache
-     * @param {string} key - Cache key
-     * @param {any} value - Value to cache
-     * @param {number} ttl - Time to live in seconds (optional)
-     * @returns {boolean} Success status
-     */
     set(key, value, ttl = null) {
         try {
             const success = ttl 
@@ -115,11 +63,6 @@ class CacheService {
         }
     }
 
-    /**
-     * Delete specific key from cache
-     * @param {string} key - Cache key
-     * @returns {number} Number of deleted keys
-     */
     del(key) {
         const deleted = this.cache.del(key);
         if (deleted > 0) {
@@ -129,11 +72,6 @@ class CacheService {
         return deleted;
     }
 
-    /**
-     * Delete multiple keys matching pattern
-     * @param {string} pattern - Key pattern (e.g., 'products:*')
-     * @returns {number} Number of deleted keys
-     */
     deletePattern(pattern) {
         const keys = this.cache.keys();
         const regex = new RegExp('^' + pattern.replace('*', '.*') + '$');
@@ -152,36 +90,14 @@ class CacheService {
         return deleted;
     }
 
-    /**
-     * Check if key exists in cache
-     * @param {string} key - Cache key
-     * @returns {boolean}
-     */
     has(key) {
         return this.cache.has(key);
     }
 
-    /**
-     * Get multiple keys at once
-     * @param {string[]} keys - Array of cache keys
-     * @returns {object} Object with key-value pairs
-     */
     mget(keys) {
         return this.cache.mget(keys);
     }
 
-    /**
-     * Flush entire cache
-     */
-    flush() {
-        this.cache.flushAll();
-        logger.logInfo('Cache', 'Cache flushed completely');
-    }
-
-    /**
-     * Get cache statistics
-     * @returns {object} Cache statistics
-     */
     getStats() {
         const cacheStats = this.cache.getStats();
         return {
@@ -195,40 +111,16 @@ class CacheService {
         };
     }
 
-    /**
-     * Calculate cache hit rate
-     * @returns {string} Hit rate percentage
-     */
     getHitRate() {
         const total = this.stats.hits + this.stats.misses;
         if (total === 0) return '0%';
         return ((this.stats.hits / total) * 100).toFixed(2) + '%';
     }
 
-    /**
-     * Log cache statistics
-     */
-    logStats() {
-        const stats = this.getStats();
-        logger.logInfo('Cache', 'Cache statistics', stats);
-    }
-
-    /**
-     * Get TTL for a key
-     * @param {string} key - Cache key
-     * @returns {number} TTL in seconds, -1 if doesn't exist
-     */
     getTtl(key) {
         return this.cache.getTtl(key);
     }
 
-    /**
-     * Helper: Cache with automatic fallback
-     * @param {string} key - Cache key
-     * @param {Function} fetchFunction - Function to fetch data if not cached
-     * @param {number} ttl - Time to live in seconds
-     * @returns {Promise<any>} Cached or fresh data
-     */
     async getOrSet(key, fetchFunction, ttl = 600) {
         // Try to get from cache
         let data = this.get(key);

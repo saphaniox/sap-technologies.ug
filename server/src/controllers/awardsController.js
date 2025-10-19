@@ -1,35 +1,3 @@
-/**
- * Awards Controller
- * 
- * Manages the complete awards system including categories,
- * nominations, winners, and certificate generation.
- * 
- * Features:
- * - Award category CRUD operations
- * - Nomination submission and management
- * - Winner and finalist selection
- * - Vote counting and statistics
- * - Status updates (pending, approved, rejected, winner, finalist)
- * - Photo upload handling for nominees
- * - Email notifications for winners and nominees
- * - Certificate generation for winners
- * - Public and admin endpoints
- * 
- * Category Management:
- * - Create, read, update, delete categories
- * - Track nominations per category
- * - Activation/deactivation control
- * 
- * Nomination Workflow:
- * 1. User submits nomination
- * 2. Admin reviews (approve/reject)
- * 3. Admin selects winners/finalists
- * 4. System generates certificates
- * 5. Email notifications sent
- * 
- * @module controllers/awardsController
- */
-
 const { AwardCategory, Nomination } = require("../models");
 const { validationResult } = require("express-validator");
 const path = require("path");

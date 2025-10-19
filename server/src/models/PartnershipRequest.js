@@ -1,26 +1,3 @@
-/**
- * Partnership Request Model
- * 
- * Defines the database schema for partnership and sponsorship
- * requests from companies interested in collaborating.
- * 
- * Features:
- * - Company information (name, website, description)
- * - Contact details (email, contact person)
- * - Request status tracking (pending, reviewed, approved, rejected)
- * - Admin notes for internal communication
- * - Email validation
- * - Automatic timestamps
- * 
- * Status Workflow:
- * 1. pending - New partnership request submitted
- * 2. reviewed - Admin has reviewed the request
- * 3. approved - Partnership accepted
- * 4. rejected - Partnership declined
- * 
- * @module models/PartnershipRequest
- */
-
 const mongoose = require("mongoose");
 
 const partnershipRequestSchema = new mongoose.Schema({

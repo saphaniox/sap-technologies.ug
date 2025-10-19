@@ -1,26 +1,3 @@
-/**
- * Contact Model
- * 
- * Defines the database schema for contact form submissions with
- * status tracking and security metadata.
- * 
- * Features:
- * - Contact form data (name, email, message)
- * - Status management (pending, read, replied, archived)
- * - Submission tracking (date, IP address, user agent)
- * - Email validation
- * - Automatic timestamps
- * - Indexed fields for query performance
- * 
- * Status Workflow:
- * 1. pending - New submission
- * 2. read - Admin has viewed
- * 3. replied - Admin has responded
- * 4. archived - No longer active
- * 
- * @module models/Contact
- */
-
 const mongoose = require("mongoose");
 
 const contactSchema = new mongoose.Schema({

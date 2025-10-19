@@ -1,30 +1,3 @@
-/**
- * Newsletter Controller
- * 
- * Manages newsletter subscriptions, unsubscriptions, and subscriber data.
- * 
- * Features:
- * - Email subscription handling
- * - Unsubscribe functionality
- * - Reactivation of inactive subscriptions
- * - Subscriber list management (admin)
- * - Bulk operations (admin)
- * - Source tracking (website, social, referral)
- * - Email validation
- * - Duplicate prevention
- * 
- * Public Endpoints:
- * - POST /subscribe - Subscribe to newsletter
- * - POST /unsubscribe - Unsubscribe from newsletter
- * 
- * Admin Endpoints:
- * - GET /subscribers - List all subscribers
- * - DELETE /:id - Remove subscriber
- * - GET /stats - Subscriber statistics
- * 
- * @module controllers/newsletterController
- */
-
 const { Newsletter } = require("../models");
 const { AppError } = require("../middleware/errorHandler");
 const emailService = require("../services/emailService");

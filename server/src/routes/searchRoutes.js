@@ -1,12 +1,3 @@
-/**
- * Search Routes
- * 
- * Provides public search endpoints for all content types.
- * All routes are rate-limited and support pagination.
- * 
- * @module routes/searchRoutes
- */
-
 const express = require("express");
 const router = express.Router();
 const searchController = require("../controllers/searchController");

@@ -1,22 +1,3 @@
-/**
- * Application Logger Utility
- * 
- * Centralized logging solution using Winston for structured logging.
- * Provides different log levels and outputs to files and console.
- * 
- * Log Levels (in order of severity):
- * - error: Error messages
- * - warn: Warning messages
- * - info: Informational messages
- * - http: HTTP requests
- * - debug: Debug messages (only in development)
- * 
- * In production, only logs warn and error levels to reduce noise.
- * In development, logs all levels including debug.
- * 
- * @module utils/logger
- */
-
 const winston = require('winston');
 const path = require('path');
 const fs = require('fs');

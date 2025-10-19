@@ -1,30 +1,3 @@
-/**
- * Product Model
- * 
- * Defines the database schema for product catalog items including
- * technical specifications, features, and categorization.
- * 
- * Features:
- * - Product information (name, descriptions, images)
- * - Technical specifications array
- * - Feature lists
- * - Category management
- * - Pricing information
- * - Stock tracking
- * - View counter
- * - Active/inactive status
- * - Timestamps (created/updated dates)
- * 
- * Categories:
- * - Electronics
- * - Vehicles
- * - Services
- * - Spare Parts
- * - Other
- * 
- * @module models/Product
- */
-
 const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema({

@@ -1,39 +1,3 @@
-/**
- * Service & Project Controller
- * 
- * Manages both services and portfolio projects with comprehensive
- * CRUD operations, filtering, and media handling.
- * 
- * Service Features:
- * - Service CRUD operations
- * - Category filtering
- * - Featured services
- * - Price management
- * - Icon and image uploads
- * - Technology stack tracking
- * - View counter
- * - Search and pagination
- * 
- * Project Features:
- * - Project CRUD operations
- * - Client information
- * - Multiple image uploads
- * - Technology listings
- * - Timeline tracking
- * - Team member management
- * - Project status (in-progress, completed, on-hold)
- * - Featured/showcase projects
- * - Results and metrics
- * - Testimonials
- * 
- * File Management:
- * - Image upload and cleanup
- * - Old file deletion on update
- * - Automatic file cleanup on deletion
- * 
- * @module controllers/serviceProjectController
- */
-
 const { Service, Project } = require("../models");
 const fs = require("fs");
 const path = require("path");

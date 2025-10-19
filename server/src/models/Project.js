@@ -1,39 +1,3 @@
-/**
- * Project Model
- * 
- * Defines the database schema for portfolio projects showcasing
- * completed work and client collaborations.
- * 
- * Features:
- * - Project information (title, descriptions, category)
- * - Client details (name, company, industry)
- * - Project images and media
- * - Technologies used
- * - Project features and highlights
- * - Timeline (start date, end date, duration)
- * - Team members and roles
- * - Project links (live site, GitHub, documentation)
- * - Results and metrics
- * - Testimonials
- * - Status tracking (in-progress, completed, on-hold)
- * - Featured/showcase flag
- * - View counter
- * 
- * Categories:
- * - E-commerce Platform
- * - Learning Management System
- * - Mobile Application
- * - IoT Solution
- * - Web Application
- * - Portfolio Website
- * - Business Platform
- * - Graphics Design
- * - Electrical Project
- * - Other
- * 
- * @module models/Project
- */
-
 const mongoose = require("mongoose");
 
 const projectSchema = new mongoose.Schema({

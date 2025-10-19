@@ -1,33 +1,3 @@
-/**
- * Certificate Controller
- * 
- * Manages digital certificate generation, verification, and delivery
- * for award winners, finalists, and participants.
- * 
- * Features:
- * - Certificate generation (winner, finalist, participation types)
- * - PDF certificate creation with QR codes
- * - Certificate verification via unique IDs
- * - Email delivery of certificates
- * - Certificate revocation system
- * - Verification tracking and analytics
- * - Batch certificate generation
- * - Certificate download endpoints
- * 
- * Certificate Types:
- * - Winner certificates (gold design)
- * - Finalist certificates (silver design)
- * - Participation certificates (bronze design)
- * 
- * Verification System:
- * - Unique certificate IDs
- * - QR code verification URLs
- * - Public verification endpoint
- * - Verification count tracking
- * 
- * @module controllers/certificateController
- */
-
 const path = require('path');
 const fs = require('fs').promises;
 const certificateService = require('../services/certificateService');

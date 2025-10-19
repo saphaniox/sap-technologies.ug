@@ -1,30 +1,3 @@
-/**
- * Partner Controller
- * 
- * Manages business partners and sponsors displayed on the website.
- * 
- * Features:
- * - Partner CRUD operations (admin)
- * - Public partner listing (active only)
- * - Logo upload and management
- * - Order/priority management
- * - Active/inactive status control
- * - File cleanup on deletion
- * - Sorted display (by order, then creation date)
- * 
- * Public Endpoints:
- * - GET /partners - List active partners
- * 
- * Admin Endpoints:
- * - GET /admin/partners - List all partners
- * - GET /admin/partners/:id - Get single partner
- * - POST /admin/partners - Create partner
- * - PUT /admin/partners/:id - Update partner
- * - DELETE /admin/partners/:id - Delete partner
- * 
- * @module controllers/partnerController
- */
-
 const Partner = require("../models/Partner");
 const path = require("path");
 const fs = require("fs").promises;

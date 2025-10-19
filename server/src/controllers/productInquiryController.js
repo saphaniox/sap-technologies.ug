@@ -1,35 +1,3 @@
-/**
- * Product Inquiry Controller
- * 
- * Manages customer inquiries about products in the catalog.
- * 
- * Features:
- * - Inquiry submission and tracking
- * - Product reference validation
- * - Email notifications (customer and admin)
- * - Status management (new, contacted, resolved, closed)
- * - Contact preference handling (email, phone, both)
- * - Admin notes and follow-up tracking
- * - Metadata collection (IP, user agent)
- * - Inquiry history and analytics
- * 
- * Notification System:
- * - Confirmation email to customer
- * - Alert email to admin with inquiry details
- * - Product information included in emails
- * 
- * Public Endpoints:
- * - POST /product-inquiries - Submit new inquiry
- * 
- * Admin Endpoints:
- * - GET /admin/inquiries - List all inquiries
- * - GET /admin/inquiries/:id - Get single inquiry
- * - PUT /admin/inquiries/:id - Update status/notes
- * - DELETE /admin/inquiries/:id - Delete inquiry
- * 
- * @module controllers/productInquiryController
- */
-
 const { ProductInquiry, Product } = require("../models");
 const emailService = require("../services/emailService");
 

@@ -1,25 +1,3 @@
-/**
- * Admin Controller
- * 
- * Handles all administrative functions including dashboard statistics,
- * user management, content management, and system monitoring.
- * 
- * Features:
- * - Dashboard statistics (users, contacts, newsletters, services, projects)
- * - User management (list, create, update, delete, role changes)
- * - Growth metrics (30-day activity tracking)
- * - Recent activity monitoring
- * - Content overview (featured services, completed projects)
- * - Administrative reports and insights
- * 
- * Access Control:
- * - All methods require admin or superadmin role
- * - Protected by authentication middleware
- * - Role-based permission checks
- * 
- * @module controllers/adminController
- */
-
 // Admin panel controller - handles all administrative functions
 // This is where admins manage users, content, and get system insights
 const { User, Contact, Newsletter, Service, Project, Partner, PartnershipRequest, Product, ProductInquiry, ServiceQuote, Nomination } = require("../models");

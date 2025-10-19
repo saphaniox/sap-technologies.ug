@@ -1,34 +1,3 @@
-/**
- * Service Quote Controller
- * 
- * Manages customer quote requests for services offered by the company.
- * 
- * Features:
- * - Quote request submission
- * - Service reference (optional for default services)
- * - Customer information collection
- * - Project details capture
- * - Budget and timeline preferences
- * - Contact preference handling (email, phone, both)
- * - Email notifications (customer and admin)
- * - Status tracking (new, contacted, quoted, accepted, rejected, expired)
- * - Admin notes and follow-up
- * - Metadata tracking (IP, user agent, timestamps)
- * 
- * Budget Options:
- * - < $5,000 | $5,000-$10,000 | $10,000-$25,000
- * - $25,000-$50,000 | > $50,000 | Not sure
- * 
- * Timeline Options:
- * - ASAP | 1-2 weeks | 1 month | 2-3 months | 3+ months | Flexible
- * 
- * Notification System:
- * - Confirmation email to customer with quote details
- * - Alert email to admin with full request information
- * 
- * @module controllers/serviceQuoteController
- */
-
 const { ServiceQuote, Service } = require("../models");
 const emailService = require("../services/emailService");
 

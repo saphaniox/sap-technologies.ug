@@ -1,33 +1,3 @@
-/**
- * Certificate Model
- * 
- * Defines the database schema for digital certificates issued to
- * award winners, finalists, and participants.
- * 
- * Features:
- * - Unique certificate ID generation
- * - Recipient information (name, email)
- * - Award category and type tracking
- * - PDF file storage reference
- * - QR code verification URLs
- * - Certificate status management (active, revoked, expired)
- * - Verification counter
- * - Issue date tracking
- * - Indexed certificate IDs for fast lookups
- * 
- * Certificate Types:
- * - winner: First place in category
- * - finalist: Runner-up in category
- * - participation: Participant certificate
- * 
- * Status Values:
- * - active: Valid certificate
- * - revoked: Certificate invalidated
- * - expired: Certificate past validity
- * 
- * @module models/Certificate
- */
-
 const mongoose = require('mongoose');
 
 const certificateSchema = new mongoose.Schema({

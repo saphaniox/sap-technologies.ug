@@ -1,32 +1,3 @@
-/**
- * User Model
- * 
- * Defines the database schema for user accounts with comprehensive
- * security features and activity tracking.
- * 
- * Features:
- * - User authentication (email/password with bcrypt hashing)
- * - Profile management (name, avatar, bio)
- * - Role-based access control (user, admin, superadmin)
- * - Two-factor authentication (TOTP with encrypted secrets)
- * - Account security (failed login tracking, account locking)
- * - Activity logging (login history, IP tracking)
- * - Email verification system
- * - Password reset functionality
- * - Session management
- * - Certificate tracking
- * - Awards and nominations
- * 
- * Security Features:
- * - AES-256-GCM encryption for sensitive data
- * - Bcrypt password hashing
- * - Failed login attempt monitoring
- * - Automatic account locking after 5 failed attempts
- * - IP address and device tracking
- * 
- * @module models/User
- */
-
 // User data model - defines how user information is stored in the database
 // This includes basic profile info, security features, and activity tracking
 const mongoose = require("mongoose");

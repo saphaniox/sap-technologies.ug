@@ -1,17 +1,3 @@
-/**
- * Contact Controller
- * 
- * Manages contact form submissions and notifications.
- * Features:
- * - Process contact form submissions
- * - Store contact data with metadata (IP, user agent)
- * - Send email notifications to admin and user
- * - Send WhatsApp alerts for urgent contacts
- * - Retrieve and manage contact submissions
- * 
- * @module controllers/contactController
- */
-
 const { Contact } = require("../models");
 const { AppError } = require("../middleware/errorHandler");
 const emailService = require("../services/emailService");

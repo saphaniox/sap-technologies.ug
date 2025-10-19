@@ -1,29 +1,3 @@
-/**
- * Search Controller
- * 
- * Provides unified search functionality across products, services,
- * projects, and awards with advanced filtering capabilities.
- * 
- * Features:
- * - Multi-model search (products, services, projects, nominations)
- * - Text search with MongoDB text indexes
- * - Category filtering
- * - Price range filtering (products)
- * - Status filtering
- * - Pagination support
- * - Sorting options
- * - Aggregated results
- * 
- * Endpoints:
- * - GET /api/search - Search all models
- * - GET /api/search/products - Search products only
- * - GET /api/search/services - Search services only
- * - GET /api/search/projects - Search projects only
- * - GET /api/search/awards - Search nominations only
- * 
- * @module controllers/searchController
- */
-
 const { Product, Service, Project } = require("../models");
 const { Nomination } = require("../models/Award");
 const logger = require("../utils/logger");

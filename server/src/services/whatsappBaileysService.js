@@ -1,24 +1,3 @@
-/**
- * Free WhatsApp Service using Baileys
- * 
- * 100% FREE WhatsApp notifications using the Baileys library.
- * No API costs, uses your WhatsApp account via QR code authentication.
- * 
- * Features:
- * - Send text messages (FREE)
- * - Send images and documents (FREE)
- * - No message limits
- * - No monthly fees
- * - QR code authentication
- * 
- * Setup:
- * 1. npm install @whiskeysockets/baileys qrcode-terminal
- * 2. Set WHATSAPP_ADMIN_NUMBER in .env
- * 3. Run and scan QR code with WhatsApp
- * 
- * @module whatsappBaileysService
- */
-
 const { 
     default: makeWASocket, 
     DisconnectReason, 
@@ -50,66 +29,6 @@ class WhatsAppBaileysService {
         }
     }
 
-    /**
-     * Initialize WhatsApp connection
-     */
-    async initialize() {
-        try {
-            console.log('📱 Initializing FREE WhatsApp service (Baileys)...');
-            
-            const { state, saveCreds } = await useMultiFileAuthState(this.sessionPath);
-            
-            this.sock = makeWASocket({
-                auth: state,
-                defaultQueryTimeoutMs: undefined,
-            });
-
-            // Save credentials when updated
-            this.sock.ev.on('creds.update', saveCreds);
-
-            // Handle connection updates
-            this.sock.ev.on('connection.update', (update) => {
-                const { connection, lastDisconnect, qr } = update;
-
-                // Show QR code in terminal
-                if (qr) {
-                    console.log('\n📱 Scan this QR code with WhatsApp:');
-                    qrcode.generate(qr, { small: true });
-                    console.log('\n💡 Open WhatsApp → Linked Devices → Link a Device');
-                }
-
-                if (connection === 'close') {
-                    const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-                    console.log('📱 WhatsApp disconnected. Reconnecting:', shouldReconnect);
-                    
-                    if (shouldReconnect) {
-                        setTimeout(() => this.initialize(), 5000);
-                    }
-                    
-                    this.isConnected = false;
-                } else if (connection === 'open') {
-                    console.log('✅ WhatsApp connected successfully! (FREE)');
-                    this.isConnected = true;
-                }
-            });
-
-            // Handle messages (optional - for bot functionality)
-            this.sock.ev.on('messages.upsert', async ({ messages }) => {
-                // You can handle incoming messages here if needed
-                // For now, we only send notifications
-            });
-
-        } catch (error) {
-            console.error('❌ Error initializing WhatsApp:', error);
-            this.isConnected = false;
-        }
-    }
-
-    /**
-     * Format phone number for WhatsApp
-     * @param {string} number - Phone number (with or without +)
-     * @returns {string} Formatted number with @s.whatsapp.net
-     */
     formatNumber(number) {
         // Remove all non-numeric characters
         let formatted = number.replace(/\D/g, '');
@@ -123,12 +42,6 @@ class WhatsAppBaileysService {
         return formatted + '@s.whatsapp.net';
     }
 
-    /**
-     * Send WhatsApp message (FREE)
-     * @param {string} to - Recipient phone number
-     * @param {string} message - Message text
-     * @returns {Promise<void>}
-     */
     async sendMessage(to, message) {
         try {
             if (!this.isEnabled) {
@@ -154,10 +67,6 @@ class WhatsAppBaileysService {
         }
     }
 
-    /**
-     * Send contact form notification to admin (FREE)
-     * @param {object} contactData - Contact form data
-     */
     async sendContactNotification(contactData) {
         const message = `📞 *New Contact Form Submission*
 
@@ -177,10 +86,6 @@ _SAP Technologies Notification System_`;
         await this.sendMessage(this.adminNumber, message);
     }
 
-    /**
-     * Send partnership request notification (FREE)
-     * @param {object} partnershipData - Partnership request data
-     */
     async sendPartnershipNotification(partnershipData) {
         const message = `🤝 *New Partnership Request*
 
@@ -201,10 +106,6 @@ _SAP Technologies Notification System_`;
         await this.sendMessage(this.adminNumber, message);
     }
 
-    /**
-     * Send new user registration notification (FREE)
-     * @param {object} userData - User registration data
-     */
     async sendRegistrationNotification(userData) {
         const message = `👤 *New User Registration*
 
@@ -220,10 +121,6 @@ _SAP Technologies Notification System_`;
         await this.sendMessage(this.adminNumber, message);
     }
 
-    /**
-     * Send newsletter subscription notification (FREE)
-     * @param {string} email - Subscriber email
-     */
     async sendNewsletterNotification(email) {
         const message = `📧 *New Newsletter Subscription*
 
@@ -237,10 +134,6 @@ _SAP Technologies Notification System_`;
         await this.sendMessage(this.adminNumber, message);
     }
 
-    /**
-     * Send product inquiry notification (FREE)
-     * @param {object} inquiryData - Product inquiry data
-     */
     async sendProductInquiryNotification(inquiryData) {
         const message = `🛍️ *New Product Inquiry*
 
@@ -260,10 +153,6 @@ _SAP Technologies Notification System_`;
         await this.sendMessage(this.adminNumber, message);
     }
 
-    /**
-     * Send service quote request notification (FREE)
-     * @param {object} quoteData - Service quote request data
-     */
     async sendServiceQuoteNotification(quoteData) {
         const message = `📋 *New Service Quote Request*
 
@@ -287,10 +176,6 @@ _SAP Technologies Notification System_`;
         await this.sendMessage(this.adminNumber, message);
     }
 
-    /**
-     * Send awards nomination notification (FREE)
-     * @param {object} nominationData - Awards nomination data
-     */
     async sendAwardsNotification(nominationData) {
         const message = `🏆 *New Awards Nomination*
 
@@ -309,12 +194,6 @@ _SAP Technologies Awards System_`;
         await this.sendMessage(this.adminNumber, message);
     }
 
-    /**
-     * Send custom notification (FREE)
-     * @param {string} to - Recipient number
-     * @param {string} title - Notification title
-     * @param {string} body - Notification body
-     */
     async sendCustomNotification(to, title, body) {
         const message = `*${title}*
 
@@ -328,18 +207,10 @@ _SAP Technologies_`;
         await this.sendMessage(to, message);
     }
 
-    /**
-     * Check if WhatsApp is connected
-     * @returns {boolean}
-     */
     isWhatsAppConnected() {
         return this.isConnected;
     }
 
-    /**
-     * Get connection status
-     * @returns {object}
-     */
     getStatus() {
         return {
             enabled: this.isEnabled,
