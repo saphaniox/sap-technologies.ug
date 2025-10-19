@@ -118,7 +118,7 @@ if (process.env.NODE_ENV === 'production') {
         collectionName: 'sessions',
         ttl: 30 * 24 * 60 * 60, // 30 days (1 month)
         autoRemove: 'native',
-        touchAfter: 24 * 3600 // Update session once per day
+        touchAfter: 3600 // Update session every hour
     });
     console.log('✅ Using MongoDB session store (30-day sessions)');
 } else {
