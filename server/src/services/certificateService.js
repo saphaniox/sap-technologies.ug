@@ -4,12 +4,26 @@ const fs = require('fs').promises;
 const path = require('path');
 const { Certificate } = require('../models');
 const cloudinary = require('cloudinary').v2;
+const { isCloudinaryConfigured } = require('../config/cloudinary');
 
 class CertificateService {
+    ensureCertificatesDirectory() {
+        const fsSync = require('fs');
+        if (!fsSync.existsSync(this.certificatesDir)) {
+            fsSync.mkdirSync(this.certificatesDir, { recursive: true });
+        }
+    }
+
+    ensureSignaturesDirectory() {
+        const fsSync = require('fs');
+        if (!fsSync.existsSync(this.signaturesDir)) {
+            fsSync.mkdirSync(this.signaturesDir, { recursive: true });
+        }
+    }
     constructor() {
         this.certificatesDir = path.join(__dirname, '../../uploads/certificates');
         this.signaturesDir = path.join(__dirname, '../../uploads/signatures');
-        this.useCloudinary = this.isCloudinaryConfigured();
+        this.useCloudinary = isCloudinaryConfigured();
         this.ensureCertificatesDirectory();
         this.ensureSignaturesDirectory();
     }

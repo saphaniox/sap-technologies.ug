@@ -1,3 +1,43 @@
+// List of disposable/temporary email domains
+const DISPOSABLE_DOMAINS = [
+    'mailinator.com', '10minutemail.com', 'guerrillamail.com', 'yopmail.com', 'tempmail.com',
+    'trashmail.com', 'fakeinbox.com', 'getnada.com', 'sharklasers.com', 'maildrop.cc',
+    'dispostable.com', 'mailnesia.com', 'spamgourmet.com', 'throwawaymail.com', 'mintemail.com',
+    'mailcatch.com', 'spambog.com', 'mailnull.com', 'mytemp.email', 'moakt.com', 'emailondeck.com'
+];
+
+// Common domain typos and their corrections
+const DOMAIN_TYPOS = {
+    'gamil.com': 'gmail.com',
+    'gnail.com': 'gmail.com',
+    'gmial.com': 'gmail.com',
+    'hotnail.com': 'hotmail.com',
+    'hotmai.com': 'hotmail.com',
+    'yaho.com': 'yahoo.com',
+    'yahho.com': 'yahoo.com',
+    'outlok.com': 'outlook.com',
+    'icloud.con': 'icloud.com',
+    'icloud.co': 'icloud.com',
+    'gmaill.com': 'gmail.com',
+    'gmail.co': 'gmail.com',
+    'gmail.con': 'gmail.com',
+    'gmail.om': 'gmail.com',
+    'yahoo.co': 'yahoo.com',
+    'yahoo.con': 'yahoo.com',
+    'hotmail.co': 'hotmail.com',
+    'hotmail.con': 'hotmail.com',
+    'outlook.co': 'outlook.com',
+    'outlook.con': 'outlook.com',
+};
+
+// Trusted domains for business/edu validation
+const TRUSTED_DOMAINS = [
+    'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com',
+    '.edu', '.ac.ug', '.ac.ke', '.ac.za', '.ac.uk', '.edu.gh', '.edu.ng',
+    'protonmail.com', 'zoho.com', 'aol.com', 'mail.com', 'gmx.com',
+    'pm.me', 'yandex.com', 'fastmail.com', 'tutanota.com', 'hey.com',
+    'students.com', 'alumni.com', 'posteo.net', 'hushmail.com', 'inbox.lv'
+];
 function validateEmail(email) {
     const result = {
         isValid: true,
@@ -6,6 +46,7 @@ function validateEmail(email) {
         reasons: [],
         suggestions: []
     };
+    // ...existing code...
 
     if (!email || typeof email !== 'string') {
         result.isValid = false;
@@ -121,12 +162,36 @@ function isTrustedDomain(email) {
     const domain = email.split('@')[1]?.toLowerCase();
     if (!domain) return false;
     
+
     return TRUSTED_DOMAINS.some(trusted => {
         if (trusted.startsWith('.')) {
             return domain.endsWith(trusted);
         }
         return domain === trusted;
     });
+}
+
+// Express middleware for advanced email validation (module-level)
+function emailValidationMiddleware(req, res, next) {
+    const email = req.body.voterEmail || req.body.nominatorEmail || req.body.email || req.query.email;
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required.' });
+    }
+    try {
+        const result = validateEmail(email);
+        if (!result.isValid) {
+            return res.status(400).json({
+                error: 'Invalid email address.',
+                reasons: result.reasons,
+                suggestions: result.suggestions
+            });
+        }
+        // attach normalized/corrected email if provided
+        if (result.correctedEmail) req.correctedEmail = result.correctedEmail;
+        next();
+    } catch (err) {
+        next(err);
+    }
 }
 
 module.exports = {

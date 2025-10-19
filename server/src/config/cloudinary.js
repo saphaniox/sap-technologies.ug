@@ -76,6 +76,97 @@ const getOptimizedUrl = (publicId, transformations = {}) => {
     });
 };
 
+
+// Helper: Check if Cloudinary is configured
+const isCloudinaryConfigured = () => {
+    return !!(
+        process.env.CLOUDINARY_CLOUD_NAME &&
+        process.env.CLOUDINARY_API_KEY &&
+        process.env.CLOUDINARY_API_SECRET
+    );
+};
+
+// Storage configs for different folders (used by multer)
+const storageConfigs = {
+    profilePics: isCloudinaryConfigured()
+        ? new CloudinaryStorage({
+            cloudinary,
+            params: {
+                folder: 'sap-technologies/profile-pics',
+                resource_type: 'image',
+                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+                transformation: [{ width: 400, height: 400, crop: 'limit' }],
+            },
+        })
+        : null,
+    services: isCloudinaryConfigured()
+        ? new CloudinaryStorage({
+            cloudinary,
+            params: {
+                folder: 'sap-technologies/services',
+                resource_type: 'image',
+                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+                transformation: [{ width: 800, height: 600, crop: 'limit' }],
+            },
+        })
+        : null,
+    projects: isCloudinaryConfigured()
+        ? new CloudinaryStorage({
+            cloudinary,
+            params: {
+                folder: 'sap-technologies/projects',
+                resource_type: 'image',
+                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+                transformation: [{ width: 1200, height: 800, crop: 'limit' }],
+            },
+        })
+        : null,
+    products: isCloudinaryConfigured()
+        ? new CloudinaryStorage({
+            cloudinary,
+            params: {
+                folder: 'sap-technologies/products',
+                resource_type: 'image',
+                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+                transformation: [{ width: 800, height: 800, crop: 'limit' }],
+            },
+        })
+        : null,
+    signatures: isCloudinaryConfigured()
+        ? new CloudinaryStorage({
+            cloudinary,
+            params: {
+                folder: 'sap-technologies/signatures',
+                resource_type: 'image',
+                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+                transformation: [{ width: 600, height: 200, crop: 'limit' }],
+            },
+        })
+        : null,
+    partners: isCloudinaryConfigured()
+        ? new CloudinaryStorage({
+            cloudinary,
+            params: {
+                folder: 'sap-technologies/partners',
+                resource_type: 'image',
+                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+                transformation: [{ width: 600, height: 600, crop: 'limit' }],
+            },
+        })
+        : null,
+    awards: isCloudinaryConfigured()
+        ? new CloudinaryStorage({
+            cloudinary,
+            params: {
+                folder: 'sap-technologies/awards',
+                resource_type: 'image',
+                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+                transformation: [{ width: 800, height: 800, crop: 'limit' }],
+            },
+        })
+        : null,
+};
+
 module.exports = {
     cloudinary,
     isCloudinaryConfigured,

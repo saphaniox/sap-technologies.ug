@@ -3,8 +3,9 @@ const router = express.Router();
 const { body, param, query } = require("express-validator");
 const awardsController = require("../controllers/awardsController");
 const { adminAuth } = require("../middleware/adminAuth");
-const awardsUpload = require("../config/awardsUpload");
 const { emailValidationMiddleware } = require("../utils/emailValidator");
+const awardsUpload = require("../config/awardsUpload");
+
 const path = require("path");
 
 // Configure multer for awards photos (nominee photos)
@@ -166,6 +167,7 @@ router.post(
     "/nominations/:id/vote",
     param("id").isMongoId().withMessage("Invalid nomination ID"),
     validateVote,
+    // emailValidationMiddleware, // Advanced email validation to prevent fake emails
     emailValidationMiddleware, // Advanced email validation to prevent fake emails
     awardsController.voteForNomination
 );

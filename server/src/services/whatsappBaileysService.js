@@ -22,9 +22,7 @@ class WhatsAppBaileysService {
         
         this.isEnabled = process.env.WHATSAPP_ENABLED === 'true';
         
-        if (this.isEnabled) {
-            this.initialize();
-        } else {
+        if (!this.isEnabled) {
             console.log('📱 WhatsApp Baileys service: Disabled (set WHATSAPP_ENABLED=true to enable)');
         }
     }
