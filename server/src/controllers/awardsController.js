@@ -273,6 +273,7 @@ class AwardsController {
                 });
             }
 
+            console.log("💾 Creating nomination in database...");
             const nomination = await Nomination.create({
                 nomineeName: nomineeName.trim(),
                 nomineeTitle: nomineeTitle?.trim(),
@@ -288,6 +289,8 @@ class AwardsController {
                 nominatorPhone: nominatorPhone?.trim(),
                 nominatorOrganization: nominatorOrganization?.trim()
             });
+
+            console.log("✅ Nomination created, ID:", nomination._id);
 
             // Populate category information
             await nomination.populate("category");
@@ -328,12 +331,16 @@ class AwardsController {
             cache.invalidateNominations();
             logger.logInfo('AwardsController', 'Nomination submitted, cache invalidated', { nominationId: nomination._id });
 
+            console.log("🎉 Nomination submission completed successfully");
             res.status(201).json({
                 status: "success",
                 message: "Nomination submitted successfully! It will be reviewed before being published.",
                 data: { nomination }
             });
         } catch (error) {
+            console.error("❌ Error in submitNomination:", error);
+            console.error("❌ Error message:", error.message);
+            console.error("❌ Error stack:", error.stack);
             logger.logError('AwardsController', error, { context: 'submitNomination' });
             // Clean up uploaded file if database save fails
             if (req.file) {
