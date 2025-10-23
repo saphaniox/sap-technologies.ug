@@ -42,7 +42,7 @@ const nominationSchema = new mongoose.Schema({
     },
     nomineePhoto: {
         type: String,
-        required: [true, "Nominee photo is required"]
+        required: false // Temporarily make optional to fix 500 errors
     },
     nomineeTitle: {
         type: String,
