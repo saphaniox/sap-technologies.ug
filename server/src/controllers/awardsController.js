@@ -262,9 +262,14 @@ class AwardsController {
             // Handle photo upload with Cloudinary support
             let nomineePhotoPath = "";
             if (req.file) {
-                // Store relative path for serving static files or Cloudinary URL
-                nomineePhotoPath = getFileUrl(req.file, 'awards');
-                console.log("📸 Photo uploaded successfully:", nomineePhotoPath);
+                try {
+                    // Store relative path for serving static files or Cloudinary URL
+                    nomineePhotoPath = getFileUrl(req.file, 'awards');
+                    console.log("📸 Photo uploaded successfully:", nomineePhotoPath);
+                } catch (fileError) {
+                    console.error("❌ Error processing uploaded file:", fileError);
+                    throw new Error(`File processing error: ${fileError.message}`);
+                }
             } else {
                 console.log("❌ No photo uploaded");
                 return res.status(400).json({
@@ -274,26 +279,37 @@ class AwardsController {
             }
 
             console.log("💾 Creating nomination in database...");
-            const nomination = await Nomination.create({
-                nomineeName: nomineeName.trim(),
-                nomineeTitle: nomineeTitle?.trim(),
-                nomineeCompany: nomineeCompany?.trim(),
-                nomineeCountry: nomineeCountry?.trim() || "Uganda",
-                nomineePhoto: nomineePhotoPath,
-                category,
-                nominationReason: nominationReason.trim(),
-                achievements: achievements?.trim(),
-                impactDescription: impactDescription?.trim(),
-                nominatorName: nominatorName.trim(),
-                nominatorEmail: nominatorEmail.toLowerCase().trim(),
-                nominatorPhone: nominatorPhone?.trim(),
-                nominatorOrganization: nominatorOrganization?.trim()
-            });
-
-            console.log("✅ Nomination created, ID:", nomination._id);
+            let nomination;
+            try {
+                nomination = await Nomination.create({
+                    nomineeName: nomineeName.trim(),
+                    nomineeTitle: nomineeTitle?.trim(),
+                    nomineeCompany: nomineeCompany?.trim(),
+                    nomineeCountry: nomineeCountry?.trim() || "Uganda",
+                    nomineePhoto: nomineePhotoPath,
+                    category,
+                    nominationReason: nominationReason.trim(),
+                    achievements: achievements?.trim(),
+                    impactDescription: impactDescription?.trim(),
+                    nominatorName: nominatorName.trim(),
+                    nominatorEmail: nominatorEmail.toLowerCase().trim(),
+                    nominatorPhone: nominatorPhone?.trim(),
+                    nominatorOrganization: nominatorOrganization?.trim()
+                });
+                console.log("✅ Nomination created, ID:", nomination._id);
+            } catch (dbError) {
+                console.error("❌ Database error creating nomination:", dbError);
+                throw new Error(`Database error: ${dbError.message}`);
+            }
 
             // Populate category information
-            await nomination.populate("category");
+            try {
+                await nomination.populate("category");
+                console.log("✅ Nomination populated with category");
+            } catch (populateError) {
+                console.error("❌ Error populating category:", populateError);
+                // Don't fail if populate fails, but log it
+            }
 
             console.log("✅ Nomination created successfully, sending email notifications...");
 
