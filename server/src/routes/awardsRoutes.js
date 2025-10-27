@@ -157,7 +157,7 @@ router.get("/nominations/:id", awardsController.getNomination);
 // Submit new nomination
 router.post(
     "/nominations",
-    // awardPhotoUpload, // Temporarily disabled to fix 500 errors
+    awardPhotoUpload,  // Re-enabled file upload middleware
     validateNomination,
     awardsController.submitNomination
 );
