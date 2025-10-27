@@ -79,11 +79,42 @@ const getOptimizedUrl = (publicId, transformations = {}) => {
 
 // Helper: Check if Cloudinary is configured
 const isCloudinaryConfigured = () => {
-    return !!(
+    // Check environment variables
+    const hasEnvVars = !!(
         process.env.CLOUDINARY_CLOUD_NAME &&
         process.env.CLOUDINARY_API_KEY &&
         process.env.CLOUDINARY_API_SECRET
     );
+
+    if (!hasEnvVars) {
+        console.error('❌ Cloudinary environment variables are missing!');
+        if (process.env.NODE_ENV === 'production') {
+            console.error('⛔ Cloudinary is required in production. Server may not function correctly!');
+        }
+        console.warn('⚠️ Falling back to local storage');
+        return false;
+    }
+
+    try {
+        // Configure cloudinary client
+        cloudinary.config({
+            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET,
+            secure: true
+        });
+
+        // Log configuration for debugging
+        console.log('🔧 Cloudinary Configuration:');
+        console.log('   Cloud Name:', process.env.CLOUDINARY_CLOUD_NAME);
+        console.log('   API Key:', process.env.CLOUDINARY_API_KEY?.substring(0, 6) + '...');
+        
+        // Return true - we'll handle connection errors at upload time
+        return true;
+    } catch (error) {
+        console.error('❌ Error configuring Cloudinary:', error.message);
+        return false;
+    }
 };
 
 // Storage configs for different folders (used by multer)

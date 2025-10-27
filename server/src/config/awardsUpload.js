@@ -45,14 +45,56 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-// Configure multer for awards with specific settings
-const awardsUpload = multer({
+// Create multer upload instance
+const upload = multer({
     storage: storage,
     limits: {
         fileSize: 5 * 1024 * 1024, // 5MB limit for nominee photos
         files: 1 // Only allow one file per request
     },
     fileFilter: fileFilter
-});
+}).single('nomineePhoto');
 
-module.exports = awardsUpload;
+// Create middleware with error handling
+const awardPhotoUpload = () => {
+    return (req, res, next) => {
+        if (!req.headers) {
+            console.error('❌ Invalid request object - missing headers');
+            return res.status(400).json({
+                status: "error",
+                message: "Invalid request format"
+            });
+        }
+
+        upload(req, res, (err) => {
+            if (err instanceof multer.MulterError) {
+                // Multer error (e.g., file too large)
+                console.error('❌ Multer error:', err.message);
+                return res.status(400).json({
+                    status: "error",
+                    message: err.code === 'LIMIT_FILE_SIZE' 
+                        ? "File is too large. Maximum size is 5MB"
+                        : `Upload error: ${err.message}`
+                });
+            } else if (err) {
+                // Other errors (e.g., file type)
+                console.error('❌ File upload error:', err.message);
+                return res.status(400).json({
+                    status: "error",
+                    message: err.message || "File upload failed"
+                });
+            }
+            
+            // Success - no file is also okay
+            if (!req.file) {
+                console.log('ℹ️ No file uploaded - continuing with default image');
+            } else {
+                console.log('✅ File uploaded successfully:', req.file.filename || req.file.path);
+            }
+            
+            next();
+        });
+    };
+};
+
+module.exports = awardPhotoUpload;

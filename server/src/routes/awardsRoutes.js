@@ -8,9 +8,6 @@ const awardsUpload = require("../config/awardsUpload");
 
 const path = require("path");
 
-// Configure multer for awards photos (nominee photos)
-const awardPhotoUpload = awardsUpload.single("nomineePhoto");
-
 // Validation middleware
 const validateNomination = [
     body("nomineeName")
@@ -156,7 +153,12 @@ router.get("/nominations/:id", awardsController.getNomination);
 // Submit new nomination
 router.post(
     "/nominations",
-    awardPhotoUpload,  // Re-enabled file upload middleware
+    (req, res, next) => {
+        console.log('📝 Processing nomination submission...');
+        console.log('Headers:', req.headers);
+        next();
+    },
+    awardsUpload(), // Use the middleware function
     validateNomination,
     awardsController.submitNomination
 );
@@ -204,7 +206,7 @@ router.put(
     "/admin/nominations/:id",
     adminAuth,
     param("id").isMongoId().withMessage("Invalid nomination ID"),
-    awardPhotoUpload,
+    awardsUpload(), // Use the middleware function
     awardsController.updateNomination
 );
 
