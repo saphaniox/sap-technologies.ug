@@ -69,9 +69,8 @@ const nominationSchema = new mongoose.Schema({
     },
     nominationReason: {
         type: String,
-        required: [true, "Nomination reason is required"],
+        required: false,
         trim: true,
-        minlength: [50, "Nomination reason must be at least 50 characters"],
         maxlength: [1000, "Nomination reason cannot exceed 1000 characters"]
     },
     achievements: {
