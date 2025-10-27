@@ -8,8 +8,6 @@
     "dev:inspect": "nodemon --inspect src/app.js",
     "build": "npm ci --include=dev",
     "postinstall": "echo 'Backend dependencies installed successfully'",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "test:performance": "node test-performance.js",
     "cleanup-logs": "node cleanup-logs.js"
   },
   "keywords": [

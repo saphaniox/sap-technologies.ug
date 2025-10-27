@@ -321,32 +321,7 @@ app.get("/api", (req, res) => {
     });
 });
 
-// Security test endpoints (remove in production)
-if (process.env.NODE_ENV !== "production") {
-    app.post("/api/auth/test", rateLimits.auth, (req, res) => {
-        res.json({ 
-            status: "success", 
-            message: "Auth endpoint working with security", 
-            security: "Rate limited and sanitized"
-        });
-    });
 
-    app.post("/api/contacts/test", rateLimits.contact, (req, res) => {
-        res.json({ 
-            status: "success", 
-            message: "Contacts endpoint working with security",
-            security: "Rate limited and sanitized"
-        });
-    });
-
-    app.post("/api/newsletter/test", (req, res) => {
-        res.json({ 
-            status: "success", 
-            message: "Newsletter endpoint working with security",
-            security: "Rate limited and sanitized"
-        });
-    });
-}
 
 // Serve static files from the React app build directory
 if (process.env.NODE_ENV === 'production') {
