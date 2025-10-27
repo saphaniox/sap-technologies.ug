@@ -230,56 +230,95 @@ class AwardsController {
     // Submit new nomination
     async submitNomination(req, res, next) {
         try {
-            console.log("🎯 Nomination submission started");
-            console.log("📋 Request body:", req.body);
-            console.log("📎 File upload:", req.file);
-            
+            logger.logInfo('AwardsController', 'Nomination submission started', {
+                body: req.body,
+                file: req.file ? { 
+                    originalname: req.file.originalname,
+                    size: req.file.size,
+                    mimetype: req.file.mimetype
+                } : null
+            });
+
+            // Validate request body
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                console.log("❌ Validation errors:", errors.array());
+                logger.logWarning('AwardsController', 'Validation errors in nomination submission', { errors: errors.array() });
                 return res.status(400).json({
                     status: "error",
-                    message: "Validation failed",
+                    message: "Please check the form and fix any validation errors",
                     errors: errors.array()
                 });
             }
 
+            // Validate required fields are present and not empty
             const {
                 nomineeName,
+                category,
+                nominationReason,
+                nominatorName,
+                nominatorEmail,
                 nomineeTitle,
                 nomineeCompany,
                 nomineeCountry,
-                category,
-                nominationReason,
                 achievements,
                 impactDescription,
-                nominatorName,
-                nominatorEmail,
                 nominatorPhone,
                 nominatorOrganization
             } = req.body;
 
-            // Handle photo upload with Cloudinary support
+            const requiredFields = {
+                nomineeName,
+                category,
+                nominationReason,
+                nominatorName,
+                nominatorEmail
+            };
+
+            const missingFields = Object.entries(requiredFields)
+                .filter(([_, value]) => !value || value.trim().length === 0)
+                .map(([field]) => field);
+
+            if (missingFields.length > 0) {
+                logger.logWarning('AwardsController', 'Missing required fields', { missingFields });
+                return res.status(400).json({
+                    status: "error",
+                    message: "Missing required fields",
+                    errors: missingFields.map(field => ({
+                        param: field,
+                        msg: `${field} is required`
+                    }))
+                });
+            }
+
+            // Handle photo upload with enhanced error handling
             let nomineePhotoPath = "";
             if (req.file) {
                 try {
-                    // Store relative path for serving static files or Cloudinary URL
+                    if (!useCloudinary && !req.file.path) {
+                        throw new Error('File path is missing');
+                    }
                     nomineePhotoPath = getFileUrl(req.file, 'awards');
-                    console.log("📸 Photo uploaded successfully:", nomineePhotoPath);
+                    logger.logInfo('AwardsController', 'Photo upload successful', { 
+                        path: nomineePhotoPath,
+                        storage: useCloudinary ? 'cloudinary' : 'local'
+                    });
                 } catch (fileError) {
-                    console.error("❌ Error processing uploaded file:", fileError);
-                    throw new Error(`File processing error: ${fileError.message}`);
+                    logger.logError('AwardsController', 'File processing error', { 
+                        error: fileError.message,
+                        file: req.file 
+                    });
+                    return res.status(400).json({
+                        status: "error",
+                        message: "Failed to process the uploaded photo",
+                        error: fileError.message
+                    });
                 }
             } else {
-                console.log("❌ No photo uploaded - temporarily allowing submission without photo for testing");
-                // Temporarily allow submissions without photo to test if this fixes the 500 error
+                logger.logInfo('AwardsController', 'No photo uploaded, using default');
                 nomineePhotoPath = "/uploads/awards/default-nominee.png";
             }
 
-            // Skip the photo validation error that's causing the 500
-            // The error is being thrown before we reach this point
-
-            console.log("💾 Creating nomination in database...");
+            // Create nomination with strict error handling
             let nomination;
             try {
                 nomination = await Nomination.create({
@@ -297,53 +336,118 @@ class AwardsController {
                     nominatorPhone: nominatorPhone?.trim(),
                     nominatorOrganization: nominatorOrganization?.trim()
                 });
-                console.log("✅ Nomination created, ID:", nomination._id);
+
+                logger.logInfo('AwardsController', 'Nomination created in database', { 
+                    nominationId: nomination._id 
+                });
             } catch (dbError) {
-                console.error("❌ Database error creating nomination:", dbError);
-                throw new Error(`Database error: ${dbError.message}`);
+                logger.logError('AwardsController', 'Database error creating nomination', {
+                    error: dbError.message,
+                    code: dbError.code
+                });
+
+                // Clean up uploaded file if database save fails
+                if (req.file && req.file.path && !useCloudinary) {
+                    try {
+                        await fs.unlink(req.file.path);
+                        logger.logInfo('AwardsController', 'Cleaned up uploaded file after db error', {
+                            path: req.file.path
+                        });
+                    } catch (unlinkError) {
+                        logger.logError('AwardsController', 'Error deleting uploaded file', { 
+                            error: unlinkError.message 
+                        });
+                    }
+                }
+
+                return res.status(500).json({
+                    status: "error",
+                    message: "Failed to save nomination to database",
+                    error: dbError.code === 11000 
+                        ? "A nomination with this information already exists"
+                        : "Database error occurred"
+                });
             }
 
             // Populate category information
             try {
                 await nomination.populate("category");
-                console.log("✅ Nomination populated with category");
+                logger.logInfo('AwardsController', 'Category populated', {
+                    nominationId: nomination._id,
+                    categoryId: nomination.category?._id
+                });
             } catch (populateError) {
-                console.error("❌ Error populating category:", populateError);
-                // Don't fail if populate fails, but log it
-                nomination.category = null; // Ensure category is null if populate fails
+                logger.logWarning('AwardsController', 'Error populating category', {
+                    error: populateError.message,
+                    nominationId: nomination._id
+                });
+                // Don't fail if populate fails
+                nomination.category = null;
             }
 
-            console.log("✅ Nomination created successfully, sending email notifications...");
+            // Queue email notification for async processing
+            try {
+                await emailService.queueNominationSubmissionEmail({
+                    nominatorName: nomination.nominatorName,
+                    nominatorEmail: nomination.nominatorEmail,
+                    nomineeName: nomination.nomineeName,
+                    categoryName: nomination.category?.name || 'Unknown Category'
+                });
+                logger.logInfo('AwardsController', 'Nomination email queued', {
+                    nominationId: nomination._id,
+                    nominatorEmail: nomination.nominatorEmail
+                });
+            } catch (emailError) {
+                logger.logWarning('AwardsController', 'Error queueing email notification', {
+                    error: emailError.message,
+                    nominationId: nomination._id
+                });
+                // Continue without failing the request
+            }
 
-            // Send email notifications (non-blocking)
-            // Temporarily disabled to prevent 500 errors
-            console.log("📧 Email notifications temporarily disabled to prevent 500 errors");
-            // TODO: Re-enable email notifications after fixing email service configuration
-
-            // Invalidate nominations cache
+            // Invalidate cache
             cache.invalidateNominations();
-            logger.logInfo('AwardsController', 'Nomination submitted, cache invalidated', { nominationId: nomination._id });
+            logger.logInfo('AwardsController', 'Cache invalidated after nomination', {
+                nominationId: nomination._id
+            });
 
-            console.log("🎉 Nomination submission completed successfully");
             res.status(201).json({
                 status: "success",
-                message: "Nomination submitted successfully! It will be reviewed before being published.",
-                data: { nomination }
+                message: "Your nomination has been submitted successfully! It will be reviewed before being published.",
+                data: { 
+                    nomination: {
+                        _id: nomination._id,
+                        nomineeName: nomination.nomineeName,
+                        category: nomination.category,
+                        status: nomination.status
+                    }
+                }
             });
         } catch (error) {
-            console.error("❌ Error in submitNomination:", error);
-            console.error("❌ Error message:", error.message);
-            console.error("❌ Error stack:", error.stack);
-            logger.logError('AwardsController', error, { context: 'submitNomination' });
-            // Clean up uploaded file if database save fails
-            if (req.file) {
+            logger.logError('AwardsController', 'Unhandled error in submitNomination', {
+                error: error.message,
+                stack: error.stack,
+                body: req.body
+            });
+
+            // Clean up uploaded file on unhandled errors
+            if (req.file && req.file.path && !useCloudinary) {
                 try {
                     await fs.unlink(req.file.path);
+                    logger.logInfo('AwardsController', 'Cleaned up file after unhandled error');
                 } catch (unlinkError) {
-                    console.error("Error deleting file:", unlinkError);
+                    logger.logError('AwardsController', 'Error deleting file after unhandled error', {
+                        error: unlinkError.message
+                    });
                 }
             }
-            next(error);
+
+            // Send appropriate error response
+            res.status(500).json({
+                status: "error",
+                message: "An unexpected error occurred while processing your nomination",
+                error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+            });
         }
     }
 
