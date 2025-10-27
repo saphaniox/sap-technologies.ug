@@ -269,7 +269,6 @@ class AwardsController {
             const requiredFields = {
                 nomineeName,
                 category,
-                nominationReason,
                 nominatorName,
                 nominatorEmail
             };
@@ -328,7 +327,7 @@ class AwardsController {
                     nomineeCountry: nomineeCountry?.trim() || "Uganda",
                     nomineePhoto: nomineePhotoPath,
                     category,
-                    nominationReason: nominationReason.trim(),
+                    nominationReason: nominationReason?.trim() || "",
                     achievements: achievements?.trim(),
                     impactDescription: impactDescription?.trim(),
                     nominatorName: nominatorName.trim(),
