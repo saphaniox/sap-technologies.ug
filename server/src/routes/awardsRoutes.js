@@ -44,11 +44,10 @@ const validateNomination = [
         .withMessage("Invalid category ID"),
     
     body("nominationReason")
+        .optional()
         .trim()
-        .notEmpty()
-        .withMessage("Nomination reason is required")
-        .isLength({ min: 50, max: 1000 })
-        .withMessage("Nomination reason must be between 50 and 1000 characters"),
+        .isLength({ max: 1000 })
+        .withMessage("Nomination reason cannot exceed 1000 characters"),
     
     body("achievements")
         .optional()
