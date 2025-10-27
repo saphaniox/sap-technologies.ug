@@ -922,7 +922,7 @@ class AwardsController {
                 nomineeCompany: req.body.nomineeCompany || nomination.nomineeCompany,
                 nomineeCountry: req.body.nomineeCountry || nomination.nomineeCountry,
                 category: req.body.category || nomination.category,
-                nominationReason: req.body.nominationReason || nomination.nominationReason,
+                nominationReason: req.body.nominationReason !== undefined ? req.body.nominationReason.trim() : nomination.nominationReason,
                 achievements: req.body.achievements || nomination.achievements,
                 impactDescription: req.body.impactDescription || nomination.impactDescription,
                 nominatorName: req.body.nominatorName || nomination.nominatorName,
