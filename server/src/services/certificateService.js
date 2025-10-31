@@ -432,28 +432,34 @@ class CertificateService {
 
     // Get certificate by filename
     async getCertificate(filename) {
-        const filepath = path.join(this.certificatesDir, filename);
+        // Extract just the filename to avoid path issues
+        const justFilename = path.basename(filename);
+        const filepath = path.join(this.certificatesDir, justFilename);
         
         try {
             // Try to get from local storage first
             return await fs.readFile(filepath);
         } catch (error) {
-            // If not found locally and we have Cloudinary URL, try to get from there
+            console.log(`⚠️ Certificate not found locally: ${justFilename}, checking database...`);
+            
+            // If not found locally, try to get from Cloudinary via database
             if (this.useCloudinary) {
-                const cert = await Certificate.findOne({ filename });
-                if (cert && cert.cloudinaryUrl) {
-                    try {
+                try {
+                    const cert = await Certificate.findOne({ filename: justFilename });
+                    if (cert && cert.url && cert.url.includes('cloudinary')) {
+                        console.log(`📥 Fetching certificate from Cloudinary: ${cert.url}`);
                         const axios = require('axios');
-                        const response = await axios.get(cert.cloudinaryUrl, {
+                        const response = await axios.get(cert.url, {
                             responseType: 'arraybuffer'
                         });
                         return Buffer.from(response.data);
-                    } catch (error) {
-                        throw new Error('Certificate not found in local storage or Cloudinary');
                     }
+                } catch (dbError) {
+                    console.error('Error fetching from Cloudinary:', dbError.message);
                 }
             }
-            throw new Error('Certificate not found');
+            
+            throw new Error(`Certificate not found: ${justFilename}`);
         }
     }
 
@@ -1276,6 +1282,101 @@ class CertificateService {
         } catch (error) {
             console.error('Error deleting existing signature:', error);
             // Don't throw - we want to continue with upload even if deletion fails
+        }
+    }
+
+    /**
+     * Generate a unique certificate ID
+     */
+    generateCertificateId(nominationId, status) {
+        const year = new Date().getFullYear();
+        const statusPrefix = {
+            winner: 'WIN',
+            finalist: 'FIN',
+            approved: 'PAR'
+        }[status] || 'CER';
+        
+        // Use first 6 chars of nomination ID
+        const idPart = nominationId.substring(0, 6).toUpperCase();
+        const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+        
+        return `${statusPrefix}-${year}-${idPart}-${randomPart}`;
+    }
+
+    /**
+     * Delete certificate file
+     */
+    async deleteCertificate(filename) {
+        try {
+            // Extract just the filename
+            const justFilename = path.basename(filename);
+            const filepath = path.join(this.certificatesDir, justFilename);
+            
+            // Try to delete from local storage
+            try {
+                await fs.unlink(filepath);
+                console.log('🗑️ Deleted certificate from local storage:', justFilename);
+            } catch (error) {
+                console.log('⚠️ Certificate not found in local storage:', justFilename);
+            }
+
+            // Try to delete from database
+            try {
+                const cert = await Certificate.findOneAndDelete({ filename: justFilename });
+                if (cert) {
+                    console.log('🗑️ Deleted certificate record from database:', justFilename);
+                    
+                    // If it has Cloudinary info, try to delete from there too
+                    if (cert.cloudinaryId) {
+                        try {
+                            await cloudinary.uploader.destroy(cert.cloudinaryId, { resource_type: 'raw' });
+                            console.log('🗑️ Deleted certificate from Cloudinary:', cert.cloudinaryId);
+                        } catch (cloudError) {
+                            console.warn('⚠️ Could not delete from Cloudinary:', cloudError.message);
+                        }
+                    }
+                }
+            } catch (dbError) {
+                console.log('⚠️ Certificate record not found in database:', justFilename);
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error deleting certificate:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Draw logo on certificate
+     */
+    async drawLogo(pdfDoc, page, width, height) {
+        try {
+            const logoPath = path.join(__dirname, '../../public/images/logo.png');
+            
+            try {
+                await fs.access(logoPath);
+                const logoBytes = await fs.readFile(logoPath);
+                const logoImage = await pdfDoc.embedPng(logoBytes);
+                
+                const logoWidth = 120;
+                const logoHeight = 60;
+                
+                page.drawImage(logoImage, {
+                    x: width / 2 - logoWidth / 2,
+                    y: height - 80,
+                    width: logoWidth,
+                    height: logoHeight,
+                });
+                
+                return logoHeight;
+            } catch (error) {
+                console.warn('⚠️ Logo file not found, skipping logo');
+                return 0;
+            }
+        } catch (error) {
+            console.warn('⚠️ Error drawing logo:', error.message);
+            return 0;
         }
     }
 }

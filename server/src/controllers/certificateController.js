@@ -167,6 +167,7 @@ exports.regenerateCertificate = async (req, res) => {
         // Generate new certificate
         const certificateData = {
             nomineeName: nomination.nomineeName,
+            recipientEmail: nomination.email,
             categoryName: nomination.category.name,
             awardYear: '2025',
             issueDate: new Date(),
@@ -176,27 +177,32 @@ exports.regenerateCertificate = async (req, res) => {
             )
         };
 
-        let certificatePath;
+        let certificateResult;
 
         if (nomination.status === 'winner') {
-            certificatePath = await certificateService.generateWinnerCertificate(certificateData);
+            certificateResult = await certificateService.generateWinnerCertificate(certificateData);
         } else if (nomination.status === 'finalist') {
-            certificatePath = await certificateService.generateFinalistCertificate(certificateData);
+            certificateResult = await certificateService.generateFinalistCertificate(certificateData);
         } else {
-            certificatePath = await certificateService.generateParticipationCertificate(certificateData);
+            certificateResult = await certificateService.generateParticipationCertificate(certificateData);
         }
 
-        // Extract just the filename using path.basename (works on both Windows and Unix)
-        const filename = path.basename(certificatePath);
+        // Extract just the filename from the result
+        const filename = path.basename(certificateResult.filepath);
         nomination.certificateFile = filename;
+        nomination.certificateUrl = certificateResult.url;
+        nomination.certificateCloudinaryId = certificateResult.cloudinaryId;
         nomination.certificateId = certificateData.certificateId;
+        nomination.certificateGeneratedAt = new Date();
         await nomination.save();
 
         res.json({
             message: 'Certificate regenerated successfully',
             certificateId: nomination.certificateId,
             filename: filename,
-            downloadUrl: `/api/certificates/download/${filename}`
+            downloadUrl: certificateResult.url,
+            storage: certificateResult.storage,
+            cloudinaryUrl: certificateResult.storage === 'cloudinary' ? certificateResult.url : null
         });
 
     } catch (error) {
@@ -239,25 +245,29 @@ exports.bulkGenerateCertificates = async (req, res) => {
 
                 const certificateData = {
                     nomineeName: nomination.nomineeName,
+                    recipientEmail: nomination.email,
                     categoryName: nomination.category.name,
                     awardYear: '2025',
                     issueDate: new Date(),
                     certificateId: nomination.certificateId
                 };
 
-                let certificatePath;
+                let certificateResult;
 
                 if (nomination.status === 'winner') {
-                    certificatePath = await certificateService.generateWinnerCertificate(certificateData);
+                    certificateResult = await certificateService.generateWinnerCertificate(certificateData);
                 } else if (nomination.status === 'finalist') {
-                    certificatePath = await certificateService.generateFinalistCertificate(certificateData);
+                    certificateResult = await certificateService.generateFinalistCertificate(certificateData);
                 } else {
-                    certificatePath = await certificateService.generateParticipationCertificate(certificateData);
+                    certificateResult = await certificateService.generateParticipationCertificate(certificateData);
                 }
 
-                // Extract just the filename using path.basename (works on both Windows and Unix)
-                const filename = path.basename(certificatePath);
+                // Extract just the filename from the result
+                const filename = path.basename(certificateResult.filepath);
                 nomination.certificateFile = filename;
+                nomination.certificateUrl = certificateResult.url;
+                nomination.certificateCloudinaryId = certificateResult.cloudinaryId;
+                nomination.certificateGeneratedAt = new Date();
                 await nomination.save();
 
                 results.success.push({
