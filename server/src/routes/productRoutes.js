@@ -247,7 +247,7 @@ const handleMulterError = (err, req, res, next) => {
 router.post(
     "/admin/products",
     adminAuth,
-    productUpload.single("productImage"),
+    productUpload.array("images", 10), // Support up to 10 images
     handleMulterError,
     validateProduct,
     productController.createProduct
@@ -258,7 +258,7 @@ router.put(
     "/admin/products/:id",
     adminAuth,
     param("id").isMongoId().withMessage("Invalid product ID"),
-    productUpload.single("productImage"),
+    productUpload.array("images", 10), // Support up to 10 images
     handleMulterError,
     validateProductUpdate,
     productController.updateProduct

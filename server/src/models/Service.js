@@ -9,40 +9,48 @@ const serviceSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: [true, "Service description is required"],
+    required: false,
     trim: true,
-    maxLength: [500, "Description cannot exceed 500 characters"]
+    maxLength: [500, "Description cannot exceed 500 characters"],
+    default: ""
   },
   longDescription: {
     type: String,
+    required: false,
     trim: true,
-    maxLength: [2000, "Long description cannot exceed 2000 characters"]
+    maxLength: [2000, "Long description cannot exceed 2000 characters"],
+    default: ""
   },
   icon: {
     type: String,
-    required: [true, "Service icon is required"],
-    trim: true
+    required: false,
+    trim: true,
+    default: "🛠️"
   },
   category: {
     type: String,
-    required: [true, "Service category is required"],
+    required: false,
     enum: ["Web Development", "Mobile Development", "IoT Solutions", "Graphics Design", "Electrical Engineering", "Other"],
     default: "Other"
   },
   price: {
     startingPrice: {
       type: Number,
-      min: [0, "Price cannot be negative"]
+      required: false,
+      min: [0, "Price cannot be negative"],
+      default: null
     },
     currency: {
       type: String,
+      required: false,
       default: "USD",
       enum: ["USD", "EUR", "GBP","KES", "NGN", "UGX"]
     },
     priceType: {
       type: String,
+      required: false,
       enum: ["fixed", "hourly", "project-based", "custom"],
-      default: "project-based"
+      default: "custom"
     }
   },
   features: [{
@@ -64,10 +72,13 @@ const serviceSchema = new mongoose.Schema({
   duration: {
     estimated: {
       type: Number, // in days
-      min: [1, "Duration must be at least 1 day"]
+      required: false,
+      min: [1, "Duration must be at least 1 day"],
+      default: null
     },
     unit: {
       type: String,
+      required: false,
       enum: ["days", "weeks", "months"],
       default: "days"
     }

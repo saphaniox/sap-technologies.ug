@@ -23,6 +23,7 @@ const {
 } = require("./config/security");
 const { connectDB, checkDatabaseHealth, auditDatabaseSecurity } = require("./config/database");
 const { errorHandler } = require("./middleware/errorHandler");
+const { trackVisitor } = require("./middleware/visitorTracking");
 const apiRoutes = require("./routes");
 
 const app = express();
@@ -128,6 +129,9 @@ app.use(session(sessionConfig));
 
 // CORS configuration with enhanced security
 app.use(cors(environmentConfig.getCORSConfig()));
+
+// Visitor tracking middleware (after CORS and before routes)
+app.use(trackVisitor);
 
 // Security monitoring middleware
 app.use((req, res, next) => {

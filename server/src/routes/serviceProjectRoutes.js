@@ -24,14 +24,14 @@ router.get("/services/:id", ServiceController.getServiceById);
 
 // POST /api/admin/services - Create new service
 router.post("/services", 
-  serviceUpload.single("image"),
+  serviceUpload.array("images", 10), // Support up to 10 images
   validation.validateService,
   ServiceController.createService
 );
 
 // PUT /api/admin/services/:id - Update service
 router.put("/services/:id", 
-  serviceUpload.single("image"),
+  serviceUpload.array("images", 10), // Support up to 10 images
   (req, res, next) => {
     console.log("🔥 SERVICE UPDATE ROUTE HIT (after multer)!");
     console.log("Service ID:", req.params.id);

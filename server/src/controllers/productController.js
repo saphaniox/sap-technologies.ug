@@ -181,12 +181,7 @@ class ProductController {
     async createProduct(req, res, next) {
         try {
             console.log("🏷️ Creating product with data:", req.body);
-            console.log("📁 File uploaded:", req.file ? {
-                filename: req.file.filename,
-                size: req.file.size,
-                mimetype: req.file.mimetype,
-                path: req.file.path
-            } : "No file");
+            console.log("📁 Files uploaded:", req.files ? req.files.length : "No files");
             
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -199,11 +194,31 @@ class ProductController {
             }
 
             const productData = {
-                ...req.body,
-                image: req.file ? getFileUrl(req.file, 'products') : null
+                ...req.body
             };
 
-            console.log("📸 Image URL set to:", productData.image);
+            // Handle multiple image uploads
+            if (req.files && req.files.length > 0) {
+                productData.images = req.files.map((file, index) => ({
+                    url: getFileUrl(file, 'products'),
+                    alt: productData.name || 'Product image',
+                    isPrimary: index === 0,
+                    order: index
+                }));
+                productData.image = productData.images[0].url; // Backward compatibility
+                console.log("📸 Images uploaded:", productData.images.length);
+            } else if (req.file) {
+                // Support single file upload for backward compatibility
+                productData.image = getFileUrl(req.file, 'products');
+                productData.images = [{
+                    url: productData.image,
+                    alt: productData.name || 'Product image',
+                    isPrimary: true,
+                    order: 0
+                }];
+            }
+
+            console.log("📸 Image(s) set:", productData.images ? productData.images.length : 'none');
 
             // Parse JSON fields
             if (typeof productData.technicalSpecs === "string") {
@@ -280,11 +295,7 @@ class ProductController {
     async updateProduct(req, res, next) {
         try {
             console.log("🔄 Updating product:", req.params.id);
-            console.log("📁 File uploaded:", req.file ? {
-                filename: req.file.filename,
-                size: req.file.size,
-                mimetype: req.file.mimetype
-            } : "No new file");
+            console.log("📁 Files uploaded:", req.files ? req.files.length : "No new files");
             
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -298,9 +309,42 @@ class ProductController {
             const { id } = req.params;
             const updateData = { ...req.body };
 
-            // Handle file upload
-            if (req.file) {
+            // Handle multiple file uploads
+            if (req.files && req.files.length > 0) {
+                updateData.images = req.files.map((file, index) => ({
+                    url: getFileUrl(file, 'products'),
+                    alt: updateData.name || 'Product image',
+                    isPrimary: index === 0,
+                    order: index
+                }));
+                updateData.image = updateData.images[0].url; // Backward compatibility
+                console.log("📸 New images uploaded:", updateData.images.length);
+                
+                // Delete old local images
+                if (!useCloudinary) {
+                    const oldProduct = await Product.findById(id);
+                    if (oldProduct && oldProduct.images && oldProduct.images.length > 0) {
+                        for (const img of oldProduct.images) {
+                            if (img.url && img.url.startsWith("/uploads/products/")) {
+                                const oldImagePath = path.join(__dirname, "../..", img.url);
+                                try {
+                                    await fs.unlink(oldImagePath);
+                                } catch (error) {
+                                    console.log("Could not delete old image:", error.message);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (req.file) {
+                // Support single file upload for backward compatibility
                 updateData.image = getFileUrl(req.file, 'products');
+                updateData.images = [{
+                    url: updateData.image,
+                    alt: updateData.name || 'Product image',
+                    isPrimary: true,
+                    order: 0
+                }];
                 console.log("📸 New image URL:", updateData.image);
                 
                 // Delete old image if it exists (only for local storage)

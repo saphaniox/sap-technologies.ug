@@ -9,18 +9,21 @@ const projectSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: [true, "Project description is required"],
+    required: false,
     trim: true,
-    maxLength: [500, "Description cannot exceed 500 characters"]
+    maxLength: [500, "Description cannot exceed 500 characters"],
+    default: ""
   },
   longDescription: {
     type: String,
+    required: false,
     trim: true,
-    maxLength: [5000, "Long description cannot exceed 5000 characters"]
+    maxLength: [5000, "Long description cannot exceed 5000 characters"],
+    default: ""
   },
   category: {
     type: String,
-    required: [true, "Project category is required"],
+    required: false,
     enum: [
       "E-commerce Platform",
       "Learning Management System",
@@ -38,29 +41,41 @@ const projectSchema = new mongoose.Schema({
   client: {
     name: {
       type: String,
-      trim: true
+      required: false,
+      trim: true,
+      default: ""
     },
     company: {
       type: String,
-      trim: true
+      required: false,
+      trim: true,
+      default: ""
     },
     industry: {
       type: String,
-      trim: true
+      required: false,
+      trim: true,
+      default: ""
     },
     location: {
       type: String,
-      trim: true
+      required: false,
+      trim: true,
+      default: ""
     },
     testimonial: {
       content: {
         type: String,
-        maxLength: [1000, "Testimonial cannot exceed 1000 characters"]
+        required: false,
+        maxLength: [1000, "Testimonial cannot exceed 1000 characters"],
+        default: ""
       },
       rating: {
         type: Number,
+        required: false,
         min: 1,
-        max: 5
+        max: 5,
+        default: null
       }
     }
   },
@@ -139,14 +154,20 @@ const projectSchema = new mongoose.Schema({
   },
   timeline: {
     startDate: {
-      type: Date
+      type: Date,
+      required: false,
+      default: null
     },
     endDate: {
-      type: Date
+      type: Date,
+      required: false,
+      default: null
     },
     duration: {
       type: Number, // in days
-      min: [1, "Duration must be at least 1 day"]
+      required: false,
+      min: [1, "Duration must be at least 1 day"],
+      default: null
     },
     milestones: [{
       title: {

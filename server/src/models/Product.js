@@ -9,15 +9,17 @@ const productSchema = new mongoose.Schema({
   },
   shortDescription: {
     type: String,
-    required: [true, "Product short description is required"],
+    required: false,
     trim: true,
-    maxLength: [200, "Short description cannot exceed 200 characters"]
+    maxLength: [200, "Short description cannot exceed 200 characters"],
+    default: ""
   },
   technicalDescription: {
     type: String,
-    required: [true, "Technical description is required"],
+    required: false,
     trim: true,
-    maxLength: [1000, "Technical description cannot exceed 1000 characters"]
+    maxLength: [1000, "Technical description cannot exceed 1000 characters"],
+    default: ""
   },
   technicalSpecs: [{
     name: {
@@ -42,11 +44,29 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: false,
     trim: true,
-    default: null // No default image - products must have individual images
+    default: null // Primary image - backward compatibility
   },
+  images: [{
+    url: {
+      type: String,
+      required: true
+    },
+    alt: {
+      type: String,
+      default: ""
+    },
+    isPrimary: {
+      type: Boolean,
+      default: false
+    },
+    order: {
+      type: Number,
+      default: 0
+    }
+  }],
   category: {
     type: String,
-    required: [true, "Product category is required"],
+    required: false,
     enum: [
       // Software & Digital
       "Software Solutions",
@@ -91,10 +111,13 @@ const productSchema = new mongoose.Schema({
   price: {
     amount: {
       type: Number,
-      min: [0, "Price cannot be negative"]
+      required: false,
+      min: [0, "Price cannot be negative"],
+      default: null
     },
     currency: {
       type: String,
+      required: false,
       default: "UGX",
       enum: [
         // Popular Currencies
@@ -148,6 +171,15 @@ const productSchema = new mongoose.Schema({
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
+});
+
+// Virtual for primary image
+productSchema.virtual("primaryImage").get(function() {
+  if (!this.images || !Array.isArray(this.images) || this.images.length === 0) {
+    return this.image || null; // Fallback to single image field
+  }
+  const primary = this.images.find(img => img.isPrimary);
+  return primary || this.images[0] || this.image || null;
 });
 
 // Index for performance
@@ -216,6 +248,19 @@ productSchema.index({ isActive: 1, createdAt: -1 }); // Active products by date
 productSchema.index({ name: "text", shortDescription: "text", technicalDescription: "text" }); // Text search
 productSchema.index({ "price.amount": 1 }); // Price range queries
 productSchema.index({ "metadata.views": -1 }); // Popular products
+
+// Virtual for primary image
+productSchema.virtual("primaryImage").get(function() {
+  if (!this.images || !Array.isArray(this.images) || this.images.length === 0) {
+    return this.image || null; // Fallback to single image field
+  }
+  const primary = this.images.find(img => img.isPrimary);
+  return primary ? primary.url : (this.images[0] ? this.images[0].url : this.image);
+});
+
+// Enable virtuals in JSON
+productSchema.set("toJSON", { virtuals: true });
+productSchema.set("toObject", { virtuals: true });
 
 const Product = mongoose.model("Product", productSchema);
 

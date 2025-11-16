@@ -15,6 +15,7 @@ const serviceQuoteRoutes = require("./serviceQuoteRoutes");
 const certificateRoutes = require("./certificates");
 const passwordResetRoutes = require("./passwordResetRoutes");
 const searchRoutes = require("./searchRoutes");
+const visitorRoutes = require("./visitorRoutes");
 
 const router = express.Router();
 
@@ -35,5 +36,6 @@ router.use("/products", productInquiryRoutes);  // /api/products/inquiries/* (pu
 router.use("/services", serviceQuoteRoutes);    // /api/services/quotes/* (public & admin)
 router.use("/certificates", certificateRoutes); // /api/certificates/*
 router.use("/search", searchRoutes);            // /api/search/* (universal search)
+router.use("/", visitorRoutes);                 // /api/admin/visitor-analytics/*, /api/visitor/track
 
 module.exports = router;

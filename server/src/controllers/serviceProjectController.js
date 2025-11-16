@@ -117,9 +117,25 @@ class ServiceController {
     try {
       const serviceData = req.body;
       
-      // Handle file upload with Cloudinary support
-      if (req.file) {
+      // Handle multiple file uploads with Cloudinary support
+      if (req.files && req.files.length > 0) {
+        serviceData.images = req.files.map((file, index) => ({
+          url: getFileUrl(file, 'services'),
+          alt: serviceData.title || 'Service image',
+          isPrimary: index === 0, // First image is primary
+          order: index
+        }));
+        // Also set single image field for backward compatibility
+        serviceData.image = serviceData.images[0].url;
+      } else if (req.file) {
+        // Support single file upload for backward compatibility
         serviceData.image = getFileUrl(req.file, 'services');
+        serviceData.images = [{
+          url: serviceData.image,
+          alt: serviceData.title || 'Service image',
+          isPrimary: true,
+          order: 0
+        }];
       }
       
       // Parse JSON fields that come as strings from FormData
@@ -207,13 +223,40 @@ class ServiceController {
       const updateData = { ...req.body };
       console.log("📦 Update data received:", Object.keys(updateData));
 
-      // Handle file upload and delete old image if exists
-      if (req.file) {
-        // Get the existing service to find the old image
+      // Handle multiple file uploads and delete old images if exists
+      if (req.files && req.files.length > 0) {
+        const existingService = await Service.findById(id);
+        
+        // Delete old local images (not Cloudinary URLs)
+        if (existingService && existingService.images && existingService.images.length > 0) {
+          existingService.images.forEach(img => {
+            if (img.url && !img.url.startsWith('http')) {
+              const oldImagePath = path.join(__dirname, "../..", img.url);
+              if (fs.existsSync(oldImagePath)) {
+                try {
+                  fs.unlinkSync(oldImagePath);
+                  console.log("🗑️ Deleted old image:", img.url);
+                } catch (err) {
+                  console.error("❌ Failed to delete old image:", err.message);
+                }
+              }
+            }
+          });
+        }
+        
+        updateData.images = req.files.map((file, index) => ({
+          url: getFileUrl(file, 'services'),
+          alt: updateData.title || 'Service image',
+          isPrimary: index === 0,
+          order: index
+        }));
+        updateData.image = updateData.images[0].url; // Backward compatibility
+        console.log("📸 New images uploaded:", updateData.images.length);
+      } else if (req.file) {
+        // Support single file upload for backward compatibility
         const existingService = await Service.findById(id);
         
         if (existingService && existingService.image) {
-          // Only delete if it's a local file (not Cloudinary URL)
           if (!existingService.image.startsWith('http')) {
             const oldImagePath = path.join(__dirname, "../..", existingService.image);
             
@@ -229,6 +272,12 @@ class ServiceController {
         }
         
         updateData.image = getFileUrl(req.file, 'services');
+        updateData.images = [{
+          url: updateData.image,
+          alt: updateData.title || 'Service image',
+          isPrimary: true,
+          order: 0
+        }];
         console.log("📸 New image uploaded:", updateData.image);
       }
       
