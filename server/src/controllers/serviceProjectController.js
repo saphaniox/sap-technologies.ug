@@ -222,6 +222,27 @@ class ServiceController {
       
       const updateData = { ...req.body };
       console.log("📦 Update data received:", Object.keys(updateData));
+      
+      // Handle image deletion if requested
+      if (updateData.deleteImage === 'true') {
+        const existingService = await Service.findById(id);
+        if (existingService && existingService.image) {
+          if (!existingService.image.startsWith('http')) {
+            const oldImagePath = path.join(__dirname, "../..", existingService.image);
+            if (fs.existsSync(oldImagePath)) {
+              try {
+                fs.unlinkSync(oldImagePath);
+                console.log("🗑️ Deleted existing image:", existingService.image);
+              } catch (err) {
+                console.error("❌ Failed to delete image:", err.message);
+              }
+            }
+          }
+        }
+        updateData.image = null;
+        updateData.images = [];
+        console.log("🗑️ Marked image for deletion");
+      }
 
       // Handle multiple file uploads and delete old images if exists
       if (req.files && req.files.length > 0) {
@@ -727,32 +748,59 @@ class ProjectController {
       console.log("Project ID:", id);
       console.log("Raw request body:", JSON.stringify(updateData, null, 2));
       console.log("Request files:", req.files ? req.files.length : "none");
-
-      // Handle multiple file uploads and delete old images
-      if (req.files && req.files.length > 0) {
-        // Get existing project to find old images
-        const existingProject = await Project.findById(id);
-        
-        if (existingProject && existingProject.images && existingProject.images.length > 0) {
-          // Delete old project images (only local files, not Cloudinary URLs)
-          for (const oldImage of existingProject.images) {
-            if (!oldImage.startsWith('http')) {
-              const oldImagePath = path.join(__dirname, "../..", oldImage);
-              
-              if (fs.existsSync(oldImagePath)) {
-                try {
-                  fs.unlinkSync(oldImagePath);
-                  console.log("🗑️ Deleted old project image:", oldImage);
-                } catch (err) {
-                  console.error("❌ Failed to delete old project image:", err.message);
+      
+      // Handle image deletions if requested
+      if (updateData.imagesToDelete) {
+        try {
+          const imagesToDelete = typeof updateData.imagesToDelete === 'string' 
+            ? JSON.parse(updateData.imagesToDelete) 
+            : updateData.imagesToDelete;
+            
+          if (Array.isArray(imagesToDelete) && imagesToDelete.length > 0) {
+            for (const imagePath of imagesToDelete) {
+              if (!imagePath.startsWith('http')) {
+                const fullPath = path.join(__dirname, "../..", imagePath);
+                if (fs.existsSync(fullPath)) {
+                  try {
+                    fs.unlinkSync(fullPath);
+                    console.log("🗑️ Deleted project image:", imagePath);
+                  } catch (err) {
+                    console.error("❌ Failed to delete project image:", err.message);
+                  }
                 }
               }
             }
+            
+            // Remove deleted images from the project
+            const existingProject = await Project.findById(id);
+            if (existingProject && existingProject.images) {
+              updateData.images = existingProject.images.filter(
+                img => !imagesToDelete.includes(img)
+              );
+            }
           }
+        } catch (err) {
+          console.error("❌ Error parsing imagesToDelete:", err);
+        }
+      }
+
+      // Handle multiple file uploads and add to existing images
+      if (req.files && req.files.length > 0) {
+        const newImages = req.files.map(file => getFileUrl(file, 'projects'));
+        
+        // Add new images to existing ones (if not all deleted)
+        if (updateData.images && Array.isArray(updateData.images)) {
+          updateData.images = [...updateData.images, ...newImages];
+        } else {
+          // Get existing images if they weren't modified
+          const existingProject = await Project.findById(id);
+          updateData.images = existingProject && existingProject.images 
+            ? [...existingProject.images, ...newImages]
+            : newImages;
         }
         
-        updateData.images = req.files.map(file => getFileUrl(file, 'projects'));
-        console.log("📸 New project images uploaded:", updateData.images);
+        console.log("📸 New project images uploaded:", newImages.length);
+        console.log("📸 Total project images:", updateData.images.length);
       }
       
       // Parse JSON fields that come as strings from FormData

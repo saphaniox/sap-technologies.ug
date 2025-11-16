@@ -308,6 +308,25 @@ class ProductController {
 
             const { id } = req.params;
             const updateData = { ...req.body };
+            
+            // Handle image deletion if requested
+            if (updateData.deleteImage === 'true') {
+                const existingProduct = await Product.findById(id);
+                if (existingProduct && existingProduct.image) {
+                    if (!existingProduct.image.startsWith('http') && existingProduct.image.startsWith("/uploads/products/")) {
+                        const oldImagePath = path.join(__dirname, "../..", existingProduct.image);
+                        try {
+                            await fs.unlink(oldImagePath);
+                            console.log("🗑️ Deleted existing image:", existingProduct.image);
+                        } catch (error) {
+                            console.log("Could not delete old image:", error.message);
+                        }
+                    }
+                }
+                updateData.image = null;
+                updateData.images = [];
+                console.log("🗑️ Marked image for deletion");
+            }
 
             // Handle multiple file uploads
             if (req.files && req.files.length > 0) {
