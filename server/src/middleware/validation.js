@@ -165,6 +165,8 @@ const validateContact = [
 const validateNewsletter = [
     body("email")
         .trim()
+        .isEmail()
+        .withMessage("Invalid email format")
         .normalizeEmail()
         .custom((value) => {
           if (!isValidEmail(value)) {
