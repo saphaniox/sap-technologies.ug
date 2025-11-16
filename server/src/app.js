@@ -198,39 +198,41 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads"), {
     }
 }));
 
-// Serve images from frontend public directory for development
-app.use("/images", express.static(path.join(__dirname, "../../frontend/sap-technologies/public/images"), {
-    setHeaders: (res, path) => {
-        const allowedOrigin = process.env.ALLOWED_ORIGINS?.split(',')[0]?.trim() || 'http://localhost:5174';
-        res.set({
-            "X-Content-Type-Options": "nosniff",
-            "Cache-Control": "public, max-age=86400", // 1 day cache for images
-            "Access-Control-Allow-Origin": allowedOrigin,
-            "Access-Control-Allow-Credentials": "true"
-        });
-        
-        // Only allow image file types
-        const ext = path.substring(path.lastIndexOf("."));
-        const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".pdf", ".svg"];
-        if (!allowedExtensions.includes(ext.toLowerCase())) {
-            res.status(403);
-            return false;
-        }
+// Serve images from frontend public directory (only in development)
+if (process.env.NODE_ENV !== 'production') {
+    const frontendImagesPath = path.join(__dirname, "../../frontend/sap-technologies/public/images");
+    const frontendPublicPath = path.join(__dirname, "../../frontend/sap-technologies/public");
+    
+    // Only serve if the paths exist (local development)
+    if (fs.existsSync(frontendImagesPath)) {
+        app.use("/images", express.static(frontendImagesPath, {
+            setHeaders: (res, path) => {
+                res.set({
+                    "X-Content-Type-Options": "nosniff",
+                    "Cache-Control": "public, max-age=86400",
+                });
+                
+                const ext = path.substring(path.lastIndexOf("."));
+                const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".pdf", ".svg"];
+                if (!allowedExtensions.includes(ext.toLowerCase())) {
+                    res.status(403);
+                    return false;
+                }
+            }
+        }));
     }
-}));
-
-// Serve other public assets (like vite.svg)
-app.use("/public", express.static(path.join(__dirname, "../../frontend/sap-technologies/public"), {
-    setHeaders: (res, path) => {
-        const allowedOrigin = process.env.ALLOWED_ORIGINS?.split(',')[0]?.trim() || 'http://localhost:5174';
-        res.set({
-            "X-Content-Type-Options": "nosniff",
-            "Cache-Control": "public, max-age=86400",
-            "Access-Control-Allow-Origin": allowedOrigin,
-            "Access-Control-Allow-Credentials": "true"
-        });
+    
+    if (fs.existsSync(frontendPublicPath)) {
+        app.use("/public", express.static(frontendPublicPath, {
+            setHeaders: (res) => {
+                res.set({
+                    "X-Content-Type-Options": "nosniff",
+                    "Cache-Control": "public, max-age=86400",
+                });
+            }
+        }));
     }
-}));
+}
 
 // Rate limiting per endpoint (more strict) - AFTER static files
 app.use("/api/auth", rateLimits.auth);
@@ -376,6 +378,11 @@ if (process.env.NODE_ENV === 'production') {
         });
     });
 }
+
+// Handle placeholder image requests gracefully (return 204 instead of 404)
+app.get("/images/placeholder-logo.png", (req, res) => {
+    res.status(204).end(); // No content - browser won't show broken image
+});
 
 // Enhanced 404 handler with security logging
 app.use((req, res, next) => {
