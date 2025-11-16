@@ -89,10 +89,10 @@ const rateLimits = {
     "Too many file uploads, please try again later."
   ),
 
-  // Admin operations - 10000 requests per 15 minutes (development friendly)
+  // Admin operations - 500 requests per 15 minutes
   admin: createRateLimit(
     15 * 60 * 1000, // 15 minutes
-    10000,
+    500,
     "Too many admin requests, please try again later."
   ),
 
