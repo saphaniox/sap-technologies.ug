@@ -123,7 +123,23 @@ if (process.env.NODE_ENV === 'production') {
     });
     console.log('✅ Using MongoDB session store (30-day sessions)');
 } else {
-    console.log('⚠️ Using memory session store for development');
+    // In development, use MongoDB store too for session persistence
+    if (process.env.MONGODB_URI || process.env.MONGODB_LOCAL) {
+        try {
+            sessionConfig.store = MongoStore.create({
+                mongoUrl: process.env.MONGODB_URI || process.env.MONGODB_LOCAL,
+                collectionName: 'dev_sessions',
+                ttl: 7 * 24 * 60 * 60, // 7 days in development
+                autoRemove: 'native'
+            });
+            console.log('✅ Using MongoDB session store for development (7-day sessions)');
+        } catch (error) {
+            console.warn('⚠️ MongoDB session store failed, using memory store:', error.message);
+            console.log('⚠️ Using memory session store for development');
+        }
+    } else {
+        console.log('⚠️ Using memory session store for development');
+    }
 }
 app.use(session(sessionConfig));
 
