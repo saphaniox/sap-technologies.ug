@@ -243,6 +243,7 @@ productSchema.pre("save", function(next) {
 
 // Indexes for performance optimization
 productSchema.index({ category: 1, isActive: 1 }); // Category filtering
+productSchema.index({ isActive: 1, isFeatured: -1, displayOrder: 1 }); // Optimized for public listing query
 productSchema.index({ isFeatured: -1, displayOrder: 1 }); // Featured products display
 productSchema.index({ isActive: 1, createdAt: -1 }); // Active products by date
 productSchema.index({ name: "text", shortDescription: "text", technicalDescription: "text" }); // Text search

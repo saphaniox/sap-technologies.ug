@@ -151,6 +151,7 @@ const serviceSchema = new mongoose.Schema({
 // Indexes for better performance
 serviceSchema.index({ category: 1, status: 1 });
 serviceSchema.index({ featured: 1, order: 1 });
+serviceSchema.index({ status: 1, featured: -1, order: 1 }); // Optimized for public listing query
 serviceSchema.index({ title: "text", description: "text" });
 
 // Virtual for primary image
