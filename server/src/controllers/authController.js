@@ -96,14 +96,22 @@ class AuthController {
             req.session.userId = user._id;
             req.session.userName = user.name;
             
+            console.log('🔐 Setting session for user:', {
+                userId: user._id,
+                userName: user.name,
+                sessionId: req.session.id,
+                email: user.email
+            });
+            
             // Explicitly save session before sending response
             await new Promise((resolve, reject) => {
                 req.session.save((err) => {
                     if (err) {
-                        console.error('Session save error:', err);
+                        console.error('❌ Session save error:', err);
                         reject(err);
                     } else {
-                        console.log('✅ Session saved successfully. userId:', req.session.userId);
+                        console.log('✅ Session saved successfully.');
+                        console.log('📋 Session contents:', JSON.stringify(req.session, null, 2));
                         resolve();
                     }
                 });
@@ -124,8 +132,14 @@ class AuthController {
             res.status(200).json({
                 status: 'success',
                 message: 'Login successful',
-                data: { user: user.profile, name: user.name }
+                data: { 
+                    user: user.profile, 
+                    name: user.name,
+                    sessionId: req.session.id
+                }
             });
+            
+            console.log('📤 Login response sent. Cookie:', res.getHeader('Set-Cookie'));
         } catch (error) {
             next(error);
         }
