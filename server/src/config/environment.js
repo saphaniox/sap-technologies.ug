@@ -159,15 +159,23 @@ class EnvironmentConfig {
      * Get session configuration
      */
     getSessionConfig() {
+        // Check if running on localhost regardless of NODE_ENV
+        const isLocalhost = process.env.PORT && (
+            process.env.PORT === '5000' || 
+            process.env.PORT === '3000'
+        );
+        
         return {
             secret: process.env.SESSION_SECRET || this.generateFallbackSecret('SESSION'),
             resave: false,
             saveUninitialized: false,
             cookie: {
-                secure: process.env.NODE_ENV === 'production',
+                // Only require secure cookies in production AND not on localhost
+                secure: process.env.NODE_ENV === 'production' && !isLocalhost,
                 httpOnly: true,
                 maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days (1 month)
-                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+                // Use 'lax' for localhost, 'none' for production (requires secure)
+                sameSite: (process.env.NODE_ENV === 'production' && !isLocalhost) ? 'none' : 'lax'
             },
             name: 'sap.sid'
         };

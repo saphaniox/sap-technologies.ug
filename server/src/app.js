@@ -113,6 +113,15 @@ app.use(detectSuspiciousActivity);
 
 // 10. Session configuration with MongoDB store
 const sessionConfig = environmentConfig.getSessionConfig();
+console.log('🔒 Session configuration:', {
+    secure: sessionConfig.cookie.secure,
+    sameSite: sessionConfig.cookie.sameSite,
+    httpOnly: sessionConfig.cookie.httpOnly,
+    maxAge: sessionConfig.cookie.maxAge,
+    port: process.env.PORT,
+    nodeEnv: process.env.NODE_ENV
+});
+
 if (process.env.NODE_ENV === 'production') {
     sessionConfig.store = MongoStore.create({
         mongoUrl: process.env.MONGODB_URI,
