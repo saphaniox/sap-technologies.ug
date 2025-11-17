@@ -817,47 +817,84 @@ class ProjectController {
         try {
           const techArray = JSON.parse(updateData.technologies);
           // Convert string array to object array format expected by model
-          updateData.technologies = techArray.map(tech => ({
-            name: typeof tech === "string" ? tech : tech.name || tech,
-            category: "Other" // Default category
-          }));
+          // Filter out empty/null values
+          updateData.technologies = techArray
+            .filter(tech => tech && (typeof tech === "string" || tech.name))
+            .map(tech => ({
+              name: typeof tech === "string" ? tech : (tech.name || String(tech)),
+              category: tech.category || "Other" // Default category
+            }));
         } catch (e) {
-          updateData.technologies = updateData.technologies.split(",").map(t => ({
-            name: t.trim(),
-            category: "Other"
-          }));
+          updateData.technologies = updateData.technologies
+            .split(",")
+            .map(t => t.trim())
+            .filter(t => t)
+            .map(t => ({
+              name: t,
+              category: "Other"
+            }));
         }
+      } else if (Array.isArray(updateData.technologies)) {
+        // Handle case where it's already an array (from JSON parsing)
+        updateData.technologies = updateData.technologies
+          .filter(tech => tech && (typeof tech === "string" || tech.name))
+          .map(tech => ({
+            name: typeof tech === "string" ? tech : (tech.name || String(tech)),
+            category: tech.category || "Other"
+          }));
       }
       // If techStack exists but technologies doesn"t, convert techStack to technologies
       if (updateData.techStack && !updateData.technologies) {
-        updateData.technologies = updateData.techStack.map(tech => ({
-          name: typeof tech === "string" ? tech : tech.name || tech,
-          category: "Other"
-        }));
+        updateData.technologies = (Array.isArray(updateData.techStack) ? updateData.techStack : [])
+          .filter(tech => tech)
+          .map(tech => ({
+            name: typeof tech === "string" ? tech : (tech.name || String(tech)),
+            category: "Other"
+          }));
       }
       
       if (typeof updateData.features === "string") {
         try {
           const featureArray = JSON.parse(updateData.features);
           // Convert string array to object array format expected by model
-          updateData.features = featureArray.map(feature => ({
-            title: typeof feature === "string" ? feature : feature.title || feature,
-            description: ""
-          }));
+          // Filter out empty/null values
+          updateData.features = featureArray
+            .filter(feature => feature && (typeof feature === "string" || feature.title))
+            .map(feature => ({
+              title: typeof feature === "string" ? feature : (feature.title || String(feature)),
+              description: feature.description || ""
+            }));
         } catch (e) {
-          updateData.features = updateData.features.split(",").map(f => ({
-            title: f.trim(),
-            description: ""
-          }));
+          updateData.features = updateData.features
+            .split(",")
+            .map(f => f.trim())
+            .filter(f => f)
+            .map(f => ({
+              title: f,
+              description: ""
+            }));
         }
+      } else if (Array.isArray(updateData.features)) {
+        // Handle case where it's already an array
+        updateData.features = updateData.features
+          .filter(feature => feature && (typeof feature === "string" || feature.title))
+          .map(feature => ({
+            title: typeof feature === "string" ? feature : (feature.title || String(feature)),
+            description: feature.description || ""
+          }));
       }
       
-      if (typeof updateData.client === "string") {
-        try {
-          updateData.client = JSON.parse(updateData.client);
-        } catch (e) {
-          // Keep as string if not valid JSON
+      if (updateData.client) {
+        if (typeof updateData.client === "string") {
+          try {
+            updateData.client = JSON.parse(updateData.client);
+          } catch (e) {
+            // Keep as string if not valid JSON
+          }
         }
+      } else {
+        // Ensure client is not null/undefined
+        updateData.client = { name: "", company: "", industry: "" };
       }
       
       // Parse dates
