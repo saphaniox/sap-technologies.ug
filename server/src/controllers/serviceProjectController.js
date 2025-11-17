@@ -742,12 +742,22 @@ class ProjectController {
   static async updateProject(req, res) {
     try {
       const { id } = req.params;
-      const updateData = req.body;
+      const updateData = req.body || {};
 
       console.log("=== UPDATE PROJECT DEBUG ===");
       console.log("Project ID:", id);
-      console.log("Raw request body:", JSON.stringify(updateData, null, 2));
+      console.log("Raw request body type:", typeof req.body);
+      console.log("Raw request body:", req.body ? JSON.stringify(updateData, null, 2) : "null/undefined");
       console.log("Request files:", req.files ? req.files.length : "none");
+      
+      // Safety check: ensure updateData is an object
+      if (!updateData || typeof updateData !== 'object') {
+        console.error("❌ Invalid request body:", updateData);
+        return res.status(400).json({
+          success: false,
+          message: "Invalid request data. Expected object, got " + typeof updateData
+        });
+      }
       
       // Handle image deletions if requested
       if (updateData.imagesToDelete) {
