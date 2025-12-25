@@ -639,8 +639,8 @@ class CertificateService {
             });
 
             // Website and Powered by text (below recognition)
-            page.drawText('Powered by SAP Technologies', {
-                x: width / 2 - 85,
+            page.drawText('Powered by SAP-Technologies Uganda', {
+                x: width / 2 - 105,
                 y: height - 435 - headerYOffset,
                 size: 9,
                 font: timesRomanItalic,
@@ -655,6 +655,23 @@ class CertificateService {
                 color: rgb(0.4, 0.4, 0.4),
             });
 
+            // Draw recipient photo (left side)
+            if (nomineePhoto) {
+                const photoX = 80;
+                const photoY = 120;
+                const photoSize = 110;
+                await this.drawRecipientPhoto(pdfDoc, page, nomineePhoto, photoX, photoY, photoSize);
+                
+                // Add label under photo
+                page.drawText('Recipient', {
+                    x: photoX + 25,
+                    y: photoY - 20,
+                    size: 10,
+                    font: timesRomanItalic,
+                    color: rgb(0.3, 0.3, 0.3),
+                });
+            }
+
             // Date
             const formattedDate = issueDate.toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -663,7 +680,7 @@ class CertificateService {
             });
             page.drawText(`Date: ${formattedDate}`, {
                 x: 100,
-                y: 145,
+                y: nomineePhoto ? 85 : 145,
                 size: 12,
                 font: timesRoman,
                 color: rgb(0.2, 0.2, 0.2),
@@ -673,7 +690,7 @@ class CertificateService {
             if (certificateId) {
                 page.drawText(`Certificate ID: ${certificateId}`, {
                     x: 100,
-                    y: 120,
+                    y: nomineePhoto ? 60 : 120,
                     size: 10,
                     font: timesRoman,
                     color: rgb(0.5, 0.5, 0.5),
@@ -717,6 +734,14 @@ class CertificateService {
                     font: timesRomanItalic,
                     color: rgb(0.3, 0.3, 0.3),
                 });
+            } else {
+                // Signature line under the signature image
+                page.drawLine({
+                    start: { x: signatureX, y: signatureY - 10 },
+                    end: { x: signatureX + 120, y: signatureY - 10 },
+                    thickness: 1,
+                    color: rgb(0.2, 0.2, 0.2),
+                });
             }
 
             page.drawText('SAPHANIOX Awards Committee', {
@@ -725,6 +750,14 @@ class CertificateService {
                 size: 10,
                 font: timesRoman,
                 color: rgb(0.4, 0.4, 0.4),
+            });
+            
+            page.drawText('Authorized Signatory', {
+                x: width - 230,
+                y: 110,
+                size: 9,
+                font: timesRomanItalic,
+                color: rgb(0.5, 0.5, 0.5),
             });
 
             // Save PDF
@@ -918,8 +951,8 @@ class CertificateService {
             });
 
             // Website and Powered by text (below recognition)
-            page.drawText('Powered by SAP Technologies', {
-                x: width / 2 - 85,
+            page.drawText('Powered by SAP-Technologies Uganda', {
+                x: width / 2 - 105,
                 y: height - 435 - headerYOffset,
                 size: 9,
                 font: timesRomanItalic,
@@ -934,6 +967,23 @@ class CertificateService {
                 color: rgb(0.4, 0.4, 0.4),
             });
 
+            // Draw recipient photo (left side)
+            if (nomineePhoto) {
+                const photoX = 80;
+                const photoY = 120;
+                const photoSize = 110;
+                await this.drawRecipientPhoto(pdfDoc, page, nomineePhoto, photoX, photoY, photoSize);
+                
+                // Add label under photo
+                page.drawText('Recipient', {
+                    x: photoX + 25,
+                    y: photoY - 20,
+                    size: 10,
+                    font: timesRomanItalic,
+                    color: rgb(0.3, 0.3, 0.3),
+                });
+            }
+
             // Date
             const formattedDate = issueDate.toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -942,7 +992,7 @@ class CertificateService {
             });
             page.drawText(`Date: ${formattedDate}`, {
                 x: 100,
-                y: 145,
+                y: nomineePhoto ? 85 : 145,
                 size: 12,
                 font: timesRoman,
                 color: rgb(0.2, 0.2, 0.2),
@@ -952,7 +1002,7 @@ class CertificateService {
             if (certificateId) {
                 page.drawText(`Certificate ID: ${certificateId}`, {
                     x: 100,
-                    y: 120,
+                    y: nomineePhoto ? 60 : 120,
                     size: 10,
                     font: timesRoman,
                     color: rgb(0.5, 0.5, 0.5),
@@ -996,6 +1046,14 @@ class CertificateService {
                     font: timesRomanItalic,
                     color: rgb(0.3, 0.3, 0.3),
                 });
+            } else {
+                // Signature line under the signature image
+                page.drawLine({
+                    start: { x: signatureX, y: signatureY - 10 },
+                    end: { x: signatureX + 120, y: signatureY - 10 },
+                    thickness: 1,
+                    color: rgb(0.2, 0.2, 0.2),
+                });
             }
 
             page.drawText('SAPHANIOX Awards Committee', {
@@ -1004,6 +1062,14 @@ class CertificateService {
                 size: 10,
                 font: timesRoman,
                 color: rgb(0.4, 0.4, 0.4),
+            });
+            
+            page.drawText('Authorized Signatory', {
+                x: width - 230,
+                y: 110,
+                size: 9,
+                font: timesRomanItalic,
+                color: rgb(0.5, 0.5, 0.5),
             });
 
             // Save PDF
