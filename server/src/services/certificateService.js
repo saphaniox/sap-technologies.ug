@@ -158,7 +158,8 @@ class CertificateService {
             categoryName,
             awardYear = '2025',
             issueDate = new Date(),
-            certificateId
+            certificateId,
+            nomineePhoto
         } = certificateData;
 
         try {
@@ -308,8 +309,8 @@ class CertificateService {
             });
 
             // Website and Powered by text (below recognition)
-            page.drawText('Powered by SAP Technologies', {
-                x: width / 2 - 85,
+            page.drawText('Powered by SAP-Technologies Uganda', {
+                x: width / 2 - 105,
                 y: height - 435 - headerYOffset,
                 size: 9,
                 font: timesRomanItalic,
@@ -324,6 +325,23 @@ class CertificateService {
                 color: rgb(0.4, 0.4, 0.4),
             });
 
+            // Draw recipient photo (left side)
+            if (nomineePhoto) {
+                const photoX = 80;
+                const photoY = 120;
+                const photoSize = 110;
+                await this.drawRecipientPhoto(pdfDoc, page, nomineePhoto, photoX, photoY, photoSize);
+                
+                // Add label under photo
+                page.drawText('Recipient', {
+                    x: photoX + 25,
+                    y: photoY - 20,
+                    size: 10,
+                    font: timesRomanItalic,
+                    color: rgb(0.3, 0.3, 0.3),
+                });
+            }
+
             // Date
             const formattedDate = issueDate.toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -332,7 +350,7 @@ class CertificateService {
             });
             page.drawText(`Date: ${formattedDate}`, {
                 x: 100,
-                y: 145,
+                y: nomineePhoto ? 85 : 145,
                 size: 12,
                 font: timesRoman,
                 color: rgb(0.2, 0.2, 0.2),
@@ -342,7 +360,7 @@ class CertificateService {
             if (certificateId) {
                 page.drawText(`Certificate ID: ${certificateId}`, {
                     x: 100,
-                    y: 120,
+                    y: nomineePhoto ? 60 : 120,
                     size: 10,
                     font: timesRoman,
                     color: rgb(0.5, 0.5, 0.5),
@@ -470,7 +488,8 @@ class CertificateService {
             categoryName,
             awardYear = '2025',
             issueDate = new Date(),
-            certificateId
+            certificateId,
+            nomineePhoto
         } = certificateData;
 
         try {
@@ -748,7 +767,8 @@ class CertificateService {
             categoryName,
             awardYear = '2025',
             issueDate = new Date(),
-            certificateId
+            certificateId,
+            nomineePhoto
         } = certificateData;
 
         try {
@@ -1377,6 +1397,99 @@ class CertificateService {
         } catch (error) {
             console.warn('⚠️ Error drawing logo:', error.message);
             return 0;
+        }
+    }
+
+    /**
+     * Draw recipient photo on certificate
+     */
+    async drawRecipientPhoto(pdfDoc, page, photoPath, x, y, size = 100) {
+        try {
+            if (!photoPath) {
+                console.warn('⚠️ No photo path provided');
+                return false;
+            }
+
+            let photoImageBytes;
+            let photoUrl;
+
+            // Check if photo is a URL (Cloudinary or other)
+            if (photoPath.startsWith('http://') || photoPath.startsWith('https://')) {
+                photoUrl = photoPath;
+            } else if (photoPath.startsWith('/uploads/')) {
+                // Local path
+                const localPath = path.join(__dirname, '../..', photoPath);
+                try {
+                    await fs.access(localPath);
+                    photoImageBytes = await fs.readFile(localPath);
+                } catch (error) {
+                    console.warn('⚠️ Photo file not found locally:', localPath);
+                    return false;
+                }
+            } else {
+                console.warn('⚠️ Invalid photo path format:', photoPath);
+                return false;
+            }
+
+            // If it's a URL, fetch it
+            if (photoUrl) {
+                try {
+                    const axios = require('axios');
+                    const response = await axios.get(photoUrl, {
+                        responseType: 'arraybuffer'
+                    });
+                    photoImageBytes = Buffer.from(response.data);
+                    console.log('✅ Photo fetched from URL successfully');
+                } catch (fetchError) {
+                    console.error('❌ Error fetching photo from URL:', fetchError.message);
+                    return false;
+                }
+            }
+
+            if (!photoImageBytes) {
+                return false;
+            }
+
+            // Try to embed the image (try PNG first, then JPG)
+            let photoImage;
+            try {
+                photoImage = await pdfDoc.embedPng(photoImageBytes);
+            } catch (pngError) {
+                try {
+                    photoImage = await pdfDoc.embedJpg(photoImageBytes);
+                } catch (jpgError) {
+                    console.warn('⚠️ Unsupported photo format');
+                    return false;
+                }
+            }
+
+            // Draw circular photo frame (border)
+            const borderThickness = 3;
+            const borderColor = rgb(0.96, 0.62, 0.07); // Gold
+            
+            // Draw photo with circular clipping effect by drawing border
+            page.drawCircle({
+                x: x + size / 2,
+                y: y + size / 2,
+                size: size / 2 + borderThickness,
+                borderColor: borderColor,
+                borderWidth: borderThickness,
+            });
+
+            // Draw the photo (it will appear behind the border creating a frame effect)
+            page.drawImage(photoImage, {
+                x: x,
+                y: y,
+                width: size,
+                height: size,
+            });
+
+            console.log('✅ Recipient photo embedded successfully in PDF');
+            return true;
+
+        } catch (error) {
+            console.warn('⚠️ Error embedding recipient photo:', error.message);
+            return false;
         }
     }
 }

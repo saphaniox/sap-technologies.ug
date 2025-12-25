@@ -37,7 +37,8 @@ exports.generateCertificate = async (req, res) => {
             categoryName: nomination.category.name,
             awardYear: '2025',
             issueDate: new Date(),
-            certificateId: nomination.certificateId
+            certificateId: nomination.certificateId,
+            nomineePhoto: nomination.nomineePhoto
         };
 
         let certificateResult;
@@ -174,7 +175,8 @@ exports.regenerateCertificate = async (req, res) => {
             certificateId: nomination.certificateId || certificateService.generateCertificateId(
                 nomination._id.toString(),
                 nomination.status
-            )
+            ),
+            nomineePhoto: nomination.nomineePhoto
         };
 
         let certificateResult;

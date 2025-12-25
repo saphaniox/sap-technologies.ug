@@ -814,7 +814,8 @@ class AwardsController {
                             categoryName: nomination.category.name,
                             awardYear: '2025',
                             issueDate: new Date(),
-                            certificateId: nomination.certificateId
+                            certificateId: nomination.certificateId,
+                            nomineePhoto: nomination.nomineePhoto
                         };
 
                         let certificatePath;
