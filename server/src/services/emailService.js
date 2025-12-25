@@ -1563,22 +1563,34 @@ ${JSON.stringify(alertData.details, null, 2)}
             // Determine email content based on status
             const statusConfig = {
                 winner: {
-                    color: '#f59e0b',
-                    icon: '??',
-                    title: 'Congratulations - Certificate of Achievement!',
-                    message: `You are a WINNER! Congratulations on your outstanding achievement in the ${certificateData.categoryName}!`
+                    color: '#d97706',
+                    bgColor: '#fef3c7',
+                    icon: '🏆',
+                    badge: 'WINNER',
+                    title: 'Congratulations on Winning at SAPHANIOX Awards 2025!',
+                    greeting: `We are absolutely delighted to inform you that you have been selected as a <strong style="color: #d97706;">WINNER</strong> at the SAPHANIOX Awards 2025!`,
+                    message: `Your exceptional work in <strong>${certificateData.categoryName}</strong> has truly stood out among all nominees. This prestigious recognition is a testament to your dedication, innovation, and outstanding contribution to the field of engineering and technology.`,
+                    achievement: 'Your achievement represents excellence at the highest level and serves as an inspiration to the entire community.'
                 },
                 finalist: {
-                    color: '#8b5cf6',
-                    icon: '??',
-                    title: 'Congratulations - Certificate of Excellence!',
-                    message: `You have been recognized as a FINALIST in the ${certificateData.categoryName}! An exceptional achievement!`
+                    color: '#7c3aed',
+                    bgColor: '#ede9fe',
+                    icon: '🥈',
+                    badge: 'FINALIST',
+                    title: 'Congratulations - You Are a Finalist at SAPHANIOX Awards 2025!',
+                    greeting: `We are thrilled to announce that you have been recognized as a <strong style="color: #7c3aed;">FINALIST</strong> at the SAPHANIOX Awards 2025!`,
+                    message: `Your remarkable contribution to <strong>${certificateData.categoryName}</strong> has earned you this distinguished honor. Being selected as a finalist places you among the top achievers in your category.`,
+                    achievement: 'This recognition celebrates your commitment to excellence and innovation in engineering and technology.'
                 },
                 approved: {
                     color: '#2563eb',
-                    icon: '?',
-                    title: 'Certificate of Participation',
-                    message: `Thank you for your participation in the ${certificateData.categoryName}!`
+                    bgColor: '#dbeafe',
+                    icon: '🎓',
+                    badge: 'PARTICIPANT',
+                    title: 'Your Certificate of Participation - SAPHANIOX Awards 2025',
+                    greeting: `Thank you for your valuable participation in the SAPHANIOX Awards 2025!`,
+                    message: `We appreciate your involvement in <strong>${certificateData.categoryName}</strong>. Your participation contributes to the growth and development of our technology and engineering community.`,
+                    achievement: 'We look forward to seeing your continued involvement in future editions of SAPHANIOX Awards.'
                 }
             };
             
@@ -1588,41 +1600,166 @@ ${JSON.stringify(alertData.details, null, 2)}
                 from: '"SAPHANIOX Awards 2025" <saptechnologies256@gmail.com>',
                 replyTo: emailUser,
                 to: certificateData.recipientEmail,
-                subject: `${config.icon} Your SAPHANIOX Awards 2025 Certificate - ${certificateData.nomineeName}`,
+                subject: `${config.icon} ${config.badge} - Your SAPHANIOX Awards 2025 Certificate`,
                 html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <h2 style="color: ${config.color};">${config.icon} ${config.title}</h2>
-                        <p>Dear ${certificateData.recipientName || certificateData.nomineeName},</p>
-                        <p>${config.message}</p>
-                        
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                            <h3 style="color: #1f2937; margin: 0 0 15px 0;">?? Certificate Details</h3>
-                            <p style="margin: 5px 0;"><strong>Nominee:</strong> ${certificateData.nomineeName}</p>
-                            <p style="margin: 5px 0;"><strong>Category:</strong> ${certificateData.categoryName}</p>
-                            <p style="margin: 5px 0;"><strong>Certificate ID:</strong> ${certificateData.certificateId}</p>
-                            <p style="margin: 5px 0;"><strong>Year:</strong> SAPHANIOX Awards 2025</p>
-                        </div>
-                        
-                        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;">
-                            <p style="margin: 0; color: #92400e;">
-                                <strong>?? Certificate Attached</strong><br>
-                                Your official certificate is attached to this email as a PDF. You can download, print, and share it on your professional profiles.
-                            </p>
-                        </div>
-                        
-                        <p>This certificate recognizes your excellence and contribution to innovation and technology in our community.</p>
-                        <p>Once again, congratulations on this well-deserved recognition!</p>
-                        
-                        <p>Best regards,<br>The SAPHANIOX Awards 2025 Team</p>
-                        
-                        <hr style="margin: 30px 0;">
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
-                            <h3 style="color: #1f2937; margin: 0 0 15px 0;">?? Contact Us</h3>
-                            <p style="margin: 5px 0;"><strong>?? Phone:</strong> +256706564628</p>
-                            <p style="margin: 5px 0;"><strong>?? Email:</strong> ${emailUser}</p>
-                            <p style="margin: 5px 0;"><strong>?? Website:</strong> www.sap-technologies.com</p>
-                        </div>
-                    </div>
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    </head>
+                    <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; padding: 20px 0;">
+                            <tr>
+                                <td align="center">
+                                    <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden;">
+                                        
+                                        <!-- Header with Logo and Badge -->
+                                        <tr>
+                                            <td style="background: linear-gradient(135deg, ${config.color} 0%, #1f2937 100%); padding: 40px 30px; text-align: center;">
+                                                <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">
+                                                    ${config.icon} SAPHANIOX AWARDS 2025
+                                                </h1>
+                                                <div style="background-color: #ffffff; display: inline-block; padding: 8px 20px; border-radius: 20px; margin-top: 15px;">
+                                                    <span style="color: ${config.color}; font-weight: bold; font-size: 14px; letter-spacing: 1px;">
+                                                        ${config.badge}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Main Content -->
+                                        <tr>
+                                            <td style="padding: 40px 30px;">
+                                                <h2 style="color: #111827; margin: 0 0 20px 0; font-size: 24px;">
+                                                    ${config.title}
+                                                </h2>
+                                                
+                                                <p style="color: #374151; line-height: 1.6; margin: 0 0 15px 0; font-size: 16px;">
+                                                    Dear <strong>${certificateData.recipientName || certificateData.nomineeName}</strong>,
+                                                </p>
+                                                
+                                                <p style="color: #374151; line-height: 1.6; margin: 0 0 15px 0; font-size: 16px;">
+                                                    ${config.greeting}
+                                                </p>
+                                                
+                                                <p style="color: #374151; line-height: 1.6; margin: 0 0 15px 0; font-size: 16px;">
+                                                    ${config.message}
+                                                </p>
+                                                
+                                                <!-- Certificate Details Box -->
+                                                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: ${config.bgColor}; border-radius: 8px; margin: 25px 0; border-left: 4px solid ${config.color};">
+                                                    <tr>
+                                                        <td style="padding: 20px;">
+                                                            <h3 style="color: #111827; margin: 0 0 15px 0; font-size: 18px;">
+                                                                📋 Certificate Details
+                                                            </h3>
+                                                            <table width="100%" cellpadding="5" cellspacing="0">
+                                                                <tr>
+                                                                    <td style="color: #4b5563; font-weight: 600; font-size: 14px; width: 140px;">Recipient:</td>
+                                                                    <td style="color: #111827; font-size: 14px;">${certificateData.nomineeName}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td style="color: #4b5563; font-weight: 600; font-size: 14px;">Category:</td>
+                                                                    <td style="color: #111827; font-size: 14px;">${certificateData.categoryName}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td style="color: #4b5563; font-weight: 600; font-size: 14px;">Certificate ID:</td>
+                                                                    <td style="color: #111827; font-size: 14px; font-family: monospace;">${certificateData.certificateId}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td style="color: #4b5563; font-weight: 600; font-size: 14px;">Award Year:</td>
+                                                                    <td style="color: #111827; font-size: 14px;">2025</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td style="color: #4b5563; font-weight: 600; font-size: 14px;">Status:</td>
+                                                                    <td>
+                                                                        <span style="background-color: ${config.color}; color: #ffffff; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                                                            ${config.badge}
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                
+                                                <!-- Certificate Attachment Notice -->
+                                                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef3c7; border-radius: 8px; margin: 25px 0; border-left: 4px solid #f59e0b;">
+                                                    <tr>
+                                                        <td style="padding: 20px;">
+                                                            <h4 style="color: #92400e; margin: 0 0 10px 0; font-size: 16px;">
+                                                                📎 Your Official Certificate is Attached
+                                                            </h4>
+                                                            <p style="color: #78350f; margin: 0; line-height: 1.5; font-size: 14px;">
+                                                                Your official SAPHANIOX Awards 2025 certificate is attached to this email as a high-quality PDF. You can:
+                                                            </p>
+                                                            <ul style="color: #78350f; margin: 10px 0 0 20px; line-height: 1.8; font-size: 14px;">
+                                                                <li>Download and save it for your records</li>
+                                                                <li>Print it for display</li>
+                                                                <li>Share it on LinkedIn, Twitter, and other professional platforms</li>
+                                                                <li>Include it in your portfolio and resume</li>
+                                                            </ul>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                
+                                                <p style="color: #374151; line-height: 1.6; margin: 20px 0 15px 0; font-size: 16px;">
+                                                    ${config.achievement}
+                                                </p>
+                                                
+                                                <p style="color: #374151; line-height: 1.6; margin: 0 0 15px 0; font-size: 16px;">
+                                                    This certificate represents more than just an achievement—it symbolizes your commitment to excellence and your contribution to advancing technology and innovation in Uganda and beyond.
+                                                </p>
+                                                
+                                                <p style="color: #374151; line-height: 1.6; margin: 0 0 25px 0; font-size: 16px;">
+                                                    <strong>Congratulations once again, and we look forward to witnessing your continued success!</strong>
+                                                </p>
+                                                
+                                                <p style="color: #374151; line-height: 1.6; margin: 0; font-size: 16px;">
+                                                    Warm regards,<br>
+                                                    <strong>The SAPHANIOX Awards Committee</strong><br>
+                                                    <span style="color: #6b7280; font-size: 14px;">SAP-Technologies Uganda</span>
+                                                </p>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Footer -->
+                                        <tr>
+                                            <td style="background-color: #f9fafb; padding: 30px; border-top: 1px solid #e5e7eb;">
+                                                <table width="100%" cellpadding="0" cellspacing="0">
+                                                    <tr>
+                                                        <td style="text-align: center;">
+                                                            <h3 style="color: #111827; margin: 0 0 15px 0; font-size: 18px;">
+                                                                📞 Contact Us
+                                                            </h3>
+                                                            <p style="color: #6b7280; margin: 5px 0; font-size: 14px;">
+                                                                <strong>Phone:</strong> +256 706 564 628
+                                                            </p>
+                                                            <p style="color: #6b7280; margin: 5px 0; font-size: 14px;">
+                                                                <strong>Email:</strong> ${emailUser}
+                                                            </p>
+                                                            <p style="color: #6b7280; margin: 5px 0; font-size: 14px;">
+                                                                <strong>Website:</strong> <a href="https://www.sap-technologies.com" style="color: #2563eb; text-decoration: none;">www.sap-technologies.com</a>
+                                                            </p>
+                                                            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                                                                <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                                                                    © 2025 SAPHANIOX Awards. All rights reserved.<br>
+                                                                    Powered by SAP-Technologies Uganda
+                                                                </p>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </body>
+                    </html>
                 `,
                 attachments: [
                     {
