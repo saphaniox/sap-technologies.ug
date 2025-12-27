@@ -290,6 +290,30 @@ app.get("/health", async (req, res) => {
     });
 });
 
+// Also make health check available at /api/health for consistency
+app.get("/api/health", async (req, res) => {
+    const securityStatus = {
+        headers: !!res.get("X-Frame-Options"),
+        rateLimiting: true,
+        sanitization: true,
+        cors: true,
+        session: !!req.sessionID
+    };
+
+    // Check database health
+    const dbHealth = await checkDatabaseHealth();
+
+    res.status(200).json({
+        status: "success",
+        message: "Server is awake",
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || "development",
+        security: securityStatus,
+        database: dbHealth,
+        version: "2.0.0-secure"
+    });
+});
+
 // Database security audit endpoint (admin only)
 app.get("/api/admin/security-audit", rateLimits.admin, (req, res) => {
     // In production, this should require admin authentication

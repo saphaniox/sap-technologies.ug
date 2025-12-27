@@ -1770,8 +1770,53 @@ ${JSON.stringify(alertData.details, null, 2)}
                 ]
             };
 
-            await this.transporter.sendMail(mailOptions);
-            console.log("? Certificate email sent to:", certificateData.recipientEmail);
+            // Use appropriate email service based on configuration
+            if (this.useResend) {
+                // Resend supports attachments
+                const resendOptions = {
+                    from: '"SAPHANIOX Awards 2025" <onboarding@resend.dev>',
+                    to: certificateData.recipientEmail,
+                    subject: `${config.icon} ${config.badge} - Your SAPHANIOX Awards 2025 Certificate`,
+                    html: mailOptions.html,
+                    reply_to: emailUser,
+                    attachments: [{
+                        filename: certificateData.certificateFile,
+                        content: certificateBuffer
+                    }]
+                };
+                
+                const result = await this.resend.emails.send(resendOptions);
+                console.log("✅ Certificate email sent via Resend to:", certificateData.recipientEmail);
+                console.log("📧 Resend Email ID:", result.id);
+                console.log("⚠️ Note: Free Resend accounts can only send to verified emails or using onboarding@resend.dev");
+                console.log("💡 Tip: Check spam folder or verify the recipient email in Resend dashboard");
+            } else if (this.useSendGrid) {
+                // SendGrid attachments
+                const attachment = {
+                    content: certificateBuffer.toString('base64'),
+                    filename: certificateData.certificateFile,
+                    type: 'application/pdf',
+                    disposition: 'attachment'
+                };
+                
+                const msg = {
+                    from: '"SAPHANIOX Awards 2025" <saptechnologies256@gmail.com>',
+                    to: certificateData.recipientEmail,
+                    replyTo: emailUser,
+                    subject: `${config.icon} ${config.badge} - Your SAPHANIOX Awards 2025 Certificate`,
+                    html: mailOptions.html,
+                    attachments: [attachment]
+                };
+                
+                await sgMail.send(msg);
+                console.log("✅ Certificate email sent via SendGrid to:", certificateData.recipientEmail);
+            } else if (this.transporter) {
+                // SMTP with attachments
+                await this.transporter.sendMail(mailOptions);
+                console.log("✅ Certificate email sent via SMTP to:", certificateData.recipientEmail);
+            } else {
+                throw new Error('No email transport configured');
+            }
         } catch (error) {
             console.error("Error sending certificate email:", error);
             throw error;
