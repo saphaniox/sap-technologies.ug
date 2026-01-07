@@ -11,34 +11,29 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: false,
     trim: true,
-    maxLength: [200, "Short description cannot exceed 200 characters"],
     default: ""
   },
   technicalDescription: {
     type: String,
     required: false,
     trim: true,
-    maxLength: [1000, "Technical description cannot exceed 1000 characters"],
     default: ""
   },
   technicalSpecs: [{
     name: {
       type: String,
-      required: true,
-      trim: true,
-      maxLength: [100, "Spec name cannot exceed 100 characters"]
+      required: false,
+      trim: true
     },
     value: {
       type: String,
-      required: true,
-      trim: true,
-      maxLength: [200, "Spec value cannot exceed 200 characters"]
+      required: false,
+      trim: true
     }
   }],
   features: [{
     type: String,
-    trim: true,
-    maxLength: [200, "Feature cannot exceed 200 characters"]
+    trim: true
   }],
   image: {
     type: String,
@@ -141,8 +136,7 @@ const productSchema = new mongoose.Schema({
   },
   tags: [{
     type: String,
-    trim: true,
-    maxLength: [50, "Tag cannot exceed 50 characters"]
+    trim: true
   }],
   displayOrder: {
     type: Number,

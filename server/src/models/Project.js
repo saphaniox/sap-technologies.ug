@@ -4,21 +4,18 @@ const projectSchema = new mongoose.Schema({
   title: {
     type: String,
     required: [true, "Project title is required"],
-    trim: true,
-    maxLength: [100, "Title cannot exceed 100 characters"]
+    trim: true
   },
   description: {
     type: String,
     required: false,
     trim: true,
-    maxLength: [500, "Description cannot exceed 500 characters"],
     default: ""
   },
   longDescription: {
     type: String,
     required: false,
     trim: true,
-    maxLength: [5000, "Long description cannot exceed 5000 characters"],
     default: ""
   },
   category: {
@@ -67,7 +64,6 @@ const projectSchema = new mongoose.Schema({
       content: {
         type: String,
         required: false,
-        maxLength: [1000, "Testimonial cannot exceed 1000 characters"],
         default: ""
       },
       rating: {
@@ -82,7 +78,7 @@ const projectSchema = new mongoose.Schema({
   technologies: [{
     name: {
       type: String,
-      required: true,
+      required: false,
       trim: true
     },
     category: {

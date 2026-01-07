@@ -4,21 +4,18 @@ const serviceSchema = new mongoose.Schema({
   title: {
     type: String,
     required: [true, "Service title is required"],
-    trim: true,
-    maxLength: [100, "Title cannot exceed 100 characters"]
+    trim: true
   },
   description: {
     type: String,
     required: false,
     trim: true,
-    maxLength: [500, "Description cannot exceed 500 characters"],
     default: ""
   },
   longDescription: {
     type: String,
     required: false,
     trim: true,
-    maxLength: [2000, "Long description cannot exceed 2000 characters"],
     default: ""
   },
   icon: {
@@ -60,7 +57,7 @@ const serviceSchema = new mongoose.Schema({
   technologies: [{
     name: {
       type: String,
-      required: true,
+      required: false,
       trim: true
     },
     level: {
