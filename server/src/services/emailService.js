@@ -1744,7 +1744,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                                                             </p>
                                                             <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
                                                                 <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                                                                    © 2025 SAPHANIOX Awards. All rights reserved.<br>
+                                                                    © 2026 SAPHANIOX Awards. All rights reserved.<br>
                                                                     Powered by SAP-Technologies Uganda
                                                                 </p>
                                                             </div>
