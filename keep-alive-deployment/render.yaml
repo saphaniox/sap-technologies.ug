@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: sap-keep-alive
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: SERVER_URL
+        value: https://sap-technologies-ug.onrender.com
+      - key: PING_INTERVAL
+        value: 300000
+      - key: TIMEOUT
+        value: 30000
