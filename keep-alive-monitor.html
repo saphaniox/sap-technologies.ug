@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAP Technologies - Keep-Alive Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .status-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .status-card h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-running {
+            background: #10b981;
+        }
+
+        .status-stopped {
+            background: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-box {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-start {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-stop {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-ping {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-clear {
+            background: #6b7280;
+            color: white;
+        }
+
+        .log-container {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 20px;
+            border-radius: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-left: 3px solid #667eea;
+            padding-left: 10px;
+        }
+
+        .log-success {
+            border-left-color: #10b981;
+            color: #10b981;
+        }
+
+        .log-error {
+            border-left-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .log-warning {
+            border-left-color: #f59e0b;
+            color: #f59e0b;
+        }
+
+        .log-info {
+            border-left-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .config-section {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+        }
+
+        .config-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .config-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .config-row label {
+            flex: 1;
+            color: #666;
+        }
+
+        .config-row input {
+            flex: 2;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Server Keep-Alive Monitor</h1>
+            <p>SAP Technologies Uganda</p>
+        </div>
+
+        <div class="status-card">
+            <h2>
+                <span class="status-indicator status-stopped" id="statusIndicator"></span>
+                <span id="statusText">Stopped</span>
+            </h2>
+            <p id="statusMessage">Click Start to begin monitoring</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-value" id="totalPings">0</div>
+                <div class="stat-label">Total Pings</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="successPings">0</div>
+                <div class="stat-label">Successful</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="failedPings">0</div>
+                <div class="stat-label">Failed</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="uptime">0m</div>
+                <div class="stat-label">Uptime</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="successRate">0%</div>
+                <div class="stat-label">Success Rate</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-start" onclick="startKeepAlive()">▶️ Start</button>
+            <button class="btn btn-stop" onclick="stopKeepAlive()">⏹️ Stop</button>
+            <button class="btn btn-ping" onclick="pingNow()">🔔 Ping Now</button>
+            <button class="btn btn-clear" onclick="clearLogs()">🗑️ Clear Logs</button>
+        </div>
+
+        <div class="log-container" id="logContainer">
+            <div class="log-entry log-info">Ready to start...</div>
+        </div>
+
+        <div class="config-section">
+            <h3>⚙️ Configuration</h3>
+            <div class="config-row">
+                <label>Server URL:</label>
+                <input type="text" id="serverUrl" value="https://sap-technologies-ug.onrender.com">
+            </div>
+            <div class="config-row">
+                <label>Ping Interval (minutes):</label>
+                <input type="number" id="pingInterval" value="5" min="1" max="60">
+            </div>
+            <div class="config-row">
+                <label>Timeout (seconds):</label>
+                <input type="number" id="timeout" value="30" min="5" max="120">
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Keep this tab open to maintain server activity</p>
+            <p>© 2026 SAP Technologies Uganda. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        let isRunning = false;
+        let intervalId = null;
+        let stats = {
+            total: 0,
+            success: 0,
+            failed: 0,
+            startTime: null
+        };
+
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function updateUI() {
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            const statusMessage = document.getElementById('statusMessage');
+
+            if (isRunning) {
+                indicator.className = 'status-indicator status-running';
+                statusText.textContent = 'Running';
+                statusMessage.textContent = 'Actively monitoring server...';
+            } else {
+                indicator.className = 'status-indicator status-stopped';
+                statusText.textContent = 'Stopped';
+                statusMessage.textContent = 'Click Start to begin monitoring';
+            }
+
+            document.getElementById('totalPings').textContent = stats.total;
+            document.getElementById('successPings').textContent = stats.success;
+            document.getElementById('failedPings').textContent = stats.failed;
+
+            if (stats.startTime) {
+                const uptime = Math.floor((Date.now() - stats.startTime) / 60000);
+                document.getElementById('uptime').textContent = uptime + 'm';
+            }
+
+            const successRate = stats.total > 0 ? ((stats.success / stats.total) * 100).toFixed(1) : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+        }
+
+        async function pingServer() {
+            const serverUrl = document.getElementById('serverUrl').value;
+            const timeout = parseInt(document.getElementById('timeout').value) * 1000;
+
+            stats.total++;
+            log('🔔 Pinging server...', 'info');
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+            try {
+                const response = await fetch(`${serverUrl}/api/health`, {
+                    method: 'GET',
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    stats.success++;
+                    const data = await response.json().catch(() => ({}));
+                    log(`✅ Server is alive ${data.uptime ? `(Uptime: ${data.uptime})` : ''}`, 'success');
+                } else {
+                    stats.failed++;
+                    log(`❌ Server returned status ${response.status}`, 'error');
+                }
+            } catch (error) {
+                clearTimeout(timeoutId);
+                stats.failed++;
+                log(`❌ Ping failed: ${error.message}`, 'error');
+            }
+
+            updateUI();
+        }
+
+        function startKeepAlive() {
+            if (isRunning) {
+                log('⚠️ Keep-alive already running', 'warning');
+                return;
+            }
+
+            isRunning = true;
+            stats.startTime = Date.now();
+            log('🚀 Keep-Alive started', 'success');
+
+            const interval = parseInt(document.getElementById('pingInterval').value) * 60000;
+            
+            // Initial ping
+            pingServer();
+
+            // Set up recurring pings
+            intervalId = setInterval(() => {
+                pingServer();
+            }, interval);
+
+            updateUI();
+        }
+
+        function stopKeepAlive() {
+            if (!isRunning) {
+                log('⚠️ Keep-alive not running', 'warning');
+                return;
+            }
+
+            isRunning = false;
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+
+            log('🛑 Keep-Alive stopped', 'warning');
+            updateUI();
+        }
+
+        function pingNow() {
+            if (!isRunning) {
+                log('⚠️ Please start keep-alive first', 'warning');
+                return;
+            }
+            pingServer();
+        }
+
+        function clearLogs() {
+            const logContainer = document.getElementById('logContainer');
+            logContainer.innerHTML = '<div class="log-entry log-info">Logs cleared</div>';
+        }
+
+        // Warn user if they try to close the tab while running
+        window.addEventListener('beforeunload', (e) => {
+            if (isRunning) {
+                e.preventDefault();
+                e.returnValue = 'Keep-alive is running. Are you sure you want to leave?';
+            }
+        });
+    </script>
+</body>
+</html>
