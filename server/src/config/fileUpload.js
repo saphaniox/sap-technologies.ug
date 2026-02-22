@@ -150,8 +150,7 @@ if (useCloudinary) {
   console.log('✅ File uploads configured with Cloudinary (cloud storage)');
 } else {
   console.log('⚠️  File uploads using local storage (not recommended for production)');
-}iotUpload,
-  
+}
 
 module.exports = {
   profileUpload,
@@ -159,6 +158,7 @@ module.exports = {
   projectUpload,
   productUpload,
   softwareUpload,
+  iotUpload,
   signatureUpload,
   partnerUpload,
   awardUpload,
