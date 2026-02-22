@@ -17,6 +17,7 @@ const servicesDir = path.join(baseUploadDir, "services");
 const projectsDir = path.join(baseUploadDir, "projects");
 const productsDir = path.join(baseUploadDir, "products");
 const softwareDir = path.join(baseUploadDir, "software");
+const iotDir = path.join(baseUploadDir, "iot");
 const signaturesDir = path.join(baseUploadDir, "signatures");
 const partnersDir = path.join(baseUploadDir, "partners");
 const awardsDir = path.join(baseUploadDir, "awards");
@@ -26,6 +27,7 @@ createUploadDir(servicesDir);
 createUploadDir(projectsDir);
 createUploadDir(productsDir);
 createUploadDir(softwareDir);
+createUploadDir(iotDir);
 createUploadDir(signaturesDir);
 createUploadDir(partnersDir);
 createUploadDir(awardsDir);
@@ -135,12 +137,21 @@ const softwareUpload = multer({
   fileFilter: imageFilter
 });
 
+const iotUpload = multer({
+  storage: useCloudinary ? storageConfigs.iot : createLocalStorage(iotDir),
+  limits: {
+    fileSize: 20 * 1024 * 1024, // 20MB limit for IoT project images
+  },
+  fileFilter: mediaFilter
+});
+
 // Log storage mode
 if (useCloudinary) {
   console.log('✅ File uploads configured with Cloudinary (cloud storage)');
 } else {
   console.log('⚠️  File uploads using local storage (not recommended for production)');
-}
+}iotUpload,
+  
 
 module.exports = {
   profileUpload,

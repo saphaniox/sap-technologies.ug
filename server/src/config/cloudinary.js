@@ -196,6 +196,28 @@ const storageConfigs = {
             },
         })
         : null,
+    software: isCloudinaryConfigured()
+        ? new CloudinaryStorage({
+            cloudinary,
+            params: {
+                folder: 'sap-technologies/software',
+                resource_type: 'image',
+                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+                transformation: [{ width: 1200, height: 800, crop: 'limit' }],
+            },
+        })
+        : null,
+    iot: isCloudinaryConfigured()
+        ? new CloudinaryStorage({
+            cloudinary,
+            params: {
+                folder: 'sap-technologies/iot',
+                resource_type: 'image',
+                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+                transformation: [{ width: 1920, height: 1080, crop: 'limit' }],
+            },
+        })
+        : null,
 };
 
 module.exports = {
