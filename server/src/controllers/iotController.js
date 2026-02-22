@@ -9,7 +9,13 @@ exports.getAllIoTProjects = async (req, res) => {
   try {
     const { category, status, search, featured } = req.query;
     
-    let query = { isPublic: true };
+    // Build query
+    const query = {};
+    
+    // Only show public projects for non-admin users
+    if (req.user?.role !== "admin") {
+      query.isPublic = true;
+    }
     
     if (category && category !== "all") {
       query.category = category;
@@ -99,6 +105,14 @@ exports.createIoTProject = async (req, res) => {
       projectData.features = JSON.parse(projectData.features);
     }
     
+    // Convert string booleans to actual booleans
+    if (typeof projectData.isPublic === "string") {
+      projectData.isPublic = projectData.isPublic === "true";
+    }
+    if (typeof projectData.isFeatured === "string") {
+      projectData.isFeatured = projectData.isFeatured === "true";
+    }
+    
     // Handle image uploads
     if (req.files && req.files.length > 0) {
       projectData.images = req.files.map(file => ({
@@ -149,6 +163,14 @@ exports.updateIoTProject = async (req, res) => {
     }
     if (typeof updateData.features === "string") {
       updateData.features = JSON.parse(updateData.features);
+    }
+    
+    // Convert string booleans to actual booleans
+    if (typeof updateData.isPublic === "string") {
+      updateData.isPublic = updateData.isPublic === "true";
+    }
+    if (typeof updateData.isFeatured === "string") {
+      updateData.isFeatured = updateData.isFeatured === "true";
     }
     
     // Handle new image uploads

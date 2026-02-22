@@ -131,6 +131,19 @@ exports.createSoftware = async (req, res) => {
     
     const softwareData = { ...req.body };
     
+    // Parse JSON fields if they're strings
+    if (typeof softwareData.features === "string") {
+      softwareData.features = JSON.parse(softwareData.features);
+    }
+    if (typeof softwareData.technologies === "string") {
+      softwareData.technologies = JSON.parse(softwareData.technologies);
+    }
+    
+    // Convert string booleans to actual booleans
+    if (typeof softwareData.isPublic === "string") {
+      softwareData.isPublic = softwareData.isPublic === "true";
+    }
+    
     // Handle uploaded files
     if (req.files && req.files.length > 0) {
       softwareData.images = req.files.map(file => ({
@@ -182,6 +195,19 @@ exports.updateSoftware = async (req, res) => {
     }
     
     const updateData = { ...req.body };
+    
+    // Parse JSON fields if they're strings
+    if (typeof updateData.features === "string") {
+      updateData.features = JSON.parse(updateData.features);
+    }
+    if (typeof updateData.technologies === "string") {
+      updateData.technologies = JSON.parse(updateData.technologies);
+    }
+    
+    // Convert string booleans to actual booleans
+    if (typeof updateData.isPublic === "string") {
+      updateData.isPublic = updateData.isPublic === "true";
+    }
     
     // Handle new uploaded files
     if (req.files && req.files.length > 0) {
