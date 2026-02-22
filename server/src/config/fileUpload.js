@@ -16,6 +16,7 @@ const profilePicsDir = path.join(baseUploadDir, "profile-pics");
 const servicesDir = path.join(baseUploadDir, "services");
 const projectsDir = path.join(baseUploadDir, "projects");
 const productsDir = path.join(baseUploadDir, "products");
+const softwareDir = path.join(baseUploadDir, "software");
 const signaturesDir = path.join(baseUploadDir, "signatures");
 const partnersDir = path.join(baseUploadDir, "partners");
 const awardsDir = path.join(baseUploadDir, "awards");
@@ -24,6 +25,7 @@ createUploadDir(profilePicsDir);
 createUploadDir(servicesDir);
 createUploadDir(projectsDir);
 createUploadDir(productsDir);
+createUploadDir(softwareDir);
 createUploadDir(signaturesDir);
 createUploadDir(partnersDir);
 createUploadDir(awardsDir);
@@ -125,6 +127,14 @@ const awardUpload = multer({
   fileFilter: imageFilter
 });
 
+const softwareUpload = multer({
+  storage: useCloudinary ? storageConfigs.software : createLocalStorage(softwareDir),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: imageFilter
+});
+
 // Log storage mode
 if (useCloudinary) {
   console.log('✅ File uploads configured with Cloudinary (cloud storage)');
@@ -137,6 +147,7 @@ module.exports = {
   serviceUpload,
   projectUpload,
   productUpload,
+  softwareUpload,
   signatureUpload,
   partnerUpload,
   awardUpload,
