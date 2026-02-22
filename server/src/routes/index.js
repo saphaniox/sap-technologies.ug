@@ -12,6 +12,7 @@ const awardsRoutes = require("./awardsRoutes");
 const productRoutes = require("./productRoutes");
 const productInquiryRoutes = require("./productInquiryRoutes");
 const serviceQuoteRoutes = require("./serviceQuoteRoutes");
+const softwareRoutes = require("./softwareRoutes");
 const certificateRoutes = require("./certificates");
 const passwordResetRoutes = require("./passwordResetRoutes");
 const searchRoutes = require("./searchRoutes");
@@ -34,6 +35,7 @@ router.use("/awards", awardsRoutes);            // /api/awards/*
 router.use("/products", productRoutes);         // /api/products/*
 router.use("/products", productInquiryRoutes);  // /api/products/inquiries/* (public & admin)
 router.use("/services", serviceQuoteRoutes);    // /api/services/quotes/* (public & admin)
+router.use("/software", softwareRoutes);        // /api/software/* (public & admin)
 router.use("/certificates", certificateRoutes); // /api/certificates/*
 router.use("/search", searchRoutes);            // /api/search/* (universal search)
 router.use("/", visitorRoutes);                 // /api/admin/visitor-analytics/*, /api/visitor/track
