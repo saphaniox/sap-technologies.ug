@@ -10,8 +10,10 @@ const iotSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      required: [true, "Please provide a project description"],
-      maxlength: [2000, "Description cannot exceed 2000 characters"]
+      required: false,
+      trim: true,
+      maxlength: [2000, "Description cannot exceed 2000 characters"],
+      default: ""
     },
     category: {
       type: String,
@@ -40,7 +42,7 @@ const iotSchema = new mongoose.Schema(
       {
         url: {
           type: String,
-          required: true
+          required: false
         },
         caption: {
           type: String,

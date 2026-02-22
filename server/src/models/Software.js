@@ -15,8 +15,9 @@ const softwareSchema = new mongoose.Schema({
   },
   url: {
     type: String,
-    required: [true, "Software URL is required"],
-    trim: true
+    required: false,
+    trim: true,
+    default: ""
   },
   image: {
     type: String,
@@ -27,7 +28,7 @@ const softwareSchema = new mongoose.Schema({
   images: [{
     url: {
       type: String,
-      required: true
+      required: false
     },
     alt: {
       type: String,
