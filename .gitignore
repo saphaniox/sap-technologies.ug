@@ -1,1 +1,25 @@
+# Frontend (separate Git repository)
 sap-technologies-official/
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.log
+*.tmp
+*.temp
+.env.local
+.env.*.local
+
+# Test files
+test-*.ps1
+test-*.js
+*-test-*.js
