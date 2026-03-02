@@ -1,4 +1,4 @@
-# SAP Technologies - 24/7 Keep-Alive Service
+# SapTech Uganda - 24/7 Keep-Alive Service
 
 This is a standalone keep-alive service that runs 24/7 to prevent your server from sleeping on free-tier hosting.
 
@@ -50,7 +50,7 @@ Use Vercel Cron instead - see below
 3. Click "Add New Monitor"
 4. Configure:
    - **Type**: HTTP(s)
-   - **Name**: SAP Technologies Server
+   - **Name**: SapTech Uganda Server
    - **URL**: `https://sap-technologies-ug.onrender.com/api/health`
    - **Monitoring Interval**: 5 minutes
 5. Click "Create Monitor"

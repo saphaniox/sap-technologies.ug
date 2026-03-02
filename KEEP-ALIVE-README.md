@@ -1,4 +1,4 @@
-# 🔄 SAP Technologies Keep-Alive System
+# 🔄 SapTech Uganda Keep-Alive System
 
 Professional server keep-alive solution to prevent your hosted server from sleeping on free-tier platforms (Render, Heroku, etc.).
 
@@ -268,8 +268,8 @@ For issues or questions:
 
 ## 📄 License
 
-Part of SAP Technologies Uganda infrastructure  
-© 2026 SAP Technologies. All rights reserved.
+Part of SapTech Uganda infrastructure  
+© 2026 SapTech Uganda. All rights reserved.
 
 ---
 

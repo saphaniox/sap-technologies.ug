@@ -1,7 +1,7 @@
 {
   "name": "sap-technologies-keep-alive",
   "version": "2.0.0",
-  "description": "24/7 Keep-Alive service for SAP Technologies server",
+  "description": "24/7 Keep-Alive service for SapTech Uganda server",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -11,7 +11,7 @@
     "server-monitor",
     "uptime"
   ],
-  "author": "SAP Technologies",
+  "author": "SapTech Uganda",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"

@@ -21,7 +21,7 @@
 2. Fill in the form:
    ```
    Monitor Type: HTTP(s)
-   Friendly Name: SAP Technologies Server
+   Friendly Name: SapTech Uganda Server
    URL (or IP): https://sap-technologies-ug.onrender.com/api/health
    Monitoring Interval: 5 minutes
    Monitor Timeout: 30 seconds

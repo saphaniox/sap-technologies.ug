@@ -46,7 +46,7 @@ git push -u origin main
 
 ### Step 3: Wait for Deployment
 - First build takes 2-5 minutes
-- Watch the logs for "🚀 SAP Technologies Keep-Alive Service Started"
+- Watch the logs for "🚀 SapTech Uganda Keep-Alive Service Started"
 - Your service will be live at: `https://sap-keep-alive.onrender.com`
 
 ### Step 4: Verify It's Working
@@ -56,7 +56,7 @@ You should see:
 ```json
 {
   "status": "running",
-  "service": "SAP Technologies Keep-Alive Service",
+  "service": "SapTech Uganda Keep-Alive Service",
   "targetServer": "https://sap-technologies-ug.onrender.com",
   "stats": { ... }
 }
@@ -146,7 +146,7 @@ All platforms support these variables:
 
 ### Expected Logs:
 ```
-🚀 SAP Technologies Keep-Alive Service Started (24/7 RESILIENT MODE)
+🚀 SapTech Uganda Keep-Alive Service Started (24/7 RESILIENT MODE)
 💪 MODE: NEVER STOPS - Infinite retry on failures
 🌐 Target: https://sap-technologies-ug.onrender.com/api/health
 ⏰ Ping Interval: 5 minutes
