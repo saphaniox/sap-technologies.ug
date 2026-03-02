@@ -1,6 +1,6 @@
 /**
  * Security Configuration
- * Comprehensive security settings for SAP Technologies application
+ * Comprehensive security settings for SapTech Uganda application
  */
 
 const helmet = require("helmet");

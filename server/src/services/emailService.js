@@ -146,7 +146,7 @@ class EmailService {
                     to: emailOptions.to,
                     from: {
                         email: emailOptions.from || this.fromEmail,
-                        name: emailOptions.fromName || process.env.SENDGRID_FROM_NAME || 'SAP Technologies'
+                        name: emailOptions.fromName || process.env.SENDGRID_FROM_NAME || 'SapTech Uganda'
                     },
                     replyTo: emailOptions.replyTo || this.replyToEmail,
                     subject: emailOptions.subject,
@@ -189,7 +189,7 @@ class EmailService {
             } else {
                 // SMTP (for local development)
                 const mailOptions = {
-                    from: emailOptions.from || '"SAP Technologies" <saptechnologies256@gmail.com>',
+                    from: emailOptions.from || '"SapTech Uganda" <saptechnologies256@gmail.com>',
                     to: emailOptions.to,
                     replyTo: emailOptions.replyTo || this.replyToEmail, // Always set reply-to
                     subject: emailOptions.subject,
@@ -232,7 +232,7 @@ class EmailService {
             const adminEmail = process.env.ADMIN_EMAIL || emailUser;
 
             const mailOptions = {
-                from: '"SAP Technologies" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda" <saptechnologies256@gmail.com>',
                 to: adminEmail,
                 replyTo: contactData.email,
                 subject: `?? New Contact Message from ${contactData.name}`,
@@ -278,7 +278,7 @@ class EmailService {
                             <!-- Footer -->
                             <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
                                 <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    This is an automated notification from SAP Technologies Contact Form
+                                    This is an automated notification from SapTech Uganda Contact Form
                                 </p>
                                 <p style="color: #cbd5e0; margin: 5px 0; font-size: 12px;">
                                     Contact Management System
@@ -308,7 +308,7 @@ class EmailService {
             const adminEmail = process.env.ADMIN_EMAIL || emailUser;
             
             const mailOptions = {
-                from: '"SAP Technologies" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda" <saptechnologies256@gmail.com>',
                 to: adminEmail,
                 replyTo: partnershipData.contactEmail,
                 subject: `?? New Partnership Request - ${partnershipData.companyName}`,
@@ -367,7 +367,7 @@ class EmailService {
                             <!-- Footer -->
                             <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
                                 <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    This is an automated notification from SAP Technologies Partnership Portal
+                                    This is an automated notification from SapTech Uganda Partnership Portal
                                 </p>
                                 <p style="color: #cbd5e0; margin: 5px 0; font-size: 12px;">
                                     Partnership Management System
@@ -394,9 +394,9 @@ class EmailService {
         
         try {
             const mailOptions = {
-                from: '"SAP Technologies" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda" <saptechnologies256@gmail.com>',
                 to: subscriberData.email,
-                subject: "?? Welcome to SAP Technologies Newsletter!",
+                subject: "?? Welcome to SapTech Uganda Newsletter!",
                 html: `
                     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 20px; border-radius: 15px;">
                         <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
@@ -405,7 +405,7 @@ class EmailService {
                                 <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
                                     <span style="font-size: 35px;">??</span>
                                 </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Welcome to SAP Technologies!</h1>
+                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Welcome to SapTech Uganda!</h1>
                                 <p style="color: #718096; margin: 0; font-size: 16px;">Thank you for joining our community</p>
                             </div>
 
@@ -508,7 +508,7 @@ class EmailService {
                             <!-- Footer -->
                             <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
                                 <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAP Technologies
+                                    SapTech Uganda
                                 </p>
                                 <p style="color: #718096; margin: 5px 0; font-size: 13px;">
                                     Innovative Solutions for Your Business
@@ -544,14 +544,14 @@ class EmailService {
             const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
             
             const mailOptions = {
-                from: '"SAP Technologies" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda" <saptechnologies256@gmail.com>',
                 replyTo: emailUser, // Replies go to your Gmail
                 to: userData.email,
-                subject: "Welcome to SAP-Technologies! Your account is ready ??",
+                subject: "Welcome to SapTech Uganda! Your account is ready ??",
                 html: `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                         <h2 style="color: #3b82f6;">Welcome ${userData.name}! ??</h2>
-                        <p>Your SAP Technologies account has been successfully created.</p>
+                        <p>Your SapTech Uganda account has been successfully created.</p>
                         <p><strong>Account Details:</strong></p>
                         <ul>
                             <li>Name: ${userData.name}</li>
@@ -565,8 +565,8 @@ class EmailService {
                             <li>? Connect with our team</li>
                             <li>? Receive priority support</li>
                         </ul>
-                        <p>Thank you for choosing SAP Technologies!</p>
-                        <p>Best regards,<br>The SAP Technologies Team</p>
+                        <p>Thank you for choosing SapTech Uganda!</p>
+                        <p>Best regards,<br>The SapTech Uganda Team</p>
                         <hr style="margin: 30px 0;">
                         <div style="background: #f8fafc; padding: 15px; border-radius: 5px;">
                             <h4 style="color: #1f2937; margin: 0 0 10px 0;">?? Need Help? Contact Us</h4>
@@ -596,10 +596,10 @@ class EmailService {
             const notifyEmail = process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || emailUser;
             
             const mailOptions = {
-                from: '"SAP Technologies System" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda System" <saptechnologies256@gmail.com>',
                 replyTo: emailUser, // Replies go to saptechnologies256@gmail.com
                 to: notifyEmail,
-                subject: `?? SAP Technologies Alert: ${alertData.type}`,
+                subject: `?? SapTech Uganda Alert: ${alertData.type}`,
                 html: `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                         <h2 style="color: #ef4444;">?? System Alert</h2>
@@ -618,7 +618,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                         <p>Please review and take appropriate action if needed.</p>
                         <hr style="margin: 30px 0;">
                         <div style="background: #f8fafc; padding: 15px; border-radius: 5px;">
-                            <h4 style="color: #1f2937; margin: 0 0 10px 0;">?? SAP Technologies Contact</h4>
+                            <h4 style="color: #1f2937; margin: 0 0 10px 0;">?? SapTech Uganda Contact</h4>
                             <p style="margin: 5px 0;"><strong>Phone:</strong> +256706564628</p>
                             <p style="margin: 5px 0;"><strong>Admin Email:</strong> ${notifyEmail}</p>
                         </div>
@@ -641,9 +641,9 @@ ${JSON.stringify(alertData.details, null, 2)}
         
         try {
             const mailOptions = {
-                from: '"SAP Technologies" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda" <saptechnologies256@gmail.com>',
                 to: contactData.email,
-                subject: "? We Received Your Message - SAP Technologies",
+                subject: "? We Received Your Message - SapTech Uganda",
                 html: `
                     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 20px; border-radius: 15px;">
                         <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
@@ -705,7 +705,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                             <!-- Footer -->
                             <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
                                 <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAP Technologies
+                                    SapTech Uganda
                                 </p>
                                 <p style="color: #718096; margin: 5px 0; font-size: 13px;">
                                     Innovative Solutions for Your Business
@@ -735,9 +735,9 @@ ${JSON.stringify(alertData.details, null, 2)}
         
         try {
             const mailOptions = {
-                from: '"SAP Technologies" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda" <saptechnologies256@gmail.com>',
                 to: partnershipData.contactEmail,
-                subject: "?? Partnership Request Received - SAP Technologies",
+                subject: "?? Partnership Request Received - SapTech Uganda",
                 html: `
                     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 40px 20px; border-radius: 15px;">
                         <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
@@ -833,7 +833,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                             <!-- Footer -->
                             <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
                                 <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAP Technologies
+                                    SapTech Uganda
                                 </p>
                                 <p style="color: #718096; margin: 5px 0; font-size: 13px;">
                                     Building Partnerships for Success
@@ -863,9 +863,9 @@ ${JSON.stringify(alertData.details, null, 2)}
         
         try {
             const mailOptions = {
-                from: '"SAP Technologies" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda" <saptechnologies256@gmail.com>',
                 to: userData.email,
-                subject: "?? Welcome to SAP Technologies - Account Created!",
+                subject: "?? Welcome to SapTech Uganda - Account Created!",
                 html: `
                     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); padding: 40px 20px; border-radius: 15px;">
                         <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
@@ -875,14 +875,14 @@ ${JSON.stringify(alertData.details, null, 2)}
                                     <span style="font-size: 35px;">??</span>
                                 </div>
                                 <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Welcome, ${userData.name}! ??</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">Your SAP Technologies account is ready</p>
+                                <p style="color: #718096; margin: 0; font-size: 16px;">Your SapTech Uganda account is ready</p>
                             </div>
 
                             <!-- Success Message -->
                             <div style="background: linear-gradient(135deg, #14b8a615 0%, #0d948815 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #14b8a6; text-align: center;">
                                 <h2 style="color: #14b8a6; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Account Successfully Created!</h2>
                                 <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
-                                    You're now part of the SAP Technologies community. Start exploring our services and solutions.
+                                    You're now part of the SapTech Uganda community. Start exploring our services and solutions.
                                 </p>
                             </div>
 
@@ -967,7 +967,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                             <!-- Footer -->
                             <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
                                 <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAP Technologies
+                                    SapTech Uganda
                                 </p>
                                 <p style="color: #718096; margin: 5px 0; font-size: 13px;">
                                     Empowering Innovation, Delivering Excellence
@@ -999,7 +999,7 @@ ${JSON.stringify(alertData.details, null, 2)}
             const notifyEmail = process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || 'saptechnologies256@gmail.com';
             
             const mailOptions = {
-                from: '"SAP Technologies System" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda System" <saptechnologies256@gmail.com>',
                 to: notifyEmail,
                 subject: `?? New User Registration: ${userData.name}`,
                 html: `
@@ -1018,7 +1018,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                             <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #3b82f6; text-align: center;">
                                 <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Account Successfully Created!</h2>
                                 <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
-                                    A new user account has been registered on the SAP Technologies platform. The user has been sent a welcome email.
+                                    A new user account has been registered on the SapTech Uganda platform. The user has been sent a welcome email.
                                 </p>
                             </div>
 
@@ -1122,7 +1122,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                             <!-- Footer -->
                             <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
                                 <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAP Technologies Admin System
+                                    SapTech Uganda Admin System
                                 </p>
                                 <p style="color: #718096; margin: 5px 0; font-size: 13px;">
                                     System notification - User registration successful
@@ -1835,7 +1835,7 @@ ${JSON.stringify(alertData.details, null, 2)}
             const adminEmail = process.env.ADMIN_EMAIL || emailUser;
 
             const mailOptions = {
-                from: '"SAP Technologies" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda" <saptechnologies256@gmail.com>',
                 to: adminEmail,
                 subject: `?? New Product Inquiry - ${inquiryData.productName}`,
                 html: `
@@ -1896,7 +1896,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                             <!-- Footer -->
                             <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
                                 <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    This is an automated notification from SAP Technologies
+                                    This is an automated notification from SapTech Uganda
                                 </p>
                                 <p style="color: #cbd5e0; margin: 5px 0; font-size: 12px;">
                                     Product Inquiry Management System
@@ -1924,7 +1924,7 @@ ${JSON.stringify(alertData.details, null, 2)}
 
         try {
             const mailOptions = {
-                from: '"SAP Technologies" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda" <saptechnologies256@gmail.com>',
                 to: inquiryData.customerEmail,
                 subject: `? We Received Your Inquiry - ${inquiryData.productName}`,
                 html: `
@@ -2005,7 +2005,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                             <!-- Footer -->
                             <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
                                 <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAP Technologies
+                                    SapTech Uganda
                                 </p>
                                 <p style="color: #718096; margin: 5px 0; font-size: 13px;">
                                     Innovative Solutions for Your Business
@@ -2039,7 +2039,7 @@ ${JSON.stringify(alertData.details, null, 2)}
             const adminEmail = process.env.ADMIN_EMAIL || emailUser;
 
             const mailOptions = {
-                from: '"SAP Technologies" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda" <saptechnologies256@gmail.com>',
                 to: adminEmail,
                 subject: `?? New Service Quote Request - ${quoteData.serviceName}`,
                 html: `
@@ -2117,7 +2117,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                             <!-- Footer -->
                             <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
                                 <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    This is an automated notification from SAP Technologies
+                                    This is an automated notification from SapTech Uganda
                                 </p>
                                 <p style="color: #cbd5e0; margin: 5px 0; font-size: 12px;">
                                     Service Quote Management System
@@ -2145,7 +2145,7 @@ ${JSON.stringify(alertData.details, null, 2)}
 
         try {
             const mailOptions = {
-                from: '"SAP Technologies" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda" <saptechnologies256@gmail.com>',
                 to: quoteData.customerEmail,
                 subject: `? Quote Request Received - ${quoteData.serviceName}`,
                 html: `
@@ -2232,7 +2232,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                             <!-- Footer -->
                             <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
                                 <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAP Technologies
+                                    SapTech Uganda
                                 </p>
                                 <p style="color: #718096; margin: 5px 0; font-size: 13px;">
                                     Professional Services & Solutions
@@ -2265,9 +2265,9 @@ ${JSON.stringify(alertData.details, null, 2)}
 
         try {
             const mailOptions = {
-                from: '"SAP Technologies Security" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda Security" <saptechnologies256@gmail.com>',
                 to: userEmail,
-                subject: "?? Password Reset Code - SAP Technologies",
+                subject: "?? Password Reset Code - SapTech Uganda",
                 html: `
                     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 40px 20px; border-radius: 15px;">
                         <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
@@ -2370,7 +2370,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                             <!-- Footer -->
                             <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
                                 <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAP Technologies Security Team
+                                    SapTech Uganda Security Team
                                 </p>
                                 <p style="color: #718096; margin: 5px 0; font-size: 13px;">
                                     Protecting Your Account
@@ -2403,9 +2403,9 @@ ${JSON.stringify(alertData.details, null, 2)}
 
         try {
             const mailOptions = {
-                from: '"SAP Technologies Security" <saptechnologies256@gmail.com>',
+                from: '"SapTech Uganda Security" <saptechnologies256@gmail.com>',
                 to: userEmail,
-                subject: "? Password Changed Successfully - SAP Technologies",
+                subject: "? Password Changed Successfully - SapTech Uganda",
                 html: `
                     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 20px; border-radius: 15px;">
                         <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
@@ -2453,7 +2453,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                                 <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">?? Security Best Practices</h2>
                                 <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
                                     <span style="color: #10b981; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Use a unique password for your SAP Technologies account</p>
+                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Use a unique password for your SapTech Uganda account</p>
                                 </div>
                                 <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
                                     <span style="color: #10b981; font-size: 18px; margin-right: 10px;">?</span>
@@ -2514,7 +2514,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                             <!-- Footer -->
                             <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
                                 <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAP Technologies Security Team
+                                    SapTech Uganda Security Team
                                 </p>
                                 <p style="color: #718096; margin: 5px 0; font-size: 13px;">
                                     Keeping Your Account Safe
@@ -2538,4 +2538,5 @@ ${JSON.stringify(alertData.details, null, 2)}
 }
 
 module.exports = new EmailService();
+
 

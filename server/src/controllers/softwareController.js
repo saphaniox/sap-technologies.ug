@@ -1,6 +1,42 @@
 const Software = require("../models/Software");
 const path = require("path");
 const fs = require("fs").promises;
+const { useCloudinary } = require("../config/fileUpload");
+const { cloudinary } = require("../config/cloudinary");
+
+/**
+ * Get the correct file path/URL for uploaded file
+ * Works with both Cloudinary and local storage
+ */
+const getFileUrl = (file, folder = 'software') => {
+  if (!file) return null;
+  
+  // If using Cloudinary
+  if (useCloudinary && file.path) {
+    // Check if it's already a full Cloudinary URL
+    if (file.path.includes('cloudinary.com')) {
+      return file.path;
+    }
+    
+    // If it's a Cloudinary public_id (from multer-storage-cloudinary)
+    // Construct the full URL using cloudinary.url()
+    if (file.path && !file.path.startsWith('/uploads/')) {
+      try {
+        // file.path is the public_id, construct the secure URL
+        return cloudinary.url(file.path, {
+          secure: true,
+          resource_type: 'image',
+          type: 'upload'
+        });
+      } catch (error) {
+        console.error('Error constructing Cloudinary URL:', error);
+      }
+    }
+  }
+  
+  // Local storage: construct path
+  return `/uploads/${folder}/${file.filename}`;
+};
 
 /**
  * Get all software
@@ -147,7 +183,7 @@ exports.createSoftware = async (req, res) => {
     // Handle uploaded files
     if (req.files && req.files.length > 0) {
       softwareData.images = req.files.map(file => ({
-        url: `/uploads/software/${file.filename}`,
+        url: getFileUrl(file, 'software'),
         alt: softwareData.name || "Software image"
       }));
       softwareData.image = softwareData.images[0].url;
@@ -225,7 +261,7 @@ exports.updateSoftware = async (req, res) => {
       
       // Add new images
       const newImages = req.files.map(file => ({
-        url: `/uploads/software/${file.filename}`,
+        url: getFileUrl(file, 'software'),
         alt: updateData.name || software.name || "Software image"
       }));
       

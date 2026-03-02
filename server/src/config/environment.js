@@ -220,7 +220,7 @@ class EnvironmentConfig {
             },
             credentials: true,
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-            allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'X-Session-ID', 'X-Fingerprint'],
+            allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'X-Session-ID', 'X-Fingerprint', 'X-KeepAlive'],
             exposedHeaders: ['X-Total-Count'],
             preflightContinue: false,
             optionsSuccessStatus: 204
@@ -240,7 +240,7 @@ class EnvironmentConfig {
                 pass: process.env.GMAIL_PASS
             },
             from: {
-                name: process.env.EMAIL_FROM_NAME || 'SAP Technologies',
+                name: process.env.EMAIL_FROM_NAME || 'SapTech Uganda',
                 address: process.env.GMAIL_USER
             },
             replyTo: process.env.EMAIL_REPLY_TO || process.env.GMAIL_USER

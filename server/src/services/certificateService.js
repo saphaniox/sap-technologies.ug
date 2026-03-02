@@ -309,7 +309,7 @@ class CertificateService {
             });
 
             // Website and Powered by text (below recognition)
-            page.drawText('Powered by SAP-Technologies Uganda', {
+            page.drawText('Powered by SapTech Uganda', {
                 x: width / 2 - 105,
                 y: height - 435 - headerYOffset,
                 size: 9,
@@ -639,7 +639,7 @@ class CertificateService {
             });
 
             // Website and Powered by text (below recognition)
-            page.drawText('Powered by SAP-Technologies Uganda', {
+            page.drawText('Powered by SapTech Uganda', {
                 x: width / 2 - 105,
                 y: height - 435 - headerYOffset,
                 size: 9,
@@ -951,7 +951,7 @@ class CertificateService {
             });
 
             // Website and Powered by text (below recognition)
-            page.drawText('Powered by SAP-Technologies Uganda', {
+            page.drawText('Powered by SapTech Uganda', {
                 x: width / 2 - 105,
                 y: height - 435 - headerYOffset,
                 size: 9,
@@ -1561,3 +1561,4 @@ class CertificateService {
 }
 
 module.exports = new CertificateService();
+

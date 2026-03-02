@@ -186,7 +186,7 @@ class SMSAfricasTalkingService {
 
     async testSMS(testNumber = null) {
         const number = testNumber || this.adminNumber;
-        const message = `Test message from SAP Technologies SMS system. Time: ${new Date().toLocaleString()}`;
+        const message = `Test message from SapTech Uganda SMS system. Time: ${new Date().toLocaleString()}`;
         
         console.log(`📲 Sending test SMS to ${number}...`);
         return await this.sendSMS(number, message);

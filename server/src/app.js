@@ -31,7 +31,7 @@ const app = express();
 // Initialize database connection
 (async () => {
     try {
-        console.log("🚀 Initializing SAP Technologies Server...");
+        console.log("🚀 Initializing SapTech Uganda Server...");
         
         const dbConnected = await environmentConfig.testDatabaseConnection();
         
@@ -353,7 +353,7 @@ app.use("/api", (req, res, next) => {
 app.get("/api", (req, res) => {
     res.status(200).json({
         status: "success",
-        message: "SAP Technologies API - Secure MVC Architecture",
+        message: "SapTech Uganda API - Secure MVC Architecture",
         version: "2.0.0-secure",
         security: {
             rateLimiting: "Enabled",
@@ -399,7 +399,7 @@ if (process.env.NODE_ENV === 'production') {
         app.get('/', (req, res) => {
             res.json({
                 status: "success",
-                message: "SAP Technologies Backend API",
+                message: "SapTech Uganda Backend API",
                 environment: "production",
                 frontend: "Deployed separately (e.g., Vercel)",
                 api: `${req.protocol}://${req.get('host')}/api`,
@@ -420,7 +420,7 @@ if (process.env.NODE_ENV === 'production') {
     app.get('/', (req, res) => {
         res.json({
             status: "success",
-            message: "SAP Technologies Backend Server",
+            message: "SapTech Uganda Backend Server",
             environment: "development",
             frontend: "Run 'npm run dev' in frontend/sap-technologies directory",
             api: "http://localhost:5000/api"
@@ -477,7 +477,7 @@ const server = app.listen(PORT, () => {
     });
     
     console.log(`
-� SAP Technologies Secure Server Started!
+🚀 SapTech Uganda Secure Server Started!
 
 📍 Server running on: http://localhost:${PORT}
 🌍 Environment: ${process.env.NODE_ENV || "development"}

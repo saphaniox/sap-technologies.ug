@@ -1,6 +1,42 @@
 const IoT = require("../models/IoT");
 const fs = require("fs");
 const path = require("path");
+const { useCloudinary } = require("../config/fileUpload");
+const { cloudinary } = require("../config/cloudinary");
+
+/**
+ * Get the correct file path/URL for uploaded file
+ * Works with both Cloudinary and local storage
+ */
+const getFileUrl = (file, folder = 'iot') => {
+  if (!file) return null;
+  
+  // If using Cloudinary
+  if (useCloudinary && file.path) {
+    // Check if it's already a full Cloudinary URL
+    if (file.path.includes('cloudinary.com')) {
+      return file.path;
+    }
+    
+    // If it's a Cloudinary public_id (from multer-storage-cloudinary)
+    // Construct the full URL using cloudinary.url()
+    if (file.path && !file.path.startsWith('/uploads/')) {
+      try {
+        // file.path is the public_id, construct the secure URL
+        return cloudinary.url(file.path, {
+          secure: true,
+          resource_type: 'image',
+          type: 'upload'
+        });
+      } catch (error) {
+        console.error('Error constructing Cloudinary URL:', error);
+      }
+    }
+  }
+  
+  // Local storage: construct path
+  return `/uploads/${folder}/${file.filename}`;
+};
 
 // @desc    Get all IoT projects
 // @route   GET /api/iot
@@ -116,7 +152,7 @@ exports.createIoTProject = async (req, res) => {
     // Handle image uploads
     if (req.files && req.files.length > 0) {
       projectData.images = req.files.map(file => ({
-        url: `/uploads/iot/${file.filename}`,
+        url: getFileUrl(file, 'iot'),
         isCompressed: file.isCompressed || false
       }));
     }
@@ -176,7 +212,7 @@ exports.updateIoTProject = async (req, res) => {
     // Handle new image uploads
     if (req.files && req.files.length > 0) {
       const newImages = req.files.map(file => ({
-        url: `/uploads/iot/${file.filename}`,
+        url: getFileUrl(file, 'iot'),
         isCompressed: file.isCompressed || false
       }));
       

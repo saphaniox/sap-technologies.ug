@@ -18,9 +18,9 @@
     "sap-technologies",
     "mvc"
   ],
-  "author": "SAP Technologies",
+  "author": "SapTech Uganda",
   "license": "ISC",
-  "description": "Express API server for SAP Technologies website built with MVC architecture",
+  "description": "Express API server for SapTech Uganda website built with MVC architecture",
   "dependencies": {
     "@sendgrid/mail": "^8.1.6",
     "@whiskeysockets/baileys": "^6.7.20",
