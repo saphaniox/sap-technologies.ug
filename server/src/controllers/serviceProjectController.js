@@ -221,7 +221,6 @@ class ServiceController {
       }
       
       const updateData = { ...req.body };
-      console.log("📦 Update data received:", Object.keys(updateData));
       
       // Handle image deletion if requested
       if (updateData.deleteImage === 'true') {
@@ -232,7 +231,6 @@ class ServiceController {
             if (fs.existsSync(oldImagePath)) {
               try {
                 fs.unlinkSync(oldImagePath);
-                console.log("🗑️ Deleted existing image:", existingService.image);
               } catch (err) {
                 console.error("❌ Failed to delete image:", err.message);
               }
@@ -241,7 +239,6 @@ class ServiceController {
         }
         updateData.image = null;
         updateData.images = [];
-        console.log("🗑️ Marked image for deletion");
       }
 
       // Handle multiple file uploads and delete old images if exists
@@ -256,7 +253,6 @@ class ServiceController {
               if (fs.existsSync(oldImagePath)) {
                 try {
                   fs.unlinkSync(oldImagePath);
-                  console.log("🗑️ Deleted old image:", img.url);
                 } catch (err) {
                   console.error("❌ Failed to delete old image:", err.message);
                 }
@@ -272,7 +268,6 @@ class ServiceController {
           order: index
         }));
         updateData.image = updateData.images[0].url; // Backward compatibility
-        console.log("📸 New images uploaded:", updateData.images.length);
       } else if (req.file) {
         // Support single file upload for backward compatibility
         const existingService = await Service.findById(id);
@@ -284,7 +279,6 @@ class ServiceController {
             if (fs.existsSync(oldImagePath)) {
               try {
                 fs.unlinkSync(oldImagePath);
-                console.log("🗑️ Deleted old image:", existingService.image);
               } catch (err) {
                 console.error("❌ Failed to delete old image:", err.message);
               }
@@ -299,7 +293,6 @@ class ServiceController {
           isPrimary: true,
           order: 0
         }];
-        console.log("📸 New image uploaded:", updateData.image);
       }
       
       // Parse JSON fields that come as strings from FormData
@@ -330,7 +323,6 @@ class ServiceController {
       if (typeof updateData.price === "string") {
         try {
           updateData.price = JSON.parse(updateData.price);
-          console.log("💰 Parsed price object:", updateData.price);
         } catch (e) {
           console.error("❌ Failed to parse price:", e.message);
           // Keep as string if not valid JSON
@@ -345,8 +337,6 @@ class ServiceController {
           lastUpdated: Date.now()
         }
       };
-
-      console.log("✅ Final update data prepared, updating service...");
 
       const service = await Service.findByIdAndUpdate(
         id,
@@ -614,22 +604,14 @@ class ProjectController {
   // Create new project
   static async createProject(req, res) {
     try {
-      console.log("=== CREATE PROJECT CONTROLLER START ===");
-      console.log("User:", req.user ? `${req.user.name} (${req.user.email})` : "No user");
-      console.log("Body:", JSON.stringify(req.body, null, 2));
-      console.log("Files:", req.files ? req.files.length : "No files");
-      
       const projectData = req.body;
       
       // Handle multiple file uploads with Cloudinary support
       if (req.files && req.files.length > 0) {
-        console.log("Processing uploaded files...");
         projectData.images = req.files.map(file => getFileUrl(file, 'projects'));
-        console.log("Images URLs:", projectData.images);
         // Set first image as main image if not specified
         if (!projectData.image && projectData.images.length > 0) {
           projectData.image = projectData.images[0];
-          console.log("Set main image:", projectData.image);
         }
       }
       
@@ -700,35 +682,27 @@ class ProjectController {
       
       // Validate required fields
       const { title, description, category } = projectData;
-      console.log("Validating required fields:", { title, description, category });
       if (!title || !description || !category) {
-        console.log("❌ Missing required fields!");
         return res.status(400).json({
           success: false,
           message: "Missing required fields: title, description, category"
         });
       }
 
-      console.log("Creating project with data:", JSON.stringify(projectData, null, 2));
       const project = new Project(projectData);
       await project.save();
-      console.log("✅ Project saved successfully:", project._id);
 
       // Invalidate project caches
       cache.invalidateProjects();
       cache.del('projects:categories');
       logger.logInfo('ProjectController', 'Project created, cache invalidated', { projectId: project._id });
 
-      console.log("=== CREATE PROJECT CONTROLLER END (SUCCESS) ===");
       res.status(201).json({
         success: true,
         message: "Project created successfully",
         data: { project }
       });
     } catch (error) {
-      console.log("=== CREATE PROJECT CONTROLLER END (ERROR) ===");
-      console.error("❌ Error details:", error);
-      console.error("Error stack:", error.stack);
       logger.logError('ProjectController', error, { context: 'createProject' });
       res.status(400).json({
         success: false,

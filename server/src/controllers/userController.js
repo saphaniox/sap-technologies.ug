@@ -195,9 +195,8 @@ class UserController {
                 if (fs.existsSync(oldPicPath)) {
                     try {
                         fs.unlinkSync(oldPicPath);
-                        console.log("🗑️ Deleted old profile picture:", user.profilePic);
                     } catch (err) {
-                        console.error("❌ Failed to delete old profile picture:", err.message);
+                        console.error("Failed to delete old profile picture:", err.message);
                     }
                 }
             }

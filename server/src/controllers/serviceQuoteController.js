@@ -25,12 +25,6 @@ class ServiceQuoteController {
         customerPhone = customerPhone || req.user.phone || "";
       }
 
-      console.log("📬 New service quote request received");
-      console.log("Service ID:", serviceId);
-      console.log("Service Name:", serviceName);
-      console.log("Customer Email:", customerEmail);
-      console.log("Auto-filled:", !!req.user);
-
       // Validate required fields
       if (!serviceId || !serviceName || !customerName || !customerEmail) {
         return res.status(400).json({
@@ -53,10 +47,8 @@ class ServiceQuoteController {
             serviceCategory = service.category || "General";
           }
         } catch (err) {
-          console.log("ℹ️ Error finding service in database:", err.message);
+          // Service not found in database, will use provided serviceName
         }
-      } else {
-        console.log("ℹ️ Service ID is not a MongoDB ObjectId, treating as frontend service");
       }
 
       // Create quote request
@@ -81,8 +73,6 @@ class ServiceQuoteController {
 
       await quote.save();
 
-      console.log("✅ Quote request saved to database:", quote._id);
-
       // Send email notifications (non-blocking)
       setImmediate(async () => {
         try {
@@ -101,8 +91,6 @@ class ServiceQuoteController {
             quoteDate: quote.createdAt
           });
 
-          console.log("✅ Admin notification email sent");
-
           // 2. Send confirmation to customer
           await emailService.sendServiceQuoteConfirmation({
             customerName: quote.customerName,
@@ -110,8 +98,6 @@ class ServiceQuoteController {
             serviceName: serviceName,
             projectDetails: quote.projectDetails
           });
-
-          console.log("✅ Customer confirmation email sent");
         } catch (emailError) {
           console.error("❌ Error sending quote emails:", emailError);
         }
@@ -165,8 +151,6 @@ class ServiceQuoteController {
         .lean();
 
       const total = await ServiceQuote.countDocuments(query);
-
-      console.log(`✅ Found ${quotes.length} quotes (total: ${total})`);
 
       res.status(200).json({
         success: true,
