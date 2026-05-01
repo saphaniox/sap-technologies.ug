@@ -1,5 +1,6 @@
 const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinaryStorageModule = require('multer-storage-cloudinary');
+const CloudinaryStorage = cloudinaryStorageModule.CloudinaryStorage || cloudinaryStorageModule;
 
 const deleteFromCloudinary = async (publicId, resourceType = 'image') => {
     try {
