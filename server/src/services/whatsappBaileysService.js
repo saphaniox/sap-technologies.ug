@@ -1,10 +1,3 @@
-const { 
-    default: makeWASocket, 
-    DisconnectReason, 
-    useMultiFileAuthState,
-    makeInMemoryStore 
-} = require('@whiskeysockets/baileys');
-const qrcode = require('qrcode-terminal');
 const path = require('path');
 const fs = require('fs');
 

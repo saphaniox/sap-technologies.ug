@@ -15,6 +15,7 @@ const environmentConfig = require("./config/environment");
 const {
     helmetConfig,
     rateLimits,
+    speedLimiter,
     mongoSanitizeConfig,
     hppConfig,
     compressionConfig,
@@ -27,6 +28,7 @@ const { trackVisitor } = require("./middleware/visitorTracking");
 const apiRoutes = require("./routes");
 
 const app = express();
+app.disable("x-powered-by");
 
 // Initialize database connection
 (async () => {
@@ -61,6 +63,7 @@ app.use(helmetConfig);
 
 // 5. Rate limiting (global)
 app.use(rateLimits.global);
+app.use(speedLimiter);
 
 // 6. Body parsing middleware with size limits
 app.use(express.json({ 
@@ -173,14 +176,19 @@ app.use((req, res, next) => {
     }
     
     // Set security response headers
-    res.set({
+    const headers = {
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "DENY",
         "X-XSS-Protection": "1; mode=block",
         "Referrer-Policy": "strict-origin-when-cross-origin",
-        "Feature-Policy": "camera 'none'; microphone 'none'; geolocation 'self'",
-        "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
-    });
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=(self)"
+    };
+
+    if (process.env.NODE_ENV === "production") {
+        headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+    }
+
+    res.set(headers);
     
     next();
 });
@@ -259,12 +267,8 @@ if (process.env.NODE_ENV !== 'production') {
     }
 }
 
-// Rate limiting per endpoint (more strict) - AFTER static files
-app.use("/api/auth", rateLimits.auth);
-app.use("/api/contact", rateLimits.contact);
+// Rate limiting for newsletter endpoint
 app.use("/api/newsletter", rateLimits.contact);
-app.use("/api/upload", rateLimits.upload);
-app.use("/api/admin", rateLimits.admin);
 
 // Enhanced health check endpoint with security info
 app.get("/health", async (req, res) => {
