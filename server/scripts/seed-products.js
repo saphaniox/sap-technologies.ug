@@ -2,9 +2,89 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const { Product } = require("../src/models");
 
-// Placeholder images from placehold.co — swap with real photos later
-const img = (label, color = "1a1a2e", text = "fff") =>
-  `https://placehold.co/800x600/${color}/${text}?text=${encodeURIComponent(label)}`;
+// Real product photography — Unsplash free CDN, keyword-mapped by product type
+const PHOTO = {
+  pcb:        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&h=600&q=80",
+  rpi:        "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&h=600&q=80",
+  sensor:     "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&h=600&q=80",
+  solar:      "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800&h=600&q=80",
+  battery:    "https://images.unsplash.com/photo-1619600797516-4a89f0b5d5e2?auto=format&fit=crop&w=800&h=600&q=80",
+  ups:        "https://images.unsplash.com/photo-1544785349-c4a5301826c3?auto=format&fit=crop&w=800&h=600&q=80",
+  display:    "https://images.unsplash.com/photo-1564466809058-bf4114d55352?auto=format&fit=crop&w=800&h=600&q=80",
+  motor:      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=800&h=600&q=80",
+  printer3d:  "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&h=600&q=80",
+  cnc:        "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=800&h=600&q=80",
+  scope:      "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&h=600&q=80",
+  solder:     "https://images.unsplash.com/photo-1573655349936-de6bed86f839?auto=format&fit=crop&w=800&h=600&q=80",
+  robot:      "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&h=600&q=80",
+  drone:      "https://images.unsplash.com/photo-1473968512647-3e446dc10a3b?auto=format&fit=crop&w=800&h=600&q=80",
+  camera:     "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&h=600&q=80",
+  cctv:       "https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=800&h=600&q=80",
+  network:    "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=800&h=600&q=80",
+  server:     "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&h=600&q=80",
+  desktop:    "https://images.unsplash.com/photo-1547082299-de196ea013d6?auto=format&fit=crop&w=800&h=600&q=80",
+  laptop:     "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=800&h=600&q=80",
+  monitor:    "https://images.unsplash.com/photo-1527443224154-c4a573d5e6b0?auto=format&fit=crop&w=800&h=600&q=80",
+  storage:    "https://images.unsplash.com/photo-1597852074816-d933c7d2b988?auto=format&fit=crop&w=800&h=600&q=80",
+  code:       "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&h=600&q=80",
+  mobile:     "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=800&h=600&q=80",
+  web:        "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&h=600&q=80",
+  medical:    "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&h=600&q=80",
+  pos:        "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=800&h=600&q=80",
+  agri:       "https://images.unsplash.com/photo-1500651268218-b18ebbbb74c5?auto=format&fit=crop&w=800&h=600&q=80",
+  ai:         "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?auto=format&fit=crop&w=800&h=600&q=80",
+  blockchain: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=800&h=600&q=80",
+  electric:   "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=800&h=600&q=80",
+  plc:        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&h=600&q=80",
+  accessory:  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&h=600&q=80",
+};
+
+// Keyword-based lookup — extra args ignored (backwards-compatible with old call sites)
+function img(label) {
+  const l = label.toLowerCase();
+  if (l.includes("arduino")) return PHOTO.pcb;
+  if (l.includes("raspberry") || l.includes("orange pi") || l.includes("nano pi") || l.includes("rock pi") || l.includes("banana pi") || l.includes("pi zero") || l.includes("pi pico") || l.includes("pi 4") || l.includes("pi 5")) return PHOTO.rpi;
+  if (l.includes("esp32") || l.includes("esp8266") || l.includes("nodemcu") || l.includes("wemos") || l.includes("lolin")) return PHOTO.pcb;
+  if (l.includes("stm32") || l.includes("teensy") || l.includes("bluepill") || l.includes("beaglebone") || l.includes("microbit") || l.includes("attiny") || l.includes("atmega") || l.includes("feather") || l.includes("xiao") || l.includes("propeller")) return PHOTO.pcb;
+  if (l.includes("sensor") || l.includes("dht") || l.includes("bmp") || l.includes("mpu") || l.includes("accelerom") || l.includes("gyro") || l.includes("pir") || l.includes("ultrasonic") || l.includes("ph meter") || l.includes("soil moisture") || l.includes("gas sensor") || l.includes("air quality") || l.includes("ldr") || l.includes("thermistor")) return PHOTO.sensor;
+  if (l.includes("solar")) return PHOTO.solar;
+  if (l.includes("lipo") || l.includes("li-ion") || l.includes("lithium") || l.includes("18650") || (l.includes("battery") && !l.includes("backup"))) return PHOTO.battery;
+  if (l.includes("ups") || l.includes("uninterruptible") || l.includes("power supply") || l.includes("bench supply") || l.includes("variable supply") || l.includes("psu") || l.includes("battery backup")) return PHOTO.ups;
+  if (l.includes("display") || l.includes("oled") || l.includes("lcd") || l.includes("tft") || l.includes("e-ink") || l.includes("e-paper") || l.includes("led matrix") || l.includes("neopixel") || l.includes("ws2812") || l.includes("7-segment")) return PHOTO.display;
+  if (l.includes("motor") || l.includes("servo") || l.includes("stepper") || l.includes("l298") || l.includes("drv88")) return PHOTO.motor;
+  if (l.includes("3d print") || l.includes("filament") || l.includes("ender") || l.includes("prusa")) return PHOTO.printer3d;
+  if (l.includes("cnc") || l.includes("laser cutter") || l.includes("laser engraver")) return PHOTO.cnc;
+  if (l.includes("oscilloscope") || l.includes("multimeter") || l.includes("lcr meter") || l.includes("spectrum") || l.includes("logic analyzer")) return PHOTO.scope;
+  if (l.includes("solder") || l.includes("rework") || l.includes("hot air") || l.includes("soldering iron") || l.includes("flux") || l.includes("desoldering") || l.includes("t12") || l.includes("858d")) return PHOTO.solder;
+  if (l.includes("receipt printer") || l.includes("thermal printer") || l.includes("barcode") || l.includes("label printer") || l.includes("pos printer")) return PHOTO.pos;
+  if (l.includes("laser printer") || l.includes("inkjet") || l.includes("a4 laser")) return PHOTO.desktop;
+  if (l.includes("cctv") || l.includes("nvr") || l.includes("dvr") || l.includes("ip camera") || l.includes("poe camera") || l.includes("dome camera") || l.includes("varifocal") || l.includes("bullet cam")) return PHOTO.cctv;
+  if (l.includes("camera module") || l.includes("pi camera") || l.includes("webcam") || l.includes("usb camera") || l.includes("smart ip camera") || l.includes("ai camera")) return PHOTO.camera;
+  if (l.includes("access control") || l.includes("rfid access") || l.includes("burglar") || l.includes("gsm alarm") || l.includes("alarm system")) return PHOTO.cctv;
+  if (l.includes("drone") || l.includes("quadcopter") || l.includes("uav") || l.includes("fpv")) return PHOTO.drone;
+  if (l.includes("robot") || l.includes("robotic arm") || l.includes("chassis")) return PHOTO.robot;
+  if (l.includes("router") || l.includes("access point") || l.includes("wifi module") || l.includes("ethernet module") || l.includes("poe switch") || l.includes("wireless")) return PHOTO.network;
+  if (l.includes("network switch") || l.includes("8-port") || l.includes("16-port") || l.includes("24-port")) return PHOTO.network;
+  if (l.includes("server") || l.includes("rack") || l.includes("nas drive") || l.includes("nvr kit")) return PHOTO.server;
+  if (l.includes("desktop") || l.includes("core i") || l.includes("ryzen") || l.includes("workstation") || l.includes("pc bundle")) return PHOTO.desktop;
+  if (l.includes("laptop") || l.includes("notebook")) return PHOTO.laptop;
+  if (l.includes("monitor") || l.includes("ips") && l.includes("screen") || l.includes("flat screen")) return PHOTO.monitor;
+  if (l.includes("hard drive") || l.includes("hdd") || l.includes("ssd") || l.includes("flash drive") || l.includes("external hdd")) return PHOTO.storage;
+  if (l.includes("usb hub") || l.includes("usb-c") || l.includes("multiport") || l.includes("cooling pad") || l.includes("cable management") || l.includes("pi case") || l.includes("jumper")) return PHOTO.accessory;
+  if (l.includes("mobile app") || l.includes("android app") || l.includes("field sales") || l.includes("mtn api") || l.includes("airtel api")) return PHOTO.mobile;
+  if (l.includes("website") || l.includes("web app") || l.includes("e-commerce") || l.includes("dashboard") || l.includes("portal") || l.includes("cms")) return PHOTO.web;
+  if (l.includes("software") || l.includes("erp") || l.includes("crm") || l.includes("payroll") || l.includes("saas") || l.includes("invoic") || l.includes("accounting") || l.includes("booking") || l.includes("management system") || l.includes("desktop app") || l.includes("enterprise") || l.includes("school")) return PHOTO.code;
+  if (l.includes("pos terminal") || l.includes("pos bundle") || l.includes("pos kit") || l.includes("android pos") || l.includes("restaurant pos") || l.includes("point of sale") || l.includes("cash drawer")) return PHOTO.pos;
+  if (l.includes("blood pressure") || l.includes("oximeter") || l.includes("thermometer") || l.includes("spo2") || l.includes("ecg") || l.includes("glucose") || l.includes("medical")) return PHOTO.medical;
+  if (l.includes("momo") || l.includes("mobile money") || l.includes("payment gateway") || l.includes("fintech") || l.includes("flutterwave") || l.includes("card reader") || l.includes("emv") || l.includes("smart card")) return PHOTO.pos;
+  if (l.includes("agriculture") || l.includes("irrigation") || l.includes("soil") || l.includes("crop") || l.includes("farm") || l.includes("greenhouse")) return PHOTO.agri;
+  if (l.includes("jetson") || l.includes("coral") || l.includes("machine learning") || l.includes("neural") || l.includes("ai/ml") || l.includes("accelerator")) return PHOTO.ai;
+  if (l.includes("blockchain") || l.includes("certificate issuance") || l.includes("supply chain") || l.includes("crypto")) return PHOTO.blockchain;
+  if (l.includes("vps") || l.includes("hosting") || l.includes("cloud backup") || l.includes("cloud service") || l.includes("email hosting")) return PHOTO.server;
+  if (l.includes("relay") || l.includes("circuit breaker") || l.includes("mcb") || l.includes("contactor") || l.includes("twin-earth") || l.includes("twin earth") || l.includes("surge") || l.includes("extension lead") || l.includes("ssr ")) return PHOTO.electric;
+  if (l.includes("plc") || l.includes("scada") || l.includes("hmi") || l.includes("modbus") || l.includes("gateway") || l.includes("industrial iot") || l.includes("siemens") || l.includes("automation")) return PHOTO.plc;
+  return PHOTO.pcb;
+}
 
 const products = [
   // ────────────────────────────────────────────────
@@ -3152,7 +3232,1733 @@ const products = [
       { name: "PRU", value: "2× 200 MHz real-time cores" },
       { name: "ADC", value: "7× 12-bit (1.8V max)" },
     ],
-    images: [{ url: img("BeagleBone Black Rev C", "4A4A8C"), alt: "BeagleBone Black Rev C", isPrimary: true, order: 0 }],
+    images: [{ url: img("BeagleBone Black Rev C"), alt: "BeagleBone Black Rev C", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // SOFTWARE SOLUTIONS
+  // ────────────────────────────────────────────────
+  {
+    name: "School Management System",
+    shortDescription: "Complete school admin software built for Ugandan schools — handles fees, results, attendance, and reporting, even without internet.",
+    technicalDescription:
+      "Covers the full school workflow: student enrolment, class allocation, fee invoicing and receipts (supports MTN MoMo payment confirmation), exam marks entry, report card generation, staff payroll basics, and end-of-term reports. Works offline on a local server, so a power cut or bad connection doesn't stop the school from operating. The admin dashboard gives the head teacher and bursar separate login panels with role-based access.",
+    category: "Software Solutions",
+    price: { amount: 1500000, currency: "UGX", type: "negotiable" },
+    availability: "custom-order",
+    isFeatured: true,
+    tags: ["school", "education", "fees", "results", "Uganda", "offline", "management"],
+    features: [
+      "Student enrolment and class management",
+      "Fee invoicing with MTN MoMo confirmation",
+      "Exam marks and report card generation",
+      "Attendance tracking (daily/period)",
+      "Bursar and headteacher separate login roles",
+      "Offline-first — no permanent internet required",
+      "End-of-term and annual reporting",
+    ],
+    technicalSpecs: [
+      { name: "Platform", value: "Windows / Ubuntu desktop" },
+      { name: "Database", value: "MySQL (local server)" },
+      { name: "Connectivity", value: "LAN / offline" },
+      { name: "Users", value: "Up to 20 concurrent staff" },
+    ],
+    images: [{ url: img("School Management System"), alt: "School Management System", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Inventory & Stock Management Software",
+    shortDescription: "Track your stock across multiple stores, get low-stock alerts, and generate sales reports — no spreadsheet juggling.",
+    technicalDescription:
+      "Built for shops, pharmacies, hardware stores, and distributors. Handles stock intake (GRN), sales, transfers between branches, expiry tracking (useful for pharmacies), and supplier management. Generates daily sales reports and profit summaries. Supports barcode scanner input. The system is installed locally on a PC or server and can optionally sync across branches via LAN or the internet.",
+    category: "Software Solutions",
+    price: { amount: 800000, currency: "UGX", type: "negotiable" },
+    availability: "custom-order",
+    isFeatured: false,
+    tags: ["inventory", "stock", "POS", "pharmacy", "hardware store", "multi-branch"],
+    features: [
+      "Stock intake, sales, and returns",
+      "Barcode scanner compatible",
+      "Multi-branch stock transfers",
+      "Expiry date tracking",
+      "Low-stock alerts via SMS or app notification",
+      "Supplier management and purchase orders",
+      "Daily / monthly sales and profit reports",
+    ],
+    technicalSpecs: [
+      { name: "Platform", value: "Windows" },
+      { name: "Database", value: "SQLite / MySQL" },
+      { name: "Barcode", value: "USB scanner compatible" },
+      { name: "Branches", value: "Single or multi-branch" },
+    ],
+    images: [{ url: img("Inventory Stock Management Software"), alt: "Inventory & Stock Management Software", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Custom Software Development",
+    shortDescription: "We build whatever software your business needs — from simple tools to full systems — tailored to how you actually work.",
+    technicalDescription:
+      "A service offering, not a boxed product. You describe the problem; we design and build the solution. Previous work includes SACCO management systems, fleet tracking dashboards, procurement portals, and hospital OPD systems. We use React, Node.js, Python, and MySQL depending on what fits the project. Source code is handed over at the end.",
+    category: "Software Solutions",
+    price: { amount: 2000000, currency: "UGX", type: "contact-for-price" },
+    availability: "custom-order",
+    isFeatured: true,
+    tags: ["custom", "bespoke", "software", "development", "Uganda"],
+    features: [
+      "Requirements gathering and planning",
+      "UI/UX design and prototyping",
+      "Backend API and database design",
+      "Testing and quality assurance",
+      "Deployment and staff training",
+      "Source code handover",
+      "3-month post-launch support",
+    ],
+    technicalSpecs: [
+      { name: "Frontend", value: "React / Vue.js" },
+      { name: "Backend", value: "Node.js / Python" },
+      { name: "Database", value: "MySQL / MongoDB / PostgreSQL" },
+      { name: "Delivery", value: "6–16 weeks depending on scope" },
+    ],
+    images: [{ url: img("Custom Software Development"), alt: "Custom Software Development", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // WEB APPLICATIONS
+  // ────────────────────────────────────────────────
+  {
+    name: "Business Website with CMS",
+    shortDescription: "A proper company website you can update yourself — no developer needed every time you want to change a photo or add a new service.",
+    technicalDescription:
+      "A professional 5–10 page website (About, Services, Products, Blog, Contact) built on a content management system so your team can log in and edit text, images, and blog posts without touching code. Includes contact forms that send to email, WhatsApp chat button, Google Maps embed, and basic SEO setup. Hosted on a reliable server; domain and SSL handled during setup.",
+    category: "Web Applications",
+    price: { amount: 1200000, currency: "UGX", type: "negotiable" },
+    availability: "custom-order",
+    isFeatured: true,
+    tags: ["website", "CMS", "business", "Uganda", "SEO", "hosting"],
+    features: [
+      "5–10 custom pages",
+      "CMS for easy content editing",
+      "Contact forms with email notification",
+      "WhatsApp chat widget",
+      "Google Maps integration",
+      "Mobile-responsive design",
+      "Basic on-page SEO",
+      "SSL certificate included",
+    ],
+    technicalSpecs: [
+      { name: "Framework", value: "React / Next.js or WordPress" },
+      { name: "CMS", value: "Strapi / WordPress Admin" },
+      { name: "Hosting", value: "VPS or shared cloud" },
+      { name: "Delivery", value: "2–4 weeks" },
+    ],
+    images: [{ url: img("Business Website with CMS"), alt: "Business Website with CMS", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "E-Commerce Store (MTN / Airtel Pay Integration)",
+    shortDescription: "An online shop for your products with MTN MoMo and Airtel Money checkout — so customers can actually pay, not just browse.",
+    technicalDescription:
+      "Full online store with product catalogue, shopping cart, and checkout supporting MTN Mobile Money and Airtel Money as primary payment methods, alongside card payments via Flutterwave. Includes an admin panel for order management, inventory, and customer records. Delivery zone pricing is configurable for Kampala and upcountry. Mobile-first design because most Ugandan shoppers browse on phones.",
+    category: "Web Applications",
+    price: { amount: 2500000, currency: "UGX", type: "negotiable" },
+    availability: "custom-order",
+    isFeatured: true,
+    tags: ["e-commerce", "online shop", "MTN MoMo", "Airtel Money", "Uganda", "Flutterwave"],
+    features: [
+      "Product catalogue with categories and search",
+      "MTN MoMo and Airtel Money checkout",
+      "Flutterwave card payment option",
+      "Order tracking and SMS notifications",
+      "Admin panel for orders and inventory",
+      "Delivery zone and shipping pricing",
+      "Mobile-first, fast-loading design",
+    ],
+    technicalSpecs: [
+      { name: "Frontend", value: "React / Next.js" },
+      { name: "Payments", value: "MTN MoMo API, Airtel Money API, Flutterwave" },
+      { name: "Backend", value: "Node.js + MongoDB" },
+      { name: "Hosting", value: "Vercel + Railway / DigitalOcean" },
+    ],
+    images: [{ url: img("E-Commerce Store MTN Airtel"), alt: "E-Commerce Store", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Custom Web Dashboard & Admin Portal",
+    shortDescription: "Data dashboards and internal portals for teams that need to see what's happening across their organisation — in real time.",
+    technicalDescription:
+      "Built for businesses that need internal reporting dashboards, staff management portals, or data visualisation tools. Typical use cases include operations dashboards, field team tracking, loan portfolio monitoring for SACCOs or MFIs, and government reporting portals. Role-based access control means each user sees only what's relevant to their job.",
+    category: "Web Applications",
+    price: { amount: 3000000, currency: "UGX", type: "contact-for-price" },
+    availability: "custom-order",
+    isFeatured: false,
+    tags: ["dashboard", "admin portal", "data", "reporting", "SACCO", "real-time"],
+    features: [
+      "Real-time charts and data tables",
+      "Role-based access control",
+      "CSV and PDF report exports",
+      "API integration with existing systems",
+      "Notifications and alert thresholds",
+      "Mobile-responsive layout",
+    ],
+    technicalSpecs: [
+      { name: "Frontend", value: "React + Chart.js / Recharts" },
+      { name: "Backend", value: "Node.js / Express REST API" },
+      { name: "Database", value: "PostgreSQL / MongoDB" },
+      { name: "Auth", value: "JWT + role-based access" },
+    ],
+    images: [{ url: img("Custom Web Dashboard Admin Portal"), alt: "Custom Web Dashboard", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // MOBILE APPS
+  // ────────────────────────────────────────────────
+  {
+    name: "Android Business App",
+    shortDescription: "A mobile app for your business — whether it's a customer-facing app or an internal tool for your field team.",
+    technicalDescription:
+      "Android app development for businesses that need a mobile presence or internal mobile tools. Common applications include field sales apps, delivery tracking apps for boda bodas, customer loyalty apps, and service request apps. We handle the Google Play Store submission. The app can work offline with sync when connected.",
+    category: "Mobile Apps",
+    price: { amount: 2000000, currency: "UGX", type: "contact-for-price" },
+    availability: "custom-order",
+    isFeatured: true,
+    tags: ["android", "mobile app", "field sales", "Uganda", "Play Store", "offline"],
+    features: [
+      "Android 8+ compatible",
+      "Offline-first with data sync",
+      "Push notifications",
+      "Google Maps integration",
+      "Google Play Store submission",
+      "Backend API included",
+      "Admin web panel to manage app content",
+    ],
+    technicalSpecs: [
+      { name: "Platform", value: "Android (React Native / Flutter)" },
+      { name: "Min Android", value: "Android 8.0 (Oreo)" },
+      { name: "Backend", value: "Node.js REST API" },
+      { name: "Delivery", value: "6–12 weeks" },
+    ],
+    images: [{ url: img("Android Business App"), alt: "Android Business App", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Mobile Money Payment Integration Module",
+    shortDescription: "Add MTN MoMo and Airtel Money payments to your existing app or system — we handle the API plumbing so you don't have to.",
+    technicalDescription:
+      "An integration module connecting your existing mobile app or web application to the MTN Mobile Money API and Airtel Money API for Uganda. Handles payment initiation, callback handling, transaction verification, and reconciliation. Comes with a test sandbox configuration so you can verify everything works before going live. Packaged as an NPM module or standalone REST API.",
+    category: "Mobile Apps",
+    price: { amount: 500000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["MTN MoMo", "Airtel Money", "payment API", "Uganda", "integration", "fintech"],
+    features: [
+      "MTN Mobile Money API (Uganda sandbox + production)",
+      "Airtel Money API (Uganda)",
+      "Payment initiation and callback handling",
+      "Transaction status verification",
+      "Retry logic and error handling",
+      "Reconciliation reports",
+      "Documentation and sample code",
+    ],
+    technicalSpecs: [
+      { name: "Language", value: "Node.js (NPM package)" },
+      { name: "APIs", value: "MTN MoMo v1, Airtel Money UG" },
+      { name: "Webhook", value: "HTTPS callback support" },
+      { name: "Testing", value: "Sandbox environment included" },
+    ],
+    images: [{ url: img("Mobile Money Payment Integration Module"), alt: "Mobile Money Integration", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Field Sales & Inventory Mobile App",
+    shortDescription: "Give your sales reps an app to capture orders, check stock, and send receipts from the field — even without internet.",
+    technicalDescription:
+      "Designed for FMCG distributors, pharmaceutical reps, and wholesale businesses with field agents. The app lets reps see their assigned customer list, record orders and payments, check product availability, and print receipts via Bluetooth thermal printer. Data syncs to the central server whenever the phone has network. GPS tracking of visits is optional.",
+    category: "Mobile Apps",
+    price: { amount: 1800000, currency: "UGX", type: "negotiable" },
+    availability: "custom-order",
+    isFeatured: false,
+    tags: ["field sales", "FMCG", "distribution", "offline", "mobile", "order taking"],
+    features: [
+      "Customer list and visit scheduling",
+      "Offline order capture with sync",
+      "Stock availability check",
+      "Bluetooth receipt printing",
+      "Payment collection and receipts",
+      "GPS visit tracking (optional)",
+      "Central web dashboard for managers",
+    ],
+    technicalSpecs: [
+      { name: "Platform", value: "Android" },
+      { name: "Sync", value: "Background sync when online" },
+      { name: "Printing", value: "Bluetooth thermal printer" },
+      { name: "Backend", value: "Node.js + PostgreSQL" },
+    ],
+    images: [{ url: img("Field Sales Inventory Mobile App"), alt: "Field Sales Mobile App", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // DESKTOP APPLICATIONS
+  // ────────────────────────────────────────────────
+  {
+    name: "Offline Desktop POS Application",
+    shortDescription: "A full point-of-sale system that runs on any Windows PC — works completely offline, so load shedding and bad internet don't stop your sales.",
+    technicalDescription:
+      "Handles sales, receipts, returns, daily close-of-day reports, and basic inventory management. Receipts print to any 80mm thermal printer via USB or Bluetooth. Multiple cashier accounts with separate tills. End-of-day sales summary emails to the manager. No monthly fees — you pay once and own it. Works on any PC running Windows 10 or later.",
+    category: "Desktop Applications",
+    price: { amount: 600000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["POS", "offline", "Windows", "receipt printer", "sales", "cashier"],
+    features: [
+      "Sales and returns processing",
+      "80mm thermal receipt printing",
+      "Multiple cashier accounts",
+      "Daily sales reports and close-of-day",
+      "Basic inventory and stock alerts",
+      "Works fully offline",
+      "One-time licence fee — no subscriptions",
+    ],
+    technicalSpecs: [
+      { name: "Platform", value: "Windows 10 / 11" },
+      { name: "Database", value: "SQLite (local)" },
+      { name: "Printing", value: "USB or Bluetooth thermal printer" },
+      { name: "Licence", value: "Single-device perpetual" },
+    ],
+    images: [{ url: img("Offline Desktop POS Application"), alt: "Offline Desktop POS", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Payroll & HR Software (Uganda)",
+    shortDescription: "Computes PAYE, NSSF, and LST automatically — just enter your staff details and let the system do the tax maths.",
+    technicalDescription:
+      "Designed specifically for Ugandan employers. Handles gross-to-net payroll calculation with current PAYE brackets, NSSF (employee 5% + employer 10%), and Local Service Tax. Generates PAYE return schedules formatted for URA filing and NSSF contribution schedules. HR module covers leave management, contract tracking, and staff records. Can print payslips or email them to staff.",
+    category: "Desktop Applications",
+    price: { amount: 900000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["payroll", "PAYE", "NSSF", "URA", "HR", "Uganda", "tax"],
+    features: [
+      "PAYE calculation (current Uganda brackets)",
+      "NSSF computation (employee + employer)",
+      "Local Service Tax (LST)",
+      "URA PAYE return schedule export",
+      "NSSF schedule export",
+      "Leave management",
+      "Payslip printing and emailing",
+      "Staff contracts and records",
+    ],
+    technicalSpecs: [
+      { name: "Platform", value: "Windows" },
+      { name: "Tax law", value: "Uganda ITA, NSSF Act (updated annually)" },
+      { name: "Export", value: "Excel, PDF" },
+      { name: "Licence", value: "Annual subscription" },
+    ],
+    images: [{ url: img("Payroll HR Software Uganda"), alt: "Payroll HR Software", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "School Fee Collection Desktop App",
+    shortDescription: "A simple, fast fee collection system for bursars — print receipts, track balances, and know exactly who has paid and who hasn't.",
+    technicalDescription:
+      "Purpose-built for secondary schools and tertiary institutions in Uganda. The bursar records fee payments against student accounts, prints official receipts on any thermal or inkjet printer, and the system automatically calculates outstanding balances. End-of-term fee balance reports can be printed per class or per student. Works on a single PC or small LAN network.",
+    category: "Desktop Applications",
+    price: { amount: 500000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["school fees", "bursar", "receipt", "balance", "Uganda", "education"],
+    features: [
+      "Student fee accounts and balances",
+      "Payment recording and receipting",
+      "Outstanding balance tracking per student",
+      "Per-class and school-wide fee reports",
+      "Support for multiple fee categories (tuition, lunch, trips)",
+      "Printer-ready receipt format",
+    ],
+    technicalSpecs: [
+      { name: "Platform", value: "Windows" },
+      { name: "Database", value: "SQLite" },
+      { name: "Network", value: "Single PC or small LAN" },
+      { name: "Printing", value: "Any USB printer" },
+    ],
+    images: [{ url: img("School Fee Collection Desktop App"), alt: "School Fee Collection App", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // ENTERPRISE SOFTWARE
+  // ────────────────────────────────────────────────
+  {
+    name: "SME ERP System (Uganda)",
+    shortDescription: "An integrated business system covering accounting, inventory, procurement, and HR — built for growing Ugandan businesses.",
+    technicalDescription:
+      "For businesses that have outgrown spreadsheets and disconnected software. The ERP brings accounting (UGX ledger, VAT on purchases and sales), inventory management, purchase orders, supplier management, customer accounts, and basic HR into one system. Modules are activated based on what the business needs. Financial reports comply with Uganda tax requirements.",
+    category: "Enterprise Software",
+    price: { amount: 5000000, currency: "UGX", type: "contact-for-price" },
+    availability: "custom-order",
+    isFeatured: true,
+    tags: ["ERP", "accounting", "inventory", "Uganda", "enterprise", "UGX", "VAT"],
+    features: [
+      "UGX accounting with VAT handling",
+      "Chart of accounts and financial statements",
+      "Inventory and warehouse management",
+      "Purchase orders and supplier accounts",
+      "Customer invoicing and receivables",
+      "HR and payroll (PAYE, NSSF)",
+      "Role-based user access",
+      "URA-ready tax reporting",
+    ],
+    technicalSpecs: [
+      { name: "Platform", value: "Web-based (self-hosted or cloud)" },
+      { name: "Currency", value: "UGX primary, multi-currency optional" },
+      { name: "Users", value: "5–200 concurrent" },
+      { name: "Implementation", value: "8–16 weeks" },
+    ],
+    images: [{ url: img("SME ERP System Uganda"), alt: "SME ERP System", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "CRM System for Sales Teams",
+    shortDescription: "Track every lead, deal, and customer conversation — so nothing slips through the cracks when your sales team is busy.",
+    technicalDescription:
+      "Customer Relationship Management system for sales-driven businesses. Manages leads from first contact through to closed deal, with follow-up reminders and activity logs. Integrates with email and WhatsApp for communication tracking. Sales pipeline view shows deals at each stage. Reporting shows conversion rates, average deal size, and individual rep performance.",
+    category: "Enterprise Software",
+    price: { amount: 2500000, currency: "UGX", type: "negotiable" },
+    availability: "custom-order",
+    isFeatured: false,
+    tags: ["CRM", "sales", "leads", "pipeline", "WhatsApp", "Uganda"],
+    features: [
+      "Lead capture and pipeline management",
+      "Follow-up reminders and task assignments",
+      "WhatsApp and email integration",
+      "Customer interaction history",
+      "Sales team performance reporting",
+      "Mobile-accessible interface",
+      "CSV import for existing contacts",
+    ],
+    technicalSpecs: [
+      { name: "Platform", value: "Web-based" },
+      { name: "Integrations", value: "WhatsApp Business API, email SMTP" },
+      { name: "Users", value: "Unlimited" },
+      { name: "Delivery", value: "4–8 weeks" },
+    ],
+    images: [{ url: img("CRM System for Sales Teams"), alt: "CRM System", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Warehouse Management System",
+    shortDescription: "Know exactly what's in your store, where it is, and when it's running low — across multiple warehouse locations.",
+    technicalDescription:
+      "WMS for importers, distributors, and manufacturers with significant stock volumes. Handles goods receiving, putaway locations, stock counting, picking and dispatch, and stock transfers between sites. Barcode and QR code scanning supported. Integrates with the ERP for financial reconciliation and provides real-time stock position reports.",
+    category: "Enterprise Software",
+    price: { amount: 3500000, currency: "UGX", type: "contact-for-price" },
+    availability: "custom-order",
+    isFeatured: false,
+    tags: ["warehouse", "inventory", "WMS", "distribution", "stock", "barcode"],
+    features: [
+      "Goods receiving and putaway",
+      "Bin/location management",
+      "Barcode and QR code scanning",
+      "Pick, pack, and dispatch",
+      "Stock transfers between warehouses",
+      "Cycle counting and variance reports",
+      "ERP integration",
+    ],
+    technicalSpecs: [
+      { name: "Platform", value: "Web + Android mobile app" },
+      { name: "Scanning", value: "USB, Bluetooth, and camera barcode" },
+      { name: "Locations", value: "Multi-warehouse" },
+      { name: "Delivery", value: "8–12 weeks" },
+    ],
+    images: [{ url: img("Warehouse Management System"), alt: "Warehouse Management System", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // SAAS PRODUCTS
+  // ────────────────────────────────────────────────
+  {
+    name: "Cloud Invoicing & Accounting SaaS",
+    shortDescription: "Send invoices, track expenses, and see your cash position from anywhere — UGX accounts, VAT-ready, and no accountant required for day-to-day.",
+    technicalDescription:
+      "Monthly subscription accounting software hosted in the cloud. Generates professional invoices in UGX (or multi-currency), tracks expenses against budget categories, reconciles bank transactions, and produces P&L and balance sheet reports. VAT reports are formatted for URA filing. Access from browser on desktop or phone — no installation required.",
+    category: "SaaS Products",
+    price: { amount: 120000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["invoicing", "accounting", "SaaS", "UGX", "VAT", "Uganda", "cloud", "subscription"],
+    features: [
+      "Professional invoice generation",
+      "Expense tracking with categories",
+      "Bank reconciliation",
+      "VAT and URA-formatted reports",
+      "Multi-user access",
+      "Customer and supplier accounts",
+      "P&L and balance sheet reports",
+      "Mobile browser accessible",
+    ],
+    technicalSpecs: [
+      { name: "Pricing", value: "UGX 120,000/month per business" },
+      { name: "Currency", value: "UGX primary, multi-currency" },
+      { name: "Access", value: "Web browser, any device" },
+      { name: "Data backup", value: "Daily automated cloud backup" },
+    ],
+    images: [{ url: img("Cloud Invoicing Accounting SaaS"), alt: "Cloud Invoicing SaaS", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Appointment Booking SaaS",
+    shortDescription: "Let customers book appointments online and get SMS reminders — cuts the back-and-forth calls for clinics, salons, and consultants.",
+    technicalDescription:
+      "Cloud-based booking platform. Businesses add their services and available time slots; customers book from a public link, receiving SMS confirmation via Africa's Talking. Staff get a calendar view of the day's bookings. Supports multiple staff members with individual schedules. Integrates with MTN MoMo for upfront payment at booking time (optional). No-show rate drops significantly with automated SMS reminders.",
+    category: "SaaS Products",
+    price: { amount: 80000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["booking", "appointments", "SaaS", "SMS", "clinic", "salon", "Uganda"],
+    features: [
+      "Online booking page (shareable link)",
+      "SMS confirmation and reminders via Africa's Talking",
+      "Multiple staff and service types",
+      "Calendar and day-view for staff",
+      "Optional MTN MoMo upfront payment",
+      "No-show tracking",
+      "Customer booking history",
+    ],
+    technicalSpecs: [
+      { name: "Pricing", value: "UGX 80,000/month" },
+      { name: "SMS provider", value: "Africa's Talking (Uganda)" },
+      { name: "Payment", value: "MTN MoMo (optional at booking)" },
+      { name: "Access", value: "Web browser, mobile-first" },
+    ],
+    images: [{ url: img("Appointment Booking SaaS"), alt: "Appointment Booking SaaS", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "HR & Payroll SaaS",
+    shortDescription: "Manage your staff, run payroll, and handle leave requests from a browser — PAYE and NSSF are calculated automatically.",
+    technicalDescription:
+      "Cloud HR and payroll system for Ugandan businesses with 5 to 500 employees. Staff can apply for leave online; managers approve or reject from their phones. Payroll runs in a few clicks — PAYE, NSSF, and LST are calculated using current Uganda rates. Payslips are emailed to employees directly. URA PAYE and NSSF schedules are generated in the correct format.",
+    category: "SaaS Products",
+    price: { amount: 150000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["HR", "payroll", "PAYE", "NSSF", "leave", "SaaS", "Uganda", "cloud"],
+    features: [
+      "Employee records and contracts",
+      "Payroll with PAYE, NSSF, LST",
+      "URA PAYE and NSSF schedule exports",
+      "Online leave application and approval",
+      "Payslip emailing to employees",
+      "Department and grade management",
+      "Staff performance reviews",
+    ],
+    technicalSpecs: [
+      { name: "Pricing", value: "UGX 150,000/month up to 50 employees" },
+      { name: "Compliance", value: "Uganda ITA, NSSF Act" },
+      { name: "Access", value: "Web browser" },
+      { name: "Employees", value: "5–500 staff" },
+    ],
+    images: [{ url: img("HR Payroll SaaS"), alt: "HR Payroll SaaS", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // HARDWARE
+  // ────────────────────────────────────────────────
+  {
+    name: "1000VA / 600W Offline UPS",
+    shortDescription: "Keeps your PC, router, and modem running during load shedding — gives you about 20–40 minutes to save work and shut down properly.",
+    technicalDescription:
+      "Offline/standby UPS, 1000VA / 600W, with automatic voltage regulation (AVR) to handle the surges and drops common on the Ugandan grid. Comes with 12V 9Ah sealed lead-acid battery (replaceable). Six output sockets. Audible alarm when on battery and when battery is low. USB monitoring port lets the PC software trigger graceful shutdown. Adequate for a desktop PC, monitor, and small router.",
+    category: "Hardware",
+    price: { amount: 280000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["UPS", "power backup", "load shedding", "Uganda", "AVR", "inverter"],
+    features: [
+      "1000VA / 600W capacity",
+      "Automatic Voltage Regulation (AVR)",
+      "12V 9Ah replaceable sealed battery",
+      "6 output sockets",
+      "Audible battery and fault alarms",
+      "USB monitoring port",
+      "Cold start (turns on without mains)",
+    ],
+    technicalSpecs: [
+      { name: "Capacity", value: "1000VA / 600W" },
+      { name: "Input voltage", value: "145–290V AC" },
+      { name: "Output", value: "230V ±10%" },
+      { name: "Battery", value: "12V 9Ah SLA (replaceable)" },
+      { name: "Backup time (300W load)", value: "~20 minutes" },
+    ],
+    images: [{ url: img("1000VA UPS battery backup"), alt: "1000VA Offline UPS", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "80mm USB Thermal Receipt Printer",
+    shortDescription: "Fast, quiet receipt printing for shops, pharmacies, and restaurants — no ink cartridges to replace, just load the paper roll and it works.",
+    technicalDescription:
+      "80mm thermal receipt printer with USB, serial, and Ethernet connectivity options. Prints at 200mm/s. Supports paper roll sizes 58mm and 80mm. Compatible with ESC/POS commands, so it works with virtually any POS software including custom-built systems. Auto-cutter included. Cash drawer port (RJ11) on the back. Works with Windows, Linux, and Android.",
+    category: "Hardware",
+    price: { amount: 180000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["receipt printer", "thermal", "POS", "80mm", "ESC/POS", "USB"],
+    features: [
+      "80mm / 58mm paper width",
+      "Print speed 200mm/s",
+      "USB + Serial + Ethernet (model dependent)",
+      "Auto-cutter",
+      "Cash drawer port (RJ11)",
+      "ESC/POS compatible",
+      "Windows / Linux / Android compatible",
+    ],
+    technicalSpecs: [
+      { name: "Print width", value: "80mm / 58mm" },
+      { name: "Print speed", value: "200 mm/s" },
+      { name: "Interface", value: "USB + Serial + Ethernet" },
+      { name: "Paper roll", value: "Max Ø83mm" },
+      { name: "Power", value: "12V/2A adapter included" },
+    ],
+    images: [{ url: img("80mm USB Thermal Receipt Printer"), alt: "80mm Thermal Receipt Printer", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "USB 1D/2D Barcode Scanner",
+    shortDescription: "Plug in, scan, done — reads all standard barcodes and QR codes without any driver installation.",
+    technicalDescription:
+      "Handheld USB barcode scanner with CMOS imager that reads 1D barcodes (Code128, Code39, EAN-13, UPC-A, etc.) and 2D codes (QR, Data Matrix, PDF417). Works as a USB HID device — the PC sees it as a keyboard, so it's compatible with any software without drivers. Scan distance up to 30cm. Works with SAP, QuickBooks, custom inventory software — anything that accepts keyboard input. Popular with phone repair shops, pharmacies, and hardware stores.",
+    category: "Hardware",
+    price: { amount: 65000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["barcode scanner", "QR code", "USB", "1D", "2D", "inventory", "POS"],
+    features: [
+      "1D and 2D (QR Code) scanning",
+      "USB HID — no drivers needed",
+      "Code128, EAN-13, QR, Data Matrix, PDF417 etc.",
+      "Scan distance up to 30cm",
+      "Audible and LED scan confirmation",
+      "Works with any software that accepts keyboard input",
+    ],
+    technicalSpecs: [
+      { name: "Imager", value: "CMOS 2D" },
+      { name: "Interface", value: "USB HID" },
+      { name: "Scan distance", value: "Up to 30cm" },
+      { name: "Barcodes", value: "All major 1D and 2D standards" },
+    ],
+    images: [{ url: img("USB Barcode Scanner 1D 2D"), alt: "USB Barcode Scanner", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "A4 Monochrome Laser Printer",
+    shortDescription: "Fast, affordable A4 laser printing for offices — prints 20 pages a minute and the toner cartridge lasts a long time.",
+    technicalDescription:
+      "Entry-level monochrome laser printer for offices and schools. Prints at 20ppm, first page out in under 9 seconds. USB and Wi-Fi connectivity for wireless printing from phones and laptops. Works with Windows, macOS, and Linux. Toner starter cartridge included (gives ~700 pages); replacement cartridges available locally. Good for printing reports, invoices, letters, and school materials.",
+    category: "Hardware",
+    price: { amount: 380000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["laser printer", "A4", "office", "monochrome", "Wi-Fi", "printing"],
+    features: [
+      "20 pages per minute",
+      "USB and Wi-Fi connectivity",
+      "Works with Windows, macOS, Linux",
+      "Mobile printing (Android/iOS)",
+      "Starter toner cartridge included",
+      "250-sheet paper tray",
+      "1200 × 1200 dpi resolution",
+    ],
+    technicalSpecs: [
+      { name: "Speed", value: "20 ppm" },
+      { name: "Resolution", value: "1200 × 1200 dpi" },
+      { name: "Connectivity", value: "USB 2.0 + Wi-Fi 802.11n" },
+      { name: "Paper tray", value: "250 sheets" },
+      { name: "Starter toner", value: "~700 pages" },
+    ],
+    images: [{ url: img("A4 Monochrome Laser Printer"), alt: "A4 Monochrome Laser Printer", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // ELECTRONICS
+  // ────────────────────────────────────────────────
+  {
+    name: "Variable Bench Power Supply 30V 5A",
+    shortDescription: "Adjustable DC power supply for electronics work — set the exact voltage and current limit you need, with a clear digital readout.",
+    technicalDescription:
+      "Dual-display DC regulated bench power supply, 0–30V and 0–5A continuously adjustable with separate coarse and fine controls for both voltage and current. Current limiting protects the circuit under test from overcurrent. Ripple voltage under 1mV. Two binding post outputs (4mm banana sockets). Commonly used by phone repair technicians, electronics students, and engineers testing prototype circuits.",
+    category: "Electronics",
+    price: { amount: 250000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["power supply", "bench PSU", "30V", "5A", "variable", "electronics lab"],
+    features: [
+      "0–30V adjustable output",
+      "0–5A adjustable current limit",
+      "Dual digital display (voltage + current)",
+      "Coarse and fine adjustment",
+      "Overcurrent / short-circuit protection",
+      "4mm banana socket outputs",
+      "Ripple < 1mV",
+    ],
+    technicalSpecs: [
+      { name: "Output voltage", value: "0–30V DC" },
+      { name: "Output current", value: "0–5A" },
+      { name: "Ripple", value: "< 1mV RMS" },
+      { name: "Display", value: "Dual LED digital" },
+      { name: "Input", value: "230V AC 50Hz" },
+    ],
+    images: [{ url: img("Variable Bench Power Supply 30V 5A"), alt: "Variable Bench Power Supply", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "T12 Digital Soldering Station",
+    shortDescription: "A proper soldering station with fast heat-up and precise temperature control — popular with phone repair technicians and PCB rework.",
+    technicalDescription:
+      "T12 tip-series soldering station with digital temperature control (150–450°C). Heat-up time under 10 seconds. Temperature stability within ±2°C. Compatible with the T12 tip family (hundreds of tip shapes available). Sleep mode activates after 10 minutes of inactivity to extend tip life. The handle is lightweight and comfortable for extended use.",
+    category: "Electronics",
+    price: { amount: 150000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["soldering station", "T12", "SMD", "rework", "phone repair", "electronics"],
+    features: [
+      "T12 tip series compatible",
+      "Temperature range 150–450°C",
+      "Heat-up in under 10 seconds",
+      "±2°C temperature stability",
+      "Sleep mode to extend tip life",
+      "Digital display",
+      "ESD-safe handle",
+    ],
+    technicalSpecs: [
+      { name: "Tip series", value: "T12 (interchangeable)" },
+      { name: "Temperature", value: "150–450°C" },
+      { name: "Heat-up", value: "< 10 seconds" },
+      { name: "Power", value: "72W" },
+      { name: "Input", value: "230V AC" },
+    ],
+    images: [{ url: img("T12 Digital Soldering Station"), alt: "T12 Digital Soldering Station", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "858D Hot Air Rework Station",
+    shortDescription: "Remove and reflow SMD components cleanly — this is the tool phone repair shops use to reboard chips without lifting pads.",
+    technicalDescription:
+      "858D-type hot air rework station with digital temperature display and adjustable airflow. Temperature range 100–500°C. Three included nozzles: round, flat, and IC (square). Suitable for SMD component removal, BGA reflowing, heat-shrink, and desoldering connectors. Built-in sleep mode when the handpiece is placed on the holder. Pairs well with the T12 soldering station for a complete rework bench.",
+    category: "Electronics",
+    price: { amount: 120000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["hot air", "rework", "SMD", "BGA", "phone repair", "858D", "desoldering"],
+    features: [
+      "100–500°C temperature range",
+      "Adjustable airflow (up to 120 L/min)",
+      "Three nozzle types included",
+      "Digital temperature display",
+      "Auto sleep when handpiece docked",
+      "Suitable for BGA rework and SMD removal",
+    ],
+    technicalSpecs: [
+      { name: "Temperature", value: "100–500°C" },
+      { name: "Airflow", value: "Up to 120 L/min" },
+      { name: "Power", value: "700W" },
+      { name: "Nozzles", value: "Round, flat, IC square (3 included)" },
+    ],
+    images: [{ url: img("858D Hot Air Rework Station"), alt: "858D Hot Air Rework Station", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // ELECTRICALS
+  // ────────────────────────────────────────────────
+  {
+    name: "16A Single-Pole MCB Circuit Breaker",
+    shortDescription: "Standard DIN-rail MCB for domestic and light commercial circuits — clips straight onto a 35mm DIN rail in your DB board.",
+    technicalDescription:
+      "Type B single-pole miniature circuit breaker, 16A, 230V AC, for DIN rail mounting. Interrupts overload and short-circuit currents to protect wiring and appliances. Type B characteristic is suitable for resistive loads (lighting, heating, general sockets). 6kA breaking capacity meets BS EN 60898 standard. Available in 6A, 10A, 16A, 20A, 25A, and 32A.",
+    category: "Electricals",
+    price: { amount: 22000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["MCB", "circuit breaker", "DIN rail", "DB board", "16A", "electrical"],
+    features: [
+      "Type B characteristic (resistive loads)",
+      "16A rated current",
+      "230V AC, single-pole",
+      "35mm DIN rail mounting",
+      "6kA breaking capacity",
+      "BS EN 60898 certified",
+      "Available 6A–32A range",
+    ],
+    technicalSpecs: [
+      { name: "Rated current", value: "16A" },
+      { name: "Type", value: "Type B" },
+      { name: "Breaking capacity", value: "6kA" },
+      { name: "Voltage", value: "230/400V AC" },
+      { name: "Standard", value: "BS EN 60898-1" },
+    ],
+    images: [{ url: img("16A MCB Circuit Breaker DIN Rail"), alt: "16A MCB Circuit Breaker", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "2.5mm² Twin & Earth Cable (per metre)",
+    shortDescription: "Standard 2.5mm² T&E cable for socket ring mains and radial circuits — sold by the metre, cut to your required length.",
+    technicalDescription:
+      "2.5mm² twin and earth PVC insulated flat cable, grey outer sheath, rated 230V AC. Live (brown) and neutral (blue) are individually insulated; earth is bare copper within the outer sheath. Suitable for 20A socket circuits and general fixed wiring. Complies with BS 6004. Commonly used by electricians in Uganda for ring-main and radial socket wiring.",
+    category: "Electricals",
+    price: { amount: 3500, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["T&E cable", "twin earth", "2.5mm", "wiring", "ring main", "electrical"],
+    features: [
+      "2.5mm² cross-section",
+      "PVC insulated, grey flat sheath",
+      "Brown live / Blue neutral / Bare earth",
+      "Suitable for 20A socket circuits",
+      "Rated 230V AC",
+      "BS 6004 compliant",
+      "Sold by the metre",
+    ],
+    technicalSpecs: [
+      { name: "Core size", value: "2.5mm²" },
+      { name: "Rating", value: "230V AC" },
+      { name: "Max current", value: "27A (open air), 20A (enclosed)" },
+      { name: "Standard", value: "BS 6004" },
+      { name: "Unit", value: "Per metre" },
+    ],
+    images: [{ url: img("2.5mm Twin Earth Cable electrical wiring"), alt: "2.5mm Twin & Earth Cable", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "6-Way Surge-Protected Extension Lead",
+    shortDescription: "A sturdy 6-socket extension with surge protection — protects computers and electronics from the voltage spikes common on the Ugandan grid.",
+    technicalDescription:
+      "1.8m power extension lead with 6 three-pin sockets and built-in surge protection (MOV-based, 1080 joules). The master switch cuts all sockets at once. Ideal for a computer workstation — protects against the voltage transients that can damage power supplies and motherboards. Rated 13A, 230V AC. Not a substitute for a full UPS but a good first line of protection.",
+    category: "Electricals",
+    price: { amount: 35000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["extension lead", "surge protection", "power strip", "6-way", "office", "electrical"],
+    features: [
+      "6 three-pin sockets",
+      "1080-joule surge protection (MOV)",
+      "Master on/off switch",
+      "1.8m cable length",
+      "Flat plug for behind-furniture use",
+      "13A / 230V rated",
+      "Indicator light shows surge protection active",
+    ],
+    technicalSpecs: [
+      { name: "Sockets", value: "6 × UK 13A" },
+      { name: "Surge protection", value: "1080 joules (MOV)" },
+      { name: "Cable length", value: "1.8m" },
+      { name: "Rating", value: "13A, 230V AC" },
+    ],
+    images: [{ url: img("6-Way Surge extension lead electrical"), alt: "Surge-Protected Extension Lead", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // COMPUTER HARDWARE
+  // ────────────────────────────────────────────────
+  {
+    name: "Office Desktop PC (Core i5, SSD)",
+    shortDescription: "A reliable office computer — fast enough for any office task, built from quality parts, and assembled locally so we can sort any issue quickly.",
+    technicalDescription:
+      "Assembled desktop PC configured for general office use: accounts software, document editing, browsing, and video calls. Comes with Intel Core i5 (10th or 12th gen), 8GB DDR4 RAM, 256GB SSD (boot and OS), and 1TB HDD (data storage). Pre-installed with Windows 11 Pro. VGA, HDMI, and DisplayPort outputs; 6× USB ports. One-year local hardware warranty with same-week repair turnaround in Kampala.",
+    category: "Computer Hardware",
+    price: { amount: 1400000, currency: "UGX", type: "negotiable" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["desktop PC", "Core i5", "office", "SSD", "Windows 11", "Kampala"],
+    features: [
+      "Intel Core i5 (10th/12th gen)",
+      "8GB DDR4 RAM (upgradeable to 32GB)",
+      "256GB SSD + 1TB HDD",
+      "Windows 11 Pro pre-installed",
+      "HDMI + DisplayPort + VGA",
+      "6× USB (mix of 3.0 and 2.0)",
+      "1-year local hardware warranty",
+    ],
+    technicalSpecs: [
+      { name: "CPU", value: "Intel Core i5 (10th/12th gen)" },
+      { name: "RAM", value: "8GB DDR4" },
+      { name: "Storage", value: "256GB SSD + 1TB HDD" },
+      { name: "OS", value: "Windows 11 Pro" },
+      { name: "Warranty", value: "1 year (local)" },
+    ],
+    images: [{ url: img("Office Desktop PC Core i5 SSD"), alt: "Office Desktop PC", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "1TB USB 3.0 External Hard Drive",
+    shortDescription: "Portable 1TB backup drive — plug it in, drag and drop your important files, unplug and go. That's all it takes to have a backup.",
+    technicalDescription:
+      "2.5-inch 1TB external hard drive with USB 3.0 interface (also backwards-compatible with USB 2.0). Bus-powered — no external adapter needed, just the USB cable. Works with Windows, macOS, and Linux straight out of the box. Pre-formatted NTFS; easy to reformat if needed. Comes with a short USB 3.0 cable. A simple, reliable way to keep a second copy of critical documents, accounts files, and photos.",
+    category: "Computer Hardware",
+    price: { amount: 195000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["external HDD", "1TB", "USB 3.0", "backup", "portable", "storage"],
+    features: [
+      "1TB capacity",
+      "USB 3.0 (USB 2.0 compatible)",
+      "Bus-powered — no power adapter",
+      "Works with Windows / macOS / Linux",
+      "NTFS formatted (reformattable)",
+      "Compact 2.5-inch form factor",
+      "USB 3.0 cable included",
+    ],
+    technicalSpecs: [
+      { name: "Capacity", value: "1TB" },
+      { name: "Interface", value: "USB 3.0 (5Gb/s)" },
+      { name: "Form factor", value: "2.5-inch" },
+      { name: "Power", value: "Bus-powered via USB" },
+      { name: "File system", value: "NTFS (default)" },
+    ],
+    images: [{ url: img("1TB USB External Hard Drive storage"), alt: "1TB External Hard Drive", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "24\" IPS FHD Monitor",
+    shortDescription: "A 24-inch IPS monitor with decent colour accuracy — good for design work, video editing, or simply a comfortable screen for everyday use.",
+    technicalDescription:
+      "24-inch Full HD (1920×1080) IPS panel monitor with 75Hz refresh rate and 5ms response time. HDMI and VGA inputs. Wide 178°/178° viewing angles typical of IPS panels — colours and brightness stay consistent even off-axis, which matters when multiple people review the screen. Tilt-adjustable stand. Supports VESA 100×100mm for wall or arm mounting. Comes with HDMI and VGA cables.",
+    category: "Computer Hardware",
+    price: { amount: 480000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["monitor", "24 inch", "IPS", "FHD", "1080p", "HDMI", "office"],
+    features: [
+      "24-inch IPS FHD panel (1920×1080)",
+      "75Hz refresh rate",
+      "5ms response time (GtG)",
+      "178°/178° viewing angles",
+      "HDMI + VGA inputs",
+      "VESA 100×100mm mount compatible",
+      "HDMI and VGA cables included",
+    ],
+    technicalSpecs: [
+      { name: "Panel", value: "24\" IPS" },
+      { name: "Resolution", value: "1920×1080 (FHD)" },
+      { name: "Refresh rate", value: "75Hz" },
+      { name: "Inputs", value: "HDMI + VGA" },
+      { name: "VESA", value: "100×100mm" },
+    ],
+    images: [{ url: img("24 inch IPS FHD Monitor"), alt: "24\" IPS FHD Monitor", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // AI / ML PRODUCTS
+  // ────────────────────────────────────────────────
+  {
+    name: "NVIDIA Jetson Nano 4GB Developer Kit",
+    shortDescription: "Run real neural networks at the edge — image classification, object detection, pose estimation — without sending data to the cloud.",
+    technicalDescription:
+      "The Jetson Nano Developer Kit packs a 128-core Maxwell GPU, quad-core Cortex-A57 CPU, and 4GB LPDDR4 RAM into a compact module. Capable of running TensorFlow, PyTorch, and NVIDIA-optimised TensorRT for fast inference. Supports USB cameras, CSI cameras, and Ethernet. Popular for real-time people counting, licence plate recognition, and industrial inspection applications.",
+    category: "AI/ML Products",
+    price: { amount: 850000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["Jetson Nano", "NVIDIA", "edge AI", "deep learning", "TensorRT", "GPU", "computer vision"],
+    features: [
+      "128-core Maxwell GPU",
+      "Quad-core ARM Cortex-A57 @ 1.43 GHz",
+      "4GB LPDDR4 RAM",
+      "TensorFlow, PyTorch, TensorRT support",
+      "CSI and USB camera support",
+      "40-pin GPIO header",
+      "Gigabit Ethernet",
+    ],
+    technicalSpecs: [
+      { name: "GPU", value: "128-core Maxwell" },
+      { name: "CPU", value: "Quad-core Cortex-A57 @ 1.43 GHz" },
+      { name: "RAM", value: "4GB LPDDR4" },
+      { name: "Storage", value: "microSD (not included)" },
+      { name: "Power", value: "5V/4A (10W max)" },
+    ],
+    images: [{ url: img("NVIDIA Jetson Nano 4GB AI/ML"), alt: "NVIDIA Jetson Nano 4GB", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Google Coral USB Accelerator",
+    shortDescription: "Add fast on-device ML inference to any Linux or Raspberry Pi board — runs TensorFlow Lite models at 4 TOPS without needing a GPU.",
+    technicalDescription:
+      "The Coral USB Accelerator plugs into any USB 3.0 port and provides access to Google's Edge TPU, delivering 4 TOPS for TensorFlow Lite model inference. Works with Raspberry Pi (3B+, 4, 5), Jetson Nano, and standard x86 Linux machines. Typical inference latency is under 2ms for MobileNet-based models — fast enough for real-time video analysis. Ideal for students and engineers adding vision AI to existing systems.",
+    category: "AI/ML Products",
+    price: { amount: 450000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["Coral", "Google", "Edge TPU", "TensorFlow Lite", "USB accelerator", "AI", "ML"],
+    features: [
+      "4 TOPS Edge TPU performance",
+      "TensorFlow Lite compatible",
+      "USB 3.0 interface",
+      "< 2ms inference for MobileNet",
+      "Compatible with Raspberry Pi 3/4/5 and Linux x86",
+      "No cloud dependency",
+      "Linux and macOS support",
+    ],
+    technicalSpecs: [
+      { name: "Performance", value: "4 TOPS (Edge TPU)" },
+      { name: "Interface", value: "USB 3.0 (USB 2.0 compatible)" },
+      { name: "Framework", value: "TensorFlow Lite" },
+      { name: "OS", value: "Linux, macOS" },
+      { name: "Power", value: "900mA from USB" },
+    ],
+    images: [{ url: img("Google Coral USB Accelerator machine learning"), alt: "Google Coral USB Accelerator", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "4MP AI Smart IP Camera (Face Detection)",
+    shortDescription: "A network camera that does face detection and people counting locally — useful for retail foot traffic analysis or smart access monitoring.",
+    technicalDescription:
+      "4-megapixel fixed-lens IP camera with an on-board AI processor for face detection, face recognition (up to 20 stored faces), people counting, and vehicle detection — all done in-camera without a cloud subscription. H.265+ compression reduces storage requirements. PoE (802.3af) powered. 30m IR night vision. Works with Hikvision-compatible NVRs and ONVIF platforms. RTSP stream accessible from VLC or custom applications.",
+    category: "AI/ML Products",
+    price: { amount: 380000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["AI camera", "face detection", "people counting", "PoE", "IP camera", "NVR", "4MP"],
+    features: [
+      "4MP resolution (2560×1440)",
+      "On-board face detection and recognition",
+      "People counting and vehicle detection",
+      "H.265+ compression",
+      "PoE 802.3af powered",
+      "30m IR night vision",
+      "ONVIF / RTSP compatible",
+    ],
+    technicalSpecs: [
+      { name: "Resolution", value: "4MP (2560×1440)" },
+      { name: "AI features", value: "Face detection, people counting, vehicle" },
+      { name: "Power", value: "PoE 802.3af (12.95W)" },
+      { name: "Night vision", value: "30m IR" },
+      { name: "Compression", value: "H.265+ / H.264" },
+    ],
+    images: [{ url: img("4MP AI Smart IP Camera Face Detection"), alt: "4MP AI Smart IP Camera", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // AUTOMATION SOLUTIONS
+  // ────────────────────────────────────────────────
+  {
+    name: "Siemens LOGO! 8 Programmable Logic Controller",
+    shortDescription: "A small but capable PLC for automating pumps, gates, lighting, and other industrial or building control tasks.",
+    technicalDescription:
+      "The Siemens LOGO! 8 is a compact PLC (230V AC version) with 8 digital inputs, 4 relay outputs, and optional analogue expansion modules. Programmed in ladder diagram (LAD) or FBD using the free LOGO! Soft Comfort software. No professional PLC training required for simple tasks — it has 30+ pre-built function blocks for timers, counters, and comparators. Supports Ethernet communication to a Siemens HMI or SCADA. Widely used in Uganda for pump control, gate automation, and small HVAC control panels.",
+    category: "Automation Solutions",
+    price: { amount: 850000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["PLC", "Siemens", "LOGO", "automation", "relay", "ladder diagram", "industrial"],
+    features: [
+      "8 digital inputs / 4 relay outputs",
+      "230V AC model",
+      "Ethernet communication port",
+      "30+ built-in function blocks",
+      "Free LOGO! Soft Comfort programming",
+      "Expandable with I/O modules",
+      "Integrated real-time clock",
+    ],
+    technicalSpecs: [
+      { name: "CPU", value: "LOGO! 8 (0BA8)" },
+      { name: "Supply", value: "230V AC" },
+      { name: "Inputs", value: "8 digital (expandable)" },
+      { name: "Outputs", value: "4 relay (expandable)" },
+      { name: "Communication", value: "Ethernet (built-in)" },
+    ],
+    images: [{ url: img("Siemens LOGO! 8 PLC automation industrial"), alt: "Siemens LOGO! 8 PLC", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "40A Solid State Relay Board (4-Channel)",
+    shortDescription: "Control high-current AC loads from a 3.3V or 5V microcontroller signal — no mechanical contacts to wear out.",
+    technicalDescription:
+      "4-channel industrial solid state relay (SSR) board, each channel rated 40A at 24–380V AC. Triggered by 3–32V DC control signal, making it compatible with Arduino, Raspberry Pi, ESP32, and industrial PLCs. Zero-crossing switching reduces electrical noise and extends load life. Opto-isolated control inputs for safety. Aluminium heat-sink base for passive cooling at full load. More reliable than mechanical relays for frequent switching cycles.",
+    category: "Automation Solutions",
+    price: { amount: 85000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["SSR", "solid state relay", "40A", "automation", "PLC", "Arduino", "industrial"],
+    features: [
+      "4 channels, 40A per channel",
+      "24–380V AC load voltage",
+      "3–32V DC control input",
+      "Zero-crossing switching",
+      "Opto-isolated control",
+      "Aluminium heat-sink base",
+      "DIN rail mountable",
+    ],
+    technicalSpecs: [
+      { name: "Channels", value: "4" },
+      { name: "Load voltage", value: "24–380V AC" },
+      { name: "Load current", value: "40A per channel" },
+      { name: "Control input", value: "3–32V DC" },
+      { name: "Isolation", value: "Opto-isolated" },
+    ],
+    images: [{ url: img("40A SSR relay board automation"), alt: "40A SSR Relay Board", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Industrial IoT Gateway (4G + RS485 + Modbus)",
+    shortDescription: "Connect your field devices and sensors to the internet over 4G — useful for remote monitoring of pumps, meters, and industrial equipment in Uganda.",
+    technicalDescription:
+      "Compact industrial IoT gateway with 4G LTE (MTN/Airtel SIM compatible), RS485 serial, and Modbus RTU/TCP support. Runs OpenWRT Linux. Publishes sensor data to MQTT, HTTP, or custom cloud platforms. RS485 bus connects up to 32 Modbus slave devices (energy meters, PLCs, sensors). Stores data locally on a microSD card if the 4G connection drops and syncs when reconnected. DIN rail mountable. Wide input voltage 9–36V DC.",
+    category: "Automation Solutions",
+    price: { amount: 650000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["IoT gateway", "4G", "Modbus", "RS485", "MQTT", "remote monitoring", "industrial"],
+    features: [
+      "4G LTE (MTN/Airtel Uganda SIM)",
+      "RS485 + Modbus RTU/TCP",
+      "MQTT and HTTP data publishing",
+      "OpenWRT Linux OS",
+      "Local data buffering (microSD)",
+      "DIN rail mounting",
+      "9–36V DC wide input",
+    ],
+    technicalSpecs: [
+      { name: "Cellular", value: "4G LTE (Cat-4)" },
+      { name: "Serial", value: "RS485 (up to 32 Modbus slaves)" },
+      { name: "OS", value: "OpenWRT Linux" },
+      { name: "Input voltage", value: "9–36V DC" },
+      { name: "Local storage", value: "microSD slot" },
+    ],
+    images: [{ url: img("Industrial IoT Gateway 4G RS485 Modbus automation"), alt: "Industrial IoT Gateway", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // BLOCKCHAIN SOLUTIONS
+  // ────────────────────────────────────────────────
+  {
+    name: "Blockchain Certificate Issuance System",
+    shortDescription: "Issue verifiable certificates — degrees, professional qualifications, training certificates — that anyone can check online instantly, without calling your office.",
+    technicalDescription:
+      "A certificate issuance platform that records certificate hashes on a blockchain (Polygon or Ethereum L2 for low fees) so recipients can share a verification link and employers can verify authenticity without contacting the issuing body. The admin panel lets authorised staff issue certificates by entering recipient details; the system generates a signed PDF and records the hash. No blockchain expertise needed to operate it. Useful for universities, professional bodies, and training companies in Uganda dealing with certificate fraud.",
+    category: "Blockchain Solutions",
+    price: { amount: 4000000, currency: "UGX", type: "contact-for-price" },
+    availability: "custom-order",
+    isFeatured: true,
+    tags: ["blockchain", "certificates", "verification", "Polygon", "digital credentials", "fraud prevention"],
+    features: [
+      "Certificate hash recorded on blockchain",
+      "Public verification link for each certificate",
+      "Signed PDF certificate generation",
+      "Admin panel for authorised staff",
+      "Bulk issuance support",
+      "QR code on certificate for instant verify",
+      "No blockchain knowledge needed to operate",
+    ],
+    technicalSpecs: [
+      { name: "Blockchain", value: "Polygon / Ethereum L2" },
+      { name: "Storage", value: "Certificate metadata on IPFS" },
+      { name: "Admin", value: "Web-based dashboard" },
+      { name: "PDF", value: "Digitally signed (PKCS#7)" },
+      { name: "Delivery", value: "6–10 weeks" },
+    ],
+    images: [{ url: img("Blockchain Certificate Issuance System"), alt: "Blockchain Certificate System", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Supply Chain Traceability Module",
+    shortDescription: "Track a product from source to shelf — every handoff recorded on-chain so you can prove provenance and spot where something went wrong.",
+    technicalDescription:
+      "A blockchain-based supply chain traceability system for manufacturers, distributors, and agribusinesses. Each product batch gets a unique on-chain ID. Every point in the chain — factory, transit warehouse, regional distributor, retailer — scans a QR code to record their custody step. The end customer can scan the QR on the product and see the full chain of custody. Particularly relevant for Uganda's coffee, tea, and agro-processing export sectors where provenance certification adds real commercial value.",
+    category: "Blockchain Solutions",
+    price: { amount: 6000000, currency: "UGX", type: "contact-for-price" },
+    availability: "custom-order",
+    isFeatured: false,
+    tags: ["blockchain", "supply chain", "traceability", "provenance", "agribusiness", "Uganda", "export"],
+    features: [
+      "QR-based batch tracking at each handoff",
+      "On-chain custody record for every step",
+      "Customer-facing product history page",
+      "Multi-party access with role control",
+      "Integration with existing ERP or WMS",
+      "Export-grade provenance reporting",
+    ],
+    technicalSpecs: [
+      { name: "Blockchain", value: "Hyperledger Fabric / Polygon" },
+      { name: "Interface", value: "Web + Android scan app" },
+      { name: "QR generation", value: "Included" },
+      { name: "Integration", value: "REST API for ERP/WMS" },
+      { name: "Delivery", value: "10–16 weeks" },
+    ],
+    images: [{ url: img("Supply Chain Traceability Module blockchain"), alt: "Supply Chain Traceability", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // CLOUD SERVICES
+  // ────────────────────────────────────────────────
+  {
+    name: "VPS Hosting — 2vCPU / 4GB RAM / 80GB SSD",
+    shortDescription: "A virtual private server for hosting your website, API, or application — full root access, and you're not sharing resources with hundreds of other sites.",
+    technicalDescription:
+      "KVM-based VPS with 2 virtual CPU cores, 4GB RAM, and 80GB NVMe SSD storage. Ubuntu 22.04 or Debian available. Root SSH access. 3TB monthly bandwidth on a 1Gbps uplink. Comes with a static IPv4 address. Control panel (CloudPanel or VestaCP) available for easier management. Daily snapshots included. Suitable for running Node.js / Python / PHP apps, databases, and staging environments.",
+    category: "Cloud Services",
+    price: { amount: 120000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["VPS", "hosting", "server", "cloud", "Node.js", "Linux", "SSH"],
+    features: [
+      "2 vCPU (KVM), 4GB RAM",
+      "80GB NVMe SSD",
+      "Ubuntu 22.04 / Debian",
+      "Root SSH access",
+      "3TB/month bandwidth @ 1Gbps",
+      "Static IPv4 address",
+      "Daily automated snapshots",
+    ],
+    technicalSpecs: [
+      { name: "vCPU", value: "2 cores (KVM)" },
+      { name: "RAM", value: "4GB" },
+      { name: "Disk", value: "80GB NVMe SSD" },
+      { name: "Bandwidth", value: "3TB/month @ 1Gbps" },
+      { name: "Billing", value: "Monthly — UGX 120,000/mo" },
+    ],
+    images: [{ url: img("VPS Hosting cloud service server"), alt: "VPS Hosting", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Business Email Hosting (10 Accounts)",
+    shortDescription: "Professional email on your own domain (you@yourcompany.com) — no more Gmail addresses on business cards.",
+    technicalDescription:
+      "Hosted email service for businesses, configured on your domain. Includes 10 mailboxes with 5GB each, spam filtering, and access via Webmail (Roundcube), Outlook, Thunderbird, or any IMAP/POP3 client. Includes email on mobile phones (iOS/Android). SSL certificate for secure SMTP/IMAP. Domain configuration (MX, SPF, DKIM records) handled during setup.",
+    category: "Cloud Services",
+    price: { amount: 180000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["email hosting", "business email", "domain", "IMAP", "Webmail", "professional"],
+    features: [
+      "10 mailboxes × 5GB each",
+      "Webmail access (Roundcube)",
+      "Outlook / Thunderbird / IMAP compatible",
+      "iOS and Android mobile email",
+      "SPF, DKIM, DMARC configuration",
+      "Spam and virus filtering",
+      "Domain MX configuration handled for you",
+    ],
+    technicalSpecs: [
+      { name: "Mailboxes", value: "10 (upgradeable)" },
+      { name: "Storage", value: "5GB per mailbox" },
+      { name: "Protocol", value: "IMAP / POP3 / SMTP (SSL)" },
+      { name: "Billing", value: "UGX 180,000/year" },
+    ],
+    images: [{ url: img("Business Email Hosting cloud service"), alt: "Business Email Hosting", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Managed Cloud Backup Service",
+    shortDescription: "Your files, databases, and server data backed up automatically every night to a separate cloud location — so a hardware failure or ransomware attack doesn't wipe everything.",
+    technicalDescription:
+      "Automated nightly backup service for servers, desktops, and databases. The backup agent runs on Windows or Linux, encrypts data locally before transmission, and sends it to geographically separate cloud storage. Backup schedules configurable: full weekly + incremental nightly, or daily full for critical data. Retention up to 30 days of restore points. Restore can be a full system image, individual files, or a database dump. Monitored and alerting included — you get notified if a backup fails.",
+    category: "Cloud Services",
+    price: { amount: 150000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["backup", "cloud backup", "disaster recovery", "encryption", "automated", "server"],
+    features: [
+      "Nightly automated backups",
+      "End-to-end encryption before upload",
+      "Windows and Linux support",
+      "Database backup (MySQL, PostgreSQL, MongoDB)",
+      "30-day retention",
+      "Email alerts on backup failure",
+      "File-level and full-image restore",
+    ],
+    technicalSpecs: [
+      { name: "Storage", value: "500GB included (expandable)" },
+      { name: "Schedule", value: "Full weekly + incremental nightly" },
+      { name: "Retention", value: "Up to 30 days" },
+      { name: "Encryption", value: "AES-256 client-side" },
+      { name: "Billing", value: "UGX 150,000/month" },
+    ],
+    images: [{ url: img("Managed Cloud Backup Service"), alt: "Cloud Backup Service", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // SECURITY SOLUTIONS
+  // ────────────────────────────────────────────────
+  {
+    name: "4MP PoE Varifocal IP Camera",
+    shortDescription: "High-resolution PoE camera with a varifocal lens — you can adjust the zoom range at installation to suit the specific area you're covering.",
+    technicalDescription:
+      "4MP (2560×1440) IP camera with 2.8–12mm motorised varifocal lens, powered by PoE 802.3af (no separate power cable needed). H.265+ compression. 40m IR night vision with smart IR to prevent overexposure of close subjects. Built-in microphone. Supports ONVIF, RTSP, and is compatible with most NVR brands. IP67 weatherproofed for outdoor mounting. Suitable for car parks, perimeter walls, and building entrances.",
+    category: "Security Solutions",
+    price: { amount: 280000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["CCTV", "IP camera", "PoE", "varifocal", "4MP", "outdoor", "ONVIF"],
+    features: [
+      "4MP (2560×1440) resolution",
+      "2.8–12mm motorised varifocal lens",
+      "PoE 802.3af powered",
+      "40m IR night vision (smart IR)",
+      "H.265+ compression",
+      "ONVIF and RTSP support",
+      "IP67 outdoor weatherproofing",
+    ],
+    technicalSpecs: [
+      { name: "Resolution", value: "4MP (2560×1440)" },
+      { name: "Lens", value: "2.8–12mm motorised varifocal" },
+      { name: "Power", value: "PoE 802.3af" },
+      { name: "Night vision", value: "40m IR" },
+      { name: "Protection", value: "IP67" },
+    ],
+    images: [{ url: img("4MP PoE Varifocal IP Camera CCTV"), alt: "4MP PoE Varifocal IP Camera", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "8-Channel PoE NVR Kit (8 Cameras + 2TB HDD)",
+    shortDescription: "A complete ready-to-install CCTV system with 8 cameras, an NVR, and 2TB of storage — everything in one box.",
+    technicalDescription:
+      "Full 8-channel IP camera kit: 8× 4MP outdoor bullet cameras, 8-channel PoE NVR, and 2TB surveillance-grade hard drive pre-installed. Cameras connect directly to the NVR via a single Cat5e cable (power and video over the same cable). The NVR runs 24/7 recording with motion-triggered alerts; footage can be reviewed remotely via phone app. Setup is straightforward — no separate power injectors, no coax cable. Suitable for homes, small offices, and warehouses.",
+    category: "Security Solutions",
+    price: { amount: 1850000, currency: "UGX", type: "negotiable" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["CCTV kit", "NVR", "8 channel", "PoE", "4MP", "2TB", "complete system"],
+    features: [
+      "8× 4MP outdoor PoE bullet cameras",
+      "8-channel PoE NVR",
+      "2TB surveillance-grade HDD pre-installed",
+      "Single Cat5e cable per camera (power + video)",
+      "24/7 recording with motion alerts",
+      "Remote viewing via mobile app",
+      "Easy self-installation",
+    ],
+    technicalSpecs: [
+      { name: "Cameras", value: "8× 4MP outdoor bullet" },
+      { name: "NVR", value: "8-channel PoE" },
+      { name: "Storage", value: "2TB (pre-installed)" },
+      { name: "Recording", value: "24/7 + motion event" },
+      { name: "Remote access", value: "Mobile app (iOS/Android)" },
+    ],
+    images: [{ url: img("8-Channel PoE NVR CCTV Kit 2TB"), alt: "8-Channel PoE NVR CCTV Kit", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "RFID Access Control Kit (TCP/IP)",
+    shortDescription: "Control who enters your office or server room with a card-based system — logs every entry and exit, and you can manage access remotely.",
+    technicalDescription:
+      "Complete single-door access control kit: TCP/IP-connected RFID reader and controller, electric bolt lock (fail-secure), exit button, power supply, and 10 key fob cards. Staff tap their card to unlock the door; access can be set per card and per time zone (e.g., a cleaner's card only works 6–8am). Entry/exit logs are stored on the controller and viewable from a PC on the same network. Add more doors with additional readers. Battery backup input for load-shedding protection.",
+    category: "Security Solutions",
+    price: { amount: 650000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["access control", "RFID", "TCP/IP", "office security", "door lock", "key card"],
+    features: [
+      "TCP/IP network connectivity",
+      "125kHz RFID (EM4100) card and fob support",
+      "Electric bolt lock included",
+      "10 access cards/fobs included",
+      "Time-zone access schedules",
+      "Entry/exit log stored on controller",
+      "Battery backup input",
+    ],
+    technicalSpecs: [
+      { name: "Interface", value: "TCP/IP + Wiegand" },
+      { name: "Card type", value: "125kHz EM4100 RFID" },
+      { name: "Cards included", value: "10" },
+      { name: "Lock type", value: "Electric bolt (fail-secure)" },
+      { name: "Power", value: "12V DC (adaptor included)" },
+    ],
+    images: [{ url: img("RFID Access Control Kit TCP/IP door lock"), alt: "RFID Access Control Kit", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "8-Zone GSM Burglar Alarm System",
+    shortDescription: "A burglar alarm that calls and SMS-es your phone when triggered — works anywhere in Uganda with an MTN or Airtel SIM.",
+    technicalDescription:
+      "Self-contained 8-zone alarm panel with built-in GSM module (2G/3G). When a sensor is triggered, the panel calls up to 5 phone numbers in sequence and sends an SMS with the zone name. Arm and disarm remotely by SMS or via a keypad with code. Works with PIR motion sensors, door/window magnetic contacts, glass break sensors, and smoke detectors. Battery backup runs the system through load shedding. No monthly monitoring fees — uses your own SIM card.",
+    category: "Security Solutions",
+    price: { amount: 420000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["burglar alarm", "GSM alarm", "8-zone", "SMS alert", "MTN", "Airtel", "security"],
+    features: [
+      "8 alarm zones",
+      "Built-in GSM module (works with MTN/Airtel SIM)",
+      "Calls up to 5 numbers when triggered",
+      "SMS alert with zone name",
+      "Remote arm/disarm via SMS",
+      "Battery backup for load shedding",
+      "Compatible with PIR, door contacts, smoke sensors",
+    ],
+    technicalSpecs: [
+      { name: "Zones", value: "8 (expandable)" },
+      { name: "GSM", value: "2G/3G (any Uganda SIM)" },
+      { name: "Alert calls", value: "Up to 5 numbers" },
+      { name: "Power", value: "12V AC adapter + battery backup" },
+      { name: "Arm/disarm", value: "Keypad code or SMS command" },
+    ],
+    images: [{ url: img("8-Zone GSM Burglar Alarm System security"), alt: "8-Zone GSM Burglar Alarm", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // POS SYSTEMS
+  // ────────────────────────────────────────────────
+  {
+    name: "Complete POS Bundle (Touchscreen + Printer + Scanner + Cash Drawer)",
+    shortDescription: "Everything you need to start taking sales at a counter — touchscreen PC, receipt printer, barcode scanner, and cash drawer, all configured and ready to go.",
+    technicalDescription:
+      "Full counter POS package: 15-inch touchscreen all-in-one PC (Intel J1900, 4GB RAM, 64GB SSD, Windows 10 IoT), 80mm USB thermal receipt printer, handheld USB barcode scanner, and a 4-note-slot RJ11 cash drawer. POS software (basic retail version) pre-installed and configured. You just add your products and start selling. Suitable for retail shops, pharmacies, hardware stores, and any business doing over-the-counter sales.",
+    category: "POS Systems",
+    price: { amount: 2400000, currency: "UGX", type: "negotiable" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["POS", "touchscreen", "receipt printer", "cash drawer", "barcode", "retail", "complete"],
+    features: [
+      "15-inch touchscreen all-in-one PC",
+      "80mm USB thermal receipt printer",
+      "USB barcode scanner (1D/2D)",
+      "4-slot RJ11 cash drawer",
+      "POS software pre-installed",
+      "Product database setup assistance",
+      "Staff training included",
+    ],
+    technicalSpecs: [
+      { name: "PC", value: "Intel J1900, 4GB RAM, 64GB SSD" },
+      { name: "Screen", value: "15\" touchscreen" },
+      { name: "OS", value: "Windows 10 IoT" },
+      { name: "Printer", value: "80mm USB thermal" },
+      { name: "Power", value: "230V AC" },
+    ],
+    images: [{ url: img("Complete POS Bundle Touchscreen Printer Scanner Drawer"), alt: "Complete POS Bundle", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Android POS Terminal (MTN / Airtel Money)",
+    shortDescription: "A handheld Android POS terminal that accepts MTN MoMo and Airtel Money payments — useful for outdoor markets, delivery agents, and mobile businesses.",
+    technicalDescription:
+      "5-inch Android POS terminal with built-in 58mm thermal printer, NFC, and barcode scanner. Accepts MTN Mobile Money and Airtel Money via USSD push or NFC (where supported). SIM-card data connectivity (works anywhere with MTN/Airtel signal). Runs Android POS apps — pre-loaded with a basic retail sales app, or we can load your preferred app. Battery lasts a full working day (4000mAh). Popular with market vendors, delivery couriers, and field sales agents in Uganda.",
+    category: "POS Systems",
+    price: { amount: 850000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["Android POS", "mobile POS", "MTN MoMo", "Airtel Money", "handheld", "thermal printer"],
+    features: [
+      "5-inch Android touchscreen",
+      "Built-in 58mm thermal printer",
+      "MTN MoMo + Airtel Money acceptance",
+      "NFC payment support",
+      "Built-in barcode scanner",
+      "4G/3G SIM connectivity",
+      "4000mAh battery (full-day use)",
+    ],
+    technicalSpecs: [
+      { name: "Screen", value: "5-inch Android touchscreen" },
+      { name: "Printer", value: "58mm thermal (built-in)" },
+      { name: "Connectivity", value: "4G/3G SIM + Wi-Fi" },
+      { name: "Battery", value: "4000mAh" },
+      { name: "OS", value: "Android 9+" },
+    ],
+    images: [{ url: img("Android POS Terminal MTN Airtel Money"), alt: "Android POS Terminal", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Restaurant POS System (Table Management + KDS)",
+    shortDescription: "A full restaurant POS with table layout, kitchen display, and split billing — speeds up service and reduces order mistakes.",
+    technicalDescription:
+      "Restaurant-specific POS system with touchscreen order taking, visual table map, and kitchen display screen (KDS) that shows orders in real time without paper tickets. Handles split bills, service charge, and table transfers. Waiter app runs on Android tablet; manager dashboard is on a desktop PC. Tracks daily sales, popular items, and table turnover. Supports MTN MoMo and card payment at table via Android POS. Can be configured for fast food (counter service) or full-service restaurants.",
+    category: "POS Systems",
+    price: { amount: 3200000, currency: "UGX", type: "negotiable" },
+    availability: "custom-order",
+    isFeatured: false,
+    tags: ["restaurant POS", "KDS", "table management", "split bill", "waiter app", "Uganda"],
+    features: [
+      "Visual table map and management",
+      "Android waiter ordering tablets",
+      "Kitchen Display Screen (KDS)",
+      "Split billing and table transfers",
+      "MTN MoMo + card payment",
+      "Daily sales and menu reports",
+      "Fast food (counter) mode available",
+    ],
+    technicalSpecs: [
+      { name: "Waiter device", value: "Android 8+ tablet" },
+      { name: "Kitchen display", value: "Android or dedicated screen" },
+      { name: "Manager PC", value: "Windows / web browser" },
+      { name: "Payment", value: "MTN MoMo, Airtel, card" },
+      { name: "Delivery", value: "2–3 weeks" },
+    ],
+    images: [{ url: img("Restaurant POS System Table Management KDS"), alt: "Restaurant POS System", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // MEDICAL DEVICES
+  // ────────────────────────────────────────────────
+  {
+    name: "Digital Upper-Arm Blood Pressure Monitor",
+    shortDescription: "Clinically validated automatic blood pressure monitor — accurate, easy to use, and approved by WHO for home and clinic measurement.",
+    technicalDescription:
+      "Automatic oscillometric upper-arm blood pressure and pulse rate monitor. Validated against the international ESH and BIHS protocols. Large cuff (22–42cm) accommodates most adult arms. 60-reading memory with date and time stamps. Irregular heartbeat (arrhythmia) detection indicator. Two user profiles on one device. Simple one-button operation — press and the cuff inflates, measures, and displays systolic, diastolic, and pulse. Powered by 4× AA batteries or included AC adapter.",
+    category: "Medical Devices",
+    price: { amount: 120000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["blood pressure monitor", "BP", "medical", "clinical", "home health", "WHO"],
+    features: [
+      "Fully automatic arm cuff inflation",
+      "WHO/ESH validated accuracy",
+      "60-reading memory with timestamps",
+      "Arrhythmia detection",
+      "Two user profiles",
+      "Large display, one-button operation",
+      "Battery + AC adapter included",
+    ],
+    technicalSpecs: [
+      { name: "Method", value: "Oscillometric" },
+      { name: "Range", value: "BP: 0–280 mmHg; Pulse: 40–199 bpm" },
+      { name: "Accuracy", value: "±3 mmHg (BP), ±5% (pulse)" },
+      { name: "Cuff size", value: "22–42cm" },
+      { name: "Memory", value: "60 readings per user" },
+    ],
+    images: [{ url: img("Digital Upper-Arm Blood Pressure Monitor"), alt: "Digital Blood Pressure Monitor", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Fingertip Pulse Oximeter (SpO2)",
+    shortDescription: "Clip it on your finger and read your blood oxygen level and pulse rate in seconds — small enough to carry in a bag.",
+    technicalDescription:
+      "Compact clip-style pulse oximeter measuring SpO2 (blood oxygen saturation) and pulse rate. SpO2 range 70–99% with ±2% accuracy; pulse range 30–250 bpm. OLED display rotates automatically to suit the viewing angle. Auto-off after 8 seconds idle saves battery. Runs on 2× AAA batteries (included). Useful for clinics, pharmacies, and home monitoring of respiratory conditions.",
+    category: "Medical Devices",
+    price: { amount: 35000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["pulse oximeter", "SpO2", "oxygen saturation", "medical", "portable", "health"],
+    features: [
+      "SpO2 and pulse rate measurement",
+      "OLED rotating display",
+      "SpO2 accuracy ±2%",
+      "Auto-off after 8 seconds",
+      "2× AAA batteries included",
+      "Compact, pocket-sized",
+    ],
+    technicalSpecs: [
+      { name: "SpO2 range", value: "70–99%" },
+      { name: "SpO2 accuracy", value: "±2%" },
+      { name: "Pulse range", value: "30–250 bpm" },
+      { name: "Power", value: "2× AAA batteries" },
+      { name: "Display", value: "OLED (auto-rotate)" },
+    ],
+    images: [{ url: img("Fingertip Pulse Oximeter SpO2 medical"), alt: "Fingertip Pulse Oximeter", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Non-Contact Infrared Thermometer",
+    shortDescription: "Read forehead temperature in under a second without touching the patient — good for clinics, schools, and workplaces doing health screening.",
+    technicalDescription:
+      "Non-contact infrared forehead thermometer with 1–3cm operating distance. Measurement time approximately 1 second. Displays in Celsius or Fahrenheit. Built-in memory for last 32 readings. Audible and visual high-temperature alert (adjustable threshold). Auto-off after 30 seconds. Runs on 2× AA batteries. Accuracy ±0.3°C at the recommended distance.",
+    category: "Medical Devices",
+    price: { amount: 45000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["thermometer", "infrared", "non-contact", "forehead", "temperature", "health screening"],
+    features: [
+      "Non-contact forehead measurement",
+      "1-second reading time",
+      "Celsius / Fahrenheit display",
+      "32-reading memory",
+      "High-temperature audio/visual alert",
+      "Auto-off after 30 seconds",
+      "Child and object (surface) mode",
+    ],
+    technicalSpecs: [
+      { name: "Measurement distance", value: "1–3 cm" },
+      { name: "Accuracy", value: "±0.3°C" },
+      { name: "Range", value: "32–43°C (body)" },
+      { name: "Reading time", value: "~1 second" },
+      { name: "Power", value: "2× AA batteries" },
+    ],
+    images: [{ url: img("Non-Contact Infrared Thermometer medical"), alt: "Infrared Thermometer", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // FINANCIAL TECH
+  // ────────────────────────────────────────────────
+  {
+    name: "MTN MoMo + Airtel Money API Integration",
+    shortDescription: "Ready-to-use payment integration for both MTN Mobile Money and Airtel Money — drop it into your application and go live in Uganda.",
+    technicalDescription:
+      "A complete dual-provider mobile money integration package for Uganda. Covers MTN Mobile Money API (collections and disbursements) and Airtel Money API (collections and disbursements). Packaged as a Node.js NPM module with TypeScript definitions, plus a PHP version. Handles OAuth token management, payment initiation, callback verification, and transaction status polling. Includes sandbox configuration for testing without real money. Comes with full API documentation and sample integration code for Express and Laravel.",
+    category: "Financial Tech",
+    price: { amount: 400000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: true,
+    tags: ["MTN MoMo", "Airtel Money", "API", "payment", "Uganda", "Node.js", "PHP", "fintech"],
+    features: [
+      "MTN MoMo Uganda — collections and disbursements",
+      "Airtel Money Uganda — collections and disbursements",
+      "OAuth token management (auto-refresh)",
+      "Callback handling and signature verification",
+      "Transaction status polling",
+      "Node.js (NPM) and PHP versions",
+      "Sandbox test configuration",
+    ],
+    technicalSpecs: [
+      { name: "Language", value: "Node.js / PHP" },
+      { name: "MTN API version", value: "v1 (MoMo API)" },
+      { name: "Airtel API", value: "Airtel Money Uganda" },
+      { name: "Webhook", value: "HTTPS callback with signature verify" },
+      { name: "Licence", value: "Perpetual developer licence" },
+    ],
+    images: [{ url: img("MTN MoMo Airtel Money API Integration payment"), alt: "Mobile Money API Integration", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "USB EMV Smart Card Reader (ISO 7816)",
+    shortDescription: "Read and write ISO 7816 smart cards from a PC — used for building employee ID card systems, SACCO member cards, and NFC access cards.",
+    technicalDescription:
+      "USB smart card reader complying with ISO 7816 T=0 and T=1 protocols. Works with contact smart cards (credit-card-type chips). USB HID — compatible with Windows, macOS, and Linux without special drivers on modern systems. Works with Java Card applets, EMV cards, and government-issued ID cards with chips. Common use cases in Uganda: SACCO member card systems, employee smart ID cards, and chip-based loyalty programmes.",
+    category: "Financial Tech",
+    price: { amount: 65000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["smart card reader", "EMV", "ISO 7816", "USB", "SACCO", "ID card", "fintech"],
+    features: [
+      "ISO 7816 T=0 and T=1 compliant",
+      "USB HID (no special drivers needed)",
+      "Compatible with EMV, Java Card, SIM-size adapters",
+      "Windows, macOS, Linux compatible",
+      "LED status indicator",
+      "PC/SC API compatible",
+    ],
+    technicalSpecs: [
+      { name: "Standard", value: "ISO 7816 T=0 / T=1" },
+      { name: "Interface", value: "USB 2.0 HID" },
+      { name: "OS", value: "Windows 7+, macOS, Linux" },
+      { name: "Card voltage", value: "5V / 3V / 1.8V auto" },
+      { name: "API", value: "PC/SC (CCID)" },
+    ],
+    images: [{ url: img("USB EMV Smart Card Reader ISO 7816 fintech"), alt: "USB Smart Card Reader", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Flutterwave Payment Gateway Integration",
+    shortDescription: "Accept card payments, mobile money, and bank transfers on your website or app — Flutterwave handles the card processing so you don't need a bank merchant account.",
+    technicalDescription:
+      "Integration service and code package for Flutterwave's payment gateway, covering card payments (Visa/Mastercard), mobile money (Uganda MTN and Airtel), and bank transfers. Includes a complete checkout implementation for React websites and a Node.js backend webhook handler with signature verification. Also covers the Flutterwave Transfer API for paying out to bank accounts or mobile money wallets. Comes with test credentials and sandbox environment setup.",
+    category: "Financial Tech",
+    price: { amount: 350000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["Flutterwave", "payment gateway", "Visa", "Mastercard", "Uganda", "Node.js", "fintech"],
+    features: [
+      "Visa / Mastercard card payments",
+      "MTN MoMo and Airtel Money via Flutterwave",
+      "Bank transfer payment option",
+      "React checkout component included",
+      "Node.js webhook handler with signature verify",
+      "Flutterwave Transfer API for payouts",
+      "Sandbox test setup",
+    ],
+    technicalSpecs: [
+      { name: "Supported payment", value: "Card, mobile money, bank transfer" },
+      { name: "Frontend", value: "React component (customisable)" },
+      { name: "Backend", value: "Node.js / Express" },
+      { name: "Webhook", value: "HMAC signature verification" },
+      { name: "Currency", value: "UGX + multi-currency" },
+    ],
+    images: [{ url: img("Flutterwave Payment Gateway Integration fintech"), alt: "Flutterwave Integration", isPrimary: true, order: 0 }],
+  },
+
+  // ────────────────────────────────────────────────
+  // ACCESSORIES
+  // ────────────────────────────────────────────────
+  {
+    name: "7-Port USB 3.0 Powered Hub",
+    shortDescription: "Seven USB ports from one socket — with its own power adapter so it can actually charge phones and power external drives at the same time.",
+    technicalDescription:
+      "7-port USB 3.0 hub with a 12V/3A external power adapter. Each port delivers USB 3.0 data speeds (5Gb/s) and 900mA charging current. The external power supply means connecting phones, external drives, and other power-hungry devices simultaneously won't cause the hub to drop. Individual LED indicators show each port's status. Backwards compatible with USB 2.0 devices.",
+    category: "Accessories",
+    price: { amount: 65000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["USB hub", "USB 3.0", "7-port", "powered", "accessories", "computer"],
+    features: [
+      "7× USB 3.0 ports (5Gb/s)",
+      "External 12V/3A power adapter",
+      "900mA per port",
+      "Individual port LED indicators",
+      "USB 2.0 backwards compatible",
+      "Compact desktop form factor",
+    ],
+    technicalSpecs: [
+      { name: "Ports", value: "7× USB 3.0 (Type A)" },
+      { name: "Data speed", value: "5Gb/s (USB 3.0)" },
+      { name: "Power per port", value: "900mA" },
+      { name: "Power adapter", value: "12V/3A (included)" },
+      { name: "Host interface", value: "USB 3.0 (Type A)" },
+    ],
+    images: [{ url: img("7-Port USB 3.0 Powered Hub accessory"), alt: "7-Port USB 3.0 Hub", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Raspberry Pi 4 Official Case (Red/White)",
+    shortDescription: "The original Raspberry Pi Foundation case for the Pi 4 — fits perfectly, has a removable top for GPIO access, and looks clean on a desk.",
+    technicalDescription:
+      "Official Raspberry Pi 4 case in the classic red and white colour scheme. Made from two ABS plastic parts that clip together. The top is removable for GPIO access. Includes three snap-on lid inserts: fully closed, open for camera cable, and open for display cable. All ports (USB, Ethernet, HDMI, USB-C, audio) are exposed. Does not include a fan — if your Pi 4 runs hot under sustained load, consider the Pi 4 case fan (sold separately).",
+    category: "Accessories",
+    price: { amount: 30000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["Raspberry Pi", "case", "Pi 4", "accessories", "enclosure"],
+    features: [
+      "Official Raspberry Pi Foundation product",
+      "Raspberry Pi 4 specific fit",
+      "Removable top for GPIO access",
+      "Three lid insert options (closed, CSI, DSI)",
+      "All ports exposed",
+      "Red/white ABS plastic",
+    ],
+    technicalSpecs: [
+      { name: "Compatible", value: "Raspberry Pi 4 Model B only" },
+      { name: "Material", value: "ABS plastic" },
+      { name: "Colour", value: "Red/White" },
+      { name: "Fan", value: "Not included (sold separately)" },
+    ],
+    images: [{ url: img("Raspberry Pi 4 Official Case Red White accessory"), alt: "Raspberry Pi 4 Official Case", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Laptop Cooling Pad (Dual Fan)",
+    shortDescription: "Raises your laptop and blows air through the vents — makes a real difference if your laptop gets hot during long work sessions.",
+    technicalDescription:
+      "Dual-fan USB-powered laptop cooling pad supporting laptops 12–17 inches. Two 120mm fans run quietly at about 1200 RPM. The angled stand raises the laptop for better ergonomics and airflow. USB pass-through port so you don't lose a USB port to the fan. Mesh top surface grips the laptop and doesn't block the bottom vents. Powers from a USB port; draws about 300mA total.",
+    category: "Accessories",
+    price: { amount: 45000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["cooling pad", "laptop", "dual fan", "USB", "accessories", "computer"],
+    features: [
+      "Dual 120mm fans",
+      "USB powered with pass-through port",
+      "Fits 12–17-inch laptops",
+      "Adjustable tilt angle",
+      "Mesh surface for airflow",
+      "Quiet operation (~1200 RPM)",
+    ],
+    technicalSpecs: [
+      { name: "Fans", value: "2× 120mm" },
+      { name: "Speed", value: "~1200 RPM" },
+      { name: "Power", value: "USB (300mA)" },
+      { name: "Laptop size", value: "12–17 inches" },
+      { name: "Noise level", value: "< 25dB" },
+    ],
+    images: [{ url: img("Laptop Cooling Pad Dual Fan accessory"), alt: "Laptop Cooling Pad", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "USB-C 8-in-1 Multiport Adapter",
+    shortDescription: "One USB-C plug that gives you HDMI, USB-A ports, SD card slot, and Ethernet — the adapter most modern laptop users eventually buy.",
+    technicalDescription:
+      "USB-C hub with 8 ports: 4K HDMI output, USB-C 100W power delivery pass-through, 2× USB 3.0 Type-A, 1× USB 2.0, SD card reader, microSD reader, and Gigabit Ethernet. The HDMI supports up to 4K@30Hz for external display. USB-C power pass-through charges the laptop while the hub is in use. Aluminium shell for passive heat dissipation. Compatible with any USB-C laptop (MacBook, Dell XPS, HP Spectre, ThinkPad, etc.) — as well as Raspberry Pi 4 and 5.",
+    category: "Accessories",
+    price: { amount: 85000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["USB-C hub", "multiport", "HDMI", "USB 3.0", "SD card", "Ethernet", "laptop"],
+    features: [
+      "4K HDMI output (30Hz)",
+      "USB-C 100W power delivery pass-through",
+      "2× USB 3.0 + 1× USB 2.0",
+      "SD and microSD card readers",
+      "Gigabit Ethernet",
+      "Aluminium heat-dissipating shell",
+      "Compatible with all USB-C laptops",
+    ],
+    technicalSpecs: [
+      { name: "HDMI", value: "4K@30Hz" },
+      { name: "USB-A", value: "2× USB 3.0 + 1× USB 2.0" },
+      { name: "Power delivery", value: "100W USB-C PD pass-through" },
+      { name: "Ethernet", value: "Gigabit (10/100/1000)" },
+      { name: "Card reader", value: "SD + microSD" },
+    ],
+    images: [{ url: img("USB-C 8-in-1 Multiport Adapter laptop"), alt: "USB-C 8-in-1 Multiport Adapter", isPrimary: true, order: 0 }],
+  },
+  {
+    name: "Cable Management Kit (100-piece)",
+    shortDescription: "Velcro straps, cable clips, and zip ties to tidy up the wiring behind a desk or in a server rack — a small thing that makes a big visual difference.",
+    technicalDescription:
+      "100-piece cable management kit including: 20× reusable velcro cable ties (various lengths), 30× adhesive cable clips for wall or desk routing, 30× standard nylon zip ties (200mm), 10× adhesive zip tie mounts, and 10× spiral cable wrap sections (300mm each). Suitable for organising desk cables, bundling network patch cables in a rack, or tidying the wiring inside an equipment cabinet.",
+    category: "Accessories",
+    price: { amount: 25000, currency: "UGX", type: "fixed" },
+    availability: "in-stock",
+    isFeatured: false,
+    tags: ["cable management", "velcro", "zip ties", "cable ties", "tidy", "accessories"],
+    features: [
+      "20× reusable velcro cable ties",
+      "30× adhesive cable clips",
+      "30× nylon zip ties",
+      "10× adhesive zip tie mounts",
+      "10× spiral cable wrap sections",
+      "100 pieces in total",
+    ],
+    technicalSpecs: [
+      { name: "Total pieces", value: "100" },
+      { name: "Velcro ties", value: "20× (150mm and 200mm)" },
+      { name: "Zip ties", value: "30× (200mm × 3.6mm)" },
+      { name: "Cable clips", value: "30× adhesive-backed" },
+      { name: "Spiral wrap", value: "10× 300mm sections" },
+    ],
+    images: [{ url: img("Cable Management Kit accessory"), alt: "Cable Management Kit", isPrimary: true, order: 0 }],
   },
 ];
 
