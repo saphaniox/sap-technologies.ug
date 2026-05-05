@@ -7,6 +7,9 @@ const { rateLimits } = require("../config/security");
 // Public route - Create inquiry (with rate limiting)
 router.post("/inquiries", optionalAuthMiddleware, rateLimits.inquiry, (req, res) => ProductInquiryController.createInquiry(req, res));
 
+// Public route - Cart inquiry (multiple products at once)
+router.post("/cart-inquiry", optionalAuthMiddleware, rateLimits.inquiry, (req, res) => ProductInquiryController.createCartInquiry(req, res));
+
 // Admin routes - Manage inquiries
 router.get("/admin/inquiries", authMiddleware, adminMiddleware, (req, res) => ProductInquiryController.getAllInquiries(req, res));
 router.get("/admin/inquiries/stats", authMiddleware, adminMiddleware, (req, res) => ProductInquiryController.getInquiryStats(req, res));

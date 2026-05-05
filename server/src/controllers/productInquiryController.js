@@ -103,6 +103,97 @@ class ProductInquiryController {
     }
   }
 
+  // Create cart inquiry (multiple products in one submission)
+  static async createCartInquiry(req, res) {
+    try {
+      const {
+        items,
+        customerName,
+        customerEmail,
+        customerPhone,
+        preferredContact,
+        message
+      } = req.body;
+
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ success: false, message: "Cart items are required." });
+      }
+      if (!customerEmail) {
+        return res.status(400).json({ success: false, message: "Email is required." });
+      }
+
+      const normalizedEmail = customerEmail.toLowerCase().trim();
+      const namePrefix = customerName ? `Name: ${customerName.trim()}\n` : "";
+
+      // Create one ProductInquiry per cart item
+      const savedInquiries = [];
+      for (const item of items) {
+        const { productId, productName, quantity, price } = item;
+        if (!productId) continue;
+
+        const combinedMessage = `${namePrefix}Quantity requested: ${quantity || 1}\n${message ? `\nCustomer message:\n${message.trim()}` : ""}`.trim();
+
+        const inquiry = new ProductInquiry({
+          product: productId,
+          productName: productName || "Unknown Product",
+          customerEmail: normalizedEmail,
+          customerPhone: customerPhone?.trim() || "",
+          preferredContact: preferredContact || "email",
+          message: combinedMessage,
+          user: req.user ? req.user._id : null,
+          metadata: {
+            ipAddress: req.ip || req.connection.remoteAddress,
+            userAgent: req.headers["user-agent"],
+            source: "cart",
+            createdAt: new Date()
+          }
+        });
+
+        await inquiry.save();
+        savedInquiries.push({ ...item, inquiryId: inquiry._id });
+      }
+
+      console.log(`✅ Cart inquiry saved — ${savedInquiries.length} item(s) for ${normalizedEmail}`);
+
+      // Send combined emails (non-blocking)
+      setImmediate(async () => {
+        try {
+          await emailService.sendCartInquiryToAdmin({
+            items: savedInquiries,
+            customerName: customerName || "Guest",
+            customerEmail: normalizedEmail,
+            customerPhone: customerPhone || "Not provided",
+            preferredContact: preferredContact || "email",
+            message: message || ""
+          });
+          console.log("✅ Admin cart inquiry email sent");
+
+          await emailService.sendCartInquiryConfirmation({
+            customerEmail: normalizedEmail,
+            customerName: customerName || "Valued Customer",
+            items: savedInquiries
+          });
+          console.log("✅ Customer cart confirmation email sent");
+        } catch (emailError) {
+          console.error("❌ Cart inquiry email error:", emailError);
+        }
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "Your enquiry has been submitted! We'll get back to you within 24–48 hours.",
+        data: { count: savedInquiries.length }
+      });
+    } catch (error) {
+      console.error("❌ Cart inquiry error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to submit enquiry. Please try again.",
+        error: error.message
+      });
+    }
+  }
+
   // Get all inquiries (Admin only)
   static async getAllInquiries(req, res) {
     try {

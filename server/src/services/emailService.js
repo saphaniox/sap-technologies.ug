@@ -2027,6 +2027,131 @@ ${JSON.stringify(alertData.details, null, 2)}
         }
     }
 
+    // Cart Inquiry - Send to Admin (multiple products)
+    async sendCartInquiryToAdmin({ items, customerName, customerEmail, customerPhone, preferredContact, message }) {
+        if (!this.isConfigured) {
+            console.log("Email service not configured, skipping cart inquiry admin email");
+            return;
+        }
+        try {
+            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
+            const adminEmail = process.env.ADMIN_EMAIL || emailUser;
+
+            const itemRows = items.map((item, i) => `
+                <tr style="background:${i % 2 === 0 ? '#f7fafc' : '#fff'};">
+                    <td style="padding:10px 14px;color:#2d3748;font-size:14px;">${i + 1}. ${item.productName || 'Unknown'}</td>
+                    <td style="padding:10px 14px;color:#2d3748;font-size:14px;text-align:center;">${item.quantity || 1}</td>
+                    <td style="padding:10px 14px;color:#3b82f6;font-size:14px;">${item.price && item.price.amount ? `${item.price.currency || 'UGX'} ${Number(item.price.amount).toLocaleString('en-US')}` : 'Contact for price'}</td>
+                </tr>`).join('');
+
+            const mailOptions = {
+                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
+                to: adminEmail,
+                subject: `🛒 New Cart Enquiry from ${customerName} — ${items.length} Product(s)`,
+                html: `
+                <div style="font-family:'Segoe UI',Tahoma,sans-serif;max-width:680px;margin:0 auto;background:#f0f4f8;padding:30px 16px;">
+                    <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+                        <div style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);padding:28px 32px;text-align:center;">
+                            <h1 style="color:#fff;margin:0;font-size:24px;">🛒 New Cart Enquiry</h1>
+                            <p style="color:rgba(255,255,255,0.85);margin:8px 0 0;font-size:15px;">${items.length} product${items.length !== 1 ? 's' : ''} selected</p>
+                        </div>
+                        <div style="padding:28px 32px;">
+                            <h2 style="color:#3b82f6;font-size:17px;margin:0 0 16px;">Customer Details</h2>
+                            <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+                                <tr><td style="padding:8px 0;color:#718096;width:140px;font-size:14px;">Name</td><td style="padding:8px 0;color:#2d3748;font-weight:600;font-size:14px;">${customerName}</td></tr>
+                                <tr><td style="padding:8px 0;color:#718096;font-size:14px;">Email</td><td style="padding:8px 0;color:#2d3748;font-size:14px;"><a href="mailto:${customerEmail}" style="color:#3b82f6;">${customerEmail}</a></td></tr>
+                                <tr><td style="padding:8px 0;color:#718096;font-size:14px;">Phone</td><td style="padding:8px 0;color:#2d3748;font-size:14px;">${customerPhone || 'Not provided'}</td></tr>
+                                <tr><td style="padding:8px 0;color:#718096;font-size:14px;">Preferred Contact</td><td style="padding:8px 0;color:#2d3748;font-size:14px;">${preferredContact || 'Email'}</td></tr>
+                            </table>
+
+                            <h2 style="color:#3b82f6;font-size:17px;margin:0 0 16px;">Cart Items</h2>
+                            <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;margin-bottom:24px;">
+                                <thead><tr style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);">
+                                    <th style="padding:12px 14px;color:#fff;text-align:left;font-size:14px;">Product</th>
+                                    <th style="padding:12px 14px;color:#fff;text-align:center;font-size:14px;">Qty</th>
+                                    <th style="padding:12px 14px;color:#fff;text-align:left;font-size:14px;">Unit Price</th>
+                                </tr></thead>
+                                <tbody>${itemRows}</tbody>
+                            </table>
+
+                            ${message ? `<div style="background:#fffbeb;padding:18px;border-radius:10px;border-left:4px solid #f59e0b;margin-bottom:24px;">
+                                <h3 style="color:#f59e0b;margin:0 0 10px;font-size:16px;">Customer Message</h3>
+                                <p style="color:#2d3748;margin:0;font-size:14px;white-space:pre-wrap;">${message}</p>
+                            </div>` : ''}
+
+                            <div style="text-align:center;margin-top:24px;">
+                                <a href="mailto:${customerEmail}" style="display:inline-block;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;padding:12px 32px;border-radius:30px;text-decoration:none;font-weight:600;font-size:15px;">Reply to Customer</a>
+                            </div>
+                        </div>
+                        <div style="padding:18px 32px;background:#f7fafc;text-align:center;border-top:1px solid #e2e8f0;">
+                            <p style="color:#718096;font-size:13px;margin:0;">SAPTech Uganda — Professional in Engineering &amp; Technology Solutions</p>
+                        </div>
+                    </div>
+                </div>`
+            };
+            await this.transporter.sendMail(mailOptions);
+            console.log("✅ Cart enquiry admin email sent");
+        } catch (error) {
+            console.error("❌ Error sending cart enquiry admin email:", error);
+            throw error;
+        }
+    }
+
+    // Cart Inquiry - Confirmation to Customer
+    async sendCartInquiryConfirmation({ customerEmail, customerName, items }) {
+        if (!this.isConfigured) {
+            console.log("Email service not configured, skipping cart confirmation");
+            return;
+        }
+        try {
+            const itemList = items.map((item, i) =>
+                `<li style="padding:6px 0;color:#4a5568;font-size:14px;">${i + 1}. <strong>${item.productName || 'Unknown'}</strong> — Qty: ${item.quantity || 1}</li>`
+            ).join('');
+
+            const mailOptions = {
+                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
+                to: customerEmail,
+                subject: `✅ Enquiry Received — ${items.length} Product${items.length !== 1 ? 's' : ''} | SAPTech Uganda`,
+                html: `
+                <div style="font-family:'Segoe UI',Tahoma,sans-serif;max-width:650px;margin:0 auto;background:#f0f4f8;padding:30px 16px;">
+                    <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
+                        <div style="background:linear-gradient(135deg,#10b981,#059669);padding:28px 32px;text-align:center;">
+                            <h1 style="color:#fff;margin:0;font-size:26px;">✅ Enquiry Received!</h1>
+                            <p style="color:rgba(255,255,255,0.85);margin:8px 0 0;font-size:15px;">Thank you, ${customerName}. We'll get back to you shortly.</p>
+                        </div>
+                        <div style="padding:28px 32px;">
+                            <p style="color:#4a5568;font-size:15px;line-height:1.7;margin:0 0 24px;">
+                                We've received your enquiry for the following product${items.length !== 1 ? 's' : ''}:
+                            </p>
+                            <ul style="list-style:none;padding:0;margin:0 0 24px;background:#f7fafc;border-radius:10px;padding:18px 22px;">
+                                ${itemList}
+                            </ul>
+                            <div style="background:linear-gradient(135deg,#10b98115,#05966915);padding:20px;border-radius:10px;border-left:4px solid #10b981;margin-bottom:24px;">
+                                <p style="margin:0;color:#2d3748;font-size:15px;line-height:1.7;">Our team will review your enquiry and contact you within <strong>24–48 hours</strong>. For urgent enquiries, feel free to reach us on WhatsApp or phone.</p>
+                            </div>
+                            <div style="background:#f7fafc;padding:18px;border-radius:10px;margin-bottom:24px;">
+                                <p style="color:#2d3748;margin:6px 0;font-size:14px;"><strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color:#3b82f6;">saptechnologies256@gmail.com</a></p>
+                                <p style="color:#2d3748;margin:6px 0;font-size:14px;"><strong>Phone/WhatsApp:</strong> <a href="https://wa.me/256706564628" style="color:#25d366;">+256 706 564 628</a></p>
+                            </div>
+                            <div style="text-align:center;">
+                                <a href="https://sap-technologies.com" style="display:inline-block;background:linear-gradient(135deg,#10b981,#059669);color:#fff;padding:12px 32px;border-radius:30px;text-decoration:none;font-weight:600;font-size:15px;">Visit Our Website</a>
+                            </div>
+                        </div>
+                        <div style="padding:18px 32px;background:#f7fafc;text-align:center;border-top:1px solid #e2e8f0;">
+                            <p style="color:#718096;font-size:13px;margin:0;">SAPTech Uganda — Professional in Engineering &amp; Technology Solutions</p>
+                            <p style="color:#cbd5e0;font-size:12px;margin:8px 0 0;">This is an automated confirmation. Please do not reply to this email.</p>
+                        </div>
+                    </div>
+                </div>`
+            };
+            await this.transporter.sendMail(mailOptions);
+            console.log("✅ Cart confirmation email sent to:", customerEmail);
+        } catch (error) {
+            console.error("❌ Error sending cart confirmation email:", error);
+            throw error;
+        }
+    }
+
     // Service Quote Request - Send to Admin
     async sendServiceQuoteToAdmin(quoteData) {
         if (!this.isConfigured) {
