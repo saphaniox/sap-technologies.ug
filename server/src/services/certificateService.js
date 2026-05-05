@@ -1,4 +1,4 @@
-const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+﻿const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const QRCode = require('qrcode');
 const fs = require('fs').promises;
 const path = require('path');
@@ -309,7 +309,7 @@ class CertificateService {
             });
 
             // Website and Powered by text (below recognition)
-            page.drawText('Powered by SapTech Uganda', {
+            page.drawText('Powered by SAPTech Uganda', {
                 x: width / 2 - 105,
                 y: height - 435 - headerYOffset,
                 size: 9,
@@ -639,7 +639,7 @@ class CertificateService {
             });
 
             // Website and Powered by text (below recognition)
-            page.drawText('Powered by SapTech Uganda', {
+            page.drawText('Powered by SAPTech Uganda', {
                 x: width / 2 - 105,
                 y: height - 435 - headerYOffset,
                 size: 9,
@@ -951,7 +951,7 @@ class CertificateService {
             });
 
             // Website and Powered by text (below recognition)
-            page.drawText('Powered by SapTech Uganda', {
+            page.drawText('Powered by SAPTech Uganda', {
                 x: width / 2 - 105,
                 y: height - 435 - headerYOffset,
                 size: 9,

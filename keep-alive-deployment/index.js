@@ -1,5 +1,5 @@
-/**
- * SapTech Uganda - 24/7 Keep-Alive Service
+﻿/**
+ * SAPTech Uganda - 24/7 Keep-Alive Service
  * 
  * Standalone service to keep server awake on free-tier hosting
  * Deploy this to: Render.com, Railway.app, Fly.io, or any Node.js hosting
@@ -197,7 +197,7 @@ async function executePingWithRetry() {
  * Start the keep-alive loop - RUNS FOREVER
  */
 async function startKeepAlive() {
-  log('🚀 SapTech Uganda Keep-Alive Service Started (24/7 RESILIENT MODE)', 'success');
+  log('🚀 SAPTech Uganda Keep-Alive Service Started (24/7 RESILIENT MODE)', 'success');
   log('💪 MODE: NEVER STOPS - Infinite retry on failures', 'success');
   log(`🌐 Target: ${CONFIG.SERVER_URL}${CONFIG.HEALTH_ENDPOINT}`, 'info');
   log(`⏰ Ping Interval: ${CONFIG.PING_INTERVAL / 1000 / 60} minutes`, 'info');
@@ -251,7 +251,7 @@ function createWebServer() {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         status: 'running',
-        service: 'SapTech Uganda Keep-Alive Service',
+        service: 'SAPTech Uganda Keep-Alive Service',
         targetServer: CONFIG.SERVER_URL,
         stats: {
           ...stats,

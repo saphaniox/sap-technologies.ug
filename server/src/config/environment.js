@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+﻿const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
@@ -240,7 +240,7 @@ class EnvironmentConfig {
                 pass: process.env.GMAIL_PASS
             },
             from: {
-                name: process.env.EMAIL_FROM_NAME || 'SapTech Uganda',
+                name: process.env.EMAIL_FROM_NAME || 'SAPTech Uganda',
                 address: process.env.GMAIL_USER
             },
             replyTo: process.env.EMAIL_REPLY_TO || process.env.GMAIL_USER

@@ -1,4 +1,4 @@
-const path = require('path');
+﻿const path = require('path');
 const fs = require('fs');
 
 class WhatsAppBaileysService {
@@ -72,7 +72,7 @@ ${contactData.message}
 ⏰ *Time:* ${new Date().toLocaleString()}
 
 ---
-_SapTech Uganda Notification System_`;
+_SAPTech Uganda Notification System_`;
 
         await this.sendMessage(this.adminNumber, message);
     }
@@ -92,7 +92,7 @@ ${partnershipData.description}
 ⏰ *Time:* ${new Date().toLocaleString()}
 
 ---
-_SapTech Uganda Notification System_`;
+_SAPTech Uganda Notification System_`;
 
         await this.sendMessage(this.adminNumber, message);
     }
@@ -107,7 +107,7 @@ ${userData.phone ? `📱 *Phone:* ${userData.phone}` : ''}
 ⏰ *Registered:* ${new Date().toLocaleString()}
 
 ---
-_SapTech Uganda Notification System_`;
+_SAPTech Uganda Notification System_`;
 
         await this.sendMessage(this.adminNumber, message);
     }
@@ -120,7 +120,7 @@ _SapTech Uganda Notification System_`;
 ⏰ *Subscribed:* ${new Date().toLocaleString()}
 
 ---
-_SapTech Uganda Notification System_`;
+_SAPTech Uganda Notification System_`;
 
         await this.sendMessage(this.adminNumber, message);
     }
@@ -139,7 +139,7 @@ ${inquiryData.message}
 ⏰ *Time:* ${new Date().toLocaleString()}
 
 ---
-_SapTech Uganda Notification System_`;
+_SAPTech Uganda Notification System_`;
 
         await this.sendMessage(this.adminNumber, message);
     }
@@ -162,7 +162,7 @@ ${quoteData.timeline ? `⏱️ *Timeline:* ${quoteData.timeline}` : ''}
 ⏰ *Time:* ${new Date().toLocaleString()}
 
 ---
-_SapTech Uganda Notification System_`;
+_SAPTech Uganda Notification System_`;
 
         await this.sendMessage(this.adminNumber, message);
     }
@@ -180,7 +180,7 @@ ${nominationData.reason.substring(0, 200)}${nominationData.reason.length > 200 ?
 ⏰ *Time:* ${new Date().toLocaleString()}
 
 ---
-_SapTech Uganda Awards System_`;
+_SAPTech Uganda Awards System_`;
 
         await this.sendMessage(this.adminNumber, message);
     }
@@ -193,7 +193,7 @@ ${body}
 ⏰ *Time:* ${new Date().toLocaleString()}
 
 ---
-_SapTech Uganda_`;
+_SAPTech Uganda_`;
 
         await this.sendMessage(to, message);
     }
