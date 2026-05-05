@@ -308,76 +308,74 @@ class ProductController {
 
             const { id } = req.params;
             const updateData = { ...req.body };
-            
-            // Handle image deletion if requested
-            if (updateData.deleteImage === 'true') {
-                const existingProduct = await Product.findById(id);
-                if (existingProduct && existingProduct.image) {
-                    if (!existingProduct.image.startsWith('http') && existingProduct.image.startsWith("/uploads/products/")) {
-                        const oldImagePath = path.join(__dirname, "../..", existingProduct.image);
-                        try {
-                            await fs.unlink(oldImagePath);
-                            console.log("🗑️ Deleted existing image:", existingProduct.image);
-                        } catch (error) {
-                            console.log("Could not delete old image:", error.message);
-                        }
-                    }
+
+            // Parse imagesToDelete from the form
+            let imagesToDelete = [];
+            if (updateData.imagesToDelete) {
+                try {
+                    imagesToDelete = JSON.parse(updateData.imagesToDelete);
+                    delete updateData.imagesToDelete;
+                } catch (e) {
+                    imagesToDelete = [];
                 }
-                updateData.image = null;
-                updateData.images = [];
-                console.log("🗑️ Marked image for deletion");
             }
 
-            // Handle multiple file uploads
-            if (req.files && req.files.length > 0) {
-                updateData.images = req.files.map((file, index) => ({
-                    url: getFileUrl(file, 'products'),
-                    alt: updateData.name || 'Product image',
-                    isPrimary: index === 0,
-                    order: index
-                }));
-                updateData.image = updateData.images[0].url; // Backward compatibility
-                console.log("📸 New images uploaded:", updateData.images.length);
-                
-                // Delete old local images
+            // Handle legacy single-image deletion flag
+            if (updateData.deleteImage === 'true') {
+                const existingProduct = await Product.findById(id);
+                if (existingProduct?.images?.length) {
+                    imagesToDelete = existingProduct.images.map(img => img.url);
+                }
+                delete updateData.deleteImage;
+            }
+
+            // Get current product's images
+            const existingProduct = await Product.findById(id);
+            let currentImages = existingProduct?.images || [];
+
+            // Remove images marked for deletion
+            if (imagesToDelete.length > 0) {
+                // Delete local files if not on Cloudinary
                 if (!useCloudinary) {
-                    const oldProduct = await Product.findById(id);
-                    if (oldProduct && oldProduct.images && oldProduct.images.length > 0) {
-                        for (const img of oldProduct.images) {
-                            if (img.url && img.url.startsWith("/uploads/products/")) {
-                                const oldImagePath = path.join(__dirname, "../..", img.url);
-                                try {
-                                    await fs.unlink(oldImagePath);
-                                } catch (error) {
-                                    console.log("Could not delete old image:", error.message);
-                                }
+                    for (const imgUrl of imagesToDelete) {
+                        if (imgUrl && imgUrl.startsWith("/uploads/products/")) {
+                            const imgPath = path.join(__dirname, "../..", imgUrl);
+                            try { await fs.unlink(imgPath); } catch (e) {
+                                console.log("Could not delete old image:", e.message);
                             }
                         }
                     }
                 }
-            } else if (req.file) {
-                // Support single file upload for backward compatibility
-                updateData.image = getFileUrl(req.file, 'products');
-                updateData.images = [{
-                    url: updateData.image,
+                currentImages = currentImages.filter(img => !imagesToDelete.includes(img.url));
+                console.log("🗑️ Images after deletion:", currentImages.length);
+            }
+
+            // Handle multiple file uploads — append to remaining existing images
+            if (req.files && req.files.length > 0) {
+                const newImages = req.files.map((file, index) => ({
+                    url: getFileUrl(file, 'products'),
                     alt: updateData.name || 'Product image',
-                    isPrimary: true,
-                    order: 0
-                }];
-                console.log("📸 New image URL:", updateData.image);
-                
-                // Delete old image if it exists (only for local storage)
-                if (!useCloudinary) {
-                    const oldProduct = await Product.findById(id);
-                    if (oldProduct && oldProduct.image && oldProduct.image.startsWith("/uploads/products/")) {
-                        const oldImagePath = path.join(__dirname, "../..", oldProduct.image);
-                        try {
-                            await fs.unlink(oldImagePath);
-                        } catch (error) {
-                            console.log("Could not delete old image:", error.message);
-                        }
-                    }
-                }
+                    isPrimary: currentImages.length === 0 && index === 0,
+                    order: currentImages.length + index
+                }));
+                updateData.images = [...currentImages, ...newImages];
+                updateData.image = updateData.images[0].url;
+                console.log("📸 New images uploaded:", newImages.length, "| Total:", updateData.images.length);
+            } else if (req.file) {
+                // Backward-compatible single file upload
+                const newImage = {
+                    url: getFileUrl(req.file, 'products'),
+                    alt: updateData.name || 'Product image',
+                    isPrimary: currentImages.length === 0,
+                    order: currentImages.length
+                };
+                updateData.images = [...currentImages, newImage];
+                updateData.image = updateData.images[0].url;
+                console.log("📸 New image URL:", newImage.url);
+            } else if (imagesToDelete.length > 0) {
+                // No new uploads but some were deleted — persist filtered list
+                updateData.images = currentImages;
+                updateData.image = currentImages.length > 0 ? currentImages[0].url : null;
             }
 
             // Parse JSON fields

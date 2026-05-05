@@ -221,78 +221,68 @@ class ServiceController {
       }
       
       const updateData = { ...req.body };
-      
-      // Handle image deletion if requested
+
+      // Parse imagesToDelete from the form
+      let imagesToDelete = [];
+      if (updateData.imagesToDelete) {
+        try {
+          imagesToDelete = JSON.parse(updateData.imagesToDelete);
+          delete updateData.imagesToDelete;
+        } catch (e) {
+          imagesToDelete = [];
+        }
+      }
+
+      // Handle legacy single-image deletion flag
       if (updateData.deleteImage === 'true') {
-        const existingService = await Service.findById(id);
-        if (existingService && existingService.image) {
-          if (!existingService.image.startsWith('http')) {
-            const oldImagePath = path.join(__dirname, "../..", existingService.image);
+        const s = await Service.findById(id);
+        if (s?.images?.length) imagesToDelete = s.images.map(img => img.url);
+        delete updateData.deleteImage;
+      }
+
+      // Get current service images
+      const existingService = await Service.findById(id);
+      let currentImages = existingService?.images || [];
+
+      // Remove images marked for deletion
+      if (imagesToDelete.length > 0) {
+        // Delete local files if not on Cloudinary
+        currentImages.forEach(img => {
+          if (img.url && !img.url.startsWith('http') && imagesToDelete.includes(img.url)) {
+            const oldImagePath = path.join(__dirname, "../..", img.url);
             if (fs.existsSync(oldImagePath)) {
-              try {
-                fs.unlinkSync(oldImagePath);
-              } catch (err) {
+              try { fs.unlinkSync(oldImagePath); } catch (err) {
                 console.error("❌ Failed to delete image:", err.message);
               }
             }
           }
-        }
-        updateData.image = null;
-        updateData.images = [];
+        });
+        currentImages = currentImages.filter(img => !imagesToDelete.includes(img.url));
       }
 
-      // Handle multiple file uploads and delete old images if exists
+      // Handle multiple file uploads — append to remaining existing images
       if (req.files && req.files.length > 0) {
-        const existingService = await Service.findById(id);
-        
-        // Delete old local images (not Cloudinary URLs)
-        if (existingService && existingService.images && existingService.images.length > 0) {
-          existingService.images.forEach(img => {
-            if (img.url && !img.url.startsWith('http')) {
-              const oldImagePath = path.join(__dirname, "../..", img.url);
-              if (fs.existsSync(oldImagePath)) {
-                try {
-                  fs.unlinkSync(oldImagePath);
-                } catch (err) {
-                  console.error("❌ Failed to delete old image:", err.message);
-                }
-              }
-            }
-          });
-        }
-        
-        updateData.images = req.files.map((file, index) => ({
+        const newImages = req.files.map((file, index) => ({
           url: getFileUrl(file, 'services'),
           alt: updateData.title || 'Service image',
-          isPrimary: index === 0,
-          order: index
+          isPrimary: currentImages.length === 0 && index === 0,
+          order: currentImages.length + index
         }));
-        updateData.image = updateData.images[0].url; // Backward compatibility
+        updateData.images = [...currentImages, ...newImages];
+        updateData.image = updateData.images[0].url;
       } else if (req.file) {
-        // Support single file upload for backward compatibility
-        const existingService = await Service.findById(id);
-        
-        if (existingService && existingService.image) {
-          if (!existingService.image.startsWith('http')) {
-            const oldImagePath = path.join(__dirname, "../..", existingService.image);
-            
-            if (fs.existsSync(oldImagePath)) {
-              try {
-                fs.unlinkSync(oldImagePath);
-              } catch (err) {
-                console.error("❌ Failed to delete old image:", err.message);
-              }
-            }
-          }
-        }
-        
-        updateData.image = getFileUrl(req.file, 'services');
-        updateData.images = [{
-          url: updateData.image,
+        const newImage = {
+          url: getFileUrl(req.file, 'services'),
           alt: updateData.title || 'Service image',
-          isPrimary: true,
-          order: 0
-        }];
+          isPrimary: currentImages.length === 0,
+          order: currentImages.length
+        };
+        updateData.images = [...currentImages, newImage];
+        updateData.image = updateData.images[0].url;
+      } else if (imagesToDelete.length > 0) {
+        // No new uploads but some were deleted — persist filtered list
+        updateData.images = currentImages;
+        updateData.image = currentImages.length > 0 ? currentImages[0].url : null;
       }
       
       // Parse JSON fields that come as strings from FormData
@@ -608,10 +598,15 @@ class ProjectController {
       
       // Handle multiple file uploads with Cloudinary support
       if (req.files && req.files.length > 0) {
-        projectData.images = req.files.map(file => getFileUrl(file, 'projects'));
+        projectData.images = req.files.map((file, index) => ({
+          url: getFileUrl(file, 'projects'),
+          alt: projectData.title || 'Project image',
+          isPrimary: index === 0,
+          order: index
+        }));
         // Set first image as main image if not specified
         if (!projectData.image && projectData.images.length > 0) {
-          projectData.image = projectData.images[0];
+          projectData.image = projectData.images[0].url;
         }
       }
       
@@ -759,7 +754,7 @@ class ProjectController {
             const existingProject = await Project.findById(id);
             if (existingProject && existingProject.images) {
               updateData.images = existingProject.images.filter(
-                img => !imagesToDelete.includes(img)
+                img => !imagesToDelete.includes(img.url)
               );
             }
           }
@@ -770,17 +765,20 @@ class ProjectController {
 
       // Handle multiple file uploads and add to existing images
       if (req.files && req.files.length > 0) {
-        const newImages = req.files.map(file => getFileUrl(file, 'projects'));
-        
-        // Add new images to existing ones (if not all deleted)
-        if (updateData.images && Array.isArray(updateData.images)) {
-          updateData.images = [...updateData.images, ...newImages];
-        } else {
-          // Get existing images if they weren't modified
-          const existingProject = await Project.findById(id);
-          updateData.images = existingProject && existingProject.images 
-            ? [...existingProject.images, ...newImages]
-            : newImages;
+        const existingImagesBase = updateData.images && Array.isArray(updateData.images)
+          ? updateData.images
+          : await Project.findById(id).then(p => p?.images || []);
+
+        const newImages = req.files.map((file, index) => ({
+          url: getFileUrl(file, 'projects'),
+          alt: updateData.title || 'Project image',
+          isPrimary: existingImagesBase.length === 0 && index === 0,
+          order: existingImagesBase.length + index
+        }));
+
+        updateData.images = [...existingImagesBase, ...newImages];
+        if (!updateData.image) {
+          updateData.image = updateData.images[0].url;
         }
         
         console.log("📸 New project images uploaded:", newImages.length);

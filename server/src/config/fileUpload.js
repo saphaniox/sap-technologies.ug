@@ -74,7 +74,7 @@ const mediaFilter = (req, file, cb) => {
 // Use Cloudinary if configured, otherwise use local storage
 
 const profileUpload = multer({
-  storage: useCloudinary ? storageConfigs['profile-pics'] : createLocalStorage(profilePicsDir),
+  storage: useCloudinary ? storageConfigs.profilePics : createLocalStorage(profilePicsDir),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
