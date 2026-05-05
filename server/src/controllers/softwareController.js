@@ -174,7 +174,16 @@ exports.createSoftware = async (req, res) => {
     if (typeof softwareData.technologies === "string") {
       softwareData.technologies = JSON.parse(softwareData.technologies);
     }
-    
+    if (typeof softwareData.links === "string") {
+      try { softwareData.links = JSON.parse(softwareData.links); } catch (e) { softwareData.links = {}; }
+    }
+
+    // Backward compat: if old url field is set but links.web isn't, migrate it
+    if (!softwareData.links) softwareData.links = {};
+    if (softwareData.url && !softwareData.links.web) {
+      softwareData.links.web = softwareData.url;
+    }
+
     // Convert string booleans to actual booleans
     if (typeof softwareData.isPublic === "string") {
       softwareData.isPublic = softwareData.isPublic === "true";
@@ -239,7 +248,16 @@ exports.updateSoftware = async (req, res) => {
     if (typeof updateData.technologies === "string") {
       updateData.technologies = JSON.parse(updateData.technologies);
     }
-    
+    if (typeof updateData.links === "string") {
+      try { updateData.links = JSON.parse(updateData.links); } catch (e) { updateData.links = {}; }
+    }
+
+    // Backward compat: if old url field is set but links.web isn't, migrate it
+    if (!updateData.links) updateData.links = {};
+    if (updateData.url && !updateData.links.web) {
+      updateData.links.web = updateData.url;
+    }
+
     // Convert string booleans to actual booleans
     if (typeof updateData.isPublic === "string") {
       updateData.isPublic = updateData.isPublic === "true";

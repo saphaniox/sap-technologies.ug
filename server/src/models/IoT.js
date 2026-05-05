@@ -54,6 +54,26 @@ const iotSchema = new mongoose.Schema(
         }
       }
     ],
+    videos: [
+      {
+        url: {
+          type: String,
+          required: false
+        },
+        caption: {
+          type: String,
+          default: ""
+        },
+        mimeType: {
+          type: String,
+          default: ""
+        },
+        size: {
+          type: Number,
+          default: 0
+        }
+      }
+    ],
     projectUrl: {
       type: String,
       trim: true

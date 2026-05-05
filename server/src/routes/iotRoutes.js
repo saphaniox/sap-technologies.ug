@@ -20,8 +20,8 @@ router.get("/categories", getCategories);
 
 // Admin routes (must come before /:id to avoid route conflicts)
 router.get("/admin/stats", adminAuth, getAdminStats);
-router.post("/", adminAuth, iotUpload.array("images", 10), compressionPresets.highQuality, createIoTProject);
-router.put("/:id", adminAuth, iotUpload.array("images", 10), compressionPresets.highQuality, updateIoTProject);
+router.post("/", adminAuth, iotUpload.fields([{name: 'images', maxCount: 10}, {name: 'videos', maxCount: 3}]), compressionPresets.highQuality, createIoTProject);
+router.put("/:id", adminAuth, iotUpload.fields([{name: 'images', maxCount: 10}, {name: 'videos', maxCount: 3}]), compressionPresets.highQuality, updateIoTProject);
 router.delete("/:id", adminAuth, deleteIoTProject);
 
 // Public dynamic routes (must come after specific routes)

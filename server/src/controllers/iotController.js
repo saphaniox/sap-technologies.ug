@@ -149,12 +149,25 @@ exports.createIoTProject = async (req, res) => {
       projectData.isFeatured = projectData.isFeatured === "true";
     }
     
-    // Handle image uploads
-    if (req.files && req.files.length > 0) {
-      projectData.images = req.files.map(file => ({
-        url: getFileUrl(file, 'iot'),
-        isCompressed: file.isCompressed || false
-      }));
+    // Handle file uploads (images and videos)
+    if (req.files) {
+      const imageFiles = Array.isArray(req.files) ? req.files : (req.files.images || []);
+      const videoFiles = Array.isArray(req.files) ? [] : (req.files.videos || []);
+
+      if (imageFiles.length > 0) {
+        projectData.images = imageFiles.map(file => ({
+          url: getFileUrl(file, 'iot'),
+          isCompressed: file.isCompressed || false
+        }));
+      }
+
+      if (videoFiles.length > 0) {
+        projectData.videos = videoFiles.map(file => ({
+          url: getFileUrl(file, 'iot'),
+          mimeType: file.mimetype,
+          size: file.size || 0
+        }));
+      }
     }
     
     const iotProject = await IoT.create(projectData);
@@ -209,30 +222,52 @@ exports.updateIoTProject = async (req, res) => {
       updateData.isFeatured = updateData.isFeatured === "true";
     }
     
-    // Handle new image uploads
-    if (req.files && req.files.length > 0) {
-      const newImages = req.files.map(file => ({
-        url: getFileUrl(file, 'iot'),
-        isCompressed: file.isCompressed || false
-      }));
-      
-      // Keep existing images and add new ones
-      updateData.images = [...(iotProject.images || []), ...newImages];
+    // Handle new file uploads
+    if (req.files) {
+      const imageFiles = Array.isArray(req.files) ? req.files : (req.files.images || []);
+      const videoFiles = Array.isArray(req.files) ? [] : (req.files.videos || []);
+
+      if (imageFiles.length > 0) {
+        const newImages = imageFiles.map(file => ({
+          url: getFileUrl(file, 'iot'),
+          isCompressed: file.isCompressed || false
+        }));
+        // Keep existing images and add new ones
+        updateData.images = [...(iotProject.images || []), ...newImages];
+      }
+
+      if (videoFiles.length > 0) {
+        const newVideos = videoFiles.map(file => ({
+          url: getFileUrl(file, 'iot'),
+          mimeType: file.mimetype,
+          size: file.size || 0
+        }));
+        updateData.videos = [...(iotProject.videos || []), ...newVideos];
+      }
     }
-    
+
     // Handle image removal if specified
     if (req.body.removeImages) {
       const imagesToRemove = JSON.parse(req.body.removeImages);
+      const currentImages = updateData.images || iotProject.images || [];
+      updateData.images = currentImages.filter(img => !imagesToRemove.includes(img.url));
+
+      // Clean up local files
       imagesToRemove.forEach(imageUrl => {
-        const imagePath = path.join(__dirname, "../../..", imageUrl);
-        if (fs.existsSync(imagePath)) {
-          fs.unlinkSync(imagePath);
+        if (!imageUrl.includes('cloudinary.com')) {
+          const imagePath = path.join(__dirname, "../../..", imageUrl);
+          if (fs.existsSync(imagePath)) {
+            try { fs.unlinkSync(imagePath); } catch (e) {}
+          }
         }
       });
-      
-      updateData.images = iotProject.images.filter(
-        img => !imagesToRemove.includes(img.url)
-      );
+    }
+
+    // Handle video removal if specified
+    if (req.body.removeVideos) {
+      const videosToRemove = JSON.parse(req.body.removeVideos);
+      const currentVideos = updateData.videos || iotProject.videos || [];
+      updateData.videos = currentVideos.filter(v => !videosToRemove.includes(v.url));
     }
     
     const updatedProject = await IoT.findByIdAndUpdate(

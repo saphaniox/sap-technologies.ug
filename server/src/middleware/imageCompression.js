@@ -20,17 +20,24 @@ const compressImage = (options = {}) => {
   } = options;
 
   return async (req, res, next) => {
-    // If no files uploaded, continue
-    if (!req.files || req.files.length === 0) {
-      if (!req.file) {
-        return next();
-      }
-      // Handle single file
-      req.files = [req.file];
+    // Support both multer.array() (req.files is Array) and multer.fields() (req.files is Object)
+    let imagesToCompress = [];
+
+    if (req.file) {
+      imagesToCompress = [req.file];
+    } else if (Array.isArray(req.files) && req.files.length > 0) {
+      imagesToCompress = req.files;
+    } else if (req.files && typeof req.files === 'object' && !Array.isArray(req.files)) {
+      // multer.fields() format — only compress image fields, skip videos
+      imagesToCompress = req.files.images || [];
+    }
+
+    if (imagesToCompress.length === 0) {
+      return next();
     }
 
     try {
-      const compressionPromises = req.files.map(async (file) => {
+      const compressionPromises = imagesToCompress.map(async (file) => {
         // Only compress images
         if (!file.mimetype.startsWith("image/")) {
           return file;

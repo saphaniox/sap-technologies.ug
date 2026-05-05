@@ -211,12 +211,23 @@ const storageConfigs = {
     iot: isCloudinaryConfigured()
         ? new CloudinaryStorage({
             cloudinary,
-            params: {
-                folder: 'sap-technologies/iot',
-                resource_type: 'image',
-                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: [{ width: 1920, height: 1080, crop: 'limit' }],
-            },
+            params: (req, file) => {
+                const isVideo = file.mimetype.startsWith('video/');
+                if (isVideo) {
+                    return {
+                        folder: 'sap-technologies/iot',
+                        resource_type: 'video',
+                        eager: [{ quality: 'auto:good', fetch_format: 'mp4' }],
+                        eager_async: true
+                    };
+                }
+                return {
+                    folder: 'sap-technologies/iot',
+                    resource_type: 'image',
+                    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+                    transformation: [{ width: 1920, height: 1080, crop: 'limit' }]
+                };
+            }
         })
         : null,
 };

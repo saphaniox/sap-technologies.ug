@@ -19,6 +19,13 @@ const softwareSchema = new mongoose.Schema({
     trim: true,
     default: ""
   },
+  links: {
+    web:       { type: String, trim: true, default: "" },
+    playstore: { type: String, trim: true, default: "" },
+    appstore:  { type: String, trim: true, default: "" },
+    github:    { type: String, trim: true, default: "" },
+    other:     { type: String, trim: true, default: "" }
+  },
   image: {
     type: String,
     required: false,
