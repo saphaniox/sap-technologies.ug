@@ -6,7 +6,7 @@ const emailService = require('../services/emailService');
 class AuthController {
     async register(req, res, next) {
         try {
-            const { name, email, password } = req.body;
+            const { name, email, password, phone } = req.body;
             
             if (!name || !email || !password) {
                 return next(new AppError('All fields are required', 400));
@@ -18,7 +18,7 @@ class AuthController {
             }
             
             const hashedPassword = await bcrypt.hash(password, 12);
-            const user = new User({ name, email, password: hashedPassword });
+            const user = new User({ name, email, password: hashedPassword, phone: phone || "" });
             await user.save();
             
             // Track registration activity

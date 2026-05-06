@@ -49,8 +49,8 @@ const userSchema = new mongoose.Schema({
         maxlength: [50, "Name cannot exceed 50 characters"],
         validate: {
             validator: function(v) {
-                // Security: prevent script injection in names
-                return !/[<>\"'&]/.test(v);
+                // Security: prevent script injection in names (allow apostrophes for names like O'Brien)
+                return !/[<>"&]/.test(v);
             },
             message: "Name contains invalid characters"
         }
@@ -74,21 +74,9 @@ const userSchema = new mongoose.Schema({
     password: { 
         type: String, 
         required: [true, "Password is required"],
-        minlength: [8, "Password must be at least 8 characters long"],
-        validate: {
-            validator: function(v) {
-                // Strong password requirements - keeps accounts secure
-                const validator = require('validator');
-                return validator.isStrongPassword(v, {
-                    minLength: 8,
-                    minLowercase: 1,
-                    minUppercase: 1,
-                    minNumbers: 1,
-                    minSymbols: 1
-                });
-            },
-            message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
-        }
+        minlength: [8, "Password must be at least 8 characters long"]
+        // NOTE: strength is validated BEFORE hashing in the request middleware.
+        // Never run isStrongPassword here — the stored value is a bcrypt hash.
     },
     profilePic: { 
         type: String, 
@@ -100,6 +88,19 @@ const userSchema = new mongoose.Schema({
                 return !/\.\.\/|\.\.\\/.test(v) && /\.(jpg|jpeg|png|gif|svg)$/i.test(v);
             },
             message: "Invalid profile picture path"
+        }
+    },
+    // Optional phone number — used for contact pre-fill on orders/inquiries
+    phone: {
+        type: String,
+        default: "",
+        trim: true,
+        validate: {
+            validator: function(v) {
+                if (!v) return true; // optional
+                return /^[\+]?[0-9\s\-\(\)]{7,20}$/.test(v);
+            },
+            message: "Please provide a valid phone number"
         }
     },
     // Security-related fields
@@ -281,6 +282,7 @@ userSchema.virtual("profile").get(function() {
         id: this._id,
         name: this.name,
         email: this.email,
+        phone: this.phone || "",
         profilePic: this.profilePic,
         createdAt: this.createdAt,
         lastLogin: this.lastLogin,
