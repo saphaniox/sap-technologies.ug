@@ -198,6 +198,11 @@ app.use("/api/auth", rateLimits.auth);
 app.use("/api/contact", rateLimits.contact);
 app.use("/api/upload", rateLimits.upload);
 app.use("/api/admin", rateLimits.admin);
+app.use("/api/newsletter", rateLimits.newsletter);
+app.use("/api/search", rateLimits.search);
+app.use("/api/partnership-requests", rateLimits.partnerRequests);
+app.use("/api/products/inquiries", rateLimits.inquiry);
+app.use("/api/services/quotes", rateLimits.serviceQuote);
 
 // Static files with security headers - FIX FOR IMAGE LOADING
 app.use("/uploads", express.static(path.join(__dirname, "../uploads"), {
@@ -226,7 +231,9 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads"), {
         const ext = filePath.substring(filePath.lastIndexOf(".")).toLowerCase();
         const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".pdf", ".svg", ".webp"];
         if (!allowedExtensions.includes(ext)) {
-            console.warn(`Blocked attempt to access disallowed file type: ${ext}`);
+            securityLogger.warn(`Blocked attempt to access disallowed file type: ${ext}`, { path: filePath, ip: res.req.ip });
+            res.status(403).end();
+            return;
         }
     }
 }));

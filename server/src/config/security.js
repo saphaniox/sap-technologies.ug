@@ -101,6 +101,34 @@ const rateLimits = {
     60 * 60 * 1000, // 1 hour
     30,
     "Too many inquiry submissions, please try again later."
+  ),
+
+  // Newsletter subscription rate limit - 5 per hour (prevent mass subscription spam)
+  newsletter: createRateLimit(
+    60 * 60 * 1000, // 1 hour
+    5,
+    "Too many newsletter subscription attempts, please try again later."
+  ),
+
+  // Search rate limit - 200 requests per 15 minutes (legitimate browsing, prevent scraping)
+  search: createRateLimit(
+    15 * 60 * 1000, // 15 minutes
+    200,
+    "Too many search requests, please slow down."
+  ),
+
+  // Partnership/partner requests - 5 per day per IP
+  partnerRequests: createRateLimit(
+    24 * 60 * 60 * 1000, // 24 hours
+    5,
+    "Too many partnership request submissions, please try again tomorrow."
+  ),
+
+  // Service quote requests - 20 per hour per IP
+  serviceQuote: createRateLimit(
+    60 * 60 * 1000, // 1 hour
+    20,
+    "Too many quote requests, please try again later."
   )
 };
 
@@ -212,35 +240,34 @@ const logSecurityEvent = (event, req, additionalData = {}) => {
 
 // Suspicious Activity Detection
 const detectSuspiciousActivity = (req, res, next) => {
-  const suspiciousPatterns = [
-    /(\%27)|(\-\-)|(\%23)|(#)/i, // SQL injection patterns (removed quotes for JSON compatibility)
-    /<script[^>]*>.*?<\/script>/gi, // XSS patterns
-    /javascript:/gi, // JavaScript injection
-    /vbscript:/gi, // VBScript injection
-    /onload|onerror|onclick/gi, // Event handler injection
-    /\.\.\//gi, // Directory traversal
-    /\/etc\/passwd/gi, // System file access
-    /cmd\.exe|powershell/gi // Command injection
+  // URL and query string patterns (these should never appear in legitimate URLs)
+  const urlPatterns = [
+    /\.\.\//gi,          // Directory traversal
+    /\/etc\/passwd/gi,   // System file access attempts
+    /\/proc\//gi,        // Linux proc filesystem access
+    /cmd\.exe/gi,        // Windows command injection
+    /powershell/gi,      // PowerShell injection
+    /\beval\s*\(/gi,     // eval() injection
+    /base64_decode\s*\(/gi // PHP base64 decode
   ];
 
-  // Skip security check for JSON API requests with Content-Type application/json
-  const isJsonApiRequest = req.headers['content-type'] && 
-                           req.headers['content-type'].includes('application/json') &&
-                           req.url.startsWith('/api/');
+  // Patterns to check in body/query (XSS, script injection, etc.)
+  const contentPatterns = [
+    /<script[\s>]/gi,         // Opening script tag
+    /<\/script>/gi,           // Closing script tag
+    /javascript\s*:/gi,       // JavaScript URI
+    /vbscript\s*:/gi,         // VBScript URI
+    /on(?:load|error|click|mouseover|submit|focus|blur|change|keyup|keydown|keypress)\s*=/gi // Event handler injection
+  ];
 
-  if (isJsonApiRequest) {
-    return next();
-  }
-
-  const checkString = `${req.url} ${JSON.stringify(req.query)} ${JSON.stringify(req.body)}`;
-  
-  for (const pattern of suspiciousPatterns) {
-    if (pattern.test(checkString)) {
-      logSecurityEvent("SUSPICIOUS_ACTIVITY_DETECTED", req, {
+  // Check URL and query string against URL patterns
+  const urlString = `${req.url} ${JSON.stringify(req.query)}`;
+  for (const pattern of urlPatterns) {
+    if (pattern.test(urlString)) {
+      logSecurityEvent("SUSPICIOUS_URL_DETECTED", req, {
         pattern: pattern.toString(),
-        suspiciousContent: checkString.substring(0, 200)
+        suspiciousContent: urlString.substring(0, 200)
       });
-      
       return res.status(400).json({
         error: "Suspicious activity detected",
         code: "SECURITY_VIOLATION",
@@ -248,7 +275,25 @@ const detectSuspiciousActivity = (req, res, next) => {
       });
     }
   }
-  
+
+  // Check body against content patterns (applies to all requests including JSON)
+  if (req.body && typeof req.body === 'object') {
+    const bodyString = JSON.stringify(req.body);
+    for (const pattern of contentPatterns) {
+      if (pattern.test(bodyString)) {
+        logSecurityEvent("SUSPICIOUS_CONTENT_DETECTED", req, {
+          pattern: pattern.toString(),
+          suspiciousContent: bodyString.substring(0, 200)
+        });
+        return res.status(400).json({
+          error: "Suspicious content detected",
+          code: "SECURITY_VIOLATION",
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+  }
+
   next();
 };
 
