@@ -162,8 +162,8 @@ class AuthController {
                     return next(new AppError('Could not log out, please try again', 500));
                 }
                 
-                // Clear the session cookie from their browser
-                res.clearCookie('connect.sid');
+                // Clear the configured session cookie from the browser.
+                res.clearCookie('sap.sid');
                 
                 // Send success response
                 res.status(200).json({

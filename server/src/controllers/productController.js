@@ -4,6 +4,37 @@ const path = require("path");
 const fs = require("fs").promises;
 const { useCloudinary } = require("../config/fileUpload");
 
+// Normalize legacy image shapes (string URLs) to schema-compliant objects.
+const normalizeProductImages = (images, fallbackAlt = "Product image") => {
+    if (!Array.isArray(images)) return [];
+
+    return images
+        .map((img, index) => {
+            if (!img) return null;
+
+            if (typeof img === "string") {
+                return {
+                    url: img,
+                    alt: fallbackAlt,
+                    isPrimary: index === 0,
+                    order: index
+                };
+            }
+
+            if (typeof img === "object" && img.url) {
+                return {
+                    url: img.url,
+                    alt: img.alt || fallbackAlt,
+                    isPrimary: typeof img.isPrimary === "boolean" ? img.isPrimary : index === 0,
+                    order: Number.isFinite(img.order) ? img.order : index
+                };
+            }
+
+            return null;
+        })
+        .filter(Boolean);
+};
+
 // Helper to get file URL (Cloudinary or local)
 const getFileUrl = (file, folder = 'products') => {
     if (!file) return null;
@@ -331,7 +362,10 @@ class ProductController {
 
             // Get current product's images
             const existingProduct = await Product.findById(id);
-            let currentImages = existingProduct?.images || [];
+            let currentImages = normalizeProductImages(
+                existingProduct?.images || [],
+                existingProduct?.name || updateData.name || "Product image"
+            );
 
             // Remove images marked for deletion
             if (imagesToDelete.length > 0) {
@@ -359,7 +393,13 @@ class ProductController {
                     order: currentImages.length + index
                 }));
                 updateData.images = [...currentImages, ...newImages];
-                updateData.image = updateData.images[0].url;
+                updateData.images = normalizeProductImages(updateData.images, updateData.name || existingProduct?.name || 'Product image')
+                    .map((img, index) => ({
+                        ...img,
+                        isPrimary: index === 0,
+                        order: index
+                    }));
+                updateData.image = updateData.images[0]?.url || null;
                 console.log("📸 New images uploaded:", newImages.length, "| Total:", updateData.images.length);
             } else if (req.file) {
                 // Backward-compatible single file upload
@@ -370,11 +410,22 @@ class ProductController {
                     order: currentImages.length
                 };
                 updateData.images = [...currentImages, newImage];
-                updateData.image = updateData.images[0].url;
+                updateData.images = normalizeProductImages(updateData.images, updateData.name || existingProduct?.name || 'Product image')
+                    .map((img, index) => ({
+                        ...img,
+                        isPrimary: index === 0,
+                        order: index
+                    }));
+                updateData.image = updateData.images[0]?.url || null;
                 console.log("📸 New image URL:", newImage.url);
             } else if (imagesToDelete.length > 0) {
                 // No new uploads but some were deleted — persist filtered list
-                updateData.images = currentImages;
+                updateData.images = normalizeProductImages(currentImages, updateData.name || existingProduct?.name || 'Product image')
+                    .map((img, index) => ({
+                        ...img,
+                        isPrimary: index === 0,
+                        order: index
+                    }));
                 updateData.image = currentImages.length > 0 ? currentImages[0].url : null;
             }
 
