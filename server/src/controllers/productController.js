@@ -102,6 +102,14 @@ class ProductController {
     async getProduct(req, res, next) {
         try {
             const { id } = req.params;
+
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    status: "error",
+                    message: errors.array()[0].msg
+                });
+            }
             
             const product = await Product.findOne({ 
                 _id: id, 

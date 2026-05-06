@@ -189,15 +189,8 @@ router.get(
     productController.getCategories
 );
 
-// Get single product by ID
-router.get(
-    "/:id",
-    param("id").isMongoId().withMessage("Invalid product ID"),
-    productController.getProduct
-);
-
 // =====================
-// ADMIN ROUTES
+// ADMIN ROUTES (must be before /:id to avoid wildcard match)
 // =====================
 
 // Get all products for admin (includes inactive)
@@ -219,6 +212,13 @@ router.get(
     "/admin/analytics",
     adminAuth,
     productController.getProductAnalytics
+);
+
+// Get single product by ID
+router.get(
+    "/:id",
+    param("id").isMongoId().withMessage("Invalid product ID"),
+    productController.getProduct
 );
 
 // Multer error handling middleware
