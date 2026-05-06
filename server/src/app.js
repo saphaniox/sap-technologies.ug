@@ -348,6 +348,28 @@ app.use("/api", (req, res, next) => {
     // Add request metadata for logging
     req.requestId = require("crypto").randomUUID();
     req.startTime = Date.now();
+
+    // Add Cache-Control headers for public read-only GET endpoints so CDN/browser
+    // can cache them and avoid hitting the Render server on every page load.
+    if (req.method === "GET") {
+        const path = req.path.toLowerCase();
+        const isPublicListing =
+            path.startsWith("/products") ||
+            path.startsWith("/public/") ||
+            path.startsWith("/partners") ||
+            path.startsWith("/awards") ||
+            path.startsWith("/software") ||
+            path.startsWith("/iot") ||
+            path.startsWith("/certificates");
+        const isAuthOrMutable =
+            path.startsWith("/account") ||
+            path.startsWith("/admin") ||
+            path.startsWith("/users") ||
+            path.startsWith("/visitor");
+        if (isPublicListing && !isAuthOrMutable) {
+            res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=60");
+        }
+    }
     
     securityLogger.info("API request started", {
         requestId: req.requestId,
