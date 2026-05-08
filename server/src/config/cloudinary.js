@@ -1,6 +1,22 @@
-const cloudinary = require('cloudinary').v2;
+const cloudinaryLib = require('cloudinary');
+const cloudinary = cloudinaryLib.v2;
 const cloudinaryStorageModule = require('multer-storage-cloudinary');
 const CloudinaryStorage = cloudinaryStorageModule.CloudinaryStorage || cloudinaryStorageModule;
+
+// Configure Cloudinary immediately at module load time
+if (
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
+) {
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+        secure: true
+    });
+    console.log('✅ Cloudinary configured at module load');
+}
 
 const deleteFromCloudinary = async (publicId, resourceType = 'image') => {
     try {
@@ -96,26 +112,8 @@ const isCloudinaryConfigured = () => {
         return false;
     }
 
-    try {
-        // Configure cloudinary client
-        cloudinary.config({
-            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-            api_key: process.env.CLOUDINARY_API_KEY,
-            api_secret: process.env.CLOUDINARY_API_SECRET,
-            secure: true
-        });
-
-        // Log configuration for debugging
-        console.log('🔧 Cloudinary Configuration:');
-        console.log('   Cloud Name:', process.env.CLOUDINARY_CLOUD_NAME);
-        console.log('   API Key:', process.env.CLOUDINARY_API_KEY?.substring(0, 6) + '...');
-        
-        // Return true - we'll handle connection errors at upload time
-        return true;
-    } catch (error) {
-        console.error('❌ Error configuring Cloudinary:', error.message);
-        return false;
-    }
+    // Cloudinary is already configured at module load time above
+    return true;
 };
 
 // Storage configs for different folders (used by multer)
@@ -234,6 +232,7 @@ const storageConfigs = {
 
 module.exports = {
     cloudinary,
+    cloudinaryLib,
     isCloudinaryConfigured,
     storageConfigs,
     deleteFromCloudinary,
