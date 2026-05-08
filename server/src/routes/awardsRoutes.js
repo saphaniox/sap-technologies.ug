@@ -1,4 +1,5 @@
 const express = require("express");
+const multer = require("multer");
 const router = express.Router();
 const { body, param, query } = require("express-validator");
 const awardsController = require("../controllers/awardsController");
@@ -7,6 +8,29 @@ const { emailValidationMiddleware } = require("../utils/emailValidator");
 const awardsUpload = require("../config/awardsUpload");
 
 const path = require("path");
+
+// Multer error handling middleware
+const handleMulterError = (err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+                status: "error",
+                message: `File size exceeds limit (max 10MB)`,
+                error: err.message
+            });
+        }
+        return res.status(400).json({
+            status: "error",
+            message: `File upload error: ${err.message}`,
+            error: err.message
+        });
+    } else if (err) {
+        return res.status(400).json({
+            status: "error",
+            message: err.message || "File upload failed"
+        });
+    }
+    next();
 
 // Validation middleware
 const validateNomination = [
@@ -159,6 +183,7 @@ router.post(
         next();
     },
     awardsUpload(), // Use the middleware function
+    handleMulterError,
     validateNomination,
     awardsController.submitNomination
 );
@@ -207,6 +232,7 @@ router.put(
     adminAuth,
     param("id").isMongoId().withMessage("Invalid nomination ID"),
     awardsUpload(), // Use the middleware function
+    handleMulterError,
     awardsController.updateNomination
 );
 
