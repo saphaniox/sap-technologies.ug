@@ -31,6 +31,7 @@ const handleMulterError = (err, req, res, next) => {
         });
     }
     next();
+};
 
 // Validation middleware
 const validateNomination = [
