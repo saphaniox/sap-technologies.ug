@@ -1,10 +1,42 @@
 const express = require("express");
+const multer = require("multer");
 const { ServiceController, ProjectController } = require("../controllers/serviceProjectController");
 const { adminAuth } = require("../middleware/adminAuth");
 const validation = require("../middleware/validation");
 const { serviceUpload, projectUpload } = require("../config/fileUpload");
 
 const router = express.Router();
+
+// Multer error handling middleware
+const handleMulterError = (err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+                status: "error",
+                message: `File size exceeds limit (max 10MB)`,
+                error: err.message
+            });
+        }
+        if (err.code === 'LIMIT_FILE_COUNT') {
+            return res.status(400).json({
+                status: "error",
+                message: "Too many files uploaded",
+                error: err.message
+            });
+        }
+        return res.status(400).json({
+            status: "error",
+            message: `File upload error: ${err.message}`,
+            error: err.message
+        });
+    } else if (err) {
+        return res.status(400).json({
+            status: "error",
+            message: err.message || "File upload failed"
+        });
+    }
+    next();
+};
 
 // Apply admin authentication to all routes
 router.use(adminAuth);
@@ -25,6 +57,7 @@ router.get("/services/:id", ServiceController.getServiceById);
 // POST /api/admin/services - Create new service
 router.post("/services", 
   serviceUpload.array("images", 10), // Support up to 10 images
+  handleMulterError,
   validation.validateService,
   ServiceController.createService
 );
@@ -32,6 +65,7 @@ router.post("/services",
 // PUT /api/admin/services/:id - Update service
 router.put("/services/:id", 
   serviceUpload.array("images", 10), // Support up to 10 images
+  handleMulterError,
   (req, res, next) => {
     console.log("🔥 SERVICE UPDATE ROUTE HIT (after multer)!");
     console.log("Service ID:", req.params.id);
@@ -80,6 +114,7 @@ router.post("/projects",
     next();
   },
   projectUpload.array("images", 5), // Allow up to 5 images
+  handleMulterError,
   (req, res, next) => {
     console.log("🔥 AFTER MULTER!");
     console.log("Body keys after multer:", req.body ? Object.keys(req.body) : "No body");
@@ -106,6 +141,7 @@ router.put("/projects/:id",
     next();
   },
   projectUpload.array("images", 5),
+  handleMulterError,
   validation.validateProject,
   ProjectController.updateProject
 );
