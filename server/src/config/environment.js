@@ -185,10 +185,24 @@ class EnvironmentConfig {
      * Get CORS configuration
      */
     getCORSConfig() {
-        const allowedOrigins = process.env.ALLOWED_ORIGINS 
+        // Parse allowed origins from environment variable or use sensible defaults
+        const envOrigins = process.env.ALLOWED_ORIGINS 
             ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
-            : ['http://localhost:5174'];
-
+            : [];
+        
+        // Always include common development origins
+        const defaultOrigins = [
+            'http://localhost:5174',
+            'http://localhost:3000',
+            'http://127.0.0.1:5174'
+        ];
+        
+        // In production, add production domains
+        if (process.env.NODE_ENV === 'production') {
+            defaultOrigins.push('https://sap-technologies.com', 'https://www.sap-technologies.com');
+        }
+        
+        const allowedOrigins = envOrigins.length > 0 ? envOrigins : defaultOrigins;
         console.log('🔗 CORS Allowed Origins:', allowedOrigins);
 
         return {
@@ -201,15 +215,21 @@ class EnvironmentConfig {
                     return callback(null, true);
                 }
                 
-                // Check if origin is in allowed list
+                // Check if origin is in allowed list (exact match)
                 if (allowedOrigins.includes(origin)) {
-                    console.log('✅ CORS: Origin allowed:', origin);
+                    console.log('✅ CORS: Origin allowed (exact match):', origin);
                     return callback(null, true);
                 }
                 
                 // Allow Vercel preview deployments (e.g., sap-technologies-uganda-*.vercel.app)
                 if (origin.includes('sap-technologies-uganda') && origin.includes('.vercel.app')) {
                     console.log('✅ CORS: Vercel preview deployment allowed:', origin);
+                    return callback(null, true);
+                }
+                
+                // Allow any sap-technologies domain (www or not) in production for flexibility
+                if (process.env.NODE_ENV === 'production' && origin.includes('sap-technologies')) {
+                    console.log('✅ CORS: Production sap-technologies domain allowed:', origin);
                     return callback(null, true);
                 }
                 
