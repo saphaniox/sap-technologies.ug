@@ -67,7 +67,7 @@ app.use(speedLimiter);
 
 // 6. Body parsing middleware with size limits
 app.use(express.json({ 
-    limit: "1mb",
+    limit: "50mb", // Increased for API requests with metadata
     verify: (req, res, buf) => {
         // Store raw body for signature verification if needed
         req.rawBody = buf;
@@ -75,8 +75,8 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ 
     extended: true, 
-    limit: "1mb",
-    parameterLimit: 20 // Limit number of parameters
+    limit: "50mb", // Increased for form-based requests (including file upload metadata)
+    parameterLimit: 100 // Increased parameter limit for complex forms
 }));
 
 // 7. MongoDB injection protection - Custom implementation for Express 5.x compatibility
