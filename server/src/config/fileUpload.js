@@ -70,11 +70,19 @@ const mediaFilter = (req, file, cb) => {
   }
 };
 
+// Safety function: fallback to local storage if Cloudinary storage is null
+const getStorage = (cloudinaryStorage, localStoragePath) => {
+  if (useCloudinary && cloudinaryStorage) {
+    return cloudinaryStorage;
+  }
+  return createLocalStorage(localStoragePath);
+};
+
 // Configure multer instances for different purposes
 // Use Cloudinary if configured, otherwise use local storage
 
 const profileUpload = multer({
-  storage: useCloudinary ? storageConfigs.profilePics : createLocalStorage(profilePicsDir),
+  storage: getStorage(storageConfigs.profilePics, profilePicsDir),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
@@ -82,7 +90,7 @@ const profileUpload = multer({
 });
 
 const serviceUpload = multer({
-  storage: useCloudinary ? storageConfigs.services : createLocalStorage(servicesDir),
+  storage: getStorage(storageConfigs.services, servicesDir),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
@@ -90,7 +98,7 @@ const serviceUpload = multer({
 });
 
 const projectUpload = multer({
-  storage: useCloudinary ? storageConfigs.projects : createLocalStorage(projectsDir),
+  storage: getStorage(storageConfigs.projects, projectsDir),
   limits: {
     fileSize: 20 * 1024 * 1024, // 20MB limit
   },
@@ -98,7 +106,7 @@ const projectUpload = multer({
 });
 
 const productUpload = multer({
-  storage: useCloudinary ? storageConfigs.products : createLocalStorage(productsDir),
+  storage: getStorage(storageConfigs.products, productsDir),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
@@ -106,7 +114,7 @@ const productUpload = multer({
 });
 
 const signatureUpload = multer({
-  storage: useCloudinary ? storageConfigs.signatures : createLocalStorage(signaturesDir),
+  storage: getStorage(storageConfigs.signatures, signaturesDir),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit for signatures
   },
@@ -114,7 +122,7 @@ const signatureUpload = multer({
 });
 
 const partnerUpload = multer({
-  storage: useCloudinary ? storageConfigs.partners : createLocalStorage(partnersDir),
+  storage: getStorage(storageConfigs.partners, partnersDir),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
@@ -122,7 +130,7 @@ const partnerUpload = multer({
 });
 
 const awardUpload = multer({
-  storage: useCloudinary ? storageConfigs.awards : createLocalStorage(awardsDir),
+  storage: getStorage(storageConfigs.awards, awardsDir),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
@@ -130,7 +138,7 @@ const awardUpload = multer({
 });
 
 const softwareUpload = multer({
-  storage: useCloudinary ? storageConfigs.software : createLocalStorage(softwareDir),
+  storage: getStorage(storageConfigs.software, softwareDir),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
@@ -138,7 +146,7 @@ const softwareUpload = multer({
 });
 
 const iotUpload = multer({
-  storage: useCloudinary ? storageConfigs.iot : createLocalStorage(iotDir),
+  storage: getStorage(storageConfigs.iot, iotDir),
   limits: {
     fileSize: 200 * 1024 * 1024, // 200MB limit (to accommodate video uploads)
   },
