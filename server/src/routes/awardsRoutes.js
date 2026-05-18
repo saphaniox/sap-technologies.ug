@@ -6,8 +6,7 @@ const awardsController = require("../controllers/awardsController");
 const { adminAuth } = require("../middleware/adminAuth");
 const { emailValidationMiddleware } = require("../utils/emailValidator");
 const awardsUpload = require("../config/awardsUpload");
-
-const path = require("path");
+const { compressionPresets } = require("../middleware/imageCompression");
 
 // Multer error handling middleware
 const handleMulterError = (err, req, res, next) => {
@@ -178,13 +177,9 @@ router.get("/nominations/:id", awardsController.getNomination);
 // Submit new nomination
 router.post(
     "/nominations",
-    (req, res, next) => {
-        console.log('📝 Processing nomination submission...');
-        console.log('Headers:', req.headers);
-        next();
-    },
     awardsUpload(), // Use the middleware function
     handleMulterError,
+    compressionPresets.thumbnail,
     validateNomination,
     awardsController.submitNomination
 );
@@ -234,6 +229,7 @@ router.put(
     param("id").isMongoId().withMessage("Invalid nomination ID"),
     awardsUpload(), // Use the middleware function
     handleMulterError,
+    compressionPresets.thumbnail,
     awardsController.updateNomination
 );
 

@@ -25,7 +25,7 @@ const localStorage = multer.diskStorage({
 });
 
 // Use Cloudinary if configured, otherwise use local storage
-const storage = useCloudinary ? storageConfigs['profile-pics'] : localStorage;
+const storage = useCloudinary ? storageConfigs.profilePics : localStorage;
 
 // File filter for images only
 const fileFilter = (req, file, cb) => {

@@ -195,7 +195,9 @@ const validatePasswordChange = [
         }),
     body("confirmPassword")
         .custom((value, { req }) => {
-          if (value !== req.body.newPassword) {
+          const newPassword = req.body.newPassword;
+          const confirmedPassword = typeof value === 'undefined' || value === null ? newPassword : value;
+          if (confirmedPassword !== newPassword) {
             throw new Error("Password confirmation does not match");
           }
           return true;

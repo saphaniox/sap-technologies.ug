@@ -4,6 +4,7 @@ const router = express.Router();
 const softwareController = require("../controllers/softwareController");
 const { adminAuth } = require("../middleware/adminAuth");
 const { softwareUpload } = require("../config/fileUpload");
+const { compressionPresets } = require("../middleware/imageCompression");
 
 // Multer error handling middleware
 const handleMulterError = (err, req, res, next) => {
@@ -30,7 +31,7 @@ const handleMulterError = (err, req, res, next) => {
 };
 
 // Admin routes (must come before dynamic :id routes)
-router.post("/", adminAuth, softwareUpload.array("images", 5), handleMulterError, softwareController.createSoftware);
+router.post("/", adminAuth, softwareUpload.array("images", 5), handleMulterError, compressionPresets.web, softwareController.createSoftware);
 router.get("/admin/stats", adminAuth, softwareController.getStats);
 
 // Public routes
@@ -40,7 +41,7 @@ router.get("/:id", softwareController.getSoftwareById);
 router.post("/:id/click", softwareController.trackClick);
 
 // Admin routes for specific software
-router.put("/:id", adminAuth, softwareUpload.array("images", 5), handleMulterError, softwareController.updateSoftware);
+router.put("/:id", adminAuth, softwareUpload.array("images", 5), handleMulterError, compressionPresets.web, softwareController.updateSoftware);
 router.delete("/:id", adminAuth, softwareController.deleteSoftware);
 
 module.exports = router;

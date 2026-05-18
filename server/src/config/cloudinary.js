@@ -116,6 +116,14 @@ const isCloudinaryConfigured = () => {
     return true;
 };
 
+const imageTransformation = (width, height, crop = 'limit') => [{
+    width,
+    height,
+    crop,
+    quality: 'auto:good',
+    fetch_format: 'auto'
+}];
+
 // Storage configs for different folders (used by multer)
 const storageConfigs = {
     profilePics: isCloudinaryConfigured()
@@ -125,7 +133,7 @@ const storageConfigs = {
                 folder: 'sap-technologies/profile-pics',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: [{ width: 400, height: 400, crop: 'limit' }],
+                transformation: imageTransformation(400, 400),
             },
         })
         : null,
@@ -136,7 +144,7 @@ const storageConfigs = {
                 folder: 'sap-technologies/services',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: [{ width: 800, height: 600, crop: 'limit' }],
+                transformation: imageTransformation(800, 600),
             },
         })
         : null,
@@ -147,7 +155,7 @@ const storageConfigs = {
                 folder: 'sap-technologies/projects',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: [{ width: 1200, height: 800, crop: 'limit' }],
+                transformation: imageTransformation(1200, 800),
             },
         })
         : null,
@@ -158,7 +166,7 @@ const storageConfigs = {
                 folder: 'sap-technologies/products',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: [{ width: 800, height: 800, crop: 'limit' }],
+                transformation: imageTransformation(800, 800),
             },
         })
         : null,
@@ -169,7 +177,7 @@ const storageConfigs = {
                 folder: 'sap-technologies/signatures',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: [{ width: 600, height: 200, crop: 'limit' }],
+                transformation: imageTransformation(600, 200),
             },
         })
         : null,
@@ -180,7 +188,7 @@ const storageConfigs = {
                 folder: 'sap-technologies/partners',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: [{ width: 600, height: 600, crop: 'limit' }],
+                transformation: imageTransformation(600, 600),
             },
         })
         : null,
@@ -191,7 +199,7 @@ const storageConfigs = {
                 folder: 'sap-technologies/awards',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: [{ width: 800, height: 800, crop: 'limit' }],
+                transformation: imageTransformation(800, 800),
             },
         })
         : null,
@@ -202,7 +210,7 @@ const storageConfigs = {
                 folder: 'sap-technologies/software',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: [{ width: 1200, height: 800, crop: 'limit' }],
+                transformation: imageTransformation(1200, 800),
             },
         })
         : null,
@@ -223,7 +231,7 @@ const storageConfigs = {
                     folder: 'sap-technologies/iot',
                     resource_type: 'image',
                     allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                    transformation: [{ width: 1920, height: 1080, crop: 'limit' }]
+                    transformation: imageTransformation(1920, 1080)
                 };
             }
         })

@@ -43,6 +43,13 @@ const compressImage = (options = {}) => {
           return file;
         }
 
+        // Cloudinary storage returns remote URLs/public IDs after upload. Sharp
+        // should only process local fallback files; Cloudinary handles remote
+        // optimization through upload/delivery transformations.
+        if (!file.path || /^https?:\/\//i.test(file.path)) {
+          return file;
+        }
+
         // Skip GIFs as sharp doesn't handle animated GIFs well
         if (file.mimetype === "image/gif") {
           console.log(`⏭️  Skipping GIF compression: ${file.filename}`);
@@ -94,6 +101,9 @@ const compressImage = (options = {}) => {
             file.filename = compressedFilename;
             file.size = compressedSize;
             file.isCompressed = true;
+            if (convertToWebP) {
+              file.mimetype = "image/webp";
+            }
             
             console.log(`✅ Compressed ${file.originalname}: ${(originalSize / 1024).toFixed(2)}KB → ${(compressedSize / 1024).toFixed(2)}KB (saved ${compressionRatio}%)`);
           } else {
@@ -124,13 +134,13 @@ const compressImage = (options = {}) => {
  */
 const compressionPresets = {
   // High quality for portfolios, IoT projects
-  highQuality: compressImage({ quality: 85, maxWidth: 2560, maxHeight: 1440 }),
+  highQuality: compressImage({ quality: 82, maxWidth: 2560, maxHeight: 1440, convertToWebP: true }),
   
   // Standard quality for general use
-  standard: compressImage({ quality: 80, maxWidth: 1920, maxHeight: 1080 }),
+  standard: compressImage({ quality: 78, maxWidth: 1920, maxHeight: 1080, convertToWebP: true }),
   
   // Optimized for web (smaller file sizes)
-  web: compressImage({ quality: 75, maxWidth: 1920, maxHeight: 1080, convertToWebP: false }),
+  web: compressImage({ quality: 75, maxWidth: 1920, maxHeight: 1080, convertToWebP: true }),
   
   // Thumbnails and small images
   thumbnail: compressImage({ quality: 70, maxWidth: 800, maxHeight: 600 }),

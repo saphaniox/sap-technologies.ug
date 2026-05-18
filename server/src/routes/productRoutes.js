@@ -5,6 +5,7 @@ const { body, param, query } = require("express-validator");
 const productController = require("../controllers/productController");
 const { adminAuth } = require("../middleware/adminAuth");
 const { productUpload } = require("../config/fileUpload");
+const { compressionPresets } = require("../middleware/imageCompression");
 
 // Validation middleware
 const validateProduct = [
@@ -249,6 +250,7 @@ router.post(
     adminAuth,
     productUpload.array("images", 10), // Support up to 10 images
     handleMulterError,
+    compressionPresets.web,
     validateProduct,
     productController.createProduct
 );
@@ -260,6 +262,7 @@ router.put(
     param("id").isMongoId().withMessage("Invalid product ID"),
     productUpload.array("images", 10), // Support up to 10 images
     handleMulterError,
+    compressionPresets.web,
     validateProductUpdate,
     productController.updateProduct
 );

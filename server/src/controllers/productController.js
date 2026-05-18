@@ -3,6 +3,7 @@ const { validationResult } = require("express-validator");
 const path = require("path");
 const fs = require("fs").promises;
 const { useCloudinary } = require("../config/fileUpload");
+const { cloudinary } = require("../config/cloudinary");
 
 // Normalize legacy image shapes (string URLs) to schema-compliant objects.
 const normalizeProductImages = (images, fallbackAlt = "Product image") => {
@@ -39,8 +40,17 @@ const normalizeProductImages = (images, fallbackAlt = "Product image") => {
 const getFileUrl = (file, folder = 'products') => {
     if (!file) return null;
     
-    if (useCloudinary && file.path && file.path.includes('cloudinary.com')) {
-        return file.path;
+    const cloudinaryPath = file.path || file.filename;
+    if (useCloudinary && cloudinaryPath) {
+        if (cloudinaryPath.includes('cloudinary.com')) {
+            return cloudinaryPath;
+        }
+
+        return cloudinary.url(cloudinaryPath, {
+            secure: true,
+            resource_type: 'image',
+            type: 'upload'
+        });
     }
     
     return `/uploads/${folder}/${file.filename}`;

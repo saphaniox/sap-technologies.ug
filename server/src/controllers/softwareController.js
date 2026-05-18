@@ -2,7 +2,58 @@ const Software = require("../models/Software");
 const path = require("path");
 const fs = require("fs").promises;
 const { useCloudinary } = require("../config/fileUpload");
-const { cloudinary } = require("../config/cloudinary");
+const { cloudinary, deleteFromCloudinary, extractPublicId } = require("../config/cloudinary");
+
+const normalizeSoftwareImages = (images, fallbackAlt = "Software image") => {
+  if (!Array.isArray(images)) return [];
+
+  return images
+    .map((image) => {
+      if (!image) return null;
+
+      if (typeof image === "string") {
+        return {
+          url: image,
+          alt: fallbackAlt
+        };
+      }
+
+      if (typeof image === "object" && image.url) {
+        return {
+          url: image.url,
+          alt: image.alt || fallbackAlt
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+};
+
+const deleteUploadedImage = async (imageUrl, folder = "software") => {
+  if (!imageUrl) return;
+
+  try {
+    if (imageUrl.includes("cloudinary.com")) {
+      const publicId = extractPublicId(imageUrl);
+      if (publicId) {
+        await deleteFromCloudinary(publicId, "image");
+      }
+      return;
+    }
+
+    if (imageUrl.startsWith("/uploads/")) {
+      const imagePath = path.join(__dirname, "../..", imageUrl);
+      await fs.unlink(imagePath);
+      return;
+    }
+
+    const imagePath = path.join(__dirname, "../../uploads", folder, path.basename(imageUrl));
+    await fs.unlink(imagePath);
+  } catch (err) {
+    console.error("Error deleting image:", err.message);
+  }
+};
 
 /**
  * Get the correct file path/URL for uploaded file
@@ -12,18 +63,19 @@ const getFileUrl = (file, folder = 'software') => {
   if (!file) return null;
   
   // If using Cloudinary
-  if (useCloudinary && file.path) {
+  const cloudinaryPath = file.path || file.filename;
+  if (useCloudinary && cloudinaryPath) {
     // Check if it's already a full Cloudinary URL
-    if (file.path.includes('cloudinary.com')) {
-      return file.path;
+    if (cloudinaryPath.includes('cloudinary.com')) {
+      return cloudinaryPath;
     }
     
     // If it's a Cloudinary public_id (from multer-storage-cloudinary)
     // Construct the full URL using cloudinary.url()
-    if (file.path && !file.path.startsWith('/uploads/')) {
+    if (!cloudinaryPath.startsWith('/uploads/')) {
       try {
         // file.path is the public_id, construct the secure URL
-        return cloudinary.url(file.path, {
+        return cloudinary.url(cloudinaryPath, {
           secure: true,
           resource_type: 'image',
           type: 'upload'
@@ -240,6 +292,7 @@ exports.updateSoftware = async (req, res) => {
     }
     
     const updateData = { ...req.body };
+    const fallbackAlt = updateData.name || software.name || "Software image";
     
     // Parse JSON fields if they're strings
     if (typeof updateData.features === "string") {
@@ -262,32 +315,52 @@ exports.updateSoftware = async (req, res) => {
     if (typeof updateData.isPublic === "string") {
       updateData.isPublic = updateData.isPublic === "true";
     }
+
+    let imagesToDelete = [];
+    if (updateData.imagesToDelete) {
+      try {
+        imagesToDelete = JSON.parse(updateData.imagesToDelete);
+      } catch (e) {
+        imagesToDelete = [];
+      }
+      delete updateData.imagesToDelete;
+    }
+
+    const keepExistingImages = updateData.keepExistingImages === "true";
+    const deleteOldImages = updateData.deleteOldImages === "true";
+    delete updateData.keepExistingImages;
+    delete updateData.deleteOldImages;
+
+    let currentImages = normalizeSoftwareImages(
+      software.images?.length ? software.images : (software.image ? [software.image] : []),
+      fallbackAlt
+    );
+
+    if (deleteOldImages) {
+      imagesToDelete = currentImages.map(img => img.url);
+      currentImages = [];
+    }
+
+    if (imagesToDelete.length > 0) {
+      await Promise.all(imagesToDelete.map(imageUrl => deleteUploadedImage(imageUrl, "software")));
+      currentImages = currentImages.filter(img => !imagesToDelete.includes(img.url));
+      updateData.images = currentImages;
+      updateData.image = currentImages[0]?.url || null;
+    }
     
     // Handle new uploaded files
     if (req.files && req.files.length > 0) {
-      // Delete old images if requested
-      if (req.body.deleteOldImages === "true" && software.images) {
-        for (const img of software.images) {
-          try {
-            const imagePath = path.join(__dirname, "../..", img.url);
-            await fs.unlink(imagePath);
-          } catch (err) {
-            console.error("Error deleting old image:", err);
-          }
-        }
-      }
-      
       // Add new images
       const newImages = req.files.map(file => ({
         url: getFileUrl(file, 'software'),
-        alt: updateData.name || software.name || "Software image"
+        alt: fallbackAlt
       }));
       
-      updateData.images = req.body.keepExistingImages === "true" 
-        ? [...(software.images || []), ...newImages]
+      updateData.images = keepExistingImages || imagesToDelete.length > 0
+        ? [...currentImages, ...newImages]
         : newImages;
       
-      updateData.image = updateData.images[0].url;
+      updateData.image = updateData.images[0]?.url || null;
     }
     
     Object.assign(software, updateData);

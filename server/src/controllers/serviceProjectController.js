@@ -2,6 +2,7 @@ const { Service, Project } = require("../models");
 const fs = require("fs");
 const path = require("path");
 const { useCloudinary } = require("../config/fileUpload");
+const { cloudinary } = require("../config/cloudinary");
 const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
 
@@ -9,9 +10,17 @@ const logger = require("../utils/logger");
 const getFileUrl = (file, folder = 'services') => {
   if (!file) return null;
   
-  if (useCloudinary && file.path) {
-    // Cloudinary returns full URL in file.path
-    return file.path;
+  const cloudinaryPath = file.path || file.filename;
+  if (useCloudinary && cloudinaryPath) {
+    if (cloudinaryPath.includes('cloudinary.com')) {
+      return cloudinaryPath;
+    }
+
+    return cloudinary.url(cloudinaryPath, {
+      secure: true,
+      resource_type: 'image',
+      type: 'upload'
+    });
   }
   
   // Local storage - construct relative path

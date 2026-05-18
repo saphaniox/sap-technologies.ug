@@ -2,6 +2,7 @@ const Partner = require("../models/Partner");
 const path = require("path");
 const fs = require("fs").promises;
 const { useCloudinary } = require("../config/fileUpload");
+const { cloudinary } = require("../config/cloudinary");
 
 /**
  * Get the correct file path/URL for uploaded file
@@ -10,14 +11,22 @@ const { useCloudinary } = require("../config/fileUpload");
 const getFileUrl = (file, folder = 'partners') => {
   if (!file) return null;
   
-  // If using Cloudinary, file.path contains the full Cloudinary URL
-  if (useCloudinary && file.path && file.path.includes('cloudinary.com')) {
-    return file.path;
+  const cloudinaryPath = file.path || file.filename;
+  if (useCloudinary && cloudinaryPath) {
+    if (cloudinaryPath.includes('cloudinary.com')) {
+      return cloudinaryPath;
+    }
+
+    return cloudinary.url(cloudinaryPath, {
+      secure: true,
+      resource_type: 'image',
+      type: 'upload'
+    });
   }
   
   // Local storage: construct path
   return `/uploads/${folder}/${file.filename}`;
-};;
+};
 
 // Get active partners (public)
 const getPartners = async (req, res) => {

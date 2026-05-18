@@ -5,6 +5,7 @@ const fs = require("fs").promises;
 const emailService = require("../services/emailService");
 const certificateService = require("../services/certificateService");
 const { useCloudinary } = require("../config/fileUpload");
+const { cloudinary } = require("../config/cloudinary");
 const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
 
@@ -12,9 +13,17 @@ const logger = require("../utils/logger");
 const getFileUrl = (file, folder = 'awards') => {
   if (!file) return null;
   
-  if (useCloudinary && file.path) {
-    // Cloudinary returns full URL in file.path
-    return file.path;
+  const cloudinaryPath = file.path || file.filename;
+  if (useCloudinary && cloudinaryPath) {
+    if (cloudinaryPath.includes('cloudinary.com')) {
+      return cloudinaryPath;
+    }
+
+    return cloudinary.url(cloudinaryPath, {
+      secure: true,
+      resource_type: 'image',
+      type: 'upload'
+    });
   }
   
   // Local storage - construct relative path

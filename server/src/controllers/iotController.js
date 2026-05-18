@@ -12,20 +12,21 @@ const getFileUrl = (file, folder = 'iot') => {
   if (!file) return null;
   
   // If using Cloudinary
-  if (useCloudinary && file.path) {
+  const cloudinaryPath = file.path || file.filename;
+  if (useCloudinary && cloudinaryPath) {
     // Check if it's already a full Cloudinary URL
-    if (file.path.includes('cloudinary.com')) {
-      return file.path;
+    if (cloudinaryPath.includes('cloudinary.com')) {
+      return cloudinaryPath;
     }
     
     // If it's a Cloudinary public_id (from multer-storage-cloudinary)
     // Construct the full URL using cloudinary.url()
-    if (file.path && !file.path.startsWith('/uploads/')) {
+    if (!cloudinaryPath.startsWith('/uploads/')) {
       try {
         // file.path is the public_id, construct the secure URL
-        return cloudinary.url(file.path, {
+        return cloudinary.url(cloudinaryPath, {
           secure: true,
-          resource_type: 'image',
+          resource_type: file.mimetype?.startsWith('video/') ? 'video' : 'image',
           type: 'upload'
         });
       } catch (error) {
@@ -249,6 +250,7 @@ exports.updateIoTProject = async (req, res) => {
     // Handle image removal if specified
     if (req.body.removeImages) {
       const imagesToRemove = JSON.parse(req.body.removeImages);
+      delete updateData.removeImages;
       const currentImages = updateData.images || iotProject.images || [];
       updateData.images = currentImages.filter(img => !imagesToRemove.includes(img.url));
 
@@ -266,6 +268,7 @@ exports.updateIoTProject = async (req, res) => {
     // Handle video removal if specified
     if (req.body.removeVideos) {
       const videosToRemove = JSON.parse(req.body.removeVideos);
+      delete updateData.removeVideos;
       const currentVideos = updateData.videos || iotProject.videos || [];
       updateData.videos = currentVideos.filter(v => !videosToRemove.includes(v.url));
     }
