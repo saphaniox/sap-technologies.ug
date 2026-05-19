@@ -8,6 +8,7 @@ const args = new Set(process.argv.slice(2));
 const reverse = args.has("--reverse");
 const prune = args.has("--prune");
 const dryRun = args.has("--dry-run");
+const OUTBOX_COLLECTION = "mirror_outbox";
 
 const primaryUri = process.env.MONGODB_URI || process.env.MONGODB_LOCAL;
 const secondaryUri = process.env.MONGODB_SECONDARY_URI || process.env.MONGODB_MIRROR_URI;
@@ -56,7 +57,7 @@ const flushBulk = async (collectionName, targetCollection, ops, counts) => {
 const syncCollection = async (sourceDb, targetDb, collectionInfo) => {
     const collectionName = collectionInfo.name;
 
-    if (collectionName.startsWith("system.")) {
+    if (collectionName.startsWith("system.") || collectionName === OUTBOX_COLLECTION) {
         return { collectionName, skipped: true };
     }
 
