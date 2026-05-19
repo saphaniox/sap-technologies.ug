@@ -155,7 +155,23 @@ if (process.env.NODE_ENV === 'production') {
         console.log('⚠️ Using memory session store for development');
     }
 }
-app.use(session(sessionConfig));
+
+const sessionMiddleware = session(sessionConfig);
+app.use((req, res, next) => {
+    const hasBearerToken = req.headers.authorization?.startsWith("Bearer ");
+    const hasAccessTokenCookie = Boolean(req.cookies?.accessToken);
+    const canUseStatelessAuth =
+        req.path.startsWith("/api/") &&
+        (hasBearerToken || hasAccessTokenCookie) &&
+        !["/api/login", "/api/signup", "/api/logout"].includes(req.path);
+
+    if (canUseStatelessAuth) {
+        req.session = {};
+        return next();
+    }
+
+    return sessionMiddleware(req, res, next);
+});
 
 // Visitor tracking middleware (after CORS and before routes)
 app.use(trackVisitor);

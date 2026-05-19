@@ -11,6 +11,36 @@ const getAuthCookieOptions = () => ({
     maxAge: 24 * 60 * 60 * 1000
 });
 
+const saveSessionWithTimeout = (req, timeoutMs = 2500) => (
+    new Promise((resolve) => {
+        if (!req.session?.save) {
+            return resolve(false);
+        }
+
+        let settled = false;
+        const timer = setTimeout(() => {
+            if (!settled) {
+                settled = true;
+                console.warn(`Session save timed out after ${timeoutMs}ms; continuing with JWT auth.`);
+                resolve(false);
+            }
+        }, timeoutMs);
+
+        req.session.save((err) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+
+            if (err) {
+                console.error('Session save error; continuing with JWT auth:', err);
+                return resolve(false);
+            }
+
+            resolve(true);
+        });
+    })
+);
+
 const signAccessToken = (user) => jwt.sign(
     {
         userId: user._id.toString(),
@@ -124,19 +154,13 @@ class AuthController {
                 email: user.email
             });
             
-            // Explicitly save session before sending response
-            await new Promise((resolve, reject) => {
-                req.session.save((err) => {
-                    if (err) {
-                        console.error('❌ Session save error:', err);
-                        reject(err);
-                    } else {
-                        console.log('✅ Session saved successfully.');
-                        console.log('📋 Session contents:', JSON.stringify(req.session, null, 2));
-                        resolve();
-                    }
-                });
-            });
+            // Persist the legacy session when possible, but don't let the
+            // Mongo session store block login because JWT auth is the source
+            // of truth for cross-site admin requests.
+            const sessionSaved = await saveSessionWithTimeout(req);
+            if (sessionSaved) {
+                console.log('✅ Session saved successfully.');
+            }
             
             // Save the updated user info to database
             await user.save();
@@ -175,30 +199,35 @@ class AuthController {
     async logout(req, res, next) {
         try {
             // If user has an active session, log their logout activity
-            if (req.session.userId) {
+            if (req.session?.userId) {
                 const user = await User.findById(req.session.userId);
                 if (user) {
                     await user.addActivity('Logged out');
                 }
             }
             
-            // Destroy the session - this logs them out
-            req.session.destroy((err) => {
-                if (err) {
-                    return next(new AppError('Could not log out, please try again', 500));
-                }
-                
-                // Clear the configured auth cookies from the browser.
+            const sendLogoutResponse = () => {
                 const cookieOptions = getAuthCookieOptions();
                 delete cookieOptions.maxAge;
                 res.clearCookie('sap.sid', cookieOptions);
                 res.clearCookie('accessToken', cookieOptions);
-                
-                // Send success response
+
                 res.status(200).json({
                     status: 'success',
                     message: 'Logged out successfully'
                 });
+            };
+
+            if (!req.session?.destroy) {
+                return sendLogoutResponse();
+            }
+
+            req.session.destroy((err) => {
+                if (err) {
+                    return next(new AppError('Could not log out, please try again', 500));
+                }
+
+                sendLogoutResponse();
             });
         } catch (error) {
             next(error);
@@ -208,8 +237,8 @@ class AuthController {
     // Get current logged-in user's info
     async getCurrentUser(req, res, next) {
         try {
-            // Find the user based on session
-            const user = await User.findById(req.session.userId);
+            // authMiddleware attaches req.user for JWT and session auth.
+            const user = req.user || await User.findById(req.session?.userId);
             if (!user) {
                 return next(new AppError('User not found', 404));
             }
@@ -228,7 +257,8 @@ class AuthController {
     async checkAuth(req, res, next) {
         try {
             // No session = not logged in
-            if (!req.session.userId) {
+            const userId = req.userId || req.session?.userId;
+            if (!userId) {
                 return res.status(401).json({
                     status: 'fail',
                     message: 'Not authenticated'
@@ -236,7 +266,7 @@ class AuthController {
             }
             
             // Check if user still exists and is active
-            const user = await User.findById(req.session.userId);
+            const user = req.user || await User.findById(userId);
             if (!user || !user.isActive) {
                 return res.status(401).json({
                     status: 'fail',

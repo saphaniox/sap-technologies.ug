@@ -39,7 +39,7 @@ const authMiddleware = async (req, res, next) => {
         }
 
         // Fallback to session if no valid token
-        if (!userId && req.session.userId) {
+        if (!userId && req.session?.userId) {
             userId = req.session.userId;
         }
 
@@ -56,7 +56,7 @@ const authMiddleware = async (req, res, next) => {
         const user = await User.findById(userId).select("-password");
         if (!user || !user.isActive) {
             // Clear invalid session
-            if (req.session.userId) {
+            if (req.session?.userId) {
                 req.session.destroy();
             }
             
@@ -189,7 +189,7 @@ const optionalAuthMiddleware = async (req, res, next) => {
         }
 
         // Fallback to session if no valid token
-        if (!userId && req.session.userId) {
+        if (!userId && req.session?.userId) {
             userId = req.session.userId;
         }
 
