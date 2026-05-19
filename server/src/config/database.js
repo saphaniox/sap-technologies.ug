@@ -149,7 +149,8 @@ const connectDB = async () => {
 
         console.log(`Secure MongoDB connection established on ${activeCluster.name}: ${conn.connection.host}`);
         console.log(`Database: ${conn.connection.name}`);
-        console.log(`SSL Enabled: ${dbConfig.options.ssl ? "Yes" : "No (Development)"}`);
+        console.log(`TLS Enabled: ${dbConfig.options.tls ? "Yes" : "No (Development)"}`);
+        console.log(`TLS Certificate Validation: ${dbConfig.options.tlsAllowInvalidCertificates ? "Disabled" : "Enabled"}`);
 
         return conn;
     } catch (error) {
@@ -208,7 +209,8 @@ const auditDatabaseSecurity = () => {
         connectionState: mongoose.connection.readyState,
         activeCluster: activeDatabase.cluster,
         mirror: mirrorService.getMirrorStatus(),
-        ssl: mongoose.connection.options?.ssl || false,
+        tls: mongoose.connection.options?.tls || false,
+        tlsAllowInvalidCertificates: mongoose.connection.options?.tlsAllowInvalidCertificates || false,
         authSource: mongoose.connection.options?.authSource,
         writeConcern: mongoose.connection.options?.writeConcern,
         readConcern: mongoose.connection.options?.readConcern,

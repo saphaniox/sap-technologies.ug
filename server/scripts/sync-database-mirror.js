@@ -13,6 +13,20 @@ const verify = !args.has("--no-verify");
 const OUTBOX_COLLECTION = "mirror_outbox";
 const BATCH_SIZE = 500;
 
+const getArgValue = (name, fallback) => {
+    const prefix = `${name}=`;
+    const arg = process.argv.slice(2).find(item => item.startsWith(prefix));
+    return arg ? arg.slice(prefix.length) : fallback;
+};
+
+const numberOption = (name, envName, fallback) => {
+    const value = parseInt(getArgValue(name, process.env[envName] || String(fallback)), 10);
+    return Number.isFinite(value) && value >= 0 ? value : fallback;
+};
+
+const verifyRetries = numberOption("--verify-retries", "MONGODB_MIRROR_VERIFY_RETRIES", 5);
+const liveTailEnabled = !args.has("--no-live-tail") && process.env.MONGODB_MIRROR_LIVE_TAIL !== "false";
+
 const primaryUri = process.env.MONGODB_URI || process.env.MONGODB_LOCAL;
 const secondaryUri = process.env.MONGODB_SECONDARY_URI || process.env.MONGODB_MIRROR_URI;
 
@@ -20,9 +34,15 @@ const sourceUri = reverse ? secondaryUri : primaryUri;
 const targetUri = reverse ? primaryUri : secondaryUri;
 const sourceName = reverse ? "secondary" : "primary";
 const targetName = reverse ? "primary" : "secondary";
+const usesSrvUri = [sourceUri, targetUri].some(uri => uri?.startsWith("mongodb+srv://"));
+const tlsEnabled = process.env.DB_TLS
+    ? process.env.DB_TLS === "true"
+    : usesSrvUri;
+const validateTls = process.env.DB_SSL_VALIDATE !== "false";
 
 const options = {
-    ssl: process.env.DB_SSL_VALIDATE !== "false",
+    tls: tlsEnabled,
+    tlsAllowInvalidCertificates: tlsEnabled && !validateTls,
     authSource: process.env.DB_AUTH_SOURCE || "admin",
     readPreference: "primary",
     maxPoolSize: 5,
@@ -251,12 +271,166 @@ const verifySync = async (sourceDb, targetDb, sourceCollectionNames) => {
     return results;
 };
 
+const applyLiveChange = async (targetDb, change) => {
+    const collectionName = change.ns?.coll;
+    if (!collectionName || shouldSkipCollection(collectionName)) return;
+
+    const targetCollection = targetDb.collection(collectionName);
+
+    switch (change.operationType) {
+        case "insert":
+        case "replace":
+            if (change.fullDocument?._id) {
+                await targetCollection.replaceOne(
+                    { _id: change.fullDocument._id },
+                    change.fullDocument,
+                    { upsert: true }
+                );
+            }
+            break;
+        case "update":
+            if (change.fullDocument?._id) {
+                await targetCollection.replaceOne(
+                    { _id: change.fullDocument._id },
+                    change.fullDocument,
+                    { upsert: true }
+                );
+            } else if (change.documentKey?._id && change.updateDescription) {
+                const update = {};
+                if (Object.keys(change.updateDescription.updatedFields || {}).length > 0) {
+                    update.$set = change.updateDescription.updatedFields;
+                }
+                if ((change.updateDescription.removedFields || []).length > 0) {
+                    update.$unset = Object.fromEntries(
+                        change.updateDescription.removedFields.map(field => [field, ""])
+                    );
+                }
+                if (Object.keys(update).length > 0) {
+                    await targetCollection.updateOne({ _id: change.documentKey._id }, update);
+                }
+            }
+            break;
+        case "delete":
+            if (change.documentKey?._id) {
+                await targetCollection.deleteOne({ _id: change.documentKey._id });
+            }
+            break;
+        default:
+            break;
+    }
+};
+
+const startLiveTail = (sourceDb, targetDb) => {
+    if (!liveTailEnabled || dryRun) {
+        return {
+            enabled: false,
+            waitForQuiet: async () => {},
+            close: async () => {}
+        };
+    }
+
+    const state = {
+        pending: 0,
+        applied: 0,
+        failed: 0,
+        lastActivityAt: Date.now(),
+        closed: false
+    };
+
+    const changeStream = sourceDb.watch([], {
+        fullDocument: "updateLookup",
+        maxAwaitTimeMS: 1000
+    });
+
+    changeStream.on("change", (change) => {
+        state.pending += 1;
+        state.lastActivityAt = Date.now();
+
+        applyLiveChange(targetDb, change)
+            .then(() => {
+                state.applied += 1;
+            })
+            .catch((error) => {
+                state.failed += 1;
+                console.warn(`live-tail failed for ${change.ns?.coll || "unknown"}: ${error.message}`);
+            })
+            .finally(() => {
+                state.pending -= 1;
+                state.lastActivityAt = Date.now();
+            });
+    });
+
+    changeStream.on("error", (error) => {
+        state.failed += 1;
+        console.warn(`live-tail change stream error: ${error.message}`);
+    });
+
+    console.log("Live tail enabled: source changes during sync will be mirrored before verification.");
+
+    return {
+        enabled: true,
+        waitForQuiet: async (quietMs = 3000, timeoutMs = 30000) => {
+            const startedAt = Date.now();
+            while (
+                Date.now() - startedAt < timeoutMs &&
+                (state.pending > 0 || Date.now() - state.lastActivityAt < quietMs)
+            ) {
+                await new Promise(resolve => setTimeout(resolve, 250));
+            }
+            console.log(`live-tail status: applied=${state.applied}, pending=${state.pending}, failed=${state.failed}`);
+        },
+        close: async () => {
+            if (state.closed) return;
+            state.closed = true;
+            await changeStream.close().catch(() => {});
+        }
+    };
+};
+
+const repairFailedVerification = async (sourceDb, targetDb, sourceCollectionNames, failedResults) => {
+    for (const result of failedResults) {
+        if (sourceCollectionNames.has(result.collectionName)) {
+            const repair = await syncCollection(sourceDb, targetDb, { name: result.collectionName });
+            console.log(
+                `repair ${repair.collectionName}: read=${repair.read}, upserted=${repair.written}, pruned=${repair.pruned}`
+            );
+            continue;
+        }
+
+        if (prune && !dryRun) {
+            const targetCollections = await targetDb.listCollections({ name: result.collectionName }).toArray();
+            if (targetCollections.length > 0) {
+                await targetDb.collection(result.collectionName).drop();
+                console.log(`repair dropped extra target collection ${result.collectionName}`);
+            }
+        }
+    }
+};
+
+const runVerificationWithRepairs = async (sourceDb, targetDb, sourceCollectionNames) => {
+    let verification = await verifySync(sourceDb, targetDb, sourceCollectionNames);
+    let failed = verification.filter(result => !result.ok);
+    let attempt = 0;
+
+    while (failed.length > 0 && attempt < verifyRetries) {
+        attempt += 1;
+        console.log(`Verification repair pass ${attempt}/${verifyRetries}: ${failed.map(item => item.collectionName).join(", ")}`);
+        await repairFailedVerification(sourceDb, targetDb, sourceCollectionNames, failed);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        verification = await verifySync(sourceDb, targetDb, sourceCollectionNames);
+        failed = verification.filter(result => !result.ok);
+    }
+
+    return { verification, failed };
+};
+
 const main = async () => {
     console.log(`Database mirror sync: ${sourceName} -> ${targetName}`);
     console.log(`Mode: ${dryRun ? "dry-run" : "write"}${prune ? " with prune" : ""}${verify ? " with verify" : ""}`);
 
     const source = await connect(sourceName, sourceUri);
     const target = await connect(targetName, targetUri);
+    const liveTail = startLiveTail(source.db, target.db);
 
     try {
         const collections = await source.db.listCollections().toArray();
@@ -288,8 +462,12 @@ const main = async () => {
         }
 
         if (verify && !dryRun) {
-            const verification = await verifySync(source.db, target.db, sourceCollectionNames);
-            const failed = verification.filter(result => !result.ok);
+            await liveTail.waitForQuiet();
+            const { verification, failed } = await runVerificationWithRepairs(
+                source.db,
+                target.db,
+                sourceCollectionNames
+            );
 
             for (const result of verification) {
                 console.log(
@@ -307,6 +485,7 @@ const main = async () => {
 
         console.log("Database mirror sync completed.");
     } finally {
+        await liveTail.close();
         await Promise.allSettled([source.close(), target.close()]);
     }
 };

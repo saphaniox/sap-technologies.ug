@@ -123,6 +123,11 @@ class EnvironmentConfig {
     getDatabaseConfig() {
         const primaryUri = process.env.MONGODB_URI || process.env.MONGODB_LOCAL;
         const secondaryUri = process.env.MONGODB_SECONDARY_URI || process.env.MONGODB_MIRROR_URI;
+        const usesSrvUri = [primaryUri, secondaryUri].some(uri => uri?.startsWith('mongodb+srv://'));
+        const tlsEnabled = process.env.DB_TLS
+            ? process.env.DB_TLS === 'true'
+            : usesSrvUri;
+        const validateTls = process.env.DB_SSL_VALIDATE !== 'false';
         const config = {
             uri: primaryUri,
             primaryUri,
@@ -130,7 +135,8 @@ class EnvironmentConfig {
             mirrorEnabled: process.env.MONGODB_MIRROR_ENABLED === 'true',
             options: {
                 // Security options
-                ssl: process.env.DB_SSL_VALIDATE !== 'false',
+                tls: tlsEnabled,
+                tlsAllowInvalidCertificates: tlsEnabled && !validateTls,
                 authSource: process.env.DB_AUTH_SOURCE || 'admin',
                 readPreference: process.env.DB_READ_PREFERENCE || 'primary',
                 
