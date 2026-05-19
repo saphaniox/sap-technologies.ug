@@ -30,6 +30,12 @@ const apiRoutes = require("./routes");
 const app = express();
 app.disable("x-powered-by");
 
+// CORS must run before sessions, rate limits, body parsing, and route work so
+// browser preflight requests always receive the proper access-control headers.
+const corsConfig = environmentConfig.getCORSConfig();
+app.use(cors(corsConfig));
+app.options(/.*/, cors(corsConfig));
+
 // Initialize database connection
 (async () => {
     try {
@@ -154,9 +160,6 @@ if (process.env.NODE_ENV === 'production') {
     }
 }
 app.use(session(sessionConfig));
-
-// CORS configuration with enhanced security
-app.use(cors(environmentConfig.getCORSConfig()));
 
 // Visitor tracking middleware (after CORS and before routes)
 app.use(trackVisitor);

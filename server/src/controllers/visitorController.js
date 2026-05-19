@@ -284,6 +284,10 @@ class VisitorController {
   // Track page view update (from client-side)
   static async updatePageView(req, res) {
     try {
+      const body = req.body?.payload
+        ? JSON.parse(req.body.payload)
+        : req.body;
+
       const { 
         sessionId, 
         path, 
@@ -291,7 +295,7 @@ class VisitorController {
         timeOnPage, 
         scrollDepth,
         performance 
-      } = req.body;
+      } = body;
       
       if (!sessionId || !path) {
         return res.status(400).json({
