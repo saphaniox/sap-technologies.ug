@@ -185,24 +185,26 @@ class EnvironmentConfig {
      * Get CORS configuration
      */
     getCORSConfig() {
-        // Parse allowed origins from environment variable or use sensible defaults
+        // Parse allowed origins from environment variable and merge with safe defaults.
+        // Render may keep an older ALLOWED_ORIGINS value, so production domains must
+        // remain allowed even when the environment variable is present.
         const envOrigins = process.env.ALLOWED_ORIGINS 
-            ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+            ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
             : [];
         
-        // Always include common development origins
+        // Always include common development origins.
         const defaultOrigins = [
             'http://localhost:5174',
             'http://localhost:3000',
             'http://127.0.0.1:5174'
         ];
         
-        // In production, add production domains
-        if (process.env.NODE_ENV === 'production') {
-            defaultOrigins.push('https://sap-technologies.com', 'https://www.sap-technologies.com');
-        }
+        const productionOrigins = [
+            'https://sap-technologies.com',
+            'https://www.sap-technologies.com'
+        ];
         
-        const allowedOrigins = envOrigins.length > 0 ? envOrigins : defaultOrigins;
+        const allowedOrigins = [...new Set([...defaultOrigins, ...productionOrigins, ...envOrigins])];
         console.log('🔗 CORS Allowed Origins:', allowedOrigins);
 
         return {
@@ -227,10 +229,22 @@ class EnvironmentConfig {
                     return callback(null, true);
                 }
                 
-                // Allow any sap-technologies domain (www or not) in production for flexibility
-                if (process.env.NODE_ENV === 'production' && origin.includes('sap-technologies')) {
-                    console.log('✅ CORS: Production sap-technologies domain allowed:', origin);
-                    return callback(null, true);
+                // Allow the canonical sap-technologies.com domain and its secure subdomains.
+                try {
+                    const parsedOrigin = new URL(origin);
+                    const isSapTechnologiesDomain =
+                        parsedOrigin.protocol === 'https:' &&
+                        (
+                            parsedOrigin.hostname === 'sap-technologies.com' ||
+                            parsedOrigin.hostname.endsWith('.sap-technologies.com')
+                        );
+
+                    if (isSapTechnologiesDomain) {
+                        console.log('✅ CORS: sap-technologies.com domain allowed:', origin);
+                        return callback(null, true);
+                    }
+                } catch (error) {
+                    console.log('⚠️ CORS: Invalid origin URL:', origin);
                 }
                 
                 // Reject all other origins
