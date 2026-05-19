@@ -138,6 +138,12 @@ const speedLimiter = slowDown({
   delayAfter: 100, // allow 100 requests per windowMs without delay
   delayMs: () => 500, // add 500ms delay per request after delayAfter
   maxDelayMs: 20000, // max delay of 20 seconds
+  skip: (req) => (
+    req.method === "OPTIONS" ||
+    (req.path?.startsWith("/api/") && req.method !== "GET") ||
+    req.path?.startsWith("/api/admin") ||
+    req.path?.startsWith("/api/visitor")
+  ),
   validate: { delayMs: false }, // disable the warning
   message: {
     error: "Too many requests, slowing down responses.",

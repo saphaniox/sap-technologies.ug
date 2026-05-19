@@ -47,14 +47,19 @@ const extractPublicId = (url) => {
         const parts = url.split('/');
         const uploadIndex = parts.indexOf('upload');
         if (uploadIndex === -1) return null;
-        
-        // Get everything after 'upload/vXXXXXXXXXX/'
-        const pathParts = parts.slice(uploadIndex + 2); // Skip 'upload' and version
+
+        let pathParts = parts.slice(uploadIndex + 1);
+        const versionIndex = pathParts.findIndex(part => /^v\d+$/.test(part));
+        if (versionIndex !== -1) {
+            pathParts = pathParts.slice(versionIndex + 1);
+        }
+
         const publicIdWithExt = pathParts.join('/');
-        
-        // Remove file extension
-        const publicId = publicIdWithExt.substring(0, publicIdWithExt.lastIndexOf('.'));
-        return publicId;
+        const extensionIndex = publicIdWithExt.lastIndexOf('.');
+
+        return extensionIndex === -1
+            ? publicIdWithExt
+            : publicIdWithExt.substring(0, extensionIndex);
     } catch (error) {
         console.error('Error extracting public ID:', error);
         return null;

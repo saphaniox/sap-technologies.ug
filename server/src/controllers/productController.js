@@ -3,7 +3,7 @@ const { validationResult } = require("express-validator");
 const path = require("path");
 const fs = require("fs").promises;
 const { useCloudinary } = require("../config/fileUpload");
-const { cloudinary } = require("../config/cloudinary");
+const { cloudinary, deleteFromCloudinary, extractPublicId } = require("../config/cloudinary");
 
 // Normalize legacy image shapes (string URLs) to schema-compliant objects.
 const normalizeProductImages = (images, fallbackAlt = "Product image") => {
@@ -34,6 +34,102 @@ const normalizeProductImages = (images, fallbackAlt = "Product image") => {
             return null;
         })
         .filter(Boolean);
+};
+
+const parseJsonField = (value, fallback) => {
+    if (value === undefined || value === null || value === "") {
+        return fallback;
+    }
+
+    if (typeof value !== "string") {
+        return value;
+    }
+
+    try {
+        return JSON.parse(value);
+    } catch (error) {
+        return fallback;
+    }
+};
+
+const normalizeStringArray = (value) => {
+    const parsed = parseJsonField(value, value);
+    const arrayValue = Array.isArray(parsed) ? parsed : [parsed];
+
+    return arrayValue
+        .map(item => String(item || "").trim())
+        .filter(Boolean);
+};
+
+const normalizeTechnicalSpecs = (value) => {
+    const parsed = parseJsonField(value, []);
+
+    if (!Array.isArray(parsed)) {
+        return [];
+    }
+
+    return parsed
+        .map(spec => ({
+            name: String(spec?.name || "").trim(),
+            value: String(spec?.value || "").trim()
+        }))
+        .filter(spec => spec.name && spec.value);
+};
+
+const normalizeNumber = (value, fallback = 0) => {
+    if (value === undefined || value === null || value === "") {
+        return fallback;
+    }
+
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+};
+
+const normalizeBoolean = (value, fallback = false) => {
+    if (value === undefined || value === null || value === "") {
+        return fallback;
+    }
+
+    if (typeof value === "boolean") {
+        return value;
+    }
+
+    return String(value).toLowerCase() === "true";
+};
+
+const normalizePrice = (value, fallback = { type: "contact-for-price" }) => {
+    const parsed = parseJsonField(value, fallback);
+
+    if (!parsed || typeof parsed !== "object") {
+        return fallback;
+    }
+
+    return {
+        amount: normalizeNumber(parsed.amount, null),
+        currency: parsed.currency || "UGX",
+        type: parsed.type || "contact-for-price"
+    };
+};
+
+const deleteUploadedProductImage = async (imageUrl) => {
+    if (!imageUrl) return;
+
+    if (imageUrl.includes("cloudinary.com")) {
+        const publicId = extractPublicId(imageUrl);
+        if (publicId) {
+            await deleteFromCloudinary(publicId, "image");
+        }
+        return;
+    }
+
+    if (imageUrl.startsWith("/uploads/products/")) {
+        const imgPath = path.join(__dirname, "../..", imageUrl);
+        try {
+            await fs.unlink(imgPath);
+        } catch (error) {
+            console.log("Could not delete old product image:", error.message);
+        }
+    }
 };
 
 // Helper to get file URL (Cloudinary or local)
@@ -269,38 +365,13 @@ class ProductController {
 
             console.log("📸 Image(s) set:", productData.images ? productData.images.length : 'none');
 
-            // Parse JSON fields
-            if (typeof productData.technicalSpecs === "string") {
-                try {
-                    productData.technicalSpecs = JSON.parse(productData.technicalSpecs);
-                } catch (e) {
-                    productData.technicalSpecs = [];
-                }
-            }
-
-            if (typeof productData.features === "string") {
-                try {
-                    productData.features = JSON.parse(productData.features);
-                } catch (e) {
-                    productData.features = [];
-                }
-            }
-
-            if (typeof productData.tags === "string") {
-                try {
-                    productData.tags = JSON.parse(productData.tags);
-                } catch (e) {
-                    productData.tags = [];
-                }
-            }
-
-            if (typeof productData.price === "string") {
-                try {
-                    productData.price = JSON.parse(productData.price);
-                } catch (e) {
-                    productData.price = { type: "contact-for-price" };
-                }
-            }
+            productData.technicalSpecs = normalizeTechnicalSpecs(productData.technicalSpecs);
+            productData.features = normalizeStringArray(productData.features);
+            productData.tags = normalizeStringArray(productData.tags);
+            productData.price = normalizePrice(productData.price);
+            productData.displayOrder = normalizeNumber(productData.displayOrder, 0);
+            productData.isActive = normalizeBoolean(productData.isActive, true);
+            productData.isFeatured = normalizeBoolean(productData.isFeatured, false);
 
             const product = await Product.create(productData);
 
@@ -360,44 +431,40 @@ class ProductController {
 
             // Parse imagesToDelete from the form
             let imagesToDelete = [];
-            if (updateData.imagesToDelete) {
-                try {
-                    imagesToDelete = JSON.parse(updateData.imagesToDelete);
-                    delete updateData.imagesToDelete;
-                } catch (e) {
-                    imagesToDelete = [];
-                }
+            if (Object.prototype.hasOwnProperty.call(updateData, "imagesToDelete")) {
+                imagesToDelete = parseJsonField(updateData.imagesToDelete, []);
+                if (!Array.isArray(imagesToDelete)) imagesToDelete = [];
+                delete updateData.imagesToDelete;
             }
 
             // Handle legacy single-image deletion flag
-            if (updateData.deleteImage === 'true') {
+            const deleteExistingImage = normalizeBoolean(updateData.deleteImage, false);
+            delete updateData.deleteImage;
+
+            if (deleteExistingImage) {
                 const existingProduct = await Product.findById(id);
                 if (existingProduct?.images?.length) {
                     imagesToDelete = existingProduct.images.map(img => img.url);
                 }
-                delete updateData.deleteImage;
             }
 
             // Get current product's images
             const existingProduct = await Product.findById(id);
+            if (!existingProduct) {
+                return res.status(404).json({
+                    status: "error",
+                    message: "Product not found"
+                });
+            }
+
             let currentImages = normalizeProductImages(
-                existingProduct?.images || [],
-                existingProduct?.name || updateData.name || "Product image"
+                existingProduct.images || [],
+                existingProduct.name || updateData.name || "Product image"
             );
 
             // Remove images marked for deletion
             if (imagesToDelete.length > 0) {
-                // Delete local files if not on Cloudinary
-                if (!useCloudinary) {
-                    for (const imgUrl of imagesToDelete) {
-                        if (imgUrl && imgUrl.startsWith("/uploads/products/")) {
-                            const imgPath = path.join(__dirname, "../..", imgUrl);
-                            try { await fs.unlink(imgPath); } catch (e) {
-                                console.log("Could not delete old image:", e.message);
-                            }
-                        }
-                    }
-                }
+                await Promise.all(imagesToDelete.map(deleteUploadedProductImage));
                 currentImages = currentImages.filter(img => !imagesToDelete.includes(img.url));
                 console.log("🗑️ Images after deletion:", currentImages.length);
             }
@@ -447,20 +514,27 @@ class ProductController {
                 updateData.image = currentImages.length > 0 ? currentImages[0].url : null;
             }
 
-            // Parse JSON fields
-            ["technicalSpecs", "features", "tags", "price"].forEach(field => {
-                if (typeof updateData[field] === "string") {
-                    try {
-                        updateData[field] = JSON.parse(updateData[field]);
-                    } catch (e) {
-                        if (field === "price") {
-                            updateData[field] = { type: "contact-for-price" };
-                        } else {
-                            updateData[field] = [];
-                        }
-                    }
-                }
-            });
+            if (updateData.technicalSpecs !== undefined) {
+                updateData.technicalSpecs = normalizeTechnicalSpecs(updateData.technicalSpecs);
+            }
+            if (updateData.features !== undefined) {
+                updateData.features = normalizeStringArray(updateData.features);
+            }
+            if (updateData.tags !== undefined) {
+                updateData.tags = normalizeStringArray(updateData.tags);
+            }
+            if (updateData.price !== undefined) {
+                updateData.price = normalizePrice(updateData.price, existingProduct.price);
+            }
+            if (updateData.displayOrder !== undefined) {
+                updateData.displayOrder = normalizeNumber(updateData.displayOrder, existingProduct.displayOrder || 0);
+            }
+            if (updateData.isActive !== undefined) {
+                updateData.isActive = normalizeBoolean(updateData.isActive, existingProduct.isActive);
+            }
+            if (updateData.isFeatured !== undefined) {
+                updateData.isFeatured = normalizeBoolean(updateData.isFeatured, existingProduct.isFeatured);
+            }
 
             const product = await Product.findByIdAndUpdate(
                 id,
@@ -527,15 +601,12 @@ class ProductController {
                 });
             }
 
-            // Delete associated image
-            if (product.image && product.image.startsWith("/uploads/products/")) {
-                const imagePath = path.join(__dirname, "../..", product.image);
-                try {
-                    await fs.unlink(imagePath);
-                } catch (error) {
-                    console.log("Could not delete product image:", error.message);
-                }
-            }
+            const imageUrlsToDelete = [
+                ...normalizeProductImages(product.images, product.name).map(image => image.url),
+                product.image
+            ].filter((url, index, urls) => url && urls.indexOf(url) === index);
+
+            await Promise.all(imageUrlsToDelete.map(deleteUploadedProductImage));
 
             await Product.findByIdAndDelete(id);
 
