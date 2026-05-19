@@ -17,6 +17,10 @@ class EnvironmentConfig {
         
         this.optionalVars = [
             'MONGODB_LOCAL',
+            'MONGODB_SECONDARY_URI',
+            'MONGODB_MIRROR_ENABLED',
+            'MONGODB_MIRROR_RETRY_MS',
+            'MONGODB_MIRROR_TIMEOUT_MS',
             'JWT_SECRET',
             'GMAIL_USER',
             'GMAIL_PASS',
@@ -111,8 +115,13 @@ class EnvironmentConfig {
      * Get database configuration with fallback
      */
     getDatabaseConfig() {
+        const primaryUri = process.env.MONGODB_URI || process.env.MONGODB_LOCAL;
+        const secondaryUri = process.env.MONGODB_SECONDARY_URI || process.env.MONGODB_MIRROR_URI;
         const config = {
-            uri: process.env.MONGODB_URI || process.env.MONGODB_LOCAL,
+            uri: primaryUri,
+            primaryUri,
+            secondaryUri,
+            mirrorEnabled: process.env.MONGODB_MIRROR_ENABLED === 'true',
             options: {
                 // Security options
                 ssl: process.env.DB_SSL_VALIDATE !== 'false',

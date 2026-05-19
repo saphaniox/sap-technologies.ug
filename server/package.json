@@ -10,7 +10,9 @@
     "postinstall": "echo 'Backend dependencies installed successfully'",
     "cleanup-logs": "node cleanup-logs.js",
     "keep-alive": "node scripts/keep-alive-server.js",
-    "seed:admin": "node scripts/admin-seed.js"
+    "seed:admin": "node scripts/admin-seed.js",
+    "db:mirror:sync": "node scripts/sync-database-mirror.js",
+    "db:mirror:sync:reverse": "node scripts/sync-database-mirror.js --reverse"
   },
   "keywords": [
     "express",

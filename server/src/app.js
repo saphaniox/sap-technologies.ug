@@ -36,22 +36,18 @@ const corsConfig = environmentConfig.getCORSConfig();
 app.use(cors(corsConfig));
 app.options(/.*/, cors(corsConfig));
 
-// Initialize database connection
-(async () => {
-    try {
-        console.log("🚀 Initializing SAPTech Uganda Server...");
-        
-        const dbConnected = await environmentConfig.testDatabaseConnection();
-        
-        if (dbConnected) {
-            console.log("✅ Database connected");
-        } else {
-            console.warn("⚠️  Running without database");
-        }
-    } catch (error) {
+// Initialize database connection once. The same active cluster client is reused
+// for sessions so primary/secondary startup failover stays consistent.
+console.log("🚀 Initializing SAPTech Uganda Server...");
+const databaseReady = connectDB()
+    .then((conn) => {
+        console.log("✅ Database connected");
+        return conn;
+    })
+    .catch((error) => {
         console.error("❌ Database error:", error.message);
-    }
-})();
+        throw error;
+    });
 
 // Trust proxy for rate limiting behind reverse proxies
 app.set("trust proxy", 1);
@@ -133,7 +129,7 @@ console.log('🔒 Session configuration:', {
 
 if (process.env.NODE_ENV === 'production') {
     sessionConfig.store = MongoStore.create({
-        mongoUrl: process.env.MONGODB_URI,
+        clientPromise: databaseReady.then((conn) => conn.connection.getClient()),
         collectionName: 'sessions',
         ttl: 30 * 24 * 60 * 60, // 30 days (1 month)
         autoRemove: 'native',
@@ -142,10 +138,10 @@ if (process.env.NODE_ENV === 'production') {
     console.log('✅ Using MongoDB session store (30-day sessions)');
 } else {
     // In development, use MongoDB store too for session persistence
-    if (process.env.MONGODB_URI || process.env.MONGODB_LOCAL) {
+    if (process.env.MONGODB_URI || process.env.MONGODB_SECONDARY_URI || process.env.MONGODB_LOCAL) {
         try {
             sessionConfig.store = MongoStore.create({
-                mongoUrl: process.env.MONGODB_URI || process.env.MONGODB_LOCAL,
+                clientPromise: databaseReady.then((conn) => conn.connection.getClient()),
                 collectionName: 'dev_sessions',
                 ttl: 7 * 24 * 60 * 60, // 7 days in development
                 autoRemove: 'native'
