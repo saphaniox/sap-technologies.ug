@@ -1,8 +1,8 @@
 const IoT = require("../models/IoT");
-const fs = require("fs");
+const fsp = require("fs").promises;
 const path = require("path");
 const { useCloudinary } = require("../config/fileUpload");
-const { cloudinary } = require("../config/cloudinary");
+const { cloudinary, deleteFromCloudinary, extractPublicId } = require("../config/cloudinary");
 
 /**
  * Get the correct file path/URL for uploaded file
@@ -37,6 +37,106 @@ const getFileUrl = (file, folder = 'iot') => {
   
   // Local storage: construct path
   return `/uploads/${folder}/${file.filename}`;
+};
+
+const parseJsonField = (value, fallback) => {
+  if (value === undefined || value === null || value === "") return fallback;
+  if (typeof value !== "string") return value;
+
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return fallback;
+  }
+};
+
+const normalizeStringArray = (value) => {
+  const parsed = parseJsonField(value, value);
+  if (Array.isArray(parsed)) {
+    return parsed.map(item => String(item || "").trim()).filter(Boolean);
+  }
+  if (typeof parsed === "string" && parsed.trim()) {
+    return [parsed.trim()];
+  }
+  return [];
+};
+
+const normalizeNumber = (value, fallback = 0) => {
+  if (value === "" || value === undefined || value === null) return fallback;
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : fallback;
+};
+
+const normalizeDate = (value) => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+};
+
+const normalizeImages = (images) => {
+  if (!Array.isArray(images)) return [];
+  return images
+    .map(image => {
+      if (!image) return null;
+      if (typeof image === "string") return { url: image };
+      if (image.url) return image;
+      return null;
+    })
+    .filter(Boolean);
+};
+
+const normalizeVideos = (videos) => {
+  if (!Array.isArray(videos)) return [];
+  return videos
+    .map(video => {
+      if (!video) return null;
+      if (typeof video === "string") return { url: video };
+      if (video.url) return video;
+      return null;
+    })
+    .filter(Boolean);
+};
+
+const deleteUploadedMedia = async (mediaUrl, resourceType = "image") => {
+  if (!mediaUrl) return;
+
+  try {
+    if (mediaUrl.includes("cloudinary.com")) {
+      const publicId = extractPublicId(mediaUrl);
+      if (publicId) {
+        await deleteFromCloudinary(publicId, resourceType);
+      }
+      return;
+    }
+
+    if (mediaUrl.startsWith("/uploads/")) {
+      const filePath = path.join(__dirname, "../..", mediaUrl);
+      await fsp.unlink(filePath);
+    }
+  } catch (error) {
+    console.error("Error deleting IoT media:", error.message);
+  }
+};
+
+const normalizeIoTData = (data, existingProject = null) => {
+  if (data.technologies !== undefined) data.technologies = normalizeStringArray(data.technologies);
+  if (data.hardware !== undefined) data.hardware = normalizeStringArray(data.hardware);
+  if (data.features !== undefined) data.features = normalizeStringArray(data.features);
+
+  if (typeof data.isPublic === "string") data.isPublic = data.isPublic === "true";
+  if (typeof data.isFeatured === "string") data.isFeatured = data.isFeatured === "true";
+  if (data.order !== undefined) data.order = normalizeNumber(data.order, existingProject?.order || 0);
+
+  if (data.completionDate !== undefined) {
+    const normalizedDate = normalizeDate(data.completionDate);
+    if (normalizedDate) {
+      data.completionDate = normalizedDate;
+    } else {
+      delete data.completionDate;
+    }
+  }
+
+  return data;
 };
 
 // @desc    Get all IoT projects
@@ -129,26 +229,7 @@ exports.getIoTProjectById = async (req, res) => {
 // @access  Admin
 exports.createIoTProject = async (req, res) => {
   try {
-    const projectData = { ...req.body };
-    
-    // Parse JSON fields if they're strings
-    if (typeof projectData.technologies === "string") {
-      projectData.technologies = JSON.parse(projectData.technologies);
-    }
-    if (typeof projectData.hardware === "string") {
-      projectData.hardware = JSON.parse(projectData.hardware);
-    }
-    if (typeof projectData.features === "string") {
-      projectData.features = JSON.parse(projectData.features);
-    }
-    
-    // Convert string booleans to actual booleans
-    if (typeof projectData.isPublic === "string") {
-      projectData.isPublic = projectData.isPublic === "true";
-    }
-    if (typeof projectData.isFeatured === "string") {
-      projectData.isFeatured = projectData.isFeatured === "true";
-    }
+    const projectData = normalizeIoTData({ ...req.body });
     
     // Handle file uploads (images and videos)
     if (req.files) {
@@ -202,26 +283,7 @@ exports.updateIoTProject = async (req, res) => {
       });
     }
     
-    const updateData = { ...req.body };
-    
-    // Parse JSON fields if they're strings
-    if (typeof updateData.technologies === "string") {
-      updateData.technologies = JSON.parse(updateData.technologies);
-    }
-    if (typeof updateData.hardware === "string") {
-      updateData.hardware = JSON.parse(updateData.hardware);
-    }
-    if (typeof updateData.features === "string") {
-      updateData.features = JSON.parse(updateData.features);
-    }
-    
-    // Convert string booleans to actual booleans
-    if (typeof updateData.isPublic === "string") {
-      updateData.isPublic = updateData.isPublic === "true";
-    }
-    if (typeof updateData.isFeatured === "string") {
-      updateData.isFeatured = updateData.isFeatured === "true";
-    }
+    const updateData = normalizeIoTData({ ...req.body }, iotProject);
     
     // Handle new file uploads
     if (req.files) {
@@ -234,7 +296,7 @@ exports.updateIoTProject = async (req, res) => {
           isCompressed: file.isCompressed || false
         }));
         // Keep existing images and add new ones
-        updateData.images = [...(iotProject.images || []), ...newImages];
+        updateData.images = [...normalizeImages(iotProject.images), ...newImages];
       }
 
       if (videoFiles.length > 0) {
@@ -243,34 +305,30 @@ exports.updateIoTProject = async (req, res) => {
           mimeType: file.mimetype,
           size: file.size || 0
         }));
-        updateData.videos = [...(iotProject.videos || []), ...newVideos];
+        updateData.videos = [...normalizeVideos(iotProject.videos), ...newVideos];
       }
     }
 
     // Handle image removal if specified
     if (req.body.removeImages) {
-      const imagesToRemove = JSON.parse(req.body.removeImages);
+      const imagesToRemove = parseJsonField(req.body.removeImages, []);
       delete updateData.removeImages;
-      const currentImages = updateData.images || iotProject.images || [];
-      updateData.images = currentImages.filter(img => !imagesToRemove.includes(img.url));
+      const safeImagesToRemove = Array.isArray(imagesToRemove) ? imagesToRemove : [];
+      const currentImages = normalizeImages(updateData.images || iotProject.images);
+      updateData.images = currentImages.filter(img => !safeImagesToRemove.includes(img.url));
 
-      // Clean up local files
-      imagesToRemove.forEach(imageUrl => {
-        if (!imageUrl.includes('cloudinary.com')) {
-          const imagePath = path.join(__dirname, "../../..", imageUrl);
-          if (fs.existsSync(imagePath)) {
-            try { fs.unlinkSync(imagePath); } catch (e) {}
-          }
-        }
-      });
+      await Promise.all(safeImagesToRemove.map(imageUrl => deleteUploadedMedia(imageUrl, "image")));
     }
 
     // Handle video removal if specified
     if (req.body.removeVideos) {
-      const videosToRemove = JSON.parse(req.body.removeVideos);
+      const videosToRemove = parseJsonField(req.body.removeVideos, []);
       delete updateData.removeVideos;
-      const currentVideos = updateData.videos || iotProject.videos || [];
-      updateData.videos = currentVideos.filter(v => !videosToRemove.includes(v.url));
+      const safeVideosToRemove = Array.isArray(videosToRemove) ? videosToRemove : [];
+      const currentVideos = normalizeVideos(updateData.videos || iotProject.videos);
+      updateData.videos = currentVideos.filter(v => !safeVideosToRemove.includes(v.url));
+
+      await Promise.all(safeVideosToRemove.map(videoUrl => deleteUploadedMedia(videoUrl, "video")));
     }
     
     const updatedProject = await IoT.findByIdAndUpdate(
@@ -308,19 +366,13 @@ exports.deleteIoTProject = async (req, res) => {
       });
     }
     
-    // Delete associated images
-    if (iotProject.images && iotProject.images.length > 0) {
-      iotProject.images.forEach(img => {
-        const imagePath = path.join(__dirname, "../../..", img.url);
-        if (fs.existsSync(imagePath)) {
-          try {
-            fs.unlinkSync(imagePath);
-          } catch (err) {
-            console.error("Error deleting image:", err);
-          }
-        }
-      });
-    }
+    // Delete associated media
+    const imageUrls = normalizeImages(iotProject.images).map(img => img.url);
+    const videoUrls = normalizeVideos(iotProject.videos).map(video => video.url);
+    await Promise.all([
+      ...imageUrls.map(imageUrl => deleteUploadedMedia(imageUrl, "image")),
+      ...videoUrls.map(videoUrl => deleteUploadedMedia(videoUrl, "video"))
+    ]);
     
     await IoT.findByIdAndDelete(req.params.id);
     

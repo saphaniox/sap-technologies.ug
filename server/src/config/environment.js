@@ -159,23 +159,20 @@ class EnvironmentConfig {
      * Get session configuration
      */
     getSessionConfig() {
-        // Check if running on localhost regardless of NODE_ENV
-        const isLocalhost = process.env.PORT && (
-            process.env.PORT === '5000' || 
-            process.env.PORT === '3000'
-        );
+        const isProduction = process.env.NODE_ENV === 'production';
         
         return {
             secret: process.env.SESSION_SECRET || this.generateFallbackSecret('SESSION'),
             resave: false,
             saveUninitialized: false,
+            proxy: isProduction,
             cookie: {
-                // Only require secure cookies in production AND not on localhost
-                secure: process.env.NODE_ENV === 'production' && !isLocalhost,
+                // The frontend lives on sap-technologies.com while the API is on Render.
+                // Cross-site admin requests require SameSite=None and Secure cookies.
+                secure: isProduction,
                 httpOnly: true,
                 maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days (1 month)
-                // Use 'lax' for localhost, 'none' for production (requires secure)
-                sameSite: (process.env.NODE_ENV === 'production' && !isLocalhost) ? 'none' : 'lax'
+                sameSite: isProduction ? 'none' : 'lax'
             },
             name: 'sap.sid'
         };

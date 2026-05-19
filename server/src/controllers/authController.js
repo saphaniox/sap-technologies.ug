@@ -2,6 +2,27 @@
 const { User } = require('../models');
 const { AppError } = require('../middleware/errorHandler');
 const emailService = require('../services/emailService');
+const jwt = require('jsonwebtoken');
+
+const getAuthCookieOptions = () => ({
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000
+});
+
+const signAccessToken = (user) => jwt.sign(
+    {
+        userId: user._id.toString(),
+        type: 'access'
+    },
+    process.env.JWT_SECRET || 'fallback-secret-key-change-in-production',
+    {
+        expiresIn: process.env.JWT_EXPIRES_IN || '24h',
+        issuer: 'sap-technologies',
+        audience: 'sap-technologies-api'
+    }
+);
 
 class AuthController {
     async register(req, res, next) {
@@ -128,14 +149,19 @@ class AuthController {
                 console.error('Failed to log login activity:', activityError);
             }
             
-            // Send success response with user info
+            const accessToken = signAccessToken(user);
+            res.cookie('accessToken', accessToken, getAuthCookieOptions());
+
+            // Send success response with user info. The token is included as a
+            // fallback for browsers that restrict third-party session cookies.
             res.status(200).json({
                 status: 'success',
                 message: 'Login successful',
                 data: { 
                     user: user.profile, 
                     name: user.name,
-                    sessionId: req.session.id
+                    sessionId: req.session.id,
+                    accessToken
                 }
             });
             
@@ -162,8 +188,11 @@ class AuthController {
                     return next(new AppError('Could not log out, please try again', 500));
                 }
                 
-                // Clear the configured session cookie from the browser.
-                res.clearCookie('sap.sid');
+                // Clear the configured auth cookies from the browser.
+                const cookieOptions = getAuthCookieOptions();
+                delete cookieOptions.maxAge;
+                res.clearCookie('sap.sid', cookieOptions);
+                res.clearCookie('accessToken', cookieOptions);
                 
                 // Send success response
                 res.status(200).json({

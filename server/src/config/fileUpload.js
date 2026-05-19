@@ -148,7 +148,7 @@ const softwareUpload = multer({
 const iotUpload = multer({
   storage: getStorage(storageConfigs.iot, iotDir),
   limits: {
-    fileSize: 200 * 1024 * 1024, // 200MB limit (to accommodate video uploads)
+    fileSize: 50 * 1024 * 1024, // 50MB limit to avoid Render gateway timeouts
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) {

@@ -30,6 +30,34 @@ const normalizeSoftwareImages = (images, fallbackAlt = "Software image") => {
     .filter(Boolean);
 };
 
+const parseJsonField = (value, fallback) => {
+  if (value === undefined || value === null || value === "") return fallback;
+  if (typeof value !== "string") return value;
+
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return fallback;
+  }
+};
+
+const normalizeStringArray = (value) => {
+  const parsed = parseJsonField(value, value);
+  if (Array.isArray(parsed)) {
+    return parsed.map(item => String(item || "").trim()).filter(Boolean);
+  }
+  if (typeof parsed === "string" && parsed.trim()) {
+    return [parsed.trim()];
+  }
+  return [];
+};
+
+const normalizeNumber = (value, fallback = 0) => {
+  if (value === "" || value === undefined || value === null) return fallback;
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : fallback;
+};
+
 const deleteUploadedImage = async (imageUrl, folder = "software") => {
   if (!imageUrl) return;
 
@@ -220,15 +248,9 @@ exports.createSoftware = async (req, res) => {
     const softwareData = { ...req.body };
     
     // Parse JSON fields if they're strings
-    if (typeof softwareData.features === "string") {
-      softwareData.features = JSON.parse(softwareData.features);
-    }
-    if (typeof softwareData.technologies === "string") {
-      softwareData.technologies = JSON.parse(softwareData.technologies);
-    }
-    if (typeof softwareData.links === "string") {
-      try { softwareData.links = JSON.parse(softwareData.links); } catch (e) { softwareData.links = {}; }
-    }
+    softwareData.features = normalizeStringArray(softwareData.features);
+    softwareData.technologies = normalizeStringArray(softwareData.technologies);
+    softwareData.links = parseJsonField(softwareData.links, {});
 
     // Backward compat: if old url field is set but links.web isn't, migrate it
     if (!softwareData.links) softwareData.links = {};
@@ -240,6 +262,7 @@ exports.createSoftware = async (req, res) => {
     if (typeof softwareData.isPublic === "string") {
       softwareData.isPublic = softwareData.isPublic === "true";
     }
+    softwareData.order = normalizeNumber(softwareData.order, 0);
     
     // Handle uploaded files
     if (req.files && req.files.length > 0) {
@@ -295,15 +318,13 @@ exports.updateSoftware = async (req, res) => {
     const fallbackAlt = updateData.name || software.name || "Software image";
     
     // Parse JSON fields if they're strings
-    if (typeof updateData.features === "string") {
-      updateData.features = JSON.parse(updateData.features);
+    if (updateData.features !== undefined) {
+      updateData.features = normalizeStringArray(updateData.features);
     }
-    if (typeof updateData.technologies === "string") {
-      updateData.technologies = JSON.parse(updateData.technologies);
+    if (updateData.technologies !== undefined) {
+      updateData.technologies = normalizeStringArray(updateData.technologies);
     }
-    if (typeof updateData.links === "string") {
-      try { updateData.links = JSON.parse(updateData.links); } catch (e) { updateData.links = {}; }
-    }
+    updateData.links = parseJsonField(updateData.links, software.links || {});
 
     // Backward compat: if old url field is set but links.web isn't, migrate it
     if (!updateData.links) updateData.links = {};
@@ -315,14 +336,14 @@ exports.updateSoftware = async (req, res) => {
     if (typeof updateData.isPublic === "string") {
       updateData.isPublic = updateData.isPublic === "true";
     }
+    if (updateData.order !== undefined) {
+      updateData.order = normalizeNumber(updateData.order, software.order || 0);
+    }
 
     let imagesToDelete = [];
     if (updateData.imagesToDelete) {
-      try {
-        imagesToDelete = JSON.parse(updateData.imagesToDelete);
-      } catch (e) {
-        imagesToDelete = [];
-      }
+      imagesToDelete = parseJsonField(updateData.imagesToDelete, []);
+      if (!Array.isArray(imagesToDelete)) imagesToDelete = [];
       delete updateData.imagesToDelete;
     }
 
