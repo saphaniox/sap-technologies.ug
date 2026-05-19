@@ -1,42 +1,15 @@
 const IoT = require("../models/IoT");
 const fsp = require("fs").promises;
 const path = require("path");
-const { useCloudinary } = require("../config/fileUpload");
-const { cloudinary, deleteFromCloudinary, extractPublicId } = require("../config/cloudinary");
+const { deleteFromCloudinary, extractPublicId } = require("../config/cloudinary");
+const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 
 /**
  * Get the correct file path/URL for uploaded file
  * Works with both Cloudinary and local storage
  */
 const getFileUrl = (file, folder = 'iot') => {
-  if (!file) return null;
-  
-  // If using Cloudinary
-  const cloudinaryPath = file.path || file.filename;
-  if (useCloudinary && cloudinaryPath) {
-    // Check if it's already a full Cloudinary URL
-    if (cloudinaryPath.includes('cloudinary.com')) {
-      return cloudinaryPath;
-    }
-    
-    // If it's a Cloudinary public_id (from multer-storage-cloudinary)
-    // Construct the full URL using cloudinary.url()
-    if (!cloudinaryPath.startsWith('/uploads/')) {
-      try {
-        // file.path is the public_id, construct the secure URL
-        return cloudinary.url(cloudinaryPath, {
-          secure: true,
-          resource_type: file.mimetype?.startsWith('video/') ? 'video' : 'image',
-          type: 'upload'
-        });
-      } catch (error) {
-        console.error('Error constructing Cloudinary URL:', error);
-      }
-    }
-  }
-  
-  // Local storage: construct path
-  return `/uploads/${folder}/${file.filename}`;
+  return getUploadedFileUrl(file, folder);
 };
 
 const parseJsonField = (value, fallback) => {

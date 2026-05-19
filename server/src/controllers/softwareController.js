@@ -1,8 +1,8 @@
 const Software = require("../models/Software");
 const path = require("path");
 const fs = require("fs").promises;
-const { useCloudinary } = require("../config/fileUpload");
-const { cloudinary, deleteFromCloudinary, extractPublicId } = require("../config/cloudinary");
+const { deleteFromCloudinary, extractPublicId } = require("../config/cloudinary");
+const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 
 const normalizeSoftwareImages = (images, fallbackAlt = "Software image") => {
   if (!Array.isArray(images)) return [];
@@ -88,34 +88,7 @@ const deleteUploadedImage = async (imageUrl, folder = "software") => {
  * Works with both Cloudinary and local storage
  */
 const getFileUrl = (file, folder = 'software') => {
-  if (!file) return null;
-  
-  // If using Cloudinary
-  const cloudinaryPath = file.path || file.filename;
-  if (useCloudinary && cloudinaryPath) {
-    // Check if it's already a full Cloudinary URL
-    if (cloudinaryPath.includes('cloudinary.com')) {
-      return cloudinaryPath;
-    }
-    
-    // If it's a Cloudinary public_id (from multer-storage-cloudinary)
-    // Construct the full URL using cloudinary.url()
-    if (!cloudinaryPath.startsWith('/uploads/')) {
-      try {
-        // file.path is the public_id, construct the secure URL
-        return cloudinary.url(cloudinaryPath, {
-          secure: true,
-          resource_type: 'image',
-          type: 'upload'
-        });
-      } catch (error) {
-        console.error('Error constructing Cloudinary URL:', error);
-      }
-    }
-  }
-  
-  // Local storage: construct path
-  return `/uploads/${folder}/${file.filename}`;
+  return getUploadedFileUrl(file, folder);
 };
 
 /**
@@ -426,24 +399,13 @@ exports.deleteSoftware = async (req, res) => {
       });
     }
     
-    // Delete associated images
-    if (software.images && software.images.length > 0) {
-      for (const img of software.images) {
-        try {
-          const imagePath = path.join(__dirname, "../..", img.url);
-          await fs.unlink(imagePath);
-        } catch (err) {
-          console.error("Error deleting image:", err);
-        }
-      }
-    } else if (software.image) {
-      try {
-        const imagePath = path.join(__dirname, "../..", software.image);
-        await fs.unlink(imagePath);
-      } catch (err) {
-        console.error("Error deleting image:", err);
-      }
-    }
+    // Delete associated images from either Cloudinary or local storage.
+    const imageUrls = [
+      ...normalizeSoftwareImages(software.images, software.name).map(img => img.url),
+      software.image
+    ].filter(Boolean);
+
+    await Promise.all([...new Set(imageUrls)].map(imageUrl => deleteUploadedImage(imageUrl, "software")));
     
     await Software.findByIdAndDelete(req.params.id);
     

@@ -6,30 +6,14 @@ const { AppError } = require("../middleware/errorHandler");
 const fs = require("fs");
 const path = require("path");
 const { useCloudinary } = require("../config/fileUpload");
-const { cloudinary } = require("../config/cloudinary");
+const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 
 /**
  * Get the correct file path/URL for uploaded file
  * Works with both Cloudinary and local storage
  */
 const getFileUrl = (file, folder = 'profile-pics') => {
-    if (!file) return null;
-    
-    const cloudinaryPath = file.path || file.filename;
-    if (useCloudinary && cloudinaryPath) {
-        if (cloudinaryPath.includes('cloudinary.com')) {
-            return cloudinaryPath;
-        }
-
-        return cloudinary.url(cloudinaryPath, {
-            secure: true,
-            resource_type: 'image',
-            type: 'upload'
-        });
-    }
-    
-    // Local storage: construct path
-    return `/uploads/${folder}/${file.filename}`;
+    return getUploadedFileUrl(file, folder);
 };
 
 // Main user controller class for handling user account operations

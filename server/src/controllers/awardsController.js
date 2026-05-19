@@ -5,29 +5,13 @@ const fs = require("fs").promises;
 const emailService = require("../services/emailService");
 const certificateService = require("../services/certificateService");
 const { useCloudinary } = require("../config/fileUpload");
-const { cloudinary } = require("../config/cloudinary");
 const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
+const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 
 // Helper function to get correct file URL (Cloudinary or local)
 const getFileUrl = (file, folder = 'awards') => {
-  if (!file) return null;
-  
-  const cloudinaryPath = file.path || file.filename;
-  if (useCloudinary && cloudinaryPath) {
-    if (cloudinaryPath.includes('cloudinary.com')) {
-      return cloudinaryPath;
-    }
-
-    return cloudinary.url(cloudinaryPath, {
-      secure: true,
-      resource_type: 'image',
-      type: 'upload'
-    });
-  }
-  
-  // Local storage - construct relative path
-  return file ? `/uploads/${folder}/${file.filename}` : null;
+  return getUploadedFileUrl(file, folder);
 };
 
 class AwardsController {

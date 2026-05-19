@@ -72,6 +72,7 @@ const uploadBuffer = async (buffer, folder, options = {}) => {
             {
                 folder: `sap-technologies/${folder}`,
                 resource_type: 'auto',
+                timeout: Number(process.env.CLOUDINARY_UPLOAD_TIMEOUT_MS) || 120000,
                 ...options
             },
             (error, result) => {
@@ -129,115 +130,132 @@ const imageTransformation = (width, height, crop = 'limit') => [{
     fetch_format: 'auto'
 }];
 
+const cloudinaryStorageClient = cloudinaryLib;
+const cloudinaryUploadTimeout = Number(process.env.CLOUDINARY_UPLOAD_TIMEOUT_MS) || 120000;
+
 // Storage configs for different folders (used by multer)
 const storageConfigs = {
     profilePics: isCloudinaryConfigured()
         ? new CloudinaryStorage({
-            cloudinary,
+            cloudinary: cloudinaryStorageClient,
             params: {
                 folder: 'sap-technologies/profile-pics',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
                 transformation: imageTransformation(400, 400),
+                timeout: cloudinaryUploadTimeout,
             },
         })
         : null,
     services: isCloudinaryConfigured()
         ? new CloudinaryStorage({
-            cloudinary,
+            cloudinary: cloudinaryStorageClient,
             params: {
                 folder: 'sap-technologies/services',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
                 transformation: imageTransformation(800, 600),
+                timeout: cloudinaryUploadTimeout,
             },
         })
         : null,
     projects: isCloudinaryConfigured()
         ? new CloudinaryStorage({
-            cloudinary,
+            cloudinary: cloudinaryStorageClient,
             params: {
                 folder: 'sap-technologies/projects',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
                 transformation: imageTransformation(1200, 800),
+                timeout: cloudinaryUploadTimeout,
             },
         })
         : null,
     products: isCloudinaryConfigured()
         ? new CloudinaryStorage({
-            cloudinary,
+            cloudinary: cloudinaryStorageClient,
             params: {
                 folder: 'sap-technologies/products',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
                 transformation: imageTransformation(800, 800),
+                timeout: cloudinaryUploadTimeout,
             },
         })
         : null,
     signatures: isCloudinaryConfigured()
         ? new CloudinaryStorage({
-            cloudinary,
+            cloudinary: cloudinaryStorageClient,
             params: {
                 folder: 'sap-technologies/signatures',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
                 transformation: imageTransformation(600, 200),
+                timeout: cloudinaryUploadTimeout,
             },
         })
         : null,
     partners: isCloudinaryConfigured()
         ? new CloudinaryStorage({
-            cloudinary,
+            cloudinary: cloudinaryStorageClient,
             params: {
                 folder: 'sap-technologies/partners',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
                 transformation: imageTransformation(600, 600),
+                timeout: cloudinaryUploadTimeout,
             },
         })
         : null,
     awards: isCloudinaryConfigured()
         ? new CloudinaryStorage({
-            cloudinary,
+            cloudinary: cloudinaryStorageClient,
             params: {
                 folder: 'sap-technologies/awards',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
                 transformation: imageTransformation(800, 800),
+                timeout: cloudinaryUploadTimeout,
             },
         })
         : null,
     software: isCloudinaryConfigured()
         ? new CloudinaryStorage({
-            cloudinary,
+            cloudinary: cloudinaryStorageClient,
             params: {
                 folder: 'sap-technologies/software',
                 resource_type: 'image',
                 allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
                 transformation: imageTransformation(1200, 800),
+                timeout: cloudinaryUploadTimeout,
             },
         })
         : null,
     iot: isCloudinaryConfigured()
         ? new CloudinaryStorage({
-            cloudinary,
-            params: (req, file) => {
+            cloudinary: cloudinaryStorageClient,
+            params: (req, file, cb) => {
                 const isVideo = file.mimetype.startsWith('video/');
+                let params;
                 if (isVideo) {
-                    return {
+                    params = {
                         folder: 'sap-technologies/iot',
                         resource_type: 'video',
                         eager: [{ quality: 'auto:good', fetch_format: 'mp4' }],
-                        eager_async: true
+                        eager_async: true,
+                        timeout: cloudinaryUploadTimeout
+                    };
+                } else {
+                    params = {
+                        folder: 'sap-technologies/iot',
+                        resource_type: 'image',
+                        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+                        transformation: imageTransformation(1920, 1080),
+                        timeout: cloudinaryUploadTimeout
                     };
                 }
-                return {
-                    folder: 'sap-technologies/iot',
-                    resource_type: 'image',
-                    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                    transformation: imageTransformation(1920, 1080)
-                };
+
+                cb(null, params);
             }
         })
         : null,

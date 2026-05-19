@@ -2,29 +2,13 @@ const { Service, Project } = require("../models");
 const fs = require("fs");
 const path = require("path");
 const { useCloudinary } = require("../config/fileUpload");
-const { cloudinary } = require("../config/cloudinary");
 const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
+const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 
 // Helper function to get correct file URL (Cloudinary or local)
 const getFileUrl = (file, folder = 'services') => {
-  if (!file) return null;
-  
-  const cloudinaryPath = file.path || file.filename;
-  if (useCloudinary && cloudinaryPath) {
-    if (cloudinaryPath.includes('cloudinary.com')) {
-      return cloudinaryPath;
-    }
-
-    return cloudinary.url(cloudinaryPath, {
-      secure: true,
-      resource_type: 'image',
-      type: 'upload'
-    });
-  }
-  
-  // Local storage - construct relative path
-  return file ? `/uploads/${folder}/${file.filename}` : null;
+  return getUploadedFileUrl(file, folder);
 };
 
 // Service Management Controllers

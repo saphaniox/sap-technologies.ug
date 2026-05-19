@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const certificateService = require('../services/certificateService');
 const { Nomination, AwardCategory } = require('../models/Award');
+const { getUploadedFileUrl } = require('../utils/uploadedFileUrl');
 
 /**
  * Generate certificate for a nomination
@@ -529,20 +530,20 @@ exports.uploadSignature = async (req, res) => {
         // Delete existing signature if it exists
         await certificateService.deleteExistingSignature();
 
-        // Check if file is from Cloudinary (has 'path' as URL) or local storage
-        const isCloudinary = req.file.path && req.file.path.startsWith('http');
+        const uploadedUrl = getUploadedFileUrl(req.file, 'signatures');
+        const isCloudinary = Boolean(uploadedUrl && uploadedUrl.startsWith('http'));
         
         // Save new signature info
         const signatureInfo = {
-            filename: req.file.filename,
+            filename: req.file.filename || req.file.public_id || req.file.file_id || path.basename(uploadedUrl || ''),
             originalName: req.file.originalname,
             mimetype: req.file.mimetype,
             size: req.file.size,
             uploadedAt: new Date(),
             uploadedBy: req.user._id,
             // Store Cloudinary info if available
-            cloudinaryUrl: isCloudinary ? req.file.path : null,
-            cloudinaryPublicId: isCloudinary ? req.file.filename : null,
+            cloudinaryUrl: isCloudinary ? uploadedUrl : null,
+            cloudinaryPublicId: isCloudinary ? (req.file.public_id || req.file.file_id || req.file.filename) : null,
             isCloudinary: isCloudinary
         };
 
@@ -550,18 +551,18 @@ exports.uploadSignature = async (req, res) => {
 
         console.log(`✅ Signature uploaded successfully: ${isCloudinary ? 'Cloudinary' : 'Local'} - ${req.file.filename} (${(req.file.size / 1024).toFixed(2)}KB)`);
         if (isCloudinary) {
-            console.log(`   📍 Cloudinary URL: ${req.file.path}`);
+            console.log(`   📍 Cloudinary URL: ${uploadedUrl}`);
         }
 
         res.json({ 
             message: 'Signature uploaded successfully',
             signature: {
-                filename: req.file.filename,
+                filename: signatureInfo.filename,
                 originalName: req.file.originalname,
                 size: req.file.size,
                 sizeFormatted: `${(req.file.size / 1024).toFixed(2)}KB`,
                 storageType: isCloudinary ? 'cloudinary' : 'local',
-                url: isCloudinary ? req.file.path : null
+                url: isCloudinary ? uploadedUrl : null
             }
         });
 
