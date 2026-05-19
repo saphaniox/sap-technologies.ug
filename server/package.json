@@ -12,8 +12,10 @@
     "keep-alive": "node scripts/keep-alive-server.js",
     "seed:admin": "node scripts/admin-seed.js",
     "db:mirror:sync": "node scripts/sync-database-mirror.js",
+    "db:mirror:sync:exact": "node scripts/sync-database-mirror.js --prune",
     "db:mirror:sync:prune": "node scripts/sync-database-mirror.js --prune",
     "db:mirror:sync:reverse": "node scripts/sync-database-mirror.js --reverse",
+    "db:mirror:sync:reverse:exact": "node scripts/sync-database-mirror.js --reverse --prune",
     "db:mirror:sync:reverse:prune": "node scripts/sync-database-mirror.js --reverse --prune"
   },
   "keywords": [

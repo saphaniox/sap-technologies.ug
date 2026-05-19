@@ -43,6 +43,9 @@ const catchUpEnabled = () => process.env.MONGODB_MIRROR_CATCH_UP_ENABLED !== "fa
 const catchUpPruneEnabled = () => process.env.MONGODB_MIRROR_CATCH_UP_PRUNE === "true";
 
 const getActiveDb = () => mongoose.connection?.readyState === 1 ? mongoose.connection.db : null;
+const shouldSkipCollection = (collectionName) => (
+    collectionName.startsWith("system.") || collectionName === OUTBOX_COLLECTION
+);
 
 const clearTimer = (timer) => {
     if (timer) clearInterval(timer);
@@ -172,7 +175,7 @@ const flushBulk = async (collectionName, targetCollection, ops, counts) => {
 const syncCollection = async (sourceDb, targetDb, collectionInfo) => {
     const collectionName = collectionInfo.name;
 
-    if (collectionName.startsWith("system.") || collectionName === OUTBOX_COLLECTION) {
+    if (shouldSkipCollection(collectionName)) {
         return { collectionName, skipped: true };
     }
 
@@ -224,6 +227,26 @@ const syncCollection = async (sourceDb, targetDb, collectionInfo) => {
     return { collectionName, ...counts };
 };
 
+const pruneExtraTargetCollections = async (sourceDb, targetDb, sourceCollectionNames) => {
+    if (!catchUpPruneEnabled()) return [];
+
+    const targetCollections = await targetDb.listCollections().toArray();
+    const dropped = [];
+
+    for (const collectionInfo of targetCollections) {
+        const collectionName = collectionInfo.name;
+        if (shouldSkipCollection(collectionName) || sourceCollectionNames.has(collectionName)) {
+            continue;
+        }
+
+        const documentCount = await targetDb.collection(collectionName).countDocuments();
+        await targetDb.collection(collectionName).drop();
+        dropped.push({ collectionName, documentCount });
+    }
+
+    return dropped;
+};
+
 const runCatchUpSync = async (reason = "scheduled") => {
     if (!state.enabled || !catchUpEnabled()) return;
     if (state.catchUpRunning) {
@@ -245,6 +268,11 @@ const runCatchUpSync = async (reason = "scheduled") => {
         await replayOutbox(`before-catch-up:${reason}`);
 
         const collections = await sourceDb.listCollections().toArray();
+        const sourceCollectionNames = new Set(
+            collections
+                .map(collectionInfo => collectionInfo.name)
+                .filter(collectionName => !shouldSkipCollection(collectionName))
+        );
         const totals = { collections: 0, read: 0, written: 0, pruned: 0 };
 
         for (const collectionInfo of collections) {
@@ -257,12 +285,17 @@ const runCatchUpSync = async (reason = "scheduled") => {
             totals.pruned += result.pruned || 0;
         }
 
+        const droppedCollections = await pruneExtraTargetCollections(sourceDb, target.db, sourceCollectionNames);
+        totals.droppedCollections = droppedCollections.length;
+        totals.droppedDocuments = droppedCollections.reduce((sum, item) => sum + item.documentCount, 0);
+
         state.lastCatchUpAt = new Date().toISOString();
         state.lastCatchUpResult = { reason, ...totals };
         state.lastCatchUpError = null;
         console.log(
             `Database mirror catch-up completed (${reason}): ` +
-            `collections=${totals.collections}, read=${totals.read}, upserted=${totals.written}, pruned=${totals.pruned}`
+            `collections=${totals.collections}, read=${totals.read}, upserted=${totals.written}, ` +
+            `pruned=${totals.pruned}, droppedCollections=${totals.droppedCollections}`
         );
     } catch (error) {
         state.lastCatchUpError = error.message;
