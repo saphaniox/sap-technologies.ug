@@ -239,14 +239,35 @@ exports.createSoftware = async (req, res) => {
     
     // Handle uploaded files
     if (req.files && req.files.length > 0) {
-      softwareData.images = req.files.map(file => ({
-        url: getFileUrl(file, 'software'),
-        alt: softwareData.name || "Software image"
-      }));
-      softwareData.image = softwareData.images[0].url;
+      console.log(`📸 Processing ${req.files.length} software images:`, req.files.map(f => ({
+        filename: f.filename,
+        originalname: f.originalname,
+        size: f.size,
+        mimetype: f.mimetype,
+        secure_url: f.secure_url,
+        url: f.url,
+        public_id: f.public_id,
+        path: f.path?.substring(0, 100) + (f.path?.length > 100 ? '...' : '')
+      })));
+
+      softwareData.images = req.files.map((file, index) => {
+        const imageUrl = getFileUrl(file, 'software');
+        console.log(`📸 Image ${index + 1} URL: ${imageUrl}`);
+        return {
+          url: imageUrl,
+          alt: softwareData.name || "Software image"
+        };
+      });
+      
+      if (softwareData.images.length === 0 || !softwareData.images[0].url) {
+        console.warn('⚠️  No valid image URLs generated from uploaded files');
+      }
+      
+      softwareData.image = softwareData.images[0]?.url || null;
     }
     
     const software = await Software.create(softwareData);
+    console.log(`✅ Software created with images:`, software.images);
     
     res.status(201).json({
       status: "success",
@@ -344,17 +365,30 @@ exports.updateSoftware = async (req, res) => {
     
     // Handle new uploaded files
     if (req.files && req.files.length > 0) {
+      console.log(`📸 Processing ${req.files.length} new software images for update:`, req.files.map(f => ({
+        filename: f.filename,
+        originalname: f.originalname,
+        size: f.size,
+        secure_url: f.secure_url,
+        public_id: f.public_id
+      })));
+
       // Add new images
-      const newImages = req.files.map(file => ({
-        url: getFileUrl(file, 'software'),
-        alt: fallbackAlt
-      }));
+      const newImages = req.files.map((file, index) => {
+        const imageUrl = getFileUrl(file, 'software');
+        console.log(`📸 New image ${index + 1} URL: ${imageUrl}`);
+        return {
+          url: imageUrl,
+          alt: fallbackAlt
+        };
+      });
       
       updateData.images = keepExistingImages || imagesToDelete.length > 0
         ? [...currentImages, ...newImages]
         : newImages;
       
       updateData.image = updateData.images[0]?.url || null;
+      console.log(`✅ Updated software images:`, updateData.images);
     }
     
     Object.assign(software, updateData);

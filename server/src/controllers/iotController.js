@@ -204,28 +204,50 @@ exports.createIoTProject = async (req, res) => {
   try {
     const projectData = normalizeIoTData({ ...req.body });
     
+    console.log('🚀 Creating IoT project');
+    
     // Handle file uploads (images and videos)
     if (req.files) {
       const imageFiles = Array.isArray(req.files) ? req.files : (req.files.images || []);
       const videoFiles = Array.isArray(req.files) ? [] : (req.files.videos || []);
 
+      console.log(`📁 Files: ${imageFiles.length} images, ${videoFiles.length} videos`);
+      
       if (imageFiles.length > 0) {
-        projectData.images = imageFiles.map(file => ({
-          url: getFileUrl(file, 'iot'),
-          isCompressed: file.isCompressed || false
-        }));
+        console.log('📸 Processing images:');
+        projectData.images = imageFiles.map((file, idx) => {
+          console.log(`  Image ${idx + 1}:`, {
+            filename: file.filename,
+            secure_url: file.secure_url ? 'present' : 'missing',
+            public_id: file.public_id ? 'present' : 'missing'
+          });
+          const imageUrl = getFileUrl(file, 'iot');
+          console.log(`    Generated URL: ${imageUrl}`);
+          return {
+            url: imageUrl,
+            isCompressed: file.isCompressed || false
+          };
+        });
       }
 
       if (videoFiles.length > 0) {
-        projectData.videos = videoFiles.map(file => ({
-          url: getFileUrl(file, 'iot'),
-          mimeType: file.mimetype,
-          size: file.size || 0
-        }));
+        console.log('🎥 Processing videos:');
+        projectData.videos = videoFiles.map((file, idx) => {
+          console.log(`  Video ${idx + 1}:`, {
+            filename: file.filename,
+            secure_url: file.secure_url ? 'present' : 'missing'
+          });
+          return {
+            url: getFileUrl(file, 'iot'),
+            mimeType: file.mimetype,
+            size: file.size || 0
+          };
+        });
       }
     }
     
     const iotProject = await IoT.create(projectData);
+    console.log('✅ IoT project created');
     
     res.status(201).json({
       status: "success",

@@ -286,15 +286,29 @@ class AwardsController {
             let nomineePhotoPath = "";
             if (req.file) {
                 try {
+                    console.log('📸 Award photo file object:', {
+                        filename: req.file.filename,
+                        originalname: req.file.originalname,
+                        size: req.file.size,
+                        mimetype: req.file.mimetype,
+                        secure_url: req.file.secure_url ? 'present' : 'missing',
+                        url: req.file.url ? 'present' : 'missing',
+                        public_id: req.file.public_id ? 'present' : 'missing',
+                        path: req.file.path ? req.file.path.substring(0, 50) : 'missing'
+                    });
+                    
                     if (!useCloudinary && !req.file.path) {
                         throw new Error('File path is missing');
                     }
                     nomineePhotoPath = getFileUrl(req.file, 'awards');
+                    console.log('✅ Generated photo URL:', nomineePhotoPath);
+                    
                     logger.logInfo('AwardsController', 'Photo upload successful', { 
                         path: nomineePhotoPath,
                         storage: useCloudinary ? 'cloudinary' : 'local'
                     });
                 } catch (fileError) {
+                    console.error('❌ File processing error:', fileError.message);
                     logger.logError('AwardsController', 'File processing error', { 
                         error: fileError.message,
                         file: req.file 

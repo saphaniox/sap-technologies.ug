@@ -313,6 +313,23 @@ class ProductController {
             console.log("🏷️ Creating product with data:", req.body);
             console.log("📁 Files uploaded:", req.files ? req.files.length : "No files");
             
+            // Log file structure for debugging
+            if (req.files && req.files.length > 0) {
+                console.log('🔍 File objects structure:');
+                req.files.forEach((file, idx) => {
+                    console.log(`  File ${idx + 1}:`, {
+                        filename: file.filename,
+                        originalname: file.originalname,
+                        size: file.size,
+                        mimetype: file.mimetype,
+                        secure_url: file.secure_url ? 'present' : 'missing',
+                        url: file.url ? 'present' : 'missing',
+                        public_id: file.public_id ? 'present' : 'missing',
+                        path: file.path ? file.path.substring(0, 50) : 'missing'
+                    });
+                });
+            }
+            
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 console.log("❌ Validation errors:", errors.array());
@@ -329,12 +346,16 @@ class ProductController {
 
             // Handle multiple image uploads
             if (req.files && req.files.length > 0) {
-                productData.images = req.files.map((file, index) => ({
-                    url: getFileUrl(file, 'products'),
-                    alt: productData.name || 'Product image',
-                    isPrimary: index === 0,
-                    order: index
-                }));
+                productData.images = req.files.map((file, index) => {
+                    const imageUrl = getFileUrl(file, 'products');
+                    console.log(`📸 Generated URL for image ${index + 1}: ${imageUrl}`);
+                    return {
+                        url: imageUrl,
+                        alt: productData.name || 'Product image',
+                        isPrimary: index === 0,
+                        order: index
+                    };
+                });
                 productData.image = productData.images[0].url; // Backward compatibility
                 console.log("📸 Images uploaded:", productData.images.length);
             } else if (req.file) {
