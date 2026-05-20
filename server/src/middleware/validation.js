@@ -86,7 +86,7 @@ const validateRegistration = [
         .trim()
         .isLength({ min: 2, max: 50 })
         .withMessage("Name must be between 2 and 50 characters")
-        .matches(/^[a-zA-ZÀ-ÖØ-öø-ÿ\s\-'\.]+$/)
+        .matches(/^[\p{L}\s\-'\.]+$/u)
         .withMessage("Name contains invalid characters")
         .customSanitizer(sanitizeInput),
     body("email")
@@ -108,8 +108,9 @@ const validateRegistration = [
           return true;
         }),
     body("phone")
-        .optional()
-        .isMobilePhone()
+        .optional({ values: "falsy" })
+        .trim()
+        .matches(/^\+?[0-9\s\-()]{7,20}$/)
         .withMessage("Please provide a valid phone number"),
     handleValidationErrors
 ];
@@ -216,8 +217,9 @@ const validateProfileUpdate = [
         .withMessage("Name contains invalid characters")
         .customSanitizer(sanitizeInput),
     body("phone")
-        .optional()
-        .isMobilePhone()
+        .optional({ values: "falsy" })
+        .trim()
+        .matches(/^\+?[0-9\s\-()]{7,20}$/)
         .withMessage("Please provide a valid phone number"),
     body("bio")
         .optional()
@@ -367,9 +369,10 @@ const validateProject = [
 // Enhanced Partner validation
 const validatePartner = [
     body("name")
+        .optional({ values: "falsy" })
         .trim()
-        .isLength({ min: 1, max: 100 })
-        .withMessage("Partner name is required and must be less than 100 characters")
+        .isLength({ max: 100 })
+        .withMessage("Partner name must be less than 100 characters")
         .customSanitizer(sanitizeInput),
     body("website")
         .optional()

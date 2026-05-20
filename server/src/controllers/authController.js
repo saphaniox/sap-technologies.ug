@@ -1,4 +1,4 @@
-﻿const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 const { AppError } = require('../middleware/errorHandler');
 const emailService = require('../services/emailService');
@@ -58,9 +58,10 @@ class AuthController {
     async register(req, res, next) {
         try {
             const { name, email, password, phone } = req.body;
+            const cleanPhone = typeof phone === 'string' ? phone.trim() : "";
             
             if (!name || !email || !password) {
-                return next(new AppError('All fields are required', 400));
+                return next(new AppError('Name, email, and password are required', 400));
             }
             
             const existingUser = await User.findOne({ email });
@@ -69,7 +70,14 @@ class AuthController {
             }
             
             const hashedPassword = await bcrypt.hash(password, 12);
-            const user = new User({ name, email, password: hashedPassword, phone: phone || "" });
+            const user = new User({
+                name,
+                email,
+                password: hashedPassword,
+                phone: cleanPhone,
+                lastLogin: new Date(),
+                loginCount: 1
+            });
             await user.save();
             
             // Track registration activity
@@ -105,11 +113,27 @@ class AuthController {
             // Execute notifications in background
             Promise.all(notificationPromises);
             
-            // Send success response with user profile info
+            req.session.userId = user._id;
+            req.session.userName = user.name;
+
+            const sessionSaved = await saveSessionWithTimeout(req);
+            if (sessionSaved) {
+                console.log('Session saved successfully after signup.');
+            }
+
+            const accessToken = signAccessToken(user);
+            res.cookie('accessToken', accessToken, getAuthCookieOptions());
+
+            // Send success response with user profile info and auth token
             res.status(201).json({
                 status: 'success',
-                message: 'User registered successfully',
-                data: { user: user.profile }
+                message: 'User registered and logged in successfully',
+                data: {
+                    user: user.profile,
+                    name: user.name,
+                    sessionId: req.session.id,
+                    accessToken
+                }
             });
         } catch (error) {
             next(error);
@@ -147,7 +171,7 @@ class AuthController {
             req.session.userId = user._id;
             req.session.userName = user.name;
             
-            console.log('🔐 Setting session for user:', {
+            console.log('Setting session for user:', {
                 userId: user._id,
                 userName: user.name,
                 sessionId: req.session.id,
@@ -159,7 +183,7 @@ class AuthController {
             // of truth for cross-site admin requests.
             const sessionSaved = await saveSessionWithTimeout(req);
             if (sessionSaved) {
-                console.log('✅ Session saved successfully.');
+                console.log('Session saved successfully.');
             }
             
             // Save the updated user info to database
@@ -189,7 +213,7 @@ class AuthController {
                 }
             });
             
-            console.log('📤 Login response sent. Cookie:', res.getHeader('Set-Cookie'));
+            console.log('Login response sent. Cookie:', res.getHeader('Set-Cookie'));
         } catch (error) {
             next(error);
         }

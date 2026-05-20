@@ -12,6 +12,23 @@ const getFileUrl = (file, folder = 'partners') => {
   return getUploadedFileUrl(file, folder);
 };
 
+const optionalText = (value) => {
+  if (typeof value !== "string") return value;
+  return value.trim();
+};
+
+const normalizeBoolean = (value, fallback) => {
+  if (value === undefined) return fallback;
+  if (typeof value === "boolean") return value;
+  return String(value).toLowerCase() === "true";
+};
+
+const normalizeOrder = (value, fallback) => {
+  if (value === undefined || value === "") return fallback;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
 // Get active partners (public)
 const getPartners = async (req, res) => {
   try {
@@ -76,12 +93,12 @@ const createPartner = async (req, res) => {
     }
 
     const partner = new Partner({
-      name,
+      name: optionalText(name),
       logo: getFileUrl(req.file, 'partners'),
-      website,
-      description,
-      isActive: isActive !== undefined ? isActive : true,
-      order: order || 0
+      website: optionalText(website),
+      description: optionalText(description),
+      isActive: normalizeBoolean(isActive, true),
+      order: normalizeOrder(order, 0)
     });
 
     await partner.save();
@@ -133,12 +150,13 @@ const updatePartner = async (req, res) => {
     // Store old logo path for cleanup
     const oldLogoPath = partner.logo;
 
-    // Update fields
-    partner.name = name || partner.name;
-    partner.website = website !== undefined ? website : partner.website;
-    partner.description = description !== undefined ? description : partner.description;
-    partner.isActive = isActive !== undefined ? isActive : partner.isActive;
-    partner.order = order !== undefined ? order : partner.order;
+    // Update fields. Blank optional text fields are allowed so admins can keep
+    // a partner as logo-only.
+    if (name !== undefined) partner.name = optionalText(name);
+    if (website !== undefined) partner.website = optionalText(website);
+    if (description !== undefined) partner.description = optionalText(description);
+    if (isActive !== undefined) partner.isActive = normalizeBoolean(isActive, partner.isActive);
+    if (order !== undefined) partner.order = normalizeOrder(order, partner.order);
 
     // Update logo if new file uploaded
     if (req.file) {
