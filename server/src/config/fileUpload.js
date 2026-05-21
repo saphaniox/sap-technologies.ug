@@ -58,18 +58,6 @@ const imageFilter = (req, file, cb) => {
   }
 };
 
-// File filter for images and documents
-const mediaFilter = (req, file, cb) => {
-  const allowedTypes = ["image/", "application/pdf", "text/"];
-  const isAllowed = allowedTypes.some(type => file.mimetype.startsWith(type));
-  
-  if (isAllowed) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image, PDF, and text files are allowed!"), false);
-  }
-};
-
 // Safety function: fallback to local storage if Cloudinary storage is null
 const getStorage = (cloudinaryStorage, localStoragePath) => {
   if (useCloudinary && cloudinaryStorage) {
@@ -102,7 +90,7 @@ const projectUpload = multer({
   limits: {
     fileSize: 20 * 1024 * 1024, // 20MB limit
   },
-  fileFilter: mediaFilter
+  fileFilter: imageFilter
 });
 
 const productUpload = multer({

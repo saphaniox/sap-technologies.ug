@@ -27,19 +27,11 @@ const localStorage = multer.diskStorage({
 // Use Cloudinary if configured, otherwise use local storage
 const storage = useCloudinary ? storageConfigs.awards : localStorage;
 
-// File filter for images only (enhanced validation for award photos)
+// File filter for images only. Accept every image format the browser/server
+// identifies as image/* instead of limiting uploads to a small extension list.
 const fileFilter = (req, file, cb) => {
-    // Accept only image files
     if (file.mimetype.startsWith("image/")) {
-        // Additional check for allowed image formats
-        const allowedFormats = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
-        const fileExtension = path.extname(file.originalname).toLowerCase();
-        
-        if (allowedFormats.includes(fileExtension)) {
-            cb(null, true);
-        } else {
-            cb(new Error("Only JPG, JPEG, PNG, GIF, and WebP image files are allowed!"), false);
-        }
+        cb(null, true);
     } else {
         cb(new Error("Only image files are allowed for nominee photos!"), false);
     }

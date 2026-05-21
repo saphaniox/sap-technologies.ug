@@ -122,13 +122,45 @@ const isCloudinaryConfigured = () => {
     return true;
 };
 
-const imageTransformation = (width, height, crop = 'limit') => [{
-    width,
-    height,
-    crop,
-    quality: 'auto:good',
-    fetch_format: 'auto'
-}];
+const getWatermarkUrl = () => {
+    if (process.env.SAPTECH_WATERMARK_URL) {
+        return process.env.SAPTECH_WATERMARK_URL;
+    }
+
+    const clientUrl = process.env.CLIENT_URL || '';
+    if (clientUrl && !/localhost|127\.0\.0\.1/i.test(clientUrl)) {
+        return `${clientUrl.replace(/\/$/, '')}/images/logo-watermark.png`;
+    }
+
+    const defaultLogoUrl = 'https://sap-technologies.com';
+    return `${defaultLogoUrl}/images/logo-watermark.png`;
+};
+
+const imageTransformation = (width, height, crop = 'limit', options = {}) => {
+    const baseTransformation = [{
+        width,
+        height,
+        crop,
+        quality: 'auto:good',
+        fetch_format: 'auto'
+    }];
+
+    if (!options.watermark) {
+        return baseTransformation;
+    }
+
+    return [
+        ...baseTransformation,
+        {
+            overlay: { url: getWatermarkUrl() },
+            width: Math.round(Math.max(90, Math.min(width * 0.16, 220))),
+            opacity: 58,
+            gravity: 'south_east',
+            x: Math.round(Math.max(14, Math.min(width * 0.025, 36))),
+            y: Math.round(Math.max(14, Math.min(height * 0.025, 36)))
+        }
+    ];
+};
 
 const cloudinaryStorageClient = cloudinaryLib;
 const cloudinaryUploadTimeout = Number(process.env.CLOUDINARY_UPLOAD_TIMEOUT_MS) || 120000;
@@ -141,7 +173,6 @@ const storageConfigs = {
             params: {
                 folder: 'sap-technologies/profile-pics',
                 resource_type: 'image',
-                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
                 transformation: imageTransformation(400, 400),
                 timeout: cloudinaryUploadTimeout,
             },
@@ -153,8 +184,7 @@ const storageConfigs = {
             params: {
                 folder: 'sap-technologies/services',
                 resource_type: 'image',
-                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: imageTransformation(800, 600),
+                transformation: imageTransformation(800, 600, 'limit', { watermark: true }),
                 timeout: cloudinaryUploadTimeout,
             },
         })
@@ -165,8 +195,7 @@ const storageConfigs = {
             params: {
                 folder: 'sap-technologies/projects',
                 resource_type: 'image',
-                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: imageTransformation(1200, 800),
+                transformation: imageTransformation(1200, 800, 'limit', { watermark: true }),
                 timeout: cloudinaryUploadTimeout,
             },
         })
@@ -177,8 +206,7 @@ const storageConfigs = {
             params: {
                 folder: 'sap-technologies/products',
                 resource_type: 'image',
-                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: imageTransformation(800, 800),
+                transformation: imageTransformation(800, 800, 'limit', { watermark: true }),
                 timeout: cloudinaryUploadTimeout,
             },
         })
@@ -189,7 +217,6 @@ const storageConfigs = {
             params: {
                 folder: 'sap-technologies/signatures',
                 resource_type: 'image',
-                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
                 transformation: imageTransformation(600, 200),
                 timeout: cloudinaryUploadTimeout,
             },
@@ -201,7 +228,6 @@ const storageConfigs = {
             params: {
                 folder: 'sap-technologies/partners',
                 resource_type: 'image',
-                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
                 transformation: imageTransformation(600, 600),
                 timeout: cloudinaryUploadTimeout,
             },
@@ -213,8 +239,7 @@ const storageConfigs = {
             params: {
                 folder: 'sap-technologies/awards',
                 resource_type: 'image',
-                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: imageTransformation(800, 800),
+                transformation: imageTransformation(800, 800, 'limit', { watermark: true }),
                 timeout: cloudinaryUploadTimeout,
             },
         })
@@ -225,8 +250,7 @@ const storageConfigs = {
             params: {
                 folder: 'sap-technologies/software',
                 resource_type: 'image',
-                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: imageTransformation(1200, 800),
+                transformation: imageTransformation(1200, 800, 'limit', { watermark: true }),
                 timeout: cloudinaryUploadTimeout,
             },
         })
@@ -249,8 +273,7 @@ const storageConfigs = {
                     params = {
                         folder: 'sap-technologies/iot',
                         resource_type: 'image',
-                        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                        transformation: imageTransformation(1920, 1080),
+                        transformation: imageTransformation(1920, 1080, 'limit', { watermark: true }),
                         timeout: cloudinaryUploadTimeout
                     };
                 }

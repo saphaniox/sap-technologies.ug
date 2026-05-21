@@ -1,6 +1,8 @@
 const { VisitorSession, PageView } = require("../models/Visitor");
 const UAParser = require("ua-parser-js");
 
+const isDatabaseReady = () => VisitorSession.db.readyState === 1;
+
 // Helper to parse user agent
 const parseUserAgent = (userAgentString) => {
   const parser = new UAParser(userAgentString);
@@ -86,6 +88,8 @@ const trackVisitor = async (req, res, next) => {
   try {
     // Skip tracking for certain paths
     const skipPaths = [
+      '/health',
+      '/api/health',
       '/api/admin/visitors', // Don't track admin analytics requests
       '/api/admin/visitor-analytics',
       '/uploads/',
@@ -95,7 +99,7 @@ const trackVisitor = async (req, res, next) => {
     ];
     
     const shouldSkip = skipPaths.some(path => req.path.startsWith(path));
-    if (shouldSkip) {
+    if (shouldSkip || !isDatabaseReady()) {
       return next();
     }
     
@@ -172,6 +176,10 @@ const trackPageView = async (req, res, next) => {
     }
     
     if (!req.visitorSession) {
+      return next();
+    }
+
+    if (!isDatabaseReady()) {
       return next();
     }
     

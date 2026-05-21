@@ -54,7 +54,7 @@ router.post(
   "/services",
   serviceUpload.array("images", 10),
   handleMulterError,
-  compressionPresets.web,
+  compressionPresets.webWatermarked,
   validation.validateService,
   ServiceController.createService
 );
@@ -63,7 +63,7 @@ router.put(
   "/services/:id",
   serviceUpload.array("images", 10),
   handleMulterError,
-  compressionPresets.web,
+  compressionPresets.webWatermarked,
   ServiceController.updateService
 );
 
@@ -78,7 +78,7 @@ router.post(
   "/projects",
   projectUpload.array("images", 5),
   handleMulterError,
-  compressionPresets.highQuality,
+  compressionPresets.highQualityWatermarked,
   ProjectController.createProject
 );
 
@@ -86,7 +86,7 @@ router.put(
   "/projects/:id",
   projectUpload.array("images", 5),
   handleMulterError,
-  compressionPresets.highQuality,
+  compressionPresets.highQualityWatermarked,
   validation.validateProject,
   ProjectController.updateProject
 );

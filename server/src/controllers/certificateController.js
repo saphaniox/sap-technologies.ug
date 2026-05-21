@@ -1,8 +1,56 @@
 const path = require('path');
 const fs = require('fs').promises;
+const sharp = require('sharp');
 const certificateService = require('../services/certificateService');
 const { Nomination, AwardCategory } = require('../models/Award');
 const { getUploadedFileUrl } = require('../utils/uploadedFileUrl');
+const { cloudinary } = require('../config/cloudinary');
+
+const getSignaturePublicId = (file) => file?.public_id || file?.file_id || file?.filename;
+
+const getEmbeddableCloudinarySignatureUrl = (publicId) => cloudinary.url(publicId, {
+    secure: true,
+    resource_type: 'image',
+    type: 'upload',
+    format: 'png',
+    transformation: [{ width: 600, height: 200, crop: 'limit' }]
+});
+
+const ensureLocalSignatureCanEmbed = async (file) => {
+    if (!file || !file.path || /^https?:\/\//i.test(file.path)) {
+        return file;
+    }
+
+    if (['image/png', 'image/jpeg', 'image/jpg'].includes(file.mimetype)) {
+        return file;
+    }
+
+    const sourcePath = file.path;
+    const outputFilename = file.filename.replace(path.extname(file.filename), '-signature.png');
+    const outputPath = path.join(path.dirname(sourcePath), outputFilename);
+
+    await sharp(sourcePath)
+        .resize(600, 200, {
+            fit: 'inside',
+            withoutEnlargement: true
+        })
+        .png()
+        .toFile(outputPath);
+
+    try {
+        await fs.unlink(sourcePath);
+    } catch (error) {
+        console.warn('Could not remove original signature after conversion:', error.message);
+    }
+
+    const stats = await fs.stat(outputPath);
+    file.path = outputPath;
+    file.filename = outputFilename;
+    file.mimetype = 'image/png';
+    file.size = stats.size;
+
+    return file;
+};
 
 /**
  * Generate certificate for a nomination
@@ -510,9 +558,9 @@ exports.uploadSignature = async (req, res) => {
             });
         }
 
-        // Validate file type
-        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
-        if (!allowedTypes.includes(req.file.mimetype)) {
+        // Validate file type. Accept any image format; unsupported local
+        // signature formats are converted to PNG before certificate rendering.
+        if (!req.file.mimetype?.startsWith('image/')) {
             // Delete the invalid file if it's local
             if (req.file.path && !req.file.path.startsWith('http')) {
                 try {
@@ -523,27 +571,33 @@ exports.uploadSignature = async (req, res) => {
             }
             
             return res.status(400).json({ 
-                message: `Invalid file type: ${req.file.mimetype}. Only PNG and JPEG images are allowed.` 
+                message: `Invalid file type: ${req.file.mimetype}. Please upload an image file.`
             });
         }
+
+        await ensureLocalSignatureCanEmbed(req.file);
 
         // Delete existing signature if it exists
         await certificateService.deleteExistingSignature();
 
-        const uploadedUrl = getUploadedFileUrl(req.file, 'signatures');
-        const isCloudinary = Boolean(uploadedUrl && uploadedUrl.startsWith('http'));
+        const rawUploadedUrl = getUploadedFileUrl(req.file, 'signatures');
+        const cloudinaryPublicId = getSignaturePublicId(req.file);
+        const isCloudinary = Boolean(rawUploadedUrl && rawUploadedUrl.startsWith('http'));
+        const uploadedUrl = isCloudinary && cloudinaryPublicId
+            ? getEmbeddableCloudinarySignatureUrl(cloudinaryPublicId)
+            : rawUploadedUrl;
         
         // Save new signature info
         const signatureInfo = {
-            filename: req.file.filename || req.file.public_id || req.file.file_id || path.basename(uploadedUrl || ''),
+            filename: req.file.filename || cloudinaryPublicId || path.basename(uploadedUrl || ''),
             originalName: req.file.originalname,
-            mimetype: req.file.mimetype,
+            mimetype: isCloudinary && cloudinaryPublicId ? 'image/png' : req.file.mimetype,
             size: req.file.size,
             uploadedAt: new Date(),
             uploadedBy: req.user._id,
             // Store Cloudinary info if available
             cloudinaryUrl: isCloudinary ? uploadedUrl : null,
-            cloudinaryPublicId: isCloudinary ? (req.file.public_id || req.file.file_id || req.file.filename) : null,
+            cloudinaryPublicId: isCloudinary ? cloudinaryPublicId : null,
             isCloudinary: isCloudinary
         };
 

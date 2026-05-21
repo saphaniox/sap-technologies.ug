@@ -250,7 +250,7 @@ router.post(
     adminAuth,
     productUpload.array("images", 5),
     handleMulterError,
-    compressionPresets.web,
+    compressionPresets.webWatermarked,
     validateProduct,
     productController.createProduct
 );
@@ -262,7 +262,7 @@ router.put(
     param("id").isMongoId().withMessage("Invalid product ID"),
     productUpload.array("images", 5),
     handleMulterError,
-    compressionPresets.web,
+    compressionPresets.webWatermarked,
     validateProductUpdate,
     productController.updateProduct
 );

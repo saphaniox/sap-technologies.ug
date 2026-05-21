@@ -46,7 +46,7 @@ const logFileStructure = (req, res, next) => {
 };
 
 // Admin routes (must come before dynamic :id routes)
-router.post("/", adminAuth, softwareUpload.array("images", 5), handleMulterError, compressionPresets.web, logFileStructure, softwareController.createSoftware);
+router.post("/", adminAuth, softwareUpload.array("images", 5), handleMulterError, compressionPresets.webWatermarked, logFileStructure, softwareController.createSoftware);
 router.get("/admin/stats", adminAuth, softwareController.getStats);
 
 // Public routes
@@ -56,7 +56,7 @@ router.get("/:id", softwareController.getSoftwareById);
 router.post("/:id/click", softwareController.trackClick);
 
 // Admin routes for specific software
-router.put("/:id", adminAuth, softwareUpload.array("images", 5), handleMulterError, compressionPresets.web, logFileStructure, softwareController.updateSoftware);
+router.put("/:id", adminAuth, softwareUpload.array("images", 5), handleMulterError, compressionPresets.webWatermarked, logFileStructure, softwareController.updateSoftware);
 router.delete("/:id", adminAuth, softwareController.deleteSoftware);
 
 module.exports = router;

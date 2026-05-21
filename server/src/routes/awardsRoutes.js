@@ -179,7 +179,7 @@ router.post(
     "/nominations",
     awardsUpload(), // Use the middleware function
     handleMulterError,
-    compressionPresets.thumbnail,
+    compressionPresets.thumbnailWatermarked,
     validateNomination,
     awardsController.submitNomination
 );
@@ -229,7 +229,7 @@ router.put(
     param("id").isMongoId().withMessage("Invalid nomination ID"),
     awardsUpload(), // Use the middleware function
     handleMulterError,
-    compressionPresets.thumbnail,
+    compressionPresets.thumbnailWatermarked,
     awardsController.updateNomination
 );
 

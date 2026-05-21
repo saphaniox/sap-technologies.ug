@@ -157,7 +157,14 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const sessionMiddleware = session(sessionConfig);
+const isHealthCheckRequest = (req) => req.path === "/health" || req.path === "/api/health";
+
 app.use((req, res, next) => {
+    if (isHealthCheckRequest(req)) {
+        req.session = {};
+        return next();
+    }
+
     const hasBearerToken = req.headers.authorization?.startsWith("Bearer ");
     const hasAccessTokenCookie = Boolean(req.cookies?.accessToken);
     const canUseStatelessAuth =

@@ -98,6 +98,17 @@ const attachShutdownHandlers = () => {
     process.on("SIGUSR2", () => gracefulShutdown("SIGUSR2"));
 };
 
+const withTimeout = (promise, timeoutMs, message) => {
+    let timeoutId;
+    const timeout = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
+    });
+
+    return Promise.race([promise, timeout]).finally(() => {
+        clearTimeout(timeoutId);
+    });
+};
+
 const connectDB = async () => {
     try {
         const dbConfig = environmentConfig.getDatabaseConfig();
@@ -171,7 +182,11 @@ const connectDB = async () => {
 const checkDatabaseHealth = async () => {
     try {
         if (mongoose.connection.readyState === 1) {
-            await mongoose.connection.db.admin().ping();
+            await withTimeout(
+                mongoose.connection.db.admin().ping(),
+                Number(process.env.DB_HEALTH_TIMEOUT_MS) || 1500,
+                "Database health check timed out"
+            );
 
             return {
                 status: "healthy",
