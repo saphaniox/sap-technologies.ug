@@ -153,11 +153,9 @@ const imageTransformation = (width, height, crop = 'limit', options = {}) => {
         ...baseTransformation,
         {
             overlay: { url: getWatermarkUrl() },
-            width: Math.round(Math.max(90, Math.min(width * 0.16, 220))),
-            opacity: 58,
-            gravity: 'south_east',
-            x: Math.round(Math.max(14, Math.min(width * 0.025, 36))),
-            y: Math.round(Math.max(14, Math.min(height * 0.025, 36)))
+            width: Math.round(Math.max(58, Math.min(width * 0.11, 150))),
+            opacity: 24,
+            gravity: 'center'
         }
     ];
 };

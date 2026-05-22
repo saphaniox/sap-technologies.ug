@@ -24,8 +24,7 @@ const createWatermarkLayer = async (targetWidth, targetHeight) => {
     return null;
   }
 
-  const logoWidth = Math.round(clamp(targetWidth * 0.16, 70, 220));
-  const margin = Math.round(clamp(targetWidth * 0.025, 12, 36));
+  const logoWidth = Math.round(clamp(targetWidth * 0.11, 58, 150));
   const input = await sharp(watermarkPath)
     .resize({ width: logoWidth, withoutEnlargement: true })
     .png()
@@ -34,9 +33,9 @@ const createWatermarkLayer = async (targetWidth, targetHeight) => {
 
   return {
     input,
-    left: Math.max(margin, targetWidth - (metadata.width || logoWidth) - margin),
-    top: Math.max(margin, targetHeight - (metadata.height || logoWidth) - margin),
-    opacity: 0.72
+    left: Math.max(0, Math.round((targetWidth - (metadata.width || logoWidth)) / 2)),
+    top: Math.max(0, Math.round((targetHeight - (metadata.height || logoWidth)) / 2)),
+    opacity: 0.24
   };
 };
 
