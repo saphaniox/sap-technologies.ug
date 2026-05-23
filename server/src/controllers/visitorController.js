@@ -1,5 +1,26 @@
 const { VisitorSession, PageView } = require("../models/Visitor");
 
+const parseTrackingBody = (req) => {
+  if (!req.body || typeof req.body !== "object") {
+    return {};
+  }
+
+  if (typeof req.body.payload === "string") {
+    try {
+      return JSON.parse(req.body.payload);
+    } catch (error) {
+      return {};
+    }
+  }
+
+  return req.body;
+};
+
+const toFiniteNumber = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
 class VisitorController {
   // Get visitor analytics overview
   static async getAnalytics(req, res) {
@@ -29,6 +50,9 @@ class VisitorController {
             break;
           case '90d':
             start = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+            break;
+          case 'all':
+            start = new Date(0);
             break;
           default:
             start = new Date(0); // All time
@@ -284,9 +308,7 @@ class VisitorController {
   // Track page view update (from client-side)
   static async updatePageView(req, res) {
     try {
-      const body = req.body?.payload
-        ? JSON.parse(req.body.payload)
-        : req.body;
+      const body = parseTrackingBody(req);
 
       const { 
         sessionId, 
@@ -303,25 +325,75 @@ class VisitorController {
           message: "sessionId and path are required"
         });
       }
+
+      let visitorSession = req.visitorSession;
+      if (!visitorSession || visitorSession.sessionId !== sessionId) {
+        visitorSession = await VisitorSession.findOne({ sessionId });
+      }
       
       // Find the most recent page view for this session and path
-      const pageView = await PageView.findOne({ 
+      let pageView = await PageView.findOne({ 
         sessionId, 
         "page.path": path 
       }).sort({ timestamp: -1 });
+
+      if (!pageView) {
+        pageView = new PageView({
+          sessionId,
+          visitorSessionRef: visitorSession?._id,
+          page: {
+            path,
+            title: title || "",
+            url: body.url || req.get("referer") || path,
+            query: body.query ? String(body.query) : ""
+          },
+          timestamp: new Date()
+        });
+      } else if (visitorSession && !pageView.visitorSessionRef) {
+        pageView.visitorSessionRef = visitorSession._id;
+      }
       
-      if (pageView) {
-        if (title) pageView.page.title = title;
-        if (timeOnPage !== undefined) pageView.timeOnPage = timeOnPage;
-        if (scrollDepth !== undefined) pageView.scrollDepth = scrollDepth;
-        if (performance) pageView.performance = performance;
-        
-        await pageView.save();
+      if (title) pageView.page.title = title;
+      if (body.url) pageView.page.url = body.url;
+      if (body.query) pageView.page.query = String(body.query);
+
+      const safeTimeOnPage = toFiniteNumber(timeOnPage);
+      if (safeTimeOnPage !== undefined) {
+        pageView.timeOnPage = Math.max(0, safeTimeOnPage);
+      }
+
+      const safeScrollDepth = toFiniteNumber(scrollDepth);
+      if (safeScrollDepth !== undefined) {
+        pageView.scrollDepth = Math.max(0, Math.min(100, safeScrollDepth));
+      }
+
+      if (performance && typeof performance === "object") {
+        pageView.performance = performance;
+      }
+
+      if (body.event?.name) {
+        pageView.events.push({
+          name: String(body.event.name),
+          value: body.event.value ? String(body.event.value) : "",
+          timestamp: body.event.timestamp ? new Date(body.event.timestamp) : new Date()
+        });
+      }
+      
+      await pageView.save();
+
+      if (visitorSession) {
+        visitorSession.lastSeen = new Date();
+        visitorSession.duration = Math.floor((visitorSession.lastSeen - visitorSession.firstSeen) / 1000);
+        visitorSession.pageViews = Math.max(
+          visitorSession.pageViews || 0,
+          await PageView.countDocuments({ sessionId })
+        );
+        await visitorSession.save();
       }
       
       res.json({
         success: true,
-        message: "Page view updated"
+        message: "Page view tracked"
       });
     } catch (error) {
       console.error("Error updating page view:", error);
@@ -336,10 +408,32 @@ class VisitorController {
   // Export analytics data (CSV)
   static async exportAnalytics(req, res) {
     try {
-      const { startDate, endDate, type = 'sessions' } = req.query;
+      const { startDate, endDate, period = '30d', type = 'sessions' } = req.query;
       
-      const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      let start;
       const end = endDate ? new Date(endDate) : new Date();
+
+      if (startDate) {
+        start = new Date(startDate);
+      } else {
+        switch (period) {
+          case '24h':
+            start = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            break;
+          case '7d':
+            start = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+            break;
+          case '90d':
+            start = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+            break;
+          case 'all':
+            start = new Date(0);
+            break;
+          case '30d':
+          default:
+            start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        }
+      }
       
       let data, headers;
       
@@ -352,8 +446,8 @@ class VisitorController {
         data = sessions.map(s => [
           s.sessionId,
           s.ipAddress,
-          s.userAgent.browser,
-          s.userAgent.os,
+          s.userAgent?.browser || 'Unknown',
+          s.userAgent?.os || 'Unknown',
           s.location?.country || 'Unknown',
           s.firstSeen.toISOString(),
           s.lastSeen.toISOString(),
@@ -374,6 +468,11 @@ class VisitorController {
           pv.timeOnPage,
           pv.scrollDepth
         ]);
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: "Unsupported analytics export type"
+        });
       }
       
       // Create CSV

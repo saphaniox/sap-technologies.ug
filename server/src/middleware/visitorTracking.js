@@ -68,16 +68,35 @@ const getClientIP = (req) => {
          'unknown';
 };
 
+const getTrackingPayload = (req) => {
+  if (!req.body || typeof req.body !== "object") {
+    return {};
+  }
+
+  if (typeof req.body.payload === "string") {
+    try {
+      return JSON.parse(req.body.payload);
+    } catch (error) {
+      return {};
+    }
+  }
+
+  return req.body;
+};
+
 // Generate session ID from request
 const getSessionId = (req) => {
-  // Try to get from cookie first
-  if (req.cookies && req.cookies.visitor_session_id) {
-    return req.cookies.visitor_session_id;
-  }
-  
-  // Try from header (for API calls)
   if (req.headers['x-session-id']) {
     return req.headers['x-session-id'];
+  }
+
+  const trackingPayload = getTrackingPayload(req);
+  if (trackingPayload.sessionId) {
+    return trackingPayload.sessionId;
+  }
+
+  if (req.cookies && req.cookies.visitor_session_id) {
+    return req.cookies.visitor_session_id;
   }
   
   return null;
@@ -105,11 +124,13 @@ const trackVisitor = async (req, res, next) => {
     
     // Get visitor data
     const sessionId = getSessionId(req);
-    const fingerprint = req.headers['x-fingerprint'] || null;
+    const trackingPayload = getTrackingPayload(req);
+    const fingerprint = req.headers['x-fingerprint'] || trackingPayload.fingerprint || null;
     const ipAddress = getClientIP(req);
     const userAgent = parseUserAgent(req.headers['user-agent'] || '');
     const referrer = parseReferrer(req.headers.referer || req.headers.referrer);
     const utm = extractUTMParams(req.query);
+    const isVisitorTrackRequest = req.path === '/api/visitor/track';
     
     let visitorSession;
     
@@ -119,8 +140,12 @@ const trackVisitor = async (req, res, next) => {
       
       if (visitorSession) {
         // Update existing session
-        await visitorSession.incrementPageViews();
         visitorSession.isReturning = true;
+        if (isVisitorTrackRequest) {
+          await visitorSession.updateLastSeen();
+        } else {
+          await visitorSession.incrementPageViews();
+        }
       }
     }
     
