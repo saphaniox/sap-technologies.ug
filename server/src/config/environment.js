@@ -188,7 +188,7 @@ class EnvironmentConfig {
             saveUninitialized: false,
             proxy: isProduction,
             cookie: {
-                // The frontend lives on sap-technologies.com while the API is on Render.
+                // The frontend lives on saptechug.com while the API is on Render.
                 // Cross-site admin requests require SameSite=None and Secure cookies.
                 secure: isProduction,
                 httpOnly: true,
@@ -218,6 +218,8 @@ class EnvironmentConfig {
         ];
         
         const productionOrigins = [
+            'https://saptechug.com',
+            'https://www.saptechug.com',
             'https://sap-technologies.com',
             'https://www.sap-technologies.com'
         ];
@@ -247,18 +249,19 @@ class EnvironmentConfig {
                     return callback(null, true);
                 }
                 
-                // Allow the canonical sap-technologies.com domain and its secure subdomains.
+                // Allow the canonical saptechug.com domain, legacy domain, and secure subdomains.
                 try {
                     const parsedOrigin = new URL(origin);
+                    const allowedProductionDomains = ['saptechug.com', 'sap-technologies.com'];
                     const isSapTechnologiesDomain =
                         parsedOrigin.protocol === 'https:' &&
-                        (
-                            parsedOrigin.hostname === 'sap-technologies.com' ||
-                            parsedOrigin.hostname.endsWith('.sap-technologies.com')
+                        allowedProductionDomains.some(domain =>
+                            parsedOrigin.hostname === domain ||
+                            parsedOrigin.hostname.endsWith(`.${domain}`)
                         );
 
                     if (isSapTechnologiesDomain) {
-                        console.log('✅ CORS: sap-technologies.com domain allowed:', origin);
+                        console.log('✅ CORS: production domain allowed:', origin);
                         return callback(null, true);
                     }
                 } catch (error) {

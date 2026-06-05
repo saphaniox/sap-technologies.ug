@@ -489,7 +489,7 @@ class EmailService {
 
                             <!-- CTA Button -->
                             <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://www.sap-technologies.com" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
+                                <a href="https://saptechug.com" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
                                     ?? Visit Our Website
                                 </a>
                             </div>
@@ -514,11 +514,11 @@ class EmailService {
                                     Innovative Solutions for Your Business
                                 </p>
                                 <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
-                                    You're receiving this because you subscribed to our newsletter at www.sap-technologies.com
+                                    You're receiving this because you subscribed to our newsletter at saptechug.com
                                 </p>
                                 <p style="color: #cbd5e0; margin: 5px 0; font-size: 12px;">
-                                    <a href="https://www.sap-technologies.com/unsubscribe" style="color: #3b82f6; text-decoration: none;">Unsubscribe</a> | 
-                                    <a href="https://www.sap-technologies.com/privacy" style="color: #3b82f6; text-decoration: none;">Privacy Policy</a>
+                                    <a href="https://saptechug.com/unsubscribe" style="color: #3b82f6; text-decoration: none;">Unsubscribe</a> |
+                                    <a href="https://saptechug.com/privacy" style="color: #3b82f6; text-decoration: none;">Privacy Policy</a>
                                 </p>
                             </div>
                         </div>
@@ -697,7 +697,7 @@ ${JSON.stringify(alertData.details, null, 2)}
 
                             <!-- CTA Button -->
                             <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://www.sap-technologies.com" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+                                <a href="https://saptechug.com" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
                                     ?? Visit Our Website
                                 </a>
                             </div>
@@ -825,7 +825,7 @@ ${JSON.stringify(alertData.details, null, 2)}
 
                             <!-- CTA Button -->
                             <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://www.sap-technologies.com/partners" style="display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
+                                <a href="https://saptechug.com/partners" style="display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
                                     ?? Learn About Our Partnerships
                                 </a>
                             </div>
@@ -959,7 +959,7 @@ ${JSON.stringify(alertData.details, null, 2)}
 
                             <!-- CTA Button -->
                             <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://www.sap-technologies.com/account" style="display: inline-block; background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);">
+                                <a href="https://saptechug.com/account" style="display: inline-block; background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);">
                                     ?? Go to Dashboard
                                 </a>
                             </div>
@@ -1114,7 +1114,7 @@ ${JSON.stringify(alertData.details, null, 2)}
 
                             <!-- CTA Button -->
                             <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://www.sap-technologies.com/admin" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
+                                <a href="https://saptechug.com/admin" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
                                     ?? View in Admin Dashboard
                                 </a>
                             </div>
@@ -1248,7 +1248,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                                     <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
                                 </p>
                                 <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Website:</strong> <a href="https://www.sap-technologies.com" style="color: #3b82f6; text-decoration: none;">www.sap-technologies.com</a>
+                                    <strong>Website:</strong> <a href="https://saptechug.com" style="color: #3b82f6; text-decoration: none;">saptechug.com</a>
                                 </p>
                                 <p style="color: #718096; margin-top: 15px; font-size: 14px; line-height: 1.6;">
                                     Our awards team is here to help!
@@ -1257,7 +1257,7 @@ ${JSON.stringify(alertData.details, null, 2)}
 
                             <!-- CTA Button -->
                             <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://www.sap-technologies.com/awards" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
+                                <a href="https://saptechug.com/awards" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
                                     🏆 View Awards Program
                                 </a>
                             </div>
@@ -1740,7 +1740,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                                                                 <strong>Email:</strong> ${emailUser}
                                                             </p>
                                                             <p style="color: #6b7280; margin: 5px 0; font-size: 14px;">
-                                                                <strong>Website:</strong> <a href="https://www.sap-technologies.com" style="color: #2563eb; text-decoration: none;">www.sap-technologies.com</a>
+                                                                <strong>Website:</strong> <a href="https://saptechug.com" style="color: #2563eb; text-decoration: none;">saptechug.com</a>
                                                             </p>
                                                             <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
                                                                 <p style="color: #9ca3af; font-size: 12px; margin: 0;">
@@ -1997,7 +1997,7 @@ ${JSON.stringify(alertData.details, null, 2)}
 
                             <!-- CTA Button -->
                             <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://www.sap-technologies.com/products" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+                                <a href="https://saptechug.com/products" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
                                     ??? Explore More Products
                                 </a>
                             </div>
@@ -2134,7 +2134,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                                 <p style="color:#2d3748;margin:6px 0;font-size:14px;"><strong>Phone/WhatsApp:</strong> <a href="https://wa.me/256706564628" style="color:#25d366;">+256 706 564 628</a></p>
                             </div>
                             <div style="text-align:center;">
-                                <a href="https://sap-technologies.com" style="display:inline-block;background:linear-gradient(135deg,#10b981,#059669);color:#fff;padding:12px 32px;border-radius:30px;text-decoration:none;font-weight:600;font-size:15px;">Visit Our Website</a>
+                                <a href="https://saptechug.com" style="display:inline-block;background:linear-gradient(135deg,#10b981,#059669);color:#fff;padding:12px 32px;border-radius:30px;text-decoration:none;font-weight:600;font-size:15px;">Visit Our Website</a>
                             </div>
                         </div>
                         <div style="padding:18px 32px;background:#f7fafc;text-align:center;border-top:1px solid #e2e8f0;">
@@ -2349,7 +2349,7 @@ ${JSON.stringify(alertData.details, null, 2)}
 
                             <!-- CTA Button -->
                             <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://www.sap-technologies.com/services" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
+                                <a href="https://saptechug.com/services" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
                                     ??? Explore Our Services
                                 </a>
                             </div>
@@ -2631,7 +2631,7 @@ ${JSON.stringify(alertData.details, null, 2)}
 
                             <!-- CTA Button -->
                             <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://www.sap-technologies.com/login" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+                                <a href="https://saptechug.com/login" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
                                     ?? Log In to Your Account
                                 </a>
                             </div>
@@ -2663,5 +2663,4 @@ ${JSON.stringify(alertData.details, null, 2)}
 }
 
 module.exports = new EmailService();
-
 

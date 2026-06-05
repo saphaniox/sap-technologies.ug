@@ -232,7 +232,13 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads"), {
         // Set appropriate MIME types and security headers for uploads
         // Allow ALL configured origins for image serving
         const origin = res.req.headers.origin;
-        const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || ['http://localhost:5174'];
+        const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || [
+            'https://saptechug.com',
+            'https://www.saptechug.com',
+            'https://sap-technologies.com',
+            'https://www.sap-technologies.com',
+            'http://localhost:5174'
+        ];
         
         if (origin && allowedOrigins.includes(origin)) {
             res.set("Access-Control-Allow-Origin", origin);
@@ -556,7 +562,7 @@ const server = app.listen(PORT, () => {
    • Contacts (Rate Limited): http://localhost:${PORT}/api/contacts/*
    • Admin (Restricted): http://localhost:${PORT}/api/admin/*
 
-📝 Frontend URL: ${process.env.FRONTEND_URL || "http://sap-technologies.com"}
+📝 Frontend URL: ${process.env.FRONTEND_URL || "https://saptechug.com"}
 
 🏗️  Architecture: Secure Model-View-Controller (MVC)
 💾 Database: MongoDB with Injection Protection

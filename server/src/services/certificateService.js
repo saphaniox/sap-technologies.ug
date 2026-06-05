@@ -317,7 +317,7 @@ class CertificateService {
                 color: rgb(0.5, 0.5, 0.5),
             });
 
-            page.drawText('www.sap-technologies.com', {
+            page.drawText('saptechug.com', {
                 x: width / 2 - 85,
                 y: height - 455 - headerYOffset,
                 size: 11,
@@ -369,7 +369,7 @@ class CertificateService {
 
             // Generate and embed QR code (bottom right corner)
             if (certificateId) {
-                const verificationUrl = `https://www.sap-technologies.com/verify/${certificateId}`;
+                const verificationUrl = `https://saptechug.com/verify/${certificateId}`;
                 await this.embedQRCode(pdfDoc, page, verificationUrl, width - 150, 60, 80);
                 
                 // Add "Scan to Verify" text below QR code
@@ -647,7 +647,7 @@ class CertificateService {
                 color: rgb(0.5, 0.5, 0.5),
             });
 
-            page.drawText('www.sap-technologies.com', {
+            page.drawText('saptechug.com', {
                 x: width / 2 - 85,
                 y: height - 455 - headerYOffset,
                 size: 11,
@@ -699,7 +699,7 @@ class CertificateService {
 
             // Generate and embed QR code (bottom right corner)
             if (certificateId) {
-                const verificationUrl = `https://www.sap-technologies.com/verify/${certificateId}`;
+                const verificationUrl = `https://saptechug.com/verify/${certificateId}`;
                 await this.embedQRCode(pdfDoc, page, verificationUrl, width - 150, 60, 80);
                 
                 // Add "Scan to Verify" text below QR code
@@ -959,7 +959,7 @@ class CertificateService {
                 color: rgb(0.5, 0.5, 0.5),
             });
 
-            page.drawText('www.sap-technologies.com', {
+            page.drawText('saptechug.com', {
                 x: width / 2 - 85,
                 y: height - 455 - headerYOffset,
                 size: 11,
@@ -1011,7 +1011,7 @@ class CertificateService {
 
             // Generate and embed QR code (bottom right corner)
             if (certificateId) {
-                const verificationUrl = `https://www.sap-technologies.com/verify/${certificateId}`;
+                const verificationUrl = `https://saptechug.com/verify/${certificateId}`;
                 await this.embedQRCode(pdfDoc, page, verificationUrl, width - 150, 60, 80);
                 
                 // Add "Scan to Verify" text below QR code
@@ -1147,7 +1147,7 @@ class CertificateService {
 
     async saveCertificateRecord(certData) {
         try {
-            const verificationUrl = `https://www.sap-technologies.com/verify/${certData.certificateId}`;
+            const verificationUrl = `https://saptechug.com/verify/${certData.certificateId}`;
             
             const certificate = new Certificate({
                 ...certData,
@@ -1164,7 +1164,7 @@ class CertificateService {
                 console.log(`📝 Updating existing certificate record: ${certData.certificateId}`);
                 const certificate = await Certificate.findOneAndUpdate(
                     { certificateId: certData.certificateId },
-                    { ...certData, verificationUrl: `https://www.sap-technologies.com/verify/${certData.certificateId}` },
+                    { ...certData, verificationUrl: `https://saptechug.com/verify/${certData.certificateId}` },
                     { new: true }
                 );
                 return certificate;

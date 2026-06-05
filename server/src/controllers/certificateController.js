@@ -435,7 +435,7 @@ exports.getAllCertificates = async (req, res) => {
                     cloudinaryId: cert.certificateCloudinaryId,
                     storage: cert.certificateUrl && cert.certificateUrl.includes('cloudinary') ? 'cloudinary' : 'local',
                     generatedAt: cert.certificateGeneratedAt || cert.createdAt,
-                    verificationUrl: `${process.env.FRONTEND_URL || 'https://saptechnologies.ug'}/verify/${cert.certificateId}`
+                    verificationUrl: `${process.env.FRONTEND_URL || 'https://saptechug.com'}/verify/${cert.certificateId}`
                 })),
                 pagination: {
                     currentPage: page,

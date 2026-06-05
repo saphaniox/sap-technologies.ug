@@ -132,7 +132,7 @@ const getWatermarkUrl = () => {
         return `${clientUrl.replace(/\/$/, '')}/images/logo-watermark.png`;
     }
 
-    const defaultLogoUrl = 'https://sap-technologies.com';
+    const defaultLogoUrl = 'https://saptechug.com';
     return `${defaultLogoUrl}/images/logo-watermark.png`;
 };
 

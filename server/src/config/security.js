@@ -181,6 +181,12 @@ const helmetConfig = helmet({
       connectSrc: [
         "'self'",
         "http://localhost:5000",
+        "https://saptechug.com",
+        "https://www.saptechug.com",
+        "https://sap-technologies.com",
+        "https://www.sap-technologies.com",
+        "https://sap-technologies-ug.onrender.com",
+        "https://api.saptechug.com",
         "https://api.saptechnologies.com"
       ],
       frameSrc: ["'none'"],
