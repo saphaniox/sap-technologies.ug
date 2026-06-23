@@ -16,6 +16,8 @@ const softwareRoutes = require("./softwareRoutes");
 const iotRoutes = require("./iotRoutes");
 const certificateRoutes = require("./certificates");
 const passwordResetRoutes = require("./passwordResetRoutes");
+const galleryRoutes = require("./galleryRoutes");
+const jobRoutes = require("./jobRoutes");
 const searchRoutes = require("./searchRoutes");
 const visitorRoutes = require("./visitorRoutes");
 
@@ -39,7 +41,9 @@ router.use("/services", serviceQuoteRoutes);    // /api/services/quotes/* (publi
 router.use("/software", softwareRoutes);        // /api/software/* (public & admin)
 router.use("/iot", iotRoutes);                  // /api/iot/* (public & admin)
 router.use("/certificates", certificateRoutes); // /api/certificates/*
-router.use("/search", searchRoutes);            // /api/search/* (universal search)
+router.use("/gallery", galleryRoutes);           // /api/gallery/*
+router.use("/jobs", jobRoutes);                  // /api/jobs/*
+router.use("/search", searchRoutes);             // /api/search/* (universal search)
 router.use("/", visitorRoutes);                 // /api/admin/visitor-analytics/*, /api/visitor/track
 
 module.exports = router;

@@ -278,6 +278,30 @@ class CacheService {
         return this.deletePattern('nominations:*');
     }
 
+    cacheGallery(partners) {
+        return this.set('gallery:all', partners, 1800); // 30 min
+    }
+
+    getCachedGallery() {
+        return this.get('gallery:all');
+    }
+
+    invalidateGallery() {
+        return this.del('gallery:all');
+    }
+
+    cacheJobs(jobs) {
+        return this.set('jobs:all', jobs, 1800); // 30 min
+    }
+
+    getCachedJobs() {
+        return this.get('jobs:all');
+    }
+
+    invalidateJobs() {
+        return this.del('jobs:all');
+    }
+
     /**
      * Cache single item by ID
      */

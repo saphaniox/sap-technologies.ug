@@ -21,6 +21,8 @@ const iotDir = path.join(baseUploadDir, "iot");
 const signaturesDir = path.join(baseUploadDir, "signatures");
 const partnersDir = path.join(baseUploadDir, "partners");
 const awardsDir = path.join(baseUploadDir, "awards");
+const galleryDir = path.join(baseUploadDir, "gallery");
+const jobsDir = path.join(baseUploadDir, "jobs");
 
 createUploadDir(profilePicsDir);
 createUploadDir(servicesDir);
@@ -31,6 +33,8 @@ createUploadDir(iotDir);
 createUploadDir(signaturesDir);
 createUploadDir(partnersDir);
 createUploadDir(awardsDir);
+createUploadDir(galleryDir);
+createUploadDir(jobsDir);
 
 // Check if Cloudinary is configured
 const useCloudinary = isCloudinaryConfigured();
@@ -125,6 +129,28 @@ const awardUpload = multer({
   fileFilter: imageFilter
 });
 
+const galleryUpload = multer({
+  storage: getStorage(storageConfigs.partners, galleryDir),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: imageFilter
+});
+
+const resumeUpload = multer({
+  storage: getStorage(storageConfigs.partners, jobsDir),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit for resumes
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/") || file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image and PDF files are allowed!"), false);
+    }
+  }
+});
+
 const softwareUpload = multer({
   storage: getStorage(storageConfigs.software, softwareDir),
   limits: {
@@ -164,6 +190,8 @@ module.exports = {
   signatureUpload,
   partnerUpload,
   awardUpload,
+  galleryUpload,
+  resumeUpload,
   // Legacy export for backward compatibility
   upload: profileUpload,
   useCloudinary // Export for use in controllers
