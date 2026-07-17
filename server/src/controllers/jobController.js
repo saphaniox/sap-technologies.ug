@@ -173,7 +173,7 @@ const createJob = async (req, res) => {
     const job = await Job.create({
       title: normalizeText(title),
       department: normalizeText(department) || "General",
-      location: normalizeText(location) || "Kampala, Uganda",
+      location: normalizeText(location) || "Ndejje, Kampala, Uganda",
       employmentType: normalizeText(employmentType) || "Full-time",
       description: normalizeText(description),
       requirements: normalizeText(requirements),

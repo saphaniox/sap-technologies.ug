@@ -17,7 +17,7 @@ const jobSchema = new mongoose.Schema({
     type: String,
     trim: true,
     maxlength: [50, "Location cannot exceed 50 characters"],
-    default: "Kampala, Uganda"
+    default: "Ndejje, Kampala, Uganda"
   },
   employmentType: {
     type: String,

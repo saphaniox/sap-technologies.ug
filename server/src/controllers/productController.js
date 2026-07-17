@@ -5,6 +5,12 @@ const fs = require("fs").promises;
 const { deleteFromCloudinary, extractPublicId } = require("../config/cloudinary");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 
+const debugProductController = (...args) => {
+    if (process.env.NODE_ENV !== "production") {
+        console.log(...args);
+    }
+};
+
 // Normalize legacy image shapes (string URLs) to schema-compliant objects.
 const normalizeProductImages = (images, fallbackAlt = "Product image") => {
     if (!Array.isArray(images)) return [];
@@ -127,7 +133,7 @@ const deleteUploadedProductImage = async (imageUrl) => {
         try {
             await fs.unlink(imgPath);
         } catch (error) {
-            console.log("Could not delete old product image:", error.message);
+            debugProductController("Could not delete old product image:", error.message);
         }
     }
 };
@@ -310,14 +316,14 @@ class ProductController {
     // Create new product (admin only)
     async createProduct(req, res, next) {
         try {
-            console.log("🏷️ Creating product with data:", req.body);
-            console.log("📁 Files uploaded:", req.files ? req.files.length : "No files");
+            debugProductController("🏷️ Creating product with data:", req.body);
+            debugProductController("📁 Files uploaded:", req.files ? req.files.length : "No files");
             
             // Log file structure for debugging
             if (req.files && req.files.length > 0) {
-                console.log('🔍 File objects structure:');
+                debugProductController('🔍 File objects structure:');
                 req.files.forEach((file, idx) => {
-                    console.log(`  File ${idx + 1}:`, {
+                    debugProductController(`  File ${idx + 1}:`, {
                         filename: file.filename,
                         originalname: file.originalname,
                         size: file.size,
@@ -332,7 +338,7 @@ class ProductController {
             
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                console.log("❌ Validation errors:", errors.array());
+                debugProductController("❌ Validation errors:", errors.array());
                 return res.status(400).json({
                     status: "error",
                     message: "Validation failed",
@@ -348,7 +354,7 @@ class ProductController {
             if (req.files && req.files.length > 0) {
                 productData.images = req.files.map((file, index) => {
                     const imageUrl = getFileUrl(file, 'products');
-                    console.log(`📸 Generated URL for image ${index + 1}: ${imageUrl}`);
+                    debugProductController(`📸 Generated URL for image ${index + 1}: ${imageUrl}`);
                     return {
                         url: imageUrl,
                         alt: productData.name || 'Product image',
@@ -357,7 +363,7 @@ class ProductController {
                     };
                 });
                 productData.image = productData.images[0].url; // Backward compatibility
-                console.log("📸 Images uploaded:", productData.images.length);
+                debugProductController("📸 Images uploaded:", productData.images.length);
             } else if (req.file) {
                 // Support single file upload for backward compatibility
                 productData.image = getFileUrl(req.file, 'products');
@@ -369,7 +375,7 @@ class ProductController {
                 }];
             }
 
-            console.log("📸 Image(s) set:", productData.images ? productData.images.length : 'none');
+            debugProductController("📸 Image(s) set:", productData.images ? productData.images.length : 'none');
 
             productData.technicalSpecs = normalizeTechnicalSpecs(productData.technicalSpecs);
             productData.features = normalizeStringArray(productData.features);
@@ -381,7 +387,7 @@ class ProductController {
 
             const product = await Product.create(productData);
 
-            console.log("✅ Product created successfully:", product);
+            debugProductController("✅ Product created successfully:", product._id);
 
             res.status(201).json({
                 status: "success",
@@ -420,8 +426,8 @@ class ProductController {
     // Update product (admin only)
     async updateProduct(req, res, next) {
         try {
-            console.log("🔄 Updating product:", req.params.id);
-            console.log("📁 Files uploaded:", req.files ? req.files.length : "No new files");
+            debugProductController("🔄 Updating product:", req.params.id);
+            debugProductController("📁 Files uploaded:", req.files ? req.files.length : "No new files");
             
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -472,7 +478,7 @@ class ProductController {
             if (imagesToDelete.length > 0) {
                 await Promise.all(imagesToDelete.map(deleteUploadedProductImage));
                 currentImages = currentImages.filter(img => !imagesToDelete.includes(img.url));
-                console.log("🗑️ Images after deletion:", currentImages.length);
+                debugProductController("🗑️ Images after deletion:", currentImages.length);
             }
 
             // Handle multiple file uploads — append to remaining existing images
@@ -491,7 +497,7 @@ class ProductController {
                         order: index
                     }));
                 updateData.image = updateData.images[0]?.url || null;
-                console.log("📸 New images uploaded:", newImages.length, "| Total:", updateData.images.length);
+                debugProductController("📸 New images uploaded:", newImages.length, "| Total:", updateData.images.length);
             } else if (req.file) {
                 // Backward-compatible single file upload
                 const newImage = {
@@ -508,7 +514,7 @@ class ProductController {
                         order: index
                     }));
                 updateData.image = updateData.images[0]?.url || null;
-                console.log("📸 New image URL:", newImage.url);
+                debugProductController("📸 New image URL:", newImage.url);
             } else if (imagesToDelete.length > 0) {
                 // No new uploads but some were deleted — persist filtered list
                 updateData.images = normalizeProductImages(currentImages, updateData.name || existingProduct?.name || 'Product image')
@@ -569,10 +575,10 @@ class ProductController {
             
             // Handle validation errors specifically
             if (error.name === 'ValidationError') {
-                console.log("🔍 Validation error details:", error.errors);
+                debugProductController("🔍 Validation error details:", error.errors);
                 
                 const validationErrors = Object.values(error.errors).map(err => {
-                    console.log("🔍 Processing error:", { path: err.path, message: err.message, kind: err.kind });
+                    debugProductController("🔍 Processing error:", { path: err.path, message: err.message, kind: err.kind });
                     return {
                         field: err.path,
                         message: err.message,
@@ -581,7 +587,7 @@ class ProductController {
                     };
                 });
                 
-                console.log("🔍 Formatted validation errors:", validationErrors);
+                debugProductController("🔍 Formatted validation errors:", validationErrors);
                 
                 return res.status(400).json({
                     status: "error",

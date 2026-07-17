@@ -167,20 +167,6 @@ const productSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Virtual for primary image
-productSchema.virtual("primaryImage").get(function() {
-  if (!this.images || !Array.isArray(this.images) || this.images.length === 0) {
-    return this.image || null; // Fallback to single image field
-  }
-  const primary = this.images.find(img => img.isPrimary);
-  return primary || this.images[0] || this.image || null;
-});
-
-// Index for performance
-productSchema.index({ isActive: 1, displayOrder: 1 });
-productSchema.index({ category: 1 });
-productSchema.index({ isFeatured: 1, isActive: 1 });
-
 // Virtual for formatted price
 productSchema.virtual("formattedPrice").get(function() {
   if (this.price.type === "contact-for-price") {
