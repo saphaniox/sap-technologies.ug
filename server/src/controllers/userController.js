@@ -16,6 +16,8 @@ const getFileUrl = (file, folder = 'profile-pics') => {
     return getUploadedFileUrl(file, folder);
 };
 
+const getRequestUserId = (req) => req.userId || req.user?._id || req.session?.userId;
+
 // Main user controller class for handling user account operations
 class UserController {
     // Fetch the current user's profile information
@@ -23,7 +25,7 @@ class UserController {
     async getProfile(req, res, next) {
         try {
             // Get user from database using session ID
-            const user = await User.findById(req.session.userId);
+            const user = await User.findById(getRequestUserId(req));
             if (!user) {
                 return next(new AppError("User not found", 404));
             }
@@ -53,7 +55,7 @@ class UserController {
 
             // Update the name in database with validation
             const user = await User.findByIdAndUpdate(
-                req.session.userId,
+                getRequestUserId(req),
                 { name },
                 { new: true, runValidators: true }
             );
@@ -63,7 +65,9 @@ class UserController {
             }
 
             // Also update the session so their name shows correctly immediately
-            req.session.userName = name;
+            if (req.session) {
+                req.session.userName = name;
+            }
             
             // Log this change in their activity history
             await user.addActivity("Updated profile name");
@@ -94,7 +98,7 @@ class UserController {
             // We exclude the current user from this check (that's what $ne does)
             const existingUser = await User.findOne({ 
                 email, 
-                _id: { $ne: req.session.userId } 
+                _id: { $ne: getRequestUserId(req) } 
             });
             
             if (existingUser) {
@@ -103,7 +107,7 @@ class UserController {
 
             // All good, update their email
             const user = await User.findByIdAndUpdate(
-                req.session.userId,
+                getRequestUserId(req),
                 { email },
                 { new: true, runValidators: true }
             );
@@ -138,7 +142,7 @@ class UserController {
                 return next(new AppError("Current password and new password are required", 400));
             }
 
-            const user = await User.findById(req.session.userId);
+            const user = await User.findById(getRequestUserId(req));
             if (!user) {
                 return next(new AppError("User not found", 404));
             }
@@ -176,7 +180,7 @@ class UserController {
                 return next(new AppError("No file uploaded", 400));
             }
 
-            const user = await User.findById(req.session.userId);
+            const user = await User.findById(getRequestUserId(req));
             if (!user) {
                 return next(new AppError("User not found", 404));
             }
@@ -219,7 +223,7 @@ class UserController {
     async deleteAccount(req, res, next) {
         try {
             // Find and delete the user from database
-            const user = await User.findByIdAndDelete(req.session.userId);
+            const user = await User.findByIdAndDelete(getRequestUserId(req));
             if (!user) {
                 return next(new AppError("User not found", 404));
             }
@@ -239,16 +243,26 @@ class UserController {
             }
 
             // Destroy their session and clear cookies - log them out completely
-            req.session.destroy((err) => {
-                if (err) {
-                    return next(new AppError("Error deleting account", 500));
-                }
-                res.clearCookie("connect.sid");
+            if (typeof req.session?.destroy === "function") {
+                req.session.destroy((err) => {
+                    if (err) {
+                        return next(new AppError("Error deleting account", 500));
+                    }
+                    res.clearCookie("sap.sid");
+                    res.clearCookie("accessToken");
+                    res.status(200).json({
+                        status: "success",
+                        message: "Account deleted successfully"
+                    });
+                });
+            } else {
+                res.clearCookie("sap.sid");
+                res.clearCookie("accessToken");
                 res.status(200).json({
                     status: "success",
                     message: "Account deleted successfully"
                 });
-            });
+            }
         } catch (error) {
             next(error);
         }
@@ -258,7 +272,7 @@ class UserController {
     // Useful for account settings page to show recent actions
     async getActivity(req, res, next) {
         try {
-            const user = await User.findById(req.session.userId);
+            const user = await User.findById(getRequestUserId(req));
             if (!user) {
                 return next(new AppError("User not found", 404));
             }
@@ -279,7 +293,7 @@ class UserController {
     // In production, you'd want better security around this!
     async promoteSelfToAdmin(req, res, next) {
         try {
-            const user = await User.findById(req.session.userId);
+            const user = await User.findById(getRequestUserId(req));
             if (!user) {
                 return next(new AppError("User not found", 404));
             }

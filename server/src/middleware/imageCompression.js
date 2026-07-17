@@ -68,7 +68,7 @@ const compressImage = (options = {}) => {
       imagesToCompress = req.files;
     } else if (req.files && typeof req.files === 'object' && !Array.isArray(req.files)) {
       // multer.fields() format — only compress image fields, skip videos
-      imagesToCompress = req.files.images || [];
+      imagesToCompress = Object.values(req.files).flat();
     }
 
     if (imagesToCompress.length === 0) {
@@ -208,6 +208,7 @@ const compressionPresets = {
   // Thumbnails and small images
   thumbnail: compressImage({ quality: 70, maxWidth: 800, maxHeight: 600 }),
   thumbnailWatermarked: compressImage({ quality: 70, maxWidth: 800, maxHeight: 600, watermark: true }),
+  gallery: compressImage({ quality: 80, maxWidth: 1600, maxHeight: 1000, convertToWebP: true, watermark: true }),
   
   // Profile pictures
   profile: compressImage({ quality: 80, maxWidth: 512, maxHeight: 512 })

@@ -28,6 +28,105 @@ const normalizeBoolean = (value, fallback) => {
   return String(value).toLowerCase() === "true";
 };
 
+const getUploadedFiles = (req) => {
+  if (req.file) return [req.file];
+  if (Array.isArray(req.files)) return req.files;
+  if (req.files && typeof req.files === "object") {
+    return Object.values(req.files).flat();
+  }
+  return [];
+};
+
+const getMediaType = (fileOrMedia = {}) => {
+  const mimeType = fileOrMedia.mimetype || fileOrMedia.mimeType || "";
+  if (fileOrMedia.type === "video" || mimeType.startsWith("video/")) return "video";
+  return "image";
+};
+
+const buildMediaFromFile = (file) => ({
+  url: getFileUrl(file, "gallery"),
+  type: getMediaType(file),
+  mimeType: file.mimetype || "",
+  size: file.size || 0,
+  cloudinaryId: file.public_id || null,
+  originalName: file.originalname || "",
+  isCompressed: Boolean(file.isCompressed)
+});
+
+const normalizeMedia = (item) => {
+  const media = Array.isArray(item?.media)
+    ? item.media
+        .filter((mediaItem) => mediaItem?.url)
+        .map((mediaItem) => ({
+          url: mediaItem.url,
+          type: mediaItem.type || getMediaType(mediaItem),
+          mimeType: mediaItem.mimeType || "",
+          size: mediaItem.size || 0,
+          cloudinaryId: mediaItem.cloudinaryId || null,
+          originalName: mediaItem.originalName || "",
+          isCompressed: Boolean(mediaItem.isCompressed)
+        }))
+    : [];
+
+  if (media.length === 0 && item?.image) {
+    media.push({
+      url: item.image,
+      type: "image",
+      mimeType: "",
+      size: 0,
+      cloudinaryId: item.cloudinaryId || null,
+      originalName: "",
+      isCompressed: false
+    });
+  }
+
+  return media;
+};
+
+const getPrimaryMedia = (media = []) => media.find((item) => item.type === "image") || media[0] || null;
+
+const parseRemoveMedia = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return String(value)
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+};
+
+const deleteLocalMediaFiles = async (mediaItems = []) => {
+  const seen = new Set();
+  await Promise.all(mediaItems.map(async (mediaItem) => {
+    const url = typeof mediaItem === "string" ? mediaItem : mediaItem?.url;
+    if (!url || seen.has(url) || !url.startsWith("/uploads/gallery/")) return;
+    seen.add(url);
+
+    try {
+      const filePath = path.join(process.cwd(), "uploads", url.replace("/uploads/", ""));
+      await fs.unlink(filePath);
+    } catch (unlinkError) {
+      console.error("Error deleting gallery media:", unlinkError);
+    }
+  }));
+};
+
+const deleteUploadedLocalFiles = async (files = []) => {
+  if (useCloudinary) return;
+  await Promise.all(files.map(async (file) => {
+    if (!file?.path) return;
+    try {
+      await fs.unlink(file.path);
+    } catch (unlinkError) {
+      console.error("Error deleting uploaded gallery file:", unlinkError);
+    }
+  }));
+};
+
 // Public - get active gallery items
 const getPublicGallery = async (req, res) => {
   try {
@@ -119,21 +218,26 @@ const createGalleryItem = async (req, res) => {
       });
     }
 
-    if (!req.file) {
+    const uploadedFiles = getUploadedFiles(req);
+
+    if (uploadedFiles.length === 0) {
       return res.status(400).json({
         status: "error",
-        message: "Gallery image is required"
+        message: "At least one gallery photo or video is required"
       });
     }
 
     const { title, description, category, isActive, displayOrder } = req.body;
+    const media = uploadedFiles.map(buildMediaFromFile);
+    const primaryMedia = getPrimaryMedia(media);
 
     const item = new Gallery({
       title: normalizeText(title),
       description: normalizeText(description),
       category: normalizeText(category) || "other",
-      image: getFileUrl(req.file, "gallery"),
-      cloudinaryId: req.file.public_id || null,
+      image: primaryMedia?.url,
+      cloudinaryId: primaryMedia?.cloudinaryId || null,
+      media,
       isActive: normalizeBoolean(isActive, true),
       displayOrder: normalizeOrder(displayOrder, 0)
     });
@@ -152,13 +256,7 @@ const createGalleryItem = async (req, res) => {
     logger.logError("GalleryController", error, { context: "createGalleryItem" });
 
     // Cleanup uploaded file
-    if (req.file && req.file.path && !useCloudinary) {
-      try {
-        await fs.unlink(req.file.path);
-      } catch (unlinkError) {
-        console.error("Error deleting uploaded file:", unlinkError);
-      }
-    }
+    await deleteUploadedLocalFiles(getUploadedFiles(req));
 
     res.status(500).json({
       status: "error",
@@ -182,22 +280,12 @@ const updateGalleryItem = async (req, res) => {
 
     const item = await Gallery.findById(req.params.id);
     if (!item) {
-      // Cleanup uploaded file if item not found
-      if (req.file && req.file.path && !useCloudinary) {
-        try {
-          await fs.unlink(req.file.path);
-        } catch (unlinkError) {
-          console.error("Error deleting uploaded file:", unlinkError);
-        }
-      }
+      await deleteUploadedLocalFiles(getUploadedFiles(req));
       return res.status(404).json({
         status: "error",
         message: "Gallery item not found"
       });
     }
-
-    const oldImage = item.image;
-    const oldCloudinaryId = item.cloudinaryId;
 
     const updateData = {};
     if (req.body.title !== undefined) updateData.title = normalizeText(req.body.title);
@@ -206,19 +294,27 @@ const updateGalleryItem = async (req, res) => {
     if (req.body.isActive !== undefined) updateData.isActive = normalizeBoolean(req.body.isActive, item.isActive);
     if (req.body.displayOrder !== undefined) updateData.displayOrder = normalizeOrder(req.body.displayOrder, item.displayOrder);
 
-    if (req.file) {
-      updateData.image = getFileUrl(req.file, "gallery");
-      updateData.cloudinaryId = req.file.public_id || null;
+    const uploadedFiles = getUploadedFiles(req);
+    const newMedia = uploadedFiles.map(buildMediaFromFile);
+    const removeMedia = parseRemoveMedia(req.body.removeMedia);
+    const removeSet = new Set(removeMedia);
+    const existingMedia = normalizeMedia(item);
+    const retainedMedia = existingMedia.filter((mediaItem) => !removeSet.has(mediaItem.url));
+    const nextMedia = [...retainedMedia, ...newMedia];
 
-      // Delete old image (local only)
-      if (!useCloudinary && oldImage && oldImage.startsWith("/uploads/gallery/")) {
-        try {
-          const oldPath = path.join(__dirname, "../../uploads/gallery", path.basename(oldImage));
-          await fs.unlink(oldPath);
-        } catch (unlinkError) {
-          console.error("Error deleting old gallery image:", unlinkError);
-        }
+    if (removeMedia.length > 0 || newMedia.length > 0) {
+      if (nextMedia.length === 0) {
+        await deleteUploadedLocalFiles(uploadedFiles);
+        return res.status(400).json({
+          status: "error",
+          message: "At least one gallery photo or video is required"
+        });
       }
+
+      const primaryMedia = getPrimaryMedia(nextMedia);
+      updateData.media = nextMedia;
+      updateData.image = primaryMedia?.url;
+      updateData.cloudinaryId = primaryMedia?.cloudinaryId || null;
     }
 
     const updatedItem = await Gallery.findByIdAndUpdate(
@@ -228,6 +324,9 @@ const updateGalleryItem = async (req, res) => {
     );
 
     cache.invalidateGallery();
+    if (removeMedia.length > 0) {
+      await deleteLocalMediaFiles(existingMedia.filter((mediaItem) => removeSet.has(mediaItem.url)));
+    }
     logger.logInfo("GalleryController", "Gallery item updated, cache invalidated", { itemId: updatedItem._id });
 
     res.status(200).json({
@@ -238,14 +337,7 @@ const updateGalleryItem = async (req, res) => {
   } catch (error) {
     logger.logError("GalleryController", error, { context: "updateGalleryItem", itemId: req.params.id });
 
-    // Cleanup on failure
-    if (req.file && req.file.path && !useCloudinary) {
-      try {
-        await fs.unlink(req.file.path);
-      } catch (unlinkError) {
-        console.error("Error deleting uploaded file:", unlinkError);
-      }
-    }
+    await deleteUploadedLocalFiles(getUploadedFiles(req));
 
     res.status(500).json({
       status: "error",
@@ -266,15 +358,7 @@ const deleteGalleryItem = async (req, res) => {
       });
     }
 
-    // Delete file (local only)
-    if (item.image && item.image.startsWith("/uploads/gallery/")) {
-      try {
-        const filePath = path.join(process.cwd(), "uploads", item.image.replace("/uploads/", ""));
-        await fs.unlink(filePath);
-      } catch (unlinkError) {
-        console.error("Error deleting gallery image:", unlinkError);
-      }
-    }
+    await deleteLocalMediaFiles(normalizeMedia(item));
 
     await Gallery.findByIdAndDelete(req.params.id);
 

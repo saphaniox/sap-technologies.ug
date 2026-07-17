@@ -207,7 +207,7 @@ class CertificateService {
             const logoHeight = await this.drawLogo(pdfDoc, page, width, height);
             const headerYOffset = logoHeight > 0 ? logoHeight + 15 : 0;
 
-            // Header - SAPHANIOX Awards logo/text
+            // Header - SAPTech Awards 2026 logo/text
             page.drawText('SAPHANIOX AWARDS', {
                 x: width / 2 - 180,
                 y: height - 100 - headerYOffset,
@@ -406,7 +406,7 @@ class CertificateService {
                 });
             }
 
-            page.drawText('SAPHANIOX Awards Committee', {
+            page.drawText('SAPTech Awards 2026 Committee', {
                 x: width - 250,
                 y: 125,
                 size: 10,
@@ -537,7 +537,7 @@ class CertificateService {
             const logoHeight = await this.drawLogo(pdfDoc, page, width, height);
             const headerYOffset = logoHeight > 0 ? logoHeight + 15 : 0;
 
-            // Header - SAPHANIOX Awards logo/text
+            // Header - SAPTech Awards 2026 logo/text
             page.drawText('SAPHANIOX AWARDS', {
                 x: width / 2 - 180,
                 y: height - 100 - headerYOffset,
@@ -744,7 +744,7 @@ class CertificateService {
                 });
             }
 
-            page.drawText('SAPHANIOX Awards Committee', {
+            page.drawText('SAPTech Awards 2026 Committee', {
                 x: width - 250,
                 y: 125,
                 size: 10,
@@ -849,7 +849,7 @@ class CertificateService {
             const logoHeight = await this.drawLogo(pdfDoc, page, width, height);
             const headerYOffset = logoHeight > 0 ? logoHeight + 15 : 0;
 
-            // Header - SAPHANIOX Awards logo/text
+            // Header - SAPTech Awards 2026 logo/text
             page.drawText('SAPHANIOX AWARDS', {
                 x: width / 2 - 180,
                 y: height - 100 - headerYOffset,
@@ -1056,7 +1056,7 @@ class CertificateService {
                 });
             }
 
-            page.drawText('SAPHANIOX Awards Committee', {
+            page.drawText('SAPTech Awards 2026 Committee', {
                 x: width - 250,
                 y: 125,
                 size: 10,

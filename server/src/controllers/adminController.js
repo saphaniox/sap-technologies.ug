@@ -2,6 +2,9 @@
 // This is where admins manage users, content, and get system insights
 const { User, Contact, Newsletter, Service, Project, Partner, PartnershipRequest, Product, ProductInquiry, ServiceQuote, Nomination } = require("../models");
 const { AppError } = require("../middleware/errorHandler");
+const Gallery = require("../models/Gallery");
+const Job = require("../models/Job");
+const JobApplication = require("../models/JobApplication");
 
 // Main admin controller for managing the application
 class AdminController {
@@ -25,7 +28,7 @@ class AdminController {
             
             // Partners statistics
             const totalPartners = await Partner.countDocuments();
-            const activePartners = await Partner.countDocuments({ status: "active" });
+            const activePartners = await Partner.countDocuments({ isActive: true });
             
             // Partnership requests statistics
             const totalPartnershipRequests = await PartnershipRequest.countDocuments();
@@ -33,7 +36,19 @@ class AdminController {
             
             // Products statistics
             const totalProducts = await Product.countDocuments();
-            const featuredProducts = await Product.countDocuments({ featured: true });
+            const featuredProducts = await Product.countDocuments({ isFeatured: true });
+
+            // Gallery statistics
+            const totalGalleryItems = await Gallery.countDocuments();
+            const activeGalleryItems = await Gallery.countDocuments({ isActive: true });
+
+            // Jobs statistics
+            const totalJobs = await Job.countDocuments();
+            const activeJobs = await Job.countDocuments({ isActive: true });
+            const totalJobApplications = await JobApplication.countDocuments();
+            const newJobApplicationsLast30Days = await JobApplication.countDocuments({
+                createdAt: { $gte: thirtyDaysAgo }
+            });
             
             // Product inquiries statistics
             const totalProductInquiries = await ProductInquiry.countDocuments();
@@ -83,6 +98,12 @@ class AdminController {
                         pendingPartnershipRequests,
                         totalProducts,
                         featuredProducts,
+                        totalGalleryItems,
+                        activeGalleryItems,
+                        totalJobs,
+                        activeJobs,
+                        totalJobApplications,
+                        newJobApplicationsLast30Days,
                         totalProductInquiries,
                         newProductInquiriesLast30Days,
                         totalServiceQuotes,

@@ -25,6 +25,7 @@ const {
 const { connectDB, checkDatabaseHealth, auditDatabaseSecurity } = require("./config/database");
 const { errorHandler } = require("./middleware/errorHandler");
 const { trackVisitor } = require("./middleware/visitorTracking");
+const { authMiddleware, adminMiddleware } = require("./middleware/auth");
 const apiRoutes = require("./routes");
 
 const app = express();
@@ -69,7 +70,7 @@ app.use(speedLimiter);
 
 // 6. Body parsing middleware with size limits
 app.use(express.json({ 
-    limit: "50mb", // Increased for API requests with metadata
+    limit: process.env.JSON_BODY_LIMIT || "1mb",
     verify: (req, res, buf) => {
         // Store raw body for signature verification if needed
         req.rawBody = buf;
@@ -77,8 +78,8 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ 
     extended: true, 
-    limit: "50mb", // Increased for form-based requests (including file upload metadata)
-    parameterLimit: 100 // Increased parameter limit for complex forms
+    limit: process.env.FORM_BODY_LIMIT || "1mb",
+    parameterLimit: Number(process.env.FORM_PARAMETER_LIMIT) || 100
 }));
 
 // 7. MongoDB injection protection - Custom implementation for Express 5.x compatibility
@@ -257,7 +258,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads"), {
         
         // Only allow certain file types to be served
         const ext = filePath.substring(filePath.lastIndexOf(".")).toLowerCase();
-        const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".pdf", ".svg", ".webp"];
+        const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".pdf", ".webp"];
         if (!allowedExtensions.includes(ext)) {
             securityLogger.warn(`Blocked attempt to access disallowed file type: ${ext}`, { path: filePath, ip: res.req.ip });
             res.status(403).end();
@@ -354,15 +355,7 @@ app.get("/api/health", async (req, res) => {
 });
 
 // Database security audit endpoint (admin only)
-app.get("/api/admin/security-audit", rateLimits.admin, (req, res) => {
-    // In production, this should require admin authentication
-    if (process.env.NODE_ENV === "production") {
-        return res.status(401).json({
-            status: "error",
-            message: "Admin authentication required"
-        });
-    }
-    
+app.get("/api/admin/security-audit", rateLimits.admin, authMiddleware, adminMiddleware, (req, res) => {
     const auditReport = auditDatabaseSecurity();
     res.status(200).json({
         status: "success",

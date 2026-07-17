@@ -242,6 +242,41 @@ const storageConfigs = {
             },
         })
         : null,
+    jobs: isCloudinaryConfigured()
+        ? new CloudinaryStorage({
+            cloudinary: cloudinaryStorageClient,
+            params: {
+                folder: 'sap-technologies/jobs',
+                resource_type: 'image',
+                transformation: imageTransformation(1200, 800, 'limit', { watermark: true }),
+                timeout: cloudinaryUploadTimeout,
+            },
+        })
+        : null,
+    gallery: isCloudinaryConfigured()
+        ? new CloudinaryStorage({
+            cloudinary: cloudinaryStorageClient,
+            params: (req, file, cb) => {
+                const isVideo = file.mimetype.startsWith('video/');
+                const params = isVideo
+                    ? {
+                        folder: 'sap-technologies/gallery',
+                        resource_type: 'video',
+                        eager: [{ quality: 'auto:good', fetch_format: 'mp4' }],
+                        eager_async: true,
+                        timeout: cloudinaryUploadTimeout
+                    }
+                    : {
+                        folder: 'sap-technologies/gallery',
+                        resource_type: 'image',
+                        transformation: imageTransformation(1600, 1000, 'limit', { watermark: true }),
+                        timeout: cloudinaryUploadTimeout
+                    };
+
+                cb(null, params);
+            }
+        })
+        : null,
     software: isCloudinaryConfigured()
         ? new CloudinaryStorage({
             cloudinary: cloudinaryStorageClient,

@@ -19,7 +19,14 @@ const handleMulterError = (err, req, res, next) => {
     if (err.code === "LIMIT_FILE_SIZE") {
       return res.status(400).json({
         status: "error",
-        message: "File size exceeds limit (max 10MB)",
+        message: "File size exceeds limit (max 50MB per file)",
+        error: err.message
+      });
+    }
+    if (err.code === "LIMIT_FILE_COUNT") {
+      return res.status(400).json({
+        status: "error",
+        message: "Too many files selected. Please upload up to 12 gallery files at once.",
         error: err.message
       });
     }
@@ -82,8 +89,28 @@ router.use(adminAuth);
 
 router.get("/", getAllGallery);
 router.get("/:id", getGalleryById);
-router.post("/", galleryUpload.single("image"), handleMulterError, compressionPresets.thumbnail, validateGallery, createGalleryItem);
-router.put("/:id", galleryUpload.single("image"), handleMulterError, compressionPresets.thumbnail, validateGallery, updateGalleryItem);
+router.post(
+  "/",
+  galleryUpload.fields([
+    { name: "media", maxCount: 12 },
+    { name: "image", maxCount: 1 }
+  ]),
+  handleMulterError,
+  compressionPresets.gallery,
+  validateGallery,
+  createGalleryItem
+);
+router.put(
+  "/:id",
+  galleryUpload.fields([
+    { name: "media", maxCount: 12 },
+    { name: "image", maxCount: 1 }
+  ]),
+  handleMulterError,
+  compressionPresets.gallery,
+  validateGallery,
+  updateGalleryItem
+);
 router.delete("/:id", deleteGalleryItem);
 
 module.exports = router;

@@ -1156,7 +1156,7 @@ ${JSON.stringify(alertData.details, null, 2)}
         
         try {
             const mailOptions = {
-                from: '"SAPHANIOX Awards 2025" <saptechnologies256@gmail.com>',
+                from: '"SAPTech Awards 2026" <saptechnologies256@gmail.com>',
                 to: nominationData.nominatorEmail,
                 subject: `🏆 Award Nomination Submitted Successfully - ${nominationData.nomineeName}`,
                 html: `
@@ -1168,7 +1168,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                                     <span style="font-size: 35px;">🏆</span>
                                 </div>
                                 <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Nomination Submitted Successfully!</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">SAPHANIOX Awards 2025</p>
+                                <p style="color: #718096; margin: 0; font-size: 16px;">SAPTech Awards 2026</p>
                             </div>
 
                             <!-- Greeting -->
@@ -1177,7 +1177,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                                     Dear <strong>${nominationData.nominatorName}</strong>,
                                 </p>
                                 <p style="color: #4a5568; margin: 15px 0 0 0; font-size: 15px; line-height: 1.6;">
-                                    Thank you for submitting a nomination for the <strong>SAPHANIOX Awards 2025</strong>! Your participation helps us recognize and celebrate excellence in technology and innovation.
+                                    Thank you for submitting a nomination for the <strong>SAPTech Awards 2026</strong>! Your participation helps us recognize and celebrate excellence in technology and innovation.
                                 </p>
                             </div>
 
@@ -1265,7 +1265,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                             <!-- Footer -->
                             <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
                                 <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAPHANIOX Awards 2025
+                                    SAPTech Awards 2026
                                 </p>
                                 <p style="color: #718096; margin: 5px 0; font-size: 13px;">
                                     Celebrating Excellence in Technology & Innovation
@@ -1298,14 +1298,14 @@ ${JSON.stringify(alertData.details, null, 2)}
             const notifyEmail = process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || emailUser;
             
             const mailOptions = {
-                from: '"SAPHANIOX Awards 2025 System" <saptechnologies256@gmail.com>',
+                from: '"SAPTech Awards 2026 System" <saptechnologies256@gmail.com>',
                 replyTo: emailUser,
                 to: notifyEmail,
                 subject: `?? New Award Nomination: ${nominationData.nomineeName} - ${nominationData.categoryName}`,
                 html: `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                         <h2 style="color: #f59e0b;">?? New Award Nomination Received</h2>
-                        <p>A new nomination has been submitted for the SAPHANIOX Awards 2025.</p>
+                        <p>A new nomination has been submitted for the SAPTech Awards 2026.</p>
                         
                         <div style="background: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0;">
                             <h3 style="color: #92400e; margin: 0 0 15px 0;">?? Nominee Information</h3>
@@ -1356,7 +1356,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                         
                         <hr style="margin: 30px 0;">
                         <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
-                            <h3 style="color: #1f2937; margin: 0 0 15px 0;">?? SAPHANIOX Awards 2025 Admin Contact</h3>
+                            <h3 style="color: #1f2937; margin: 0 0 15px 0;">?? SAPTech Awards 2026 Admin Contact</h3>
                             <p style="margin: 5px 0;"><strong>?? Phone:</strong> +256706564628</p>
                             <p style="margin: 5px 0;"><strong>?? Admin Email:</strong> ${notifyEmail}</p>
                             <p style="margin: 15px 0 0 0; color: #059669; font-size: 14px;">Review and manage nominations in the admin dashboard</p>
@@ -1415,7 +1415,7 @@ ${JSON.stringify(alertData.details, null, 2)}
             const config = statusConfig[nominationData.status] || statusConfig.approved;
             
             const mailOptions = {
-                from: '"SAPHANIOX Awards 2025" <saptechnologies256@gmail.com>',
+                from: '"SAPTech Awards 2026" <saptechnologies256@gmail.com>',
                 replyTo: emailUser,
                 to: nominationData.nominatorEmail,
                 subject: `${config.icon} Nomination Status Update: ${nominationData.nomineeName}`,
@@ -1462,12 +1462,12 @@ ${JSON.stringify(alertData.details, null, 2)}
                         
                         ${nominationData.status === 'rejected' ? `
                             <div style="background: #fef2f2; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                                <p style="color: #991b1b; margin: 5px 0;">We appreciate your participation in the SAPHANIOX Awards 2025. You're welcome to submit new nominations in the future.</p>
+                                <p style="color: #991b1b; margin: 5px 0;">We appreciate your participation in the SAPTech Awards 2026. You're welcome to submit new nominations in the future.</p>
                             </div>
                         ` : ''}
                         
-                        <p>Thank you for your participation in the SAPHANIOX Awards 2025!</p>
-                        <p>Best regards,<br>The SAPHANIOX Awards 2025 Team</p>
+                        <p>Thank you for your participation in the SAPTech Awards 2026!</p>
+                        <p>Best regards,<br>The SAPTech Awards 2026 Team</p>
                         
                         <hr style="margin: 30px 0;">
                         <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
@@ -1496,7 +1496,7 @@ ${JSON.stringify(alertData.details, null, 2)}
             const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
             
             const mailOptions = {
-                from: '"SAPHANIOX Awards 2025" <saptechnologies256@gmail.com>',
+                from: '"SAPTech Awards 2026" <saptechnologies256@gmail.com>',
                 replyTo: emailUser,
                 to: nominationData.nominatorEmail,
                 subject: `?? Nomination Removed: ${nominationData.nomineeName}`,
@@ -1504,7 +1504,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                         <h2 style="color: #6b7280;">?? Nomination Removed</h2>
                         <p>Dear ${nominationData.nominatorName},</p>
-                        <p>We want to inform you that a nomination you submitted has been removed from the SAPHANIOX Awards 2025.</p>
+                        <p>We want to inform you that a nomination you submitted has been removed from the SAPTech Awards 2026.</p>
                         
                         <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; border-left: 4px solid #6b7280; margin: 20px 0;">
                             <h3 style="color: #374151; margin: 0 0 15px 0;">?? Nomination Details</h3>
@@ -1522,8 +1522,8 @@ ${JSON.stringify(alertData.details, null, 2)}
                         ` : ''}
                         
                         <p>If you have questions about this decision, please feel free to contact us.</p>
-                        <p>Thank you for your interest in the SAPHANIOX Awards 2025.</p>
-                        <p>Best regards,<br>The SAPHANIOX Awards 2025 Team</p>
+                        <p>Thank you for your interest in the SAPTech Awards 2026.</p>
+                        <p>Best regards,<br>The SAPTech Awards 2026 Team</p>
                         
                         <hr style="margin: 30px 0;">
                         <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
@@ -1567,8 +1567,8 @@ ${JSON.stringify(alertData.details, null, 2)}
                     bgColor: '#fef3c7',
                     icon: '🏆',
                     badge: 'WINNER',
-                    title: 'Congratulations on Winning at SAPHANIOX Awards 2025!',
-                    greeting: `We are absolutely delighted to inform you that you have been selected as a <strong style="color: #d97706;">WINNER</strong> at the SAPHANIOX Awards 2025!`,
+                    title: 'Congratulations on Winning at SAPTech Awards 2026!',
+                    greeting: `We are absolutely delighted to inform you that you have been selected as a <strong style="color: #d97706;">WINNER</strong> at the SAPTech Awards 2026!`,
                     message: `Your exceptional work in <strong>${certificateData.categoryName}</strong> has truly stood out among all nominees. This prestigious recognition is a testament to your dedication, innovation, and outstanding contribution to the field of engineering and technology.`,
                     achievement: 'Your achievement represents excellence at the highest level and serves as an inspiration to the entire community.'
                 },
@@ -1577,8 +1577,8 @@ ${JSON.stringify(alertData.details, null, 2)}
                     bgColor: '#ede9fe',
                     icon: '🥈',
                     badge: 'FINALIST',
-                    title: 'Congratulations - You Are a Finalist at SAPHANIOX Awards 2025!',
-                    greeting: `We are thrilled to announce that you have been recognized as a <strong style="color: #7c3aed;">FINALIST</strong> at the SAPHANIOX Awards 2025!`,
+                    title: 'Congratulations - You Are a Finalist at SAPTech Awards 2026!',
+                    greeting: `We are thrilled to announce that you have been recognized as a <strong style="color: #7c3aed;">FINALIST</strong> at the SAPTech Awards 2026!`,
                     message: `Your remarkable contribution to <strong>${certificateData.categoryName}</strong> has earned you this distinguished honor. Being selected as a finalist places you among the top achievers in your category.`,
                     achievement: 'This recognition celebrates your commitment to excellence and innovation in engineering and technology.'
                 },
@@ -1587,20 +1587,20 @@ ${JSON.stringify(alertData.details, null, 2)}
                     bgColor: '#dbeafe',
                     icon: '🎓',
                     badge: 'PARTICIPANT',
-                    title: 'Your Certificate of Participation - SAPHANIOX Awards 2025',
-                    greeting: `Thank you for your valuable participation in the SAPHANIOX Awards 2025!`,
+                    title: 'Your Certificate of Participation - SAPTech Awards 2026',
+                    greeting: `Thank you for your valuable participation in the SAPTech Awards 2026!`,
                     message: `We appreciate your involvement in <strong>${certificateData.categoryName}</strong>. Your participation contributes to the growth and development of our technology and engineering community.`,
-                    achievement: 'We look forward to seeing your continued involvement in future editions of SAPHANIOX Awards.'
+                    achievement: 'We look forward to seeing your continued involvement in future editions of SAPTech Awards 2026.'
                 }
             };
             
             const config = statusConfig[certificateData.status] || statusConfig.approved;
             
             const mailOptions = {
-                from: '"SAPHANIOX Awards 2025" <saptechnologies256@gmail.com>',
+                from: '"SAPTech Awards 2026" <saptechnologies256@gmail.com>',
                 replyTo: emailUser,
                 to: certificateData.recipientEmail,
-                subject: `${config.icon} ${config.badge} - Your SAPHANIOX Awards 2025 Certificate`,
+                subject: `${config.icon} ${config.badge} - Your SAPTech Awards 2026 Certificate`,
                 html: `
                     <!DOCTYPE html>
                     <html>
@@ -1692,7 +1692,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                                                                 📎 Your Official Certificate is Attached
                                                             </h4>
                                                             <p style="color: #78350f; margin: 0; line-height: 1.5; font-size: 14px;">
-                                                                Your official SAPHANIOX Awards 2025 certificate is attached to this email as a high-quality PDF. You can:
+                                                                Your official SAPTech Awards 2026 certificate is attached to this email as a high-quality PDF. You can:
                                                             </p>
                                                             <ul style="color: #78350f; margin: 10px 0 0 20px; line-height: 1.8; font-size: 14px;">
                                                                 <li>Download and save it for your records</li>
@@ -1718,7 +1718,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                                                 
                                                 <p style="color: #374151; line-height: 1.6; margin: 0; font-size: 16px;">
                                                     Warm regards,<br>
-                                                    <strong>The SAPHANIOX Awards Committee</strong><br>
+                                                    <strong>The SAPTech Awards 2026 Committee</strong><br>
                                                     <span style="color: #6b7280; font-size: 14px;">SAP-Technologies Uganda</span>
                                                 </p>
                                             </td>
@@ -1744,7 +1744,7 @@ ${JSON.stringify(alertData.details, null, 2)}
                                                             </p>
                                                             <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
                                                                 <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                                                                    © 2026 SAPHANIOX Awards. All rights reserved.<br>
+                                                                    © 2026 SAPTech Awards 2026. All rights reserved.<br>
                                                                     Powered by SAP-Technologies Uganda
                                                                 </p>
                                                             </div>
@@ -1774,9 +1774,9 @@ ${JSON.stringify(alertData.details, null, 2)}
             if (this.useResend) {
                 // Resend supports attachments
                 const resendOptions = {
-                    from: '"SAPHANIOX Awards 2025" <onboarding@resend.dev>',
+                    from: '"SAPTech Awards 2026" <onboarding@resend.dev>',
                     to: certificateData.recipientEmail,
-                    subject: `${config.icon} ${config.badge} - Your SAPHANIOX Awards 2025 Certificate`,
+                    subject: `${config.icon} ${config.badge} - Your SAPTech Awards 2026 Certificate`,
                     html: mailOptions.html,
                     reply_to: emailUser,
                     attachments: [{
@@ -1800,10 +1800,10 @@ ${JSON.stringify(alertData.details, null, 2)}
                 };
                 
                 const msg = {
-                    from: '"SAPHANIOX Awards 2025" <saptechnologies256@gmail.com>',
+                    from: '"SAPTech Awards 2026" <saptechnologies256@gmail.com>',
                     to: certificateData.recipientEmail,
                     replyTo: emailUser,
-                    subject: `${config.icon} ${config.badge} - Your SAPHANIOX Awards 2025 Certificate`,
+                    subject: `${config.icon} ${config.badge} - Your SAPTech Awards 2026 Certificate`,
                     html: mailOptions.html,
                     attachments: [attachment]
                 };

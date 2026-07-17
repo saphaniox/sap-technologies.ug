@@ -4,6 +4,14 @@ const { validationResult } = require("express-validator");
 const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
 const emailService = require("../services/emailService");
+const { useCloudinary } = require("../config/fileUpload");
+const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
+const path = require("path");
+const fs = require("fs").promises;
+
+const getFileUrl = (file, folder = "jobs") => {
+  return getUploadedFileUrl(file, folder);
+};
 
 const normalizeText = (value) => {
   if (typeof value !== "string") return value;
@@ -20,6 +28,36 @@ const normalizeOrder = (value, fallback) => {
   if (value === undefined || value === "") return fallback;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const escapeRegex = (value = "") => (
+  String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+);
+
+const shouldRemovePoster = (value) => {
+  if (value === undefined) return false;
+  return ["true", "1", "yes", "on"].includes(String(value).toLowerCase());
+};
+
+const cleanupUploadedPoster = async (file) => {
+  if (!file || useCloudinary || !file.path) return;
+
+  try {
+    await fs.unlink(file.path);
+  } catch (unlinkError) {
+    console.error("Error deleting uploaded job poster:", unlinkError);
+  }
+};
+
+const cleanupStoredPoster = async (posterUrl) => {
+  if (!posterUrl || useCloudinary || !posterUrl.startsWith("/uploads/jobs/")) return;
+
+  try {
+    const filePath = path.join(__dirname, "../../uploads/jobs", path.basename(posterUrl));
+    await fs.unlink(filePath);
+  } catch (unlinkError) {
+    console.error("Error deleting old job poster:", unlinkError);
+  }
 };
 
 // Public - get active jobs
@@ -106,6 +144,7 @@ const createJob = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      await cleanupUploadedPoster(req.file);
       return res.status(400).json({
         status: "error",
         message: "Validation failed",
@@ -124,6 +163,8 @@ const createJob = async (req, res) => {
       benefits,
       salaryRange,
       applicationDeadline,
+      poster,
+      posterAlt,
       isActive,
       isFeatured,
       displayOrder
@@ -140,6 +181,9 @@ const createJob = async (req, res) => {
       benefits: normalizeText(benefits),
       salaryRange: normalizeText(salaryRange),
       applicationDeadline: applicationDeadline ? new Date(applicationDeadline) : undefined,
+      poster: req.file ? getFileUrl(req.file, "jobs") : normalizeText(poster),
+      posterAlt: normalizeText(posterAlt),
+      posterCloudinaryId: req.file?.public_id || null,
       isActive: normalizeBoolean(isActive, true),
       isFeatured: normalizeBoolean(isFeatured, false),
       displayOrder: normalizeOrder(displayOrder, 0)
@@ -155,6 +199,7 @@ const createJob = async (req, res) => {
     });
   } catch (error) {
     logger.logError("JobController", error, { context: "createJob" });
+    await cleanupUploadedPoster(req.file);
     res.status(500).json({
       status: "error",
       message: "Error creating job",
@@ -168,6 +213,7 @@ const updateJob = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      await cleanupUploadedPoster(req.file);
       return res.status(400).json({
         status: "error",
         message: "Validation failed",
@@ -177,6 +223,7 @@ const updateJob = async (req, res) => {
 
     const job = await Job.findById(req.params.id);
     if (!job) {
+      await cleanupUploadedPoster(req.file);
       return res.status(404).json({
         status: "error",
         message: "Job not found"
@@ -199,6 +246,20 @@ const updateJob = async (req, res) => {
     if (req.body.isActive !== undefined) updateData.isActive = normalizeBoolean(req.body.isActive, job.isActive);
     if (req.body.isFeatured !== undefined) updateData.isFeatured = normalizeBoolean(req.body.isFeatured, job.isFeatured);
     if (req.body.displayOrder !== undefined) updateData.displayOrder = normalizeOrder(req.body.displayOrder, job.displayOrder);
+    if (req.body.posterAlt !== undefined) updateData.posterAlt = normalizeText(req.body.posterAlt);
+
+    if (req.file) {
+      updateData.poster = getFileUrl(req.file, "jobs");
+      updateData.posterCloudinaryId = req.file.public_id || null;
+      await cleanupStoredPoster(job.poster);
+    } else if (shouldRemovePoster(req.body.removePoster)) {
+      updateData.poster = "";
+      updateData.posterAlt = "";
+      updateData.posterCloudinaryId = null;
+      await cleanupStoredPoster(job.poster);
+    } else if (req.body.poster !== undefined) {
+      updateData.poster = normalizeText(req.body.poster);
+    }
 
     const updatedJob = await Job.findByIdAndUpdate(
       req.params.id,
@@ -216,6 +277,7 @@ const updateJob = async (req, res) => {
     });
   } catch (error) {
     logger.logError("JobController", error, { context: "updateJob", jobId: req.params.id });
+    await cleanupUploadedPoster(req.file);
     res.status(500).json({
       status: "error",
       message: "Error updating job",
@@ -236,6 +298,7 @@ const deleteJob = async (req, res) => {
     }
 
     await Job.findByIdAndDelete(req.params.id);
+    await cleanupStoredPoster(job.poster);
 
     cache.invalidateJobs();
     logger.logInfo("JobController", "Job deleted, cache invalidated", { jobId: req.params.id });
@@ -384,6 +447,60 @@ const getJobApplications = async (req, res) => {
   }
 };
 
+// Admin - get all job applications across every job
+const getAllJobApplications = async (req, res) => {
+  try {
+    const { status, jobId, search, page = 1, limit = 20 } = req.query;
+    const safeLimit = Math.min(parseInt(limit) || 20, 100);
+    const currentPage = Math.max(parseInt(page) || 1, 1);
+    const filter = {};
+
+    if (status) filter.status = status;
+    if (jobId) filter.job = jobId;
+
+    if (search) {
+      const pattern = escapeRegex(search.trim());
+      filter.$or = [
+        { fullName: { $regex: pattern, $options: "i" } },
+        { email: { $regex: pattern, $options: "i" } },
+        { phone: { $regex: pattern, $options: "i" } }
+      ];
+    }
+
+    const skip = (currentPage - 1) * safeLimit;
+    const [applications, total] = await Promise.all([
+      JobApplication.find(filter)
+        .populate("job", "title department location employmentType isActive")
+        .populate("reviewedBy", "name email")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(safeLimit),
+      JobApplication.countDocuments(filter)
+    ]);
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        applications,
+        pagination: {
+          currentPage,
+          totalPages: Math.ceil(total / safeLimit) || 1,
+          totalItems: total,
+          hasNextPage: currentPage < Math.ceil(total / safeLimit),
+          hasPrevPage: currentPage > 1
+        }
+      }
+    });
+  } catch (error) {
+    logger.logError("JobController", error, { context: "getAllJobApplications" });
+    res.status(500).json({
+      status: "error",
+      message: "Error fetching job applications",
+      error: process.env.NODE_ENV === "development" ? error.message : "Internal server error"
+    });
+  }
+};
+
 // Admin - update application status
 const updateApplicationStatus = async (req, res) => {
   try {
@@ -442,6 +559,7 @@ module.exports = {
   updateJob,
   deleteJob,
   applyForJob,
+  getAllJobApplications,
   getJobApplications,
   updateApplicationStatus
 };

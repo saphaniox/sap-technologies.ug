@@ -129,6 +129,13 @@ const rateLimits = {
     60 * 60 * 1000, // 1 hour
     20,
     "Too many quote requests, please try again later."
+  ),
+
+  // Job applications - prevent repeated spam submissions from one IP
+  jobApplication: createRateLimit(
+    60 * 60 * 1000, // 1 hour
+    10,
+    "Too many job applications from this IP, please try again later."
   )
 };
 

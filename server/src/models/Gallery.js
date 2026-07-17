@@ -22,13 +22,43 @@ const gallerySchema = new mongoose.Schema({
     default: "other"
   },
   image: {
-    type: String,
-    required: [true, "Gallery image is required"]
+    type: String
   },
   cloudinaryId: {
     type: String,
     default: null
   },
+  media: [{
+    url: {
+      type: String,
+      required: true
+    },
+    type: {
+      type: String,
+      enum: ["image", "video"],
+      default: "image"
+    },
+    mimeType: {
+      type: String,
+      default: ""
+    },
+    size: {
+      type: Number,
+      default: 0
+    },
+    cloudinaryId: {
+      type: String,
+      default: null
+    },
+    originalName: {
+      type: String,
+      default: ""
+    },
+    isCompressed: {
+      type: Boolean,
+      default: false
+    }
+  }],
   isActive: {
     type: Boolean,
     default: true
@@ -39,6 +69,20 @@ const gallerySchema = new mongoose.Schema({
   }
 }, {
   timestamps: true
+});
+
+gallerySchema.pre("validate", function requireGalleryMedia(next) {
+  if (!this.image && (!this.media || this.media.length === 0)) {
+    this.invalidate("media", "At least one gallery photo or video is required");
+  }
+
+  if (!this.image && this.media?.length > 0) {
+    const primaryMedia = this.media.find((item) => item.type === "image") || this.media[0];
+    this.image = primaryMedia.url;
+    this.cloudinaryId = primaryMedia.cloudinaryId || null;
+  }
+
+  next();
 });
 
 gallerySchema.index({ category: 1, isActive: 1, displayOrder: 1 });

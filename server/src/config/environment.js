@@ -55,6 +55,10 @@ class EnvironmentConfig {
             }
         }
 
+        if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+            missing.push('JWT_SECRET');
+        }
+
         // Report missing variables
         if (missing.length > 0) {
             console.error('❌ Missing required environment variables:');

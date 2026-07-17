@@ -57,6 +57,20 @@ const jobSchema = new mongoose.Schema({
   applicationDeadline: {
     type: Date
   },
+  poster: {
+    type: String,
+    trim: true,
+    maxlength: [500, "Poster URL cannot exceed 500 characters"]
+  },
+  posterAlt: {
+    type: String,
+    trim: true,
+    maxlength: [160, "Poster alt text cannot exceed 160 characters"]
+  },
+  posterCloudinaryId: {
+    type: String,
+    default: null
+  },
   isActive: {
     type: Boolean,
     default: true

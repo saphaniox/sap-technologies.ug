@@ -7,11 +7,13 @@ const {
   updateJob,
   deleteJob,
   applyForJob,
+  getAllJobApplications,
   getJobApplications,
   updateApplicationStatus
 } = require("../controllers/jobController");
 const { adminAuth } = require("../middleware/adminAuth");
-const { resumeUpload } = require("../config/fileUpload");
+const { jobPosterUpload } = require("../config/fileUpload");
+const { rateLimits } = require("../config/security");
 const multer = require("multer");
 
 const router = express.Router();
@@ -21,7 +23,7 @@ const handleMulterError = (err, req, res, next) => {
     if (err.code === "LIMIT_FILE_SIZE") {
       return res.status(400).json({
         status: "error",
-        message: "File size exceeds limit (max 5MB)",
+        message: "File size exceeds limit (max 10MB)",
         error: err.message
       });
     }
@@ -83,9 +85,23 @@ const validateJob = [
     .isIn(["Full-time", "Part-time", "Contract", "Internship", "Remote", "Freelance"])
     .withMessage("Invalid employment type"),
   require("express-validator").body("applicationDeadline")
-    .optional()
+    .optional({ checkFalsy: true })
     .isISO8601()
     .withMessage("Invalid deadline date"),
+  require("express-validator").body("poster")
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage("Poster URL cannot exceed 500 characters"),
+  require("express-validator").body("posterAlt")
+    .optional()
+    .trim()
+    .isLength({ max: 160 })
+    .withMessage("Poster alt text cannot exceed 160 characters"),
+  require("express-validator").body("removePoster")
+    .optional()
+    .isBoolean()
+    .withMessage("removePoster must be a boolean"),
   require("express-validator").body("isActive")
     .optional()
     .isBoolean()
@@ -151,17 +167,22 @@ const validateApplication = [
 
 // Public routes
 router.get("/public", getPublicJobs);
+
+// Admin read route with a reserved path; keep it before public dynamic :id routes.
+router.get("/admin/applications", adminAuth, getAllJobApplications);
+
 router.get("/:id", getJobById);
-router.post("/:id/apply", validateApplication, applyForJob);
+router.post("/:id/apply", rateLimits.jobApplication, validateApplication, applyForJob);
 
 // Admin routes
 router.use(adminAuth);
 
 router.get("/", getAllJobs);
-router.post("/", validateJob, createJob);
-router.put("/:id", validateJob, updateJob);
+router.post("/", jobPosterUpload.single("poster"), handleMulterError, validateJob, createJob);
+router.put("/:id", jobPosterUpload.single("poster"), handleMulterError, validateJob, updateJob);
 router.delete("/:id", deleteJob);
 router.get("/:id/applications", getJobApplications);
+router.patch("/applications/:applicationId/status", updateApplicationStatus);
 router.patch("/:id/applications/:applicationId/status", updateApplicationStatus);
 
 module.exports = router;
