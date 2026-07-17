@@ -1,0 +1,12 @@
+{
+  "buildCommand": "cd sap-technologies-official && npm install && npm run build",
+  "outputDirectory": "sap-technologies-official/dist",
+  "installCommand": "cd sap-technologies-official && npm install",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/((?!assets|images|_next|favicon.ico|favicon-16x16.png|favicon-32x32.png|favicon-48x48.png|apple-touch-icon.png|mstile-150x150.png|pwa-192.png|pwa-512.png|maskable-192.png|maskable-512.png|vite.svg|robots.txt|sitemap.xml|ads.txt|manifest.webmanifest|google-verification-template.html|registerSW.js|sw.js|workbox-.*\\.js).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

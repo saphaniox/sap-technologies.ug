@@ -1,4 +1,10 @@
-﻿const AfricasTalking = require('africastalking');
+let AfricasTalking = null;
+
+try {
+    AfricasTalking = require('africastalking');
+} catch {
+    // Optional SMS provider. The website runs normally without this package.
+}
 
 class SMSAfricasTalkingService {
     constructor() {
