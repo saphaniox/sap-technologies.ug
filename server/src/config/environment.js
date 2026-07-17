@@ -257,14 +257,14 @@ class EnvironmentConfig {
                 try {
                     const parsedOrigin = new URL(origin);
                     const allowedProductionDomains = ['saptechug.com', 'sap-technologies.com'];
-                    const isSapTechnologiesDomain =
+                    const isAllowedProductionDomain =
                         parsedOrigin.protocol === 'https:' &&
                         allowedProductionDomains.some(domain =>
                             parsedOrigin.hostname === domain ||
                             parsedOrigin.hostname.endsWith(`.${domain}`)
                         );
 
-                    if (isSapTechnologiesDomain) {
+                    if (isAllowedProductionDomain) {
                         console.log('✅ CORS: production domain allowed:', origin);
                         return callback(null, true);
                     }
@@ -300,9 +300,10 @@ class EnvironmentConfig {
             },
             from: {
                 name: process.env.EMAIL_FROM_NAME || 'SAPTech Uganda',
-                address: process.env.GMAIL_USER
+                address: process.env.EMAIL_FROM_ADDRESS || process.env.SMTP_FROM_EMAIL || process.env.GMAIL_USER
             },
-            replyTo: process.env.EMAIL_REPLY_TO || process.env.GMAIL_USER
+            replyTo: process.env.EMAIL_REPLY_TO || process.env.COMPANY_EMAIL || 'info@saptechug.com',
+            smtpSender: process.env.SMTP_FROM_EMAIL || process.env.GMAIL_USER
         };
     }
 

@@ -1,2666 +1,1134 @@
-﻿const nodemailer = require("nodemailer");
-const sgMail = require('@sendgrid/mail');
-const { Resend } = require('resend');
+const fs = require("fs");
+const path = require("path");
+const nodemailer = require("nodemailer");
+
+const STATUS_LABELS = {
+  new: "New",
+  pending: "Pending review",
+  read: "Read by our team",
+  replied: "Reply sent",
+  reviewed: "Reviewed",
+  contacted: "Contacted",
+  resolved: "Resolved",
+  closed: "Closed",
+  archived: "Archived",
+  quoted: "Quoted",
+  accepted: "Accepted",
+  rejected: "Rejected",
+  expired: "Expired",
+  converted: "Converted",
+  interviewed: "Interview stage",
+  winner: "Winner",
+  finalist: "Finalist",
+  approved: "Approved"
+};
+
+const TONES = {
+  default: { accent: "#2563eb", soft: "#eff6ff", strong: "#1e3a8a" },
+  success: { accent: "#047857", soft: "#ecfdf5", strong: "#064e3b" },
+  warning: { accent: "#b45309", soft: "#fffbeb", strong: "#78350f" },
+  danger: { accent: "#b91c1c", soft: "#fef2f2", strong: "#7f1d1d" },
+  awards: { accent: "#7c3aed", soft: "#f5f3ff", strong: "#4c1d95" }
+};
+
+const escapeHtml = (value = "") => String(value)
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;")
+  .replace(/'/g, "&#39;");
+
+const normalizeText = (value, fallback = "Not provided") => {
+  if (value === undefined || value === null || value === "") return fallback;
+  return String(value).trim() || fallback;
+};
+
+const normalizeStatus = (status) => STATUS_LABELS[status] || normalizeText(status, "Updated");
+
+const collectRecipients = (...values) => values.flatMap((value) => {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
+});
 
 class EmailService {
-    constructor() {
-        // Set reply-to email (always use Gmail for replies)
-        this.replyToEmail = process.env.GMAIL_USER || 'saptechnologies256@gmail.com';
-        
-        // Priority 1: Check for Resend API key (easiest, most reliable)
-        const resendKey = process.env.RESEND_API_KEY;
-        if (resendKey) {
-            this.resend = new Resend(resendKey);
-            this.useResend = true;
-            this.isConfigured = true;
-            // IMPORTANT: Resend requires using verified domain or onboarding@resend.dev
-            this.fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
-            this.notifyEmail = process.env.NOTIFY_EMAIL || process.env.GMAIL_USER || 'saptechnologies256@gmail.com';
-            console.log("✅ Email service configured with Resend");
-            console.log("📧 From Email:", this.fromEmail);
-            console.log("↩️  Reply-To Email:", this.replyToEmail);
-            console.log("📬 Notify Email:", this.notifyEmail);
-            console.log("💡 Resend: 3,000 emails/month free, excellent deliverability");
-            
-            if (this.fromEmail !== 'onboarding@resend.dev' && !this.fromEmail.includes('@')) {
-                console.warn("⚠️  WARNING: RESEND_FROM_EMAIL must be a valid email address");
-                console.warn("   Use 'onboarding@resend.dev' for testing or verify your domain");
-            }
-            return;
-        }
-        
-        // Priority 2: Check for SendGrid API key
-        const sendgridKey = process.env.SENDGRID_API_KEY;
-        if (sendgridKey) {
-            sgMail.setApiKey(sendgridKey);
-            this.useSendGrid = true;
-            this.isConfigured = true;
-            this.fromEmail = process.env.SENDGRID_FROM_EMAIL || process.env.GMAIL_USER || 'saptechnologies256@gmail.com';
-            this.notifyEmail = process.env.NOTIFY_EMAIL || this.fromEmail;
-            console.log("✅ Email service configured with SendGrid");
-            console.log("📧 From Email:", this.fromEmail);
-            console.log("↩️  Reply-To Email:", this.replyToEmail);
-            console.log("📬 Notify Email:", this.notifyEmail);
-            return;
-        }
-        
-        // Priority 3: Fallback to SMTP for local development
-        const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-        const emailPass = process.env.GMAIL_PASS || process.env.SMTP_PASS;
-        
-        if (emailUser && emailPass) {
-            // Use port 587 with STARTTLS for better cloud platform compatibility (Render, Heroku, etc.)
-            const smtpPort = parseInt(process.env.SMTP_PORT || "587");
-            const useSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
-            
-            this.transporter = nodemailer.createTransport({
-                host: process.env.SMTP_HOST || "smtp.gmail.com",
-                port: smtpPort,
-                secure: useSecure, // true for 465 (SSL), false for 587 (STARTTLS)
-                auth: {
-                    user: emailUser,
-                    pass: emailPass
-                },
-                tls: {
-                    rejectUnauthorized: false, // Allow self-signed certificates
-                    ciphers: 'SSLv3' // Fallback cipher for compatibility
-                },
-                connectionTimeout: 30000, // 30 seconds for slow connections
-                greetingTimeout: 30000,
-                socketTimeout: 30000,
-                pool: true, // Use connection pooling
-                maxConnections: 5,
-                maxMessages: 100,
-                rateDelta: 1000,
-                rateLimit: 5
-            });
-            this.isConfigured = true;
-            console.log("✅ Email service configured with Gmail SMTP:", emailUser);
-            console.log("📧 SMTP Host:", process.env.SMTP_HOST || "smtp.gmail.com");
-            console.log("🔌 SMTP Port:", smtpPort, useSecure ? "(SSL)" : "(STARTTLS)");
-            console.log("↩️  Reply-To Email:", this.replyToEmail);
-            
-            // Test the connection (only in development)
-            if (process.env.NODE_ENV !== 'production') {
-                this.transporter.verify((error, success) => {
-                    if (error) {
-                        console.error("❌ SMTP connection test failed:", error.message);
-                        console.warn("   💡 Troubleshooting:");
-                        console.warn("   1. Check your Gmail App Password is correct");
-                        console.warn("   2. Try port 587 instead of 465");
-                        console.warn("   3. For production, use SendGrid: Set SENDGRID_API_KEY");
-                    } else {
-                        console.log("✅ SMTP connection verified - ready to send emails!");
-                    }
-                });
-            } else {
-                console.log("🚀 SMTP running in production with port", smtpPort);
-                console.log("   Note: Using connection pooling and extended timeouts for cloud hosting");
-            }
+  constructor() {
+    this.brand = {
+      name: process.env.EMAIL_FROM_NAME || process.env.BRAND_NAME || "SAPTech Uganda",
+      awardsName: process.env.AWARDS_BRAND_NAME || "SAPTech Awards 2026",
+      legalName: process.env.COMPANY_LEGAL_NAME || "SAPTech Uganda",
+      websiteUrl: process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://saptechug.com",
+      logoUrl: process.env.EMAIL_LOGO_URL || "",
+      phone: process.env.COMPANY_PHONE || "+256 706 564 628",
+      address: process.env.COMPANY_ADDRESS || "Ndejje, Kampala, Uganda",
+      contactEmail: process.env.COMPANY_EMAIL || process.env.EMAIL_REPLY_TO || "info@saptechug.com"
+    };
+
+    const smtpUser = process.env.GMAIL_USER || process.env.SMTP_USER;
+    this.smtpSenderEmail = process.env.SMTP_FROM_EMAIL || smtpUser || "";
+    this.replyToEmail = process.env.EMAIL_REPLY_TO || this.brand.contactEmail || "info@saptechug.com";
+    this.notifyEmail = process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || this.replyToEmail;
+    this.fromEmail = process.env.EMAIL_FROM_ADDRESS
+      || this.brand.contactEmail
+      || process.env.SMTP_FROM_EMAIL
+      || smtpUser
+      || this.replyToEmail;
+    this.fromName = process.env.EMAIL_FROM_NAME || this.brand.name;
+
+    this.provider = "none";
+    this.isConfigured = false;
+
+    this.configureProvider();
+  }
+
+  configureProvider() {
+    const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
+    const emailPass = process.env.GMAIL_PASS || process.env.SMTP_PASS;
+    if (!emailUser || !emailPass) {
+      console.log("Email service not configured. Set SMTP_USER/SMTP_PASS or GMAIL_USER/GMAIL_PASS.");
+      return;
+    }
+
+    const host = process.env.SMTP_HOST || "smtp.gmail.com";
+    const port = Number(process.env.SMTP_PORT || 587);
+    const secure = String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || port === 465;
+
+    this.transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      requireTLS: !secure,
+      auth: {
+        user: emailUser,
+        pass: emailPass
+      },
+      pool: process.env.SMTP_POOL !== "false",
+      maxConnections: Number(process.env.SMTP_MAX_CONNECTIONS || 3),
+      maxMessages: Number(process.env.SMTP_MAX_MESSAGES || 75),
+      connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT_MS || 30000),
+      greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT_MS || 30000),
+      socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 45000),
+      tls: {
+        minVersion: "TLSv1.2",
+        servername: host
+      }
+    });
+
+    this.isConfigured = true;
+    this.provider = "smtp";
+    console.log(`Email service configured with SMTP ${host}:${port} (${secure ? "SSL" : "STARTTLS"})`);
+
+    if (process.env.NODE_ENV !== "production") {
+      this.transporter.verify((error) => {
+        if (error) {
+          console.warn(`SMTP verification failed: ${error.message}`);
         } else {
-            this.isConfigured = false;
-            console.log("? Email service: No email credentials configured");
-            console.log("   Expected: SENDGRID_API_KEY (recommended) or GMAIL_USER & GMAIL_PASS");
-            console.log("   ?? Setup guide: https://docs.sendgrid.com/for-developers/sending-email/api-getting-started");
+          console.log("SMTP connection verified.");
         }
+      });
+    }
+  }
+
+  extractEmail(address) {
+    const match = String(address || "").match(/<([^>]+)>/);
+    return (match ? match[1] : address || "").trim();
+  }
+
+  formatAddress(email = this.fromEmail, name = this.fromName) {
+    const cleanEmail = this.extractEmail(email);
+    if (!name) return cleanEmail;
+    return `"${String(name).replace(/"/g, "")}" <${cleanEmail}>`;
+  }
+
+  formatDate(value = new Date()) {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return "Not provided";
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  }
+
+  htmlToText(html = "") {
+    return String(html)
+      .replace(/<style[\s\S]*?<\/style>/gi, "")
+      .replace(/<script[\s\S]*?<\/script>/gi, "")
+      .replace(/<\/(p|div|tr|li|h1|h2|h3|h4)>/gi, "\n")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<[^>]+>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, "\"")
+      .replace(/&#39;/g, "'")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
+
+  buildRows(rows = []) {
+    const visibleRows = rows.filter((row) => row && row.value !== undefined && row.value !== null && row.value !== "");
+    if (!visibleRows.length) return "";
+
+    return `
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        ${visibleRows.map(({ label, value }) => `
+          <tr>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;color:#64748b;font-size:13px;width:38%;vertical-align:top;">${escapeHtml(label)}</td>
+            <td style="padding:10px 0;border-bottom:1px solid #e5e7eb;color:#0f172a;font-size:14px;font-weight:600;vertical-align:top;">${escapeHtml(value)}</td>
+          </tr>
+        `).join("")}
+      </table>
+    `;
+  }
+
+  buildSection(section = {}, tone) {
+    const rows = this.buildRows(section.rows || []);
+    const text = section.text
+      ? `<p style="margin:0;color:#334155;font-size:15px;line-height:1.7;white-space:pre-wrap;">${escapeHtml(section.text)}</p>`
+      : "";
+    const list = Array.isArray(section.list) && section.list.length
+      ? `<ul style="margin:0;padding-left:20px;color:#334155;font-size:15px;line-height:1.8;">${section.list.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
+      : "";
+
+    return `
+      <tr>
+        <td style="padding:0 32px 22px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${tone.soft};border:1px solid #dbeafe;border-left:4px solid ${tone.accent};border-radius:10px;">
+            <tr>
+              <td style="padding:20px;">
+                <h3 style="margin:0 0 12px;color:${tone.strong};font-size:16px;line-height:1.35;">${escapeHtml(section.title || "Details")}</h3>
+                ${rows}
+                ${text}
+                ${list}
+                ${section.html || ""}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    `;
+  }
+
+  buildEmail({
+    title,
+    preheader,
+    greeting,
+    intro,
+    sections = [],
+    cta,
+    footerNote,
+    tone = "default",
+    brandName
+  }) {
+    const color = TONES[tone] || TONES.default;
+    const companyName = brandName || this.brand.name;
+    const hiddenPreheader = preheader
+      ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${escapeHtml(preheader)}</div>`
+      : "";
+    const logo = this.brand.logoUrl
+      ? `<img src="${escapeHtml(this.brand.logoUrl)}" alt="${escapeHtml(companyName)}" width="120" style="display:block;border:0;margin:0 auto 12px;">`
+      : "";
+
+    return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${escapeHtml(title)}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;">
+  ${hiddenPreheader}
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7fb;padding:28px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:680px;background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;">
+          <tr>
+            <td style="background:#0f172a;padding:28px 32px;text-align:center;">
+              ${logo}
+              <p style="margin:0 0 8px;color:#93c5fd;font-size:13px;letter-spacing:.08em;text-transform:uppercase;">${escapeHtml(companyName)}</p>
+              <h1 style="margin:0;color:#ffffff;font-size:26px;line-height:1.25;">${escapeHtml(title)}</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:30px 32px 18px;">
+              ${greeting ? `<p style="margin:0 0 14px;color:#0f172a;font-size:17px;font-weight:700;">${escapeHtml(greeting)}</p>` : ""}
+              ${intro ? `<p style="margin:0;color:#334155;font-size:15px;line-height:1.7;">${escapeHtml(intro)}</p>` : ""}
+            </td>
+          </tr>
+          ${sections.map((section) => this.buildSection(section, color)).join("")}
+          ${cta && cta.href ? `
+          <tr>
+            <td style="padding:2px 32px 28px;text-align:center;">
+              <a href="${escapeHtml(cta.href)}" style="display:inline-block;background:${color.accent};color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;padding:13px 22px;border-radius:8px;">${escapeHtml(cta.label || "Open")}</a>
+            </td>
+          </tr>` : ""}
+          <tr>
+            <td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:22px 32px;text-align:center;">
+              <p style="margin:0 0 8px;color:#0f172a;font-size:14px;font-weight:700;">${escapeHtml(this.brand.legalName)}</p>
+              <p style="margin:0;color:#64748b;font-size:13px;line-height:1.7;">
+                ${escapeHtml(this.brand.address)}<br>
+                ${escapeHtml(this.brand.phone)} | <a href="mailto:${escapeHtml(this.replyToEmail)}" style="color:${color.accent};text-decoration:none;">${escapeHtml(this.replyToEmail)}</a><br>
+                <a href="${escapeHtml(this.brand.websiteUrl)}" style="color:${color.accent};text-decoration:none;">${escapeHtml(this.brand.websiteUrl)}</a>
+              </p>
+              ${footerNote ? `<p style="margin:14px 0 0;color:#94a3b8;font-size:12px;line-height:1.6;">${escapeHtml(footerNote)}</p>` : ""}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+  }
+
+  async prepareAttachments(attachments = []) {
+    return Promise.all(attachments.map(async (attachment) => {
+      if (attachment.content || !attachment.path) return attachment;
+      const content = await fs.promises.readFile(attachment.path);
+      return { ...attachment, content };
+    }));
+  }
+
+  async sendEmail(emailOptions) {
+    if (!this.isConfigured) {
+      throw new Error("Email service is not configured. Add SMTP_USER/SMTP_PASS or GMAIL_USER/GMAIL_PASS.");
     }
 
-    async sendEmail(emailOptions) {
-        if (!this.isConfigured) {
-            const errorMsg = "❌ Email service not configured - No email provider found (RESEND_API_KEY, SENDGRID_API_KEY, or GMAIL credentials required)";
-            console.error(errorMsg);
-            throw new Error(errorMsg);
-        }
+    const attachments = await this.prepareAttachments(emailOptions.attachments || []);
+    const fromName = emailOptions.fromName || this.fromName;
+    const fromEmail = emailOptions.from || this.fromEmail;
+    const envelopeRecipients = collectRecipients(emailOptions.to, emailOptions.cc, emailOptions.bcc);
+    const html = emailOptions.html;
+    const text = emailOptions.text || this.htmlToText(html);
+    const headers = {
+      "X-Entity-Ref-ID": `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+      ...(emailOptions.headers || {})
+    };
 
-        try {
-            console.log(`📧 Attempting to send email to: ${emailOptions.to}`);
-            console.log(`   Subject: ${emailOptions.subject}`);
-            console.log(`   Provider: ${this.useResend ? 'Resend' : this.useSendGrid ? 'SendGrid' : 'SMTP'}`);
-            
-            if (this.useResend) {
-                // Resend API - Simple and reliable
-                const resendOptions = {
-                    from: emailOptions.from || this.fromEmail,
-                    to: emailOptions.to,
-                    subject: emailOptions.subject,
-                    html: emailOptions.html,
-                    reply_to: emailOptions.replyTo || this.replyToEmail,
-                };
+    await this.transporter.sendMail({
+      from: this.formatAddress(fromEmail, fromName),
+      envelope: this.smtpSenderEmail
+        ? { from: this.smtpSenderEmail, to: envelopeRecipients }
+        : undefined,
+      to: emailOptions.to,
+      cc: emailOptions.cc,
+      bcc: emailOptions.bcc,
+      replyTo: emailOptions.replyTo || this.replyToEmail,
+      subject: emailOptions.subject,
+      html,
+      text,
+      attachments,
+      headers
+    });
+    return true;
+  }
 
-                // Add tags for tracking
-                if (emailOptions.category) {
-                    resendOptions.tags = [{ name: 'category', value: emailOptions.category }];
-                }
-
-                console.log(`   From: ${resendOptions.from}`);
-                console.log(`   Reply-To: ${resendOptions.reply_to}`);
-                
-                const result = await this.resend.emails.send(resendOptions);
-                console.log(`✅ Email sent successfully via Resend`);
-                console.log(`   Email ID: ${result.id}`);
-                return true;
-                
-            } else if (this.useSendGrid) {
-                // SendGrid API with anti-spam configuration
-                const msg = {
-                    to: emailOptions.to,
-                    from: {
-                        email: emailOptions.from || this.fromEmail,
-                        name: emailOptions.fromName || process.env.SENDGRID_FROM_NAME || 'SAPTech Uganda'
-                    },
-                    replyTo: emailOptions.replyTo || this.replyToEmail,
-                    subject: emailOptions.subject,
-                    html: emailOptions.html,
-                    text: emailOptions.text || this.htmlToText(emailOptions.html), // Plain text version
-                    
-                    // Anti-spam settings
-                    trackingSettings: {
-                        clickTracking: { enable: true, enableText: false },
-                        openTracking: { enable: true },
-                        subscriptionTracking: { enable: false } // Disable default unsubscribe
-                    },
-                    
-                    // Mail settings for better deliverability
-                    mailSettings: {
-                        bypassListManagement: { enable: false },
-                        footer: { enable: false },
-                        sandboxMode: { enable: false }
-                    },
-                    
-                    // Category for tracking (helps SendGrid reputation)
-                    categories: emailOptions.category ? [emailOptions.category] : ['transactional'],
-                    
-                    // Custom headers for better deliverability
-                    headers: {
-                        'X-Entity-Ref-ID': `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-                    }
-                };
-
-                // Add List-Unsubscribe header for newsletters/marketing
-                if (emailOptions.unsubscribeUrl) {
-                    msg.headers['List-Unsubscribe'] = `<${emailOptions.unsubscribeUrl}>`;
-                    msg.headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
-                }
-                
-                await sgMail.send(msg);
-                console.log(`✅ Email sent successfully via SendGrid`);
-                console.log(`   Message ID: ${msg.messageId || 'N/A'}`);
-                return true;
-            } else {
-                // SMTP (for local development)
-                const mailOptions = {
-                    from: emailOptions.from || '"SAPTech Uganda" <saptechnologies256@gmail.com>',
-                    to: emailOptions.to,
-                    replyTo: emailOptions.replyTo || this.replyToEmail, // Always set reply-to
-                    subject: emailOptions.subject,
-                    html: emailOptions.html
-                };
-
-                const info = await this.transporter.sendMail(mailOptions);
-                console.log(`✅ Email sent successfully via SMTP`);
-                console.log(`   Message ID: ${info.messageId}`);
-                return true;
-            }
-        } catch (error) {
-            console.error(`❌ CRITICAL: Email sending failed!`);
-            console.error(`   To: ${emailOptions.to}`);
-            console.error(`   Subject: ${emailOptions.subject}`);
-            console.error(`   Provider: ${this.useResend ? 'Resend' : this.useSendGrid ? 'SendGrid' : 'SMTP'}`);
-            console.error(`   Error Type: ${error.name}`);
-            console.error(`   Error Message: ${error.message}`);
-            
-            if (error.response) {
-                console.error(`   API Response:`, JSON.stringify(error.response.body || error.response, null, 2));
-            }
-            if (error.stack) {
-                console.error(`   Stack Trace:`, error.stack);
-            }
-            
-            // Throw the error so calling code knows it failed
-            throw new Error(`Failed to send email: ${error.message}`);
-        }
+  async deliver(emailOptions) {
+    if (!this.isConfigured) {
+      console.log(`Email service not configured; skipped "${emailOptions.subject}".`);
+      return false;
     }
 
-    async sendContactNotification(contactData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping notification");
-            return;
-        }
-        
-        try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            const adminEmail = process.env.ADMIN_EMAIL || emailUser;
+    try {
+      await this.sendEmail(emailOptions);
+      console.log(`Email sent via ${this.provider}: ${emailOptions.subject} -> ${emailOptions.to}`);
+      return true;
+    } catch (error) {
+      console.error(`Email failed: ${emailOptions.subject} -> ${emailOptions.to}: ${error.message}`);
+      throw error;
+    }
+  }
 
-            const mailOptions = {
-                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
-                to: adminEmail,
-                replyTo: contactData.email,
-                subject: `?? New Contact Message from ${contactData.name}`,
-                html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 20px; border-radius: 15px;">
-                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <div style="text-align: center; margin-bottom: 35px;">
-                                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
-                                    <span style="font-size: 35px;">??</span>
-                                </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">New Contact Message</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">Someone reached out to you</p>
-                            </div>
+  adminRows(source, data = {}) {
+    return [
+      { label: "Source", value: source },
+      { label: "Received", value: this.formatDate(data.date || data.createdAt || new Date()) },
+      { label: "Preferred contact", value: data.preferredContact },
+      { label: "Customer email", value: data.email || data.customerEmail || data.contactEmail || data.applicantEmail },
+      { label: "Customer phone", value: data.phone || data.customerPhone || data.applicantPhone }
+    ];
+  }
 
-                            <!-- Contact Info -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">? Contact Information</h2>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Name:</strong> ${contactData.name}
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Email:</strong> <a href="mailto:${contactData.email}" style="color: #10b981; text-decoration: none;">${contactData.email}</a>
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Date:</strong> ${new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}
-                                </p>
-                            </div>
+  async sendContactNotification(contactData) {
+    return this.deliver({
+      to: this.notifyEmail,
+      replyTo: contactData.email,
+      subject: `New contact message from ${normalizeText(contactData.name, "Website visitor")}`,
+      category: "contact_admin",
+      html: this.buildEmail({
+        title: "New Contact Message",
+        preheader: "A visitor submitted the contact form.",
+        intro: "A new message was submitted through the website contact page.",
+        sections: [
+          { title: "Contact details", rows: this.adminRows("Contact page", { ...contactData, date: new Date() }).concat([{ label: "Name", value: contactData.name }]) },
+          { title: "Message", text: normalizeText(contactData.message, "No message provided") }
+        ],
+        cta: { label: "Reply by email", href: `mailto:${encodeURIComponent(contactData.email || "")}` }
+      })
+    });
+  }
 
-                            <!-- Message -->
-                            <div style="background: linear-gradient(135deg, #10b98115 0%, #05966915 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #10b981;">
-                                <h2 style="color: #10b981; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Message</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px; white-space: pre-wrap;">${contactData.message}</p>
-                            </div>
+  async sendContactConfirmation(contactData) {
+    return this.deliver({
+      to: contactData.email,
+      subject: "We received your message",
+      category: "contact_confirmation",
+      html: this.buildEmail({
+        title: "Message Received",
+        preheader: "Thank you for contacting SAPTech Uganda.",
+        greeting: `Hello ${normalizeText(contactData.name, "there")}`,
+        intro: "Thank you for reaching out to SAPTech Uganda. Our team has received your message and will respond as soon as possible.",
+        sections: [
+          { title: "Your submission", rows: [{ label: "Name", value: contactData.name }, { label: "Email", value: contactData.email }, { label: "Submitted", value: this.formatDate() }] },
+          { title: "Message received", text: normalizeText(contactData.message, "No message provided") },
+          { title: "What happens next", list: ["A team member will review your message.", "We will reply using the email address you provided.", "Urgent matters can be followed up by phone."] }
+        ],
+        footerNote: "You are receiving this because you submitted a contact form on the SAPTech Uganda website."
+      })
+    });
+  }
 
-                            <!-- Action Button -->
-                            <div style="text-align: center; margin-top: 35px;">
-                                <a href="mailto:${contactData.email}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
-                                    ?? Reply to ${contactData.name}
-                                </a>
-                            </div>
+  async sendContactStatusUpdate(contactData) {
+    return this.deliver({
+      to: contactData.email,
+      subject: `Contact request update: ${normalizeStatus(contactData.status)}`,
+      category: "contact_status",
+      html: this.buildEmail({
+        title: "Contact Request Update",
+        preheader: "There is an update on your message to SAPTech Uganda.",
+        greeting: `Hello ${normalizeText(contactData.name, "there")}`,
+        intro: "There is an update on the message you sent to SAPTech Uganda.",
+        sections: [
+          {
+            title: "Status details",
+            rows: [
+              { label: "Status", value: normalizeStatus(contactData.status) },
+              { label: "Submitted", value: this.formatDate(contactData.submittedAt || contactData.createdAt) },
+              { label: "Updated", value: this.formatDate() }
+            ]
+          },
+          { title: "Your message", text: normalizeText(contactData.message, "No message provided") }
+        ],
+        cta: { label: "Contact SAPTech Uganda", href: `mailto:${this.replyToEmail}` }
+      })
+    });
+  }
 
-                            <!-- Footer -->
-                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
-                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    This is an automated notification from SAPTech Uganda Contact Form
-                                </p>
-                                <p style="color: #cbd5e0; margin: 5px 0; font-size: 12px;">
-                                    Contact Management System
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
+  async sendPartnershipNotification(partnershipData) {
+    return this.deliver({
+      to: this.notifyEmail,
+      replyTo: partnershipData.contactEmail,
+      subject: `New partnership request from ${normalizeText(partnershipData.companyName, "a company")}`,
+      category: "partnership_admin",
+      html: this.buildEmail({
+        title: "New Partnership Request",
+        preheader: "A company submitted a partnership request.",
+        intro: "A new partnership request has been submitted through the website.",
+        sections: [
+          {
+            title: "Company details",
+            rows: [
+              { label: "Company", value: partnershipData.companyName },
+              { label: "Contact person", value: partnershipData.contactPerson },
+              { label: "Contact email", value: partnershipData.contactEmail },
+              { label: "Website", value: partnershipData.website },
+              { label: "Received", value: this.formatDate() }
+            ]
+          },
+          { title: "Partnership brief", text: normalizeText(partnershipData.description, "No description provided") }
+        ],
+        cta: { label: "Reply to request", href: `mailto:${encodeURIComponent(partnershipData.contactEmail || "")}` }
+      })
+    });
+  }
 
-            await this.sendEmail(mailOptions);
-            console.log("? Contact notification email sent to:", adminEmail);
-        } catch (error) {
-            console.error("? Error sending contact notification email:", error);
-            throw error;
-        }
+  async sendPartnershipConfirmation(partnershipData) {
+    return this.deliver({
+      to: partnershipData.contactEmail,
+      subject: "Your partnership request was received",
+      category: "partnership_confirmation",
+      html: this.buildEmail({
+        title: "Partnership Request Received",
+        preheader: "Thank you for your interest in partnering with SAPTech Uganda.",
+        greeting: `Hello ${normalizeText(partnershipData.contactPerson, "there")}`,
+        intro: "Thank you for your interest in working with SAPTech Uganda. We have received your partnership request and our team will review it carefully.",
+        sections: [
+          {
+            title: "Request summary",
+            rows: [
+              { label: "Company", value: partnershipData.companyName },
+              { label: "Contact person", value: partnershipData.contactPerson },
+              { label: "Contact email", value: partnershipData.contactEmail },
+              { label: "Website", value: partnershipData.website },
+              { label: "Submitted", value: this.formatDate() }
+            ]
+          },
+          { title: "Your brief", text: normalizeText(partnershipData.description, "No description provided") },
+          { title: "Next steps", list: ["We will review the fit and opportunity.", "Our team may contact you for more details.", "Approved partnership requests move into planning and onboarding."] }
+        ],
+        footerNote: "You are receiving this confirmation because a partnership request was submitted with this email address."
+      })
+    });
+  }
+
+  async sendPartnershipStatusUpdate(partnershipData) {
+    return this.deliver({
+      to: partnershipData.contactEmail,
+      subject: `Partnership request update: ${normalizeStatus(partnershipData.status)}`,
+      category: "partnership_status",
+      html: this.buildEmail({
+        tone: partnershipData.status === "rejected" ? "warning" : partnershipData.status === "approved" ? "success" : "default",
+        title: "Partnership Request Update",
+        preheader: "There is an update on your partnership request.",
+        greeting: `Hello ${normalizeText(partnershipData.contactPerson, "there")}`,
+        intro: "There is an update on the partnership request you submitted to SAPTech Uganda.",
+        sections: [
+          {
+            title: "Status details",
+            rows: [
+              { label: "Company", value: partnershipData.companyName },
+              { label: "Status", value: normalizeStatus(partnershipData.status) },
+              { label: "Updated", value: this.formatDate() }
+            ]
+          },
+          { title: "Team notes", text: normalizeText(partnershipData.adminNotes, "No additional notes were added.") }
+        ],
+        cta: { label: "Contact partnership team", href: `mailto:${this.replyToEmail}` }
+      })
+    });
+  }
+
+  async sendNewsletterWelcome(subscriberData) {
+    return this.deliver({
+      to: subscriberData.email,
+      subject: "Welcome to SAPTech Uganda updates",
+      category: "newsletter",
+      html: this.buildEmail({
+        title: "Welcome to SAPTech Updates",
+        preheader: "You are now subscribed to SAPTech Uganda updates.",
+        greeting: "Welcome",
+        intro: "Thank you for subscribing. You will receive selected updates about technology services, products, events, awards, and opportunities from SAPTech Uganda.",
+        sections: [
+          { title: "Subscription details", rows: [{ label: "Email", value: subscriberData.email }, { label: "Subscribed", value: this.formatDate() }] },
+          { title: "What to expect", list: ["Product and service updates.", "Event and awards announcements.", "Career and partnership opportunities.", "Useful technology insights from our team."] }
+        ],
+        cta: { label: "Visit SAPTech Uganda", href: this.brand.websiteUrl },
+        footerNote: "You can unsubscribe from newsletter communications from the website."
+      })
+    });
+  }
+
+  async sendNewsletterUnsubscribeConfirmation(subscriberData) {
+    return this.deliver({
+      to: subscriberData.email,
+      subject: "You have been unsubscribed from SAPTech Uganda updates",
+      category: "newsletter_unsubscribe",
+      html: this.buildEmail({
+        tone: "warning",
+        title: "Newsletter Unsubscribed",
+        preheader: "You have been unsubscribed from SAPTech Uganda updates.",
+        greeting: "Hello",
+        intro: "You have been unsubscribed from SAPTech Uganda newsletter updates. You will no longer receive newsletter communications at this email address.",
+        sections: [
+          { title: "Subscription details", rows: [{ label: "Email", value: subscriberData.email }, { label: "Unsubscribed", value: this.formatDate(subscriberData.unsubscribedAt || new Date()) }] },
+          { title: "Changed your mind?", text: "You can subscribe again from the website at any time." }
+        ],
+        cta: { label: "Visit SAPTech Uganda", href: this.brand.websiteUrl }
+      })
+    });
+  }
+
+  async sendUserSignupNotification(userData) {
+    return this.deliver({
+      to: userData.email,
+      subject: "Welcome to your SAPTech Uganda account",
+      category: "account_welcome",
+      html: this.buildEmail({
+        title: "Account Created",
+        preheader: "Your SAPTech Uganda account is ready.",
+        greeting: `Hello ${normalizeText(userData.name, "there")}`,
+        intro: "Your account has been created successfully. You can now access your profile and use SAPTech Uganda services more smoothly.",
+        sections: [
+          { title: "Account details", rows: [{ label: "Name", value: userData.name }, { label: "Email", value: userData.email }, { label: "Created", value: this.formatDate() }] },
+          { title: "Security note", list: ["Use a strong password.", "Do not share your account credentials.", "Contact us immediately if you notice suspicious activity."] }
+        ],
+        cta: { label: "Open your account", href: `${this.brand.websiteUrl}/account` }
+      })
+    });
+  }
+
+  async sendUserWelcome(userData) {
+    return this.sendUserSignupNotification(userData);
+  }
+
+  async sendAdminUserSignupAlert(userData) {
+    return this.deliver({
+      to: this.notifyEmail,
+      subject: `New user account: ${normalizeText(userData.name, userData.email)}`,
+      category: "account_admin",
+      html: this.buildEmail({
+        title: "New User Registration",
+        preheader: "A new user registered on the website.",
+        intro: "A new user account was created on SAPTech Uganda.",
+        sections: [
+          { title: "User details", rows: [{ label: "Name", value: userData.name }, { label: "Email", value: userData.email }, { label: "User ID", value: userData.id }, { label: "Registered", value: this.formatDate() }] }
+        ],
+        cta: { label: "Open admin dashboard", href: `${this.brand.websiteUrl}/admin` }
+      })
+    });
+  }
+
+  async sendAdminAlert(alertData) {
+    return this.deliver({
+      to: this.notifyEmail,
+      subject: alertData.subject || "SAPTech Uganda admin alert",
+      category: "admin_alert",
+      html: this.buildEmail({
+        title: alertData.title || "Admin Alert",
+        preheader: alertData.message || "A system alert was generated.",
+        intro: alertData.message || "A system alert was generated.",
+        sections: [{ title: "Alert details", rows: alertData.rows || [], text: alertData.details }]
+      })
+    });
+  }
+
+  async sendProductInquiryToAdmin(inquiryData) {
+    return this.deliver({
+      to: this.notifyEmail,
+      replyTo: inquiryData.customerEmail,
+      subject: `Product inquiry: ${normalizeText(inquiryData.productName, "Product")}`,
+      category: "product_inquiry_admin",
+      html: this.buildEmail({
+        title: "New Product Inquiry",
+        preheader: "A customer asked about a product.",
+        intro: "A product inquiry has been submitted on the website.",
+        sections: [
+          {
+            title: "Inquiry details",
+            rows: [
+              { label: "Product", value: inquiryData.productName },
+              { label: "Category", value: inquiryData.productCategory },
+              { label: "Customer email", value: inquiryData.customerEmail },
+              { label: "Customer phone", value: inquiryData.customerPhone },
+              { label: "Preferred contact", value: inquiryData.preferredContact },
+              { label: "Received", value: this.formatDate(inquiryData.inquiryDate) }
+            ]
+          },
+          { title: "Customer message", text: normalizeText(inquiryData.message, "No message provided") }
+        ],
+        cta: { label: "Reply to customer", href: `mailto:${encodeURIComponent(inquiryData.customerEmail || "")}` }
+      })
+    });
+  }
+
+  async sendProductInquiryConfirmation(inquiryData) {
+    return this.deliver({
+      to: inquiryData.customerEmail,
+      subject: `We received your inquiry about ${normalizeText(inquiryData.productName, "our product")}`,
+      category: "product_inquiry_confirmation",
+      html: this.buildEmail({
+        title: "Product Inquiry Received",
+        preheader: "Thank you for your product inquiry.",
+        greeting: "Hello",
+        intro: "Thank you for your interest in our products. Our team has received your inquiry and will follow up with the right details.",
+        sections: [
+          { title: "Inquiry summary", rows: [{ label: "Product", value: inquiryData.productName }, { label: "Email", value: inquiryData.customerEmail }, { label: "Submitted", value: this.formatDate() }] },
+          { title: "Your message", text: normalizeText(inquiryData.message, "No message provided") },
+          { title: "Next steps", list: ["We will review your request.", "A team member will contact you with product details.", "You can reply to this email if you need to add more information."] }
+        ],
+        cta: { label: "View products", href: `${this.brand.websiteUrl}/products` }
+      })
+    });
+  }
+
+  async sendProductInquiryStatusUpdate(inquiryData) {
+    return this.deliver({
+      to: inquiryData.customerEmail,
+      subject: `Product inquiry update: ${normalizeStatus(inquiryData.status)}`,
+      category: "product_inquiry_status",
+      html: this.buildEmail({
+        title: "Product Inquiry Update",
+        preheader: "Your product inquiry status has changed.",
+        greeting: "Hello",
+        intro: "There is an update on your product inquiry with SAPTech Uganda.",
+        sections: [
+          {
+            title: "Status update",
+            rows: [
+              { label: "Product", value: inquiryData.productName },
+              { label: "Status", value: normalizeStatus(inquiryData.status) },
+              { label: "Updated", value: this.formatDate() }
+            ]
+          },
+          { title: "Team notes", text: normalizeText(inquiryData.adminNotes, "No additional notes were added.") }
+        ],
+        cta: { label: "Contact SAPTech Uganda", href: `mailto:${this.replyToEmail}` }
+      })
+    });
+  }
+
+  formatCartItems(items = []) {
+    if (!items.length) return "No items listed.";
+    return items.map((item, index) => {
+      const name = item.productName || item.name || "Product";
+      const quantity = item.quantity || 1;
+      const price = item.price ? `, price: ${item.price}` : "";
+      return `${index + 1}. ${name} - quantity: ${quantity}${price}`;
+    }).join("\n");
+  }
+
+  async sendCartInquiryToAdmin({ items, customerName, customerEmail, customerPhone, preferredContact, message }) {
+    return this.deliver({
+      to: this.notifyEmail,
+      replyTo: customerEmail,
+      subject: `Cart inquiry from ${normalizeText(customerName, customerEmail)}`,
+      category: "cart_inquiry_admin",
+      html: this.buildEmail({
+        title: "New Cart Inquiry",
+        preheader: "A customer submitted a multi-product inquiry.",
+        intro: "A customer submitted a cart inquiry with multiple products.",
+        sections: [
+          {
+            title: "Customer details",
+            rows: [
+              { label: "Name", value: customerName },
+              { label: "Email", value: customerEmail },
+              { label: "Phone", value: customerPhone },
+              { label: "Preferred contact", value: preferredContact },
+              { label: "Received", value: this.formatDate() }
+            ]
+          },
+          { title: "Requested products", text: this.formatCartItems(items) },
+          { title: "Customer message", text: normalizeText(message, "No message provided") }
+        ],
+        cta: { label: "Reply to customer", href: `mailto:${encodeURIComponent(customerEmail || "")}` }
+      })
+    });
+  }
+
+  async sendCartInquiryConfirmation({ customerEmail, customerName, items }) {
+    return this.deliver({
+      to: customerEmail,
+      subject: "We received your product enquiry",
+      category: "cart_inquiry_confirmation",
+      html: this.buildEmail({
+        title: "Product Enquiry Received",
+        preheader: "Your product enquiry was received.",
+        greeting: `Hello ${normalizeText(customerName, "there")}`,
+        intro: "Thank you for sending your product enquiry. We have received your selected items and will contact you with availability, pricing, and next steps.",
+        sections: [
+          { title: "Requested products", text: this.formatCartItems(items) },
+          { title: "Next steps", list: ["Our team will review your selected products.", "We will confirm availability and any installation requirements.", "We will contact you using your provided email or phone number."] }
+        ],
+        cta: { label: "View more products", href: `${this.brand.websiteUrl}/products` }
+      })
+    });
+  }
+
+  async sendServiceQuoteToAdmin(quoteData) {
+    return this.deliver({
+      to: this.notifyEmail,
+      replyTo: quoteData.customerEmail,
+      subject: `Service quote request: ${normalizeText(quoteData.serviceName, "Service")}`,
+      category: "service_quote_admin",
+      html: this.buildEmail({
+        title: "New Service Quote Request",
+        preheader: "A customer requested a service quote.",
+        intro: "A new service quote request has been submitted through the website.",
+        sections: [
+          {
+            title: "Quote details",
+            rows: [
+              { label: "Service", value: quoteData.serviceName },
+              { label: "Category", value: quoteData.serviceCategory },
+              { label: "Customer", value: quoteData.customerName },
+              { label: "Email", value: quoteData.customerEmail },
+              { label: "Phone", value: quoteData.customerPhone },
+              { label: "Company", value: quoteData.companyName },
+              { label: "Preferred contact", value: quoteData.preferredContact },
+              { label: "Budget", value: quoteData.budget },
+              { label: "Timeline", value: quoteData.timeline },
+              { label: "Received", value: this.formatDate(quoteData.quoteDate) }
+            ]
+          },
+          { title: "Project details", text: normalizeText(quoteData.projectDetails, "No project details provided") }
+        ],
+        cta: { label: "Reply to customer", href: `mailto:${encodeURIComponent(quoteData.customerEmail || "")}` }
+      })
+    });
+  }
+
+  async sendServiceQuoteConfirmation(quoteData) {
+    return this.deliver({
+      to: quoteData.customerEmail,
+      subject: `We received your quote request for ${normalizeText(quoteData.serviceName, "our service")}`,
+      category: "service_quote_confirmation",
+      html: this.buildEmail({
+        title: "Quote Request Received",
+        preheader: "Your service quote request was received.",
+        greeting: `Hello ${normalizeText(quoteData.customerName, "there")}`,
+        intro: "Thank you for requesting a quote from SAPTech Uganda. Our team will review your project and contact you with the next steps.",
+        sections: [
+          { title: "Request summary", rows: [{ label: "Service", value: quoteData.serviceName }, { label: "Email", value: quoteData.customerEmail }, { label: "Submitted", value: this.formatDate() }] },
+          { title: "Project details", text: normalizeText(quoteData.projectDetails, "No project details provided") },
+          { title: "Next steps", list: ["We will review your requirements.", "We may contact you for clarification.", "You will receive guidance on scope, timeline, and pricing."] }
+        ],
+        cta: { label: "View services", href: `${this.brand.websiteUrl}/services` }
+      })
+    });
+  }
+
+  async sendServiceQuoteStatusUpdate(quoteData) {
+    return this.deliver({
+      to: quoteData.customerEmail,
+      subject: `Service quote update: ${normalizeStatus(quoteData.status)}`,
+      category: "service_quote_status",
+      html: this.buildEmail({
+        title: "Service Quote Update",
+        preheader: "Your service quote status has changed.",
+        greeting: `Hello ${normalizeText(quoteData.customerName, "there")}`,
+        intro: "There is an update on your service quote request with SAPTech Uganda.",
+        sections: [
+          {
+            title: "Status update",
+            rows: [
+              { label: "Service", value: quoteData.serviceName },
+              { label: "Status", value: normalizeStatus(quoteData.status) },
+              { label: "Budget", value: quoteData.budget },
+              { label: "Timeline", value: quoteData.timeline },
+              { label: "Updated", value: this.formatDate() }
+            ]
+          },
+          { title: "Team notes", text: normalizeText(quoteData.adminNotes, "No additional notes were added.") }
+        ],
+        cta: { label: "Contact SAPTech Uganda", href: `mailto:${this.replyToEmail}` }
+      })
+    });
+  }
+
+  async queueNominationSubmissionEmail(nominationData) {
+    const results = await Promise.allSettled([
+      this.sendNominationSubmittedUser(nominationData),
+      this.sendNominationSubmittedAdmin(nominationData)
+    ]);
+
+    const failed = results.find((result) => result.status === "rejected");
+    if (failed) throw failed.reason;
+    return true;
+  }
+
+  async sendNominationSubmittedUser(nominationData) {
+    return this.deliver({
+      to: nominationData.nominatorEmail,
+      fromName: this.brand.awardsName,
+      subject: "Your SAPTech Awards 2026 nomination was received",
+      category: "awards_nomination_confirmation",
+      html: this.buildEmail({
+        brandName: this.brand.awardsName,
+        tone: "awards",
+        title: "Nomination Received",
+        preheader: "Your SAPTech Awards 2026 nomination has been received.",
+        greeting: `Hello ${normalizeText(nominationData.nominatorName, "there")}`,
+        intro: "Thank you for submitting a nomination for SAPTech Awards 2026. The awards team will review it before publication or further consideration.",
+        sections: [
+          {
+            title: "Nomination summary",
+            rows: [
+              { label: "Nominee", value: nominationData.nomineeName },
+              { label: "Category", value: nominationData.categoryName },
+              { label: "Nominator", value: nominationData.nominatorName },
+              { label: "Submitted", value: this.formatDate() }
+            ]
+          },
+          { title: "Review process", list: ["The awards team reviews nominations for completeness.", "Approved nominations may be published for voting or recognition.", "You will receive email updates when the status changes."] }
+        ],
+        cta: { label: "View awards", href: `${this.brand.websiteUrl}/awards` }
+      })
+    });
+  }
+
+  async sendNominationSubmittedAdmin(nominationData) {
+    return this.deliver({
+      to: this.notifyEmail,
+      replyTo: nominationData.nominatorEmail,
+      fromName: this.brand.awardsName,
+      subject: `New SAPTech Awards 2026 nomination: ${normalizeText(nominationData.nomineeName, "Nominee")}`,
+      category: "awards_nomination_admin",
+      html: this.buildEmail({
+        brandName: this.brand.awardsName,
+        tone: "awards",
+        title: "New Awards Nomination",
+        preheader: "A new SAPTech Awards 2026 nomination was submitted.",
+        intro: "A new nomination needs review in the awards admin dashboard.",
+        sections: [
+          {
+            title: "Nomination details",
+            rows: [
+              { label: "Nominee", value: nominationData.nomineeName },
+              { label: "Category", value: nominationData.categoryName },
+              { label: "Nominator", value: nominationData.nominatorName },
+              { label: "Nominator email", value: nominationData.nominatorEmail },
+              { label: "Received", value: this.formatDate() }
+            ]
+          }
+        ],
+        cta: { label: "Review nomination", href: `${this.brand.websiteUrl}/admin` }
+      })
+    });
+  }
+
+  async sendNominationStatusUpdate(nominationData) {
+    const certificateHref = nominationData.certificateFile
+      ? `${this.brand.websiteUrl}/awards`
+      : undefined;
+
+    return this.deliver({
+      to: nominationData.nominatorEmail,
+      fromName: this.brand.awardsName,
+      subject: `SAPTech Awards 2026 nomination update: ${normalizeStatus(nominationData.status)}`,
+      category: "awards_status",
+      html: this.buildEmail({
+        brandName: this.brand.awardsName,
+        tone: nominationData.status === "rejected" ? "warning" : "awards",
+        title: "Nomination Status Update",
+        preheader: "Your SAPTech Awards 2026 nomination status has changed.",
+        greeting: `Hello ${normalizeText(nominationData.nominatorName, "there")}`,
+        intro: "There is an update on your SAPTech Awards 2026 nomination.",
+        sections: [
+          {
+            title: "Status details",
+            rows: [
+              { label: "Nominee", value: nominationData.nomineeName },
+              { label: "Category", value: nominationData.categoryName },
+              { label: "Status", value: normalizeStatus(nominationData.status) },
+              { label: "Certificate", value: nominationData.certificateFile ? "Generated" : "Not generated yet" },
+              { label: "Updated", value: this.formatDate() }
+            ]
+          },
+          { title: "Awards team notes", text: normalizeText(nominationData.adminNotes, "No additional notes were added.") }
+        ],
+        cta: certificateHref ? { label: "View awards", href: certificateHref } : { label: "Visit awards page", href: `${this.brand.websiteUrl}/awards` }
+      })
+    });
+  }
+
+  async sendNominationDeletedNotification(nominationData) {
+    return this.deliver({
+      to: nominationData.nominatorEmail,
+      fromName: this.brand.awardsName,
+      subject: "SAPTech Awards 2026 nomination update",
+      category: "awards_deleted",
+      html: this.buildEmail({
+        brandName: this.brand.awardsName,
+        tone: "warning",
+        title: "Nomination Removed",
+        preheader: "A SAPTech Awards 2026 nomination was removed.",
+        greeting: `Hello ${normalizeText(nominationData.nominatorName, "there")}`,
+        intro: "We are writing to inform you that a nomination you submitted has been removed from SAPTech Awards 2026 records.",
+        sections: [
+          {
+            title: "Nomination details",
+            rows: [
+              { label: "Nominee", value: nominationData.nomineeName },
+              { label: "Category", value: nominationData.categoryName },
+              { label: "Updated", value: this.formatDate() }
+            ]
+          },
+          { title: "Reason or notes", text: normalizeText(nominationData.adminNotes, "No specific reason was provided.") }
+        ],
+        cta: { label: "Contact awards team", href: `mailto:${this.replyToEmail}` }
+      })
+    });
+  }
+
+  async queueJobApplicationEmail(applicationData) {
+    const results = await Promise.allSettled([
+      this.sendJobApplicationToAdmin(applicationData),
+      this.sendJobApplicationConfirmation(applicationData)
+    ]);
+
+    const failed = results.find((result) => result.status === "rejected");
+    if (failed) throw failed.reason;
+    return true;
+  }
+
+  async sendJobApplicationToAdmin(applicationData) {
+    return this.deliver({
+      to: this.notifyEmail,
+      replyTo: applicationData.applicantEmail,
+      subject: `New job application: ${normalizeText(applicationData.jobTitle, "Open role")}`,
+      category: "job_application_admin",
+      html: this.buildEmail({
+        title: "New Job Application",
+        preheader: "A candidate submitted a job application.",
+        intro: "A new job application was submitted through the careers page.",
+        sections: [
+          {
+            title: "Application details",
+            rows: [
+              { label: "Role", value: applicationData.jobTitle },
+              { label: "Applicant", value: applicationData.applicantName },
+              { label: "Email", value: applicationData.applicantEmail },
+              { label: "Phone", value: applicationData.applicantPhone },
+              { label: "Resume URL", value: applicationData.resumeUrl },
+              { label: "Received", value: this.formatDate() }
+            ]
+          },
+          { title: "Cover letter", text: normalizeText(applicationData.coverLetter, "No cover letter provided") }
+        ],
+        cta: { label: "Reply to applicant", href: `mailto:${encodeURIComponent(applicationData.applicantEmail || "")}` }
+      })
+    });
+  }
+
+  async sendJobApplicationConfirmation(applicationData) {
+    return this.deliver({
+      to: applicationData.applicantEmail,
+      subject: `Application received for ${normalizeText(applicationData.jobTitle, "your role")}`,
+      category: "job_application_confirmation",
+      html: this.buildEmail({
+        title: "Application Received",
+        preheader: "Your job application was received.",
+        greeting: `Hello ${normalizeText(applicationData.applicantName, "there")}`,
+        intro: "Thank you for applying to SAPTech Uganda. Your application has been received and will be reviewed by our team.",
+        sections: [
+          {
+            title: "Application summary",
+            rows: [
+              { label: "Role", value: applicationData.jobTitle },
+              { label: "Applicant", value: applicationData.applicantName },
+              { label: "Email", value: applicationData.applicantEmail },
+              { label: "Submitted", value: this.formatDate() }
+            ]
+          },
+          { title: "What happens next", list: ["We will review your application.", "Shortlisted candidates will be contacted for the next step.", "You can reply to this email if you need to update your information."] }
+        ],
+        cta: { label: "View careers", href: `${this.brand.websiteUrl}/careers` }
+      })
+    });
+  }
+
+  async sendJobApplicationStatusUpdate(applicationData) {
+    return this.deliver({
+      to: applicationData.applicantEmail,
+      subject: `Application update: ${normalizeStatus(applicationData.status)}`,
+      category: "job_application_status",
+      html: this.buildEmail({
+        tone: applicationData.status === "rejected" ? "warning" : "default",
+        title: "Application Status Update",
+        preheader: "Your job application status has changed.",
+        greeting: `Hello ${normalizeText(applicationData.applicantName, "there")}`,
+        intro: "There is an update on your job application with SAPTech Uganda.",
+        sections: [
+          {
+            title: "Status details",
+            rows: [
+              { label: "Role", value: applicationData.jobTitle },
+              { label: "Status", value: normalizeStatus(applicationData.status) },
+              { label: "Updated", value: this.formatDate() }
+            ]
+          },
+          { title: "Recruitment notes", text: normalizeText(applicationData.adminNotes, "No additional notes were added.") }
+        ],
+        cta: { label: "Contact HR", href: `mailto:${this.replyToEmail}` }
+      })
+    });
+  }
+
+  async sendCertificateEmail(certificateData) {
+    const recipientEmail = certificateData.recipientEmail || certificateData.email || certificateData.nominatorEmail;
+    const recipientName = certificateData.recipientName || certificateData.nomineeName || certificateData.name || "Recipient";
+    const certificateFile = certificateData.certificateFile || certificateData.filename;
+    const certificatePath = certificateData.certificatePath
+      || (certificateFile ? path.join(__dirname, "../../uploads/certificates", certificateFile) : "");
+
+    const attachments = [];
+    if (certificatePath && fs.existsSync(certificatePath)) {
+      attachments.push({
+        filename: certificateFile || path.basename(certificatePath),
+        path: certificatePath,
+        contentType: "application/pdf"
+      });
     }
 
-    async sendPartnershipNotification(partnershipData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping notification");
-            return;
-        }
-        
-        try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            const adminEmail = process.env.ADMIN_EMAIL || emailUser;
-            
-            const mailOptions = {
-                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
-                to: adminEmail,
-                replyTo: partnershipData.contactEmail,
-                subject: `?? New Partnership Request - ${partnershipData.companyName}`,
-                html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 40px 20px; border-radius: 15px;">
-                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <div style="text-align: center; margin-bottom: 35px;">
-                                <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
-                                    <span style="font-size: 35px;">??</span>
-                                </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">New Partnership Request</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">A company wants to partner with you</p>
-                            </div>
-
-                            <!-- Company Info -->
-                            <div style="background: linear-gradient(135deg, #8b5cf615 0%, #7c3aed15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #8b5cf6;">
-                                <h2 style="color: #8b5cf6; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Company Details</h2>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Company:</strong> ${partnershipData.companyName}
-                                </p>
-                                ${partnershipData.website ? `
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Website:</strong> <a href="${partnershipData.website}" style="color: #8b5cf6; text-decoration: none;">${partnershipData.website}</a>
-                                </p>
-                                ` : ''}
-                            </div>
-
-                            <!-- Contact Person Info -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Contact Person</h2>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Name:</strong> ${partnershipData.contactPerson}
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Email:</strong> <a href="mailto:${partnershipData.contactEmail}" style="color: #8b5cf6; text-decoration: none;">${partnershipData.contactEmail}</a>
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Date:</strong> ${new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}
-                                </p>
-                            </div>
-
-                            <!-- Partnership Description -->
-                            <div style="background: #fffbeb; padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #f59e0b;">
-                                <h2 style="color: #f59e0b; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">? Partnership Details</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px; white-space: pre-wrap;">${partnershipData.description}</p>
-                            </div>
-
-                            <!-- Action Button -->
-                            <div style="text-align: center; margin-top: 35px;">
-                                <a href="mailto:${partnershipData.contactEmail}" style="display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
-                                    ?? Reply to ${partnershipData.contactPerson}
-                                </a>
-                            </div>
-
-                            <!-- Footer -->
-                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
-                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    This is an automated notification from SAPTech Uganda Partnership Portal
-                                </p>
-                                <p style="color: #cbd5e0; margin: 5px 0; font-size: 12px;">
-                                    Partnership Management System
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.sendEmail(mailOptions);
-            console.log("? Partnership notification email sent to:", adminEmail);
-        } catch (error) {
-            console.error("? Error sending partnership notification email:", error);
-            throw error;
-        }
-    }
-
-    async sendNewsletterWelcome(subscriberData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping newsletter welcome");
-            return;
-        }
-        
-        try {
-            const mailOptions = {
-                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
-                to: subscriberData.email,
-                subject: "?? Welcome to SAPTech Uganda Newsletter!",
-                html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 20px; border-radius: 15px;">
-                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <div style="text-align: center; margin-bottom: 35px;">
-                                <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
-                                    <span style="font-size: 35px;">??</span>
-                                </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Welcome to SAPTech Uganda!</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">Thank you for joining our community</p>
-                            </div>
-
-                            <!-- Welcome Message -->
-                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #3b82f6; text-align: center;">
-                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">You're Now Part of Something Special! ?</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
-                                    We're thrilled to have you on board! Get ready to receive exclusive updates, industry insights, and valuable content delivered straight to your inbox.
-                                </p>
-                            </div>
-
-                            <!-- What You'll Receive -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">?? What You'll Receive</h2>
-                                
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="font-size: 24px; margin-right: 12px;">??</span>
-                                        <div>
-                                            <p style="margin: 0; color: #2d3748; font-weight: 600; font-size: 15px;">Latest Technology Solutions</p>
-                                            <p style="margin: 5px 0 0 0; color: #718096; font-size: 14px;">Stay updated with cutting-edge tech and innovations</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="font-size: 24px; margin-right: 12px;">??</span>
-                                        <div>
-                                            <p style="margin: 0; color: #2d3748; font-weight: 600; font-size: 15px;">Industry Insights & Tips</p>
-                                            <p style="margin: 5px 0 0 0; color: #718096; font-size: 14px;">Expert advice to help grow your business</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="font-size: 24px; margin-right: 12px;">??</span>
-                                        <div>
-                                            <p style="margin: 0; color: #2d3748; font-weight: 600; font-size: 15px;">New Services & Products</p>
-                                            <p style="margin: 5px 0 0 0; color: #718096; font-size: 14px;">Be the first to know about our launches</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="font-size: 24px; margin-right: 12px;">??</span>
-                                        <div>
-                                            <p style="margin: 0; color: #2d3748; font-weight: 600; font-size: 15px;">Success Stories & Case Studies</p>
-                                            <p style="margin: 5px 0 0 0; color: #718096; font-size: 14px;">Learn from real-world implementations</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Special Offer -->
-                            <div style="background: linear-gradient(135deg, #10b98115 0%, #05966915 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #10b981; text-align: center;">
-                                <h2 style="color: #10b981; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Welcome Gift</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
-                                    As a thank you, enjoy <strong>10% off</strong> your first service or product purchase! Use code <strong style="background: #10b98120; padding: 4px 12px; border-radius: 6px; color: #10b981;">WELCOME10</strong> at checkout.
-                                </p>
-                            </div>
-
-                            <!-- Contact Info -->
-                            <div style="background: linear-gradient(135deg, #f59e0b15 0%, #d9770615 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #f59e0b; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Get in Touch</h2>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Phone:</strong> <a href="tel:+256706564628" style="color: #3b82f6; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>WhatsApp:</strong> <a href="https://wa.me/256706564628" style="color: #25D366; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #718096; margin-top: 15px; font-size: 14px; line-height: 1.6;">
-                                    Have questions or need assistance? We're here to help!
-                                </p>
-                            </div>
-
-                            <!-- CTA Button -->
-                            <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://saptechug.com" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
-                                    ?? Visit Our Website
-                                </a>
-                            </div>
-
-                            <!-- Social Media -->
-                            <div style="text-align: center; margin-top: 30px; padding-top: 25px; border-top: 2px solid #e2e8f0;">
-                                <p style="color: #718096; margin: 0 0 15px 0; font-size: 14px;">Follow us on social media</p>
-                                <div style="display: flex; justify-content: center; gap: 15px;">
-                                    <a href="#" style="color: #3b82f6; text-decoration: none; font-size: 24px;">??</a>
-                                    <a href="#" style="color: #1DA1F2; text-decoration: none; font-size: 24px;">??</a>
-                                    <a href="#" style="color: #0A66C2; text-decoration: none; font-size: 24px;">??</a>
-                                    <a href="#" style="color: #E4405F; text-decoration: none; font-size: 24px;">??</a>
-                                </div>
-                            </div>
-
-                            <!-- Footer -->
-                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
-                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAPTech Uganda
-                                </p>
-                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    Innovative Solutions for Your Business
-                                </p>
-                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
-                                    You're receiving this because you subscribed to our newsletter at saptechug.com
-                                </p>
-                                <p style="color: #cbd5e0; margin: 5px 0; font-size: 12px;">
-                                    <a href="https://saptechug.com/unsubscribe" style="color: #3b82f6; text-decoration: none;">Unsubscribe</a> |
-                                    <a href="https://saptechug.com/privacy" style="color: #3b82f6; text-decoration: none;">Privacy Policy</a>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.sendEmail(mailOptions);
-            console.log("? Newsletter welcome email sent to:", subscriberData.email);
-        } catch (error) {
-            console.error("? Error sending newsletter welcome email:", error);
-            throw error;
-        }
-    }
-
-    async sendUserWelcome(userData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping user welcome");
-            return;
-        }
-        
-        try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            
-            const mailOptions = {
-                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
-                replyTo: emailUser, // Replies go to your Gmail
-                to: userData.email,
-                subject: "Welcome to SAPTech Uganda! Your account is ready ??",
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <h2 style="color: #3b82f6;">Welcome ${userData.name}! ??</h2>
-                        <p>Your SAPTech Uganda account has been successfully created.</p>
-                        <p><strong>Account Details:</strong></p>
-                        <ul>
-                            <li>Name: ${userData.name}</li>
-                            <li>Email: ${userData.email}</li>
-                            <li>Registration Date: ${new Date().toLocaleDateString()}</li>
-                        </ul>
-                        <p>You can now:</p>
-                        <ul>
-                            <li>? Access your personalized dashboard</li>
-                            <li>? Submit partnership requests</li>
-                            <li>? Connect with our team</li>
-                            <li>? Receive priority support</li>
-                        </ul>
-                        <p>Thank you for choosing SAPTech Uganda!</p>
-                        <p>Best regards,<br>The SAPTech Uganda Team</p>
-                        <hr style="margin: 30px 0;">
-                        <div style="background: #f8fafc; padding: 15px; border-radius: 5px;">
-                            <h4 style="color: #1f2937; margin: 0 0 10px 0;">?? Need Help? Contact Us</h4>
-                            <p style="margin: 5px 0;"><strong>Phone:</strong> +256706564628</p>
-                            <p style="margin: 5px 0;"><strong>Email:</strong> ${emailUser}</p>
-                            <p style="margin: 10px 0 0 0; font-size: 14px; color: #666;">Our team is here to assist you!</p>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.transporter.sendMail(mailOptions);
-            console.log("? User welcome email sent to:", userData.email);
-        } catch (error) {
-            console.error("Error sending user welcome email:", error);
-        }
-    }
-
-    async sendAdminAlert(alertData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping admin alert");
-            return;
-        }
-        
-        try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            const notifyEmail = process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || emailUser;
-            
-            const mailOptions = {
-                from: '"SAPTech Uganda System" <saptechnologies256@gmail.com>',
-                replyTo: emailUser, // Replies go to saptechnologies256@gmail.com
-                to: notifyEmail,
-                subject: `?? SAPTech Uganda Alert: ${alertData.type}`,
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <h2 style="color: #ef4444;">?? System Alert</h2>
-                        <p><strong>Alert Type:</strong> ${alertData.type}</p>
-                        <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
-                        <p><strong>Message:</strong></p>
-                        <div style="background: #f3f4f6; padding: 15px; border-radius: 5px;">
-                            ${alertData.message}
-                        </div>
-                        ${alertData.details ? `
-                            <p><strong>Details:</strong></p>
-                            <pre style="background: #f9fafb; padding: 10px; border-radius: 5px; overflow-x: auto;">
-${JSON.stringify(alertData.details, null, 2)}
-                            </pre>
-                        ` : ''}
-                        <p>Please review and take appropriate action if needed.</p>
-                        <hr style="margin: 30px 0;">
-                        <div style="background: #f8fafc; padding: 15px; border-radius: 5px;">
-                            <h4 style="color: #1f2937; margin: 0 0 10px 0;">?? SAPTech Uganda Contact</h4>
-                            <p style="margin: 5px 0;"><strong>Phone:</strong> +256706564628</p>
-                            <p style="margin: 5px 0;"><strong>Admin Email:</strong> ${notifyEmail}</p>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.transporter.sendMail(mailOptions);
-            console.log("? Admin alert email sent to:", notifyEmail);
-        } catch (error) {
-            console.error("Error sending admin alert email:", error);
-        }
-    }
-
-    async sendContactConfirmation(contactData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping contact confirmation");
-            return;
-        }
-        
-        try {
-            const mailOptions = {
-                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
-                to: contactData.email,
-                subject: "? We Received Your Message - SAPTech Uganda",
-                html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 20px; border-radius: 15px;">
-                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <div style="text-align: center; margin-bottom: 35px;">
-                                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
-                                    <span style="font-size: 35px;">?</span>
-                                </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Thank You, ${contactData.name}!</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">We've received your message</p>
-                            </div>
-
-                            <!-- Success Message -->
-                            <div style="background: linear-gradient(135deg, #10b98115 0%, #05966915 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #10b981; text-align: center;">
-                                <h2 style="color: #10b981; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Your Message Has Been Received!</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
-                                    Thank you for reaching out to us. Our team will review your message and get back to you within <strong>24 hours</strong>.
-                                </p>
-                            </div>
-
-                            <!-- Message Summary -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Your Message</h2>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>From:</strong> ${contactData.name}
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Email:</strong> ${contactData.email}
-                                </p>
-                                <div style="background: white; padding: 20px; border-radius: 8px; margin-top: 15px; border-left: 3px solid #10b981;">
-                                    <p style="color: #4a5568; line-height: 1.8; margin: 0; font-size: 14px; white-space: pre-wrap; font-style: italic;">"${contactData.message}"</p>
-                                </div>
-                            </div>
-
-                            <!-- Contact Info -->
-                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Need Immediate Assistance?</h2>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Phone:</strong> <a href="tel:+256706564628" style="color: #3b82f6; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>WhatsApp:</strong> <a href="https://wa.me/256706564628" style="color: #25D366; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #718096; margin-top: 15px; font-size: 14px; line-height: 1.6;">
-                                    For urgent matters, feel free to call or WhatsApp us directly!
-                                </p>
-                            </div>
-
-                            <!-- CTA Button -->
-                            <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://saptechug.com" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
-                                    ?? Visit Our Website
-                                </a>
-                            </div>
-
-                            <!-- Footer -->
-                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
-                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAPTech Uganda
-                                </p>
-                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    Innovative Solutions for Your Business
-                                </p>
-                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
-                                    This is an automated confirmation email. Please do not reply directly to this message.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.sendEmail(mailOptions);
-            console.log("? Contact confirmation email sent to:", contactData.email);
-        } catch (error) {
-            console.error("? Error sending contact confirmation email:", error);
-            throw error;
-        }
-    }
-
-    async sendPartnershipConfirmation(partnershipData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping partnership confirmation");
-            return;
-        }
-        
-        try {
-            const mailOptions = {
-                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
-                to: partnershipData.contactEmail,
-                subject: "?? Partnership Request Received - SAPTech Uganda",
-                html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 40px 20px; border-radius: 15px;">
-                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <div style="text-align: center; margin-bottom: 35px;">
-                                <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
-                                    <span style="font-size: 35px;">??</span>
-                                </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Thank You, ${partnershipData.contactPerson}!</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">Your partnership request has been received</p>
-                            </div>
-
-                            <!-- Success Message -->
-                            <div style="background: linear-gradient(135deg, #8b5cf615 0%, #7c3aed15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #8b5cf6; text-align: center;">
-                                <h2 style="color: #8b5cf6; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Your Partnership Request is Being Reviewed!</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
-                                    We're excited about the potential collaboration with <strong>${partnershipData.companyName}</strong>. Our partnerships team will carefully review your proposal.
-                                </p>
-                            </div>
-
-                            <!-- Request Summary -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Your Request Summary</h2>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Company:</strong> ${partnershipData.companyName}
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Contact Person:</strong> ${partnershipData.contactPerson}
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Email:</strong> ${partnershipData.contactEmail}
-                                </p>
-                                ${partnershipData.website ? `
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Website:</strong> <a href="${partnershipData.website}" style="color: #8b5cf6; text-decoration: none;">${partnershipData.website}</a>
-                                </p>
-                                ` : ''}
-                            </div>
-
-                            <!-- Next Steps -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">?? What Happens Next?</h2>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #8b5cf6; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">1</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Our partnerships team will review your request and proposal</p>
-                                    </div>
-                                </div>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #8b5cf6; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">2</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">We'll schedule a discovery call within <strong>48 hours</strong></p>
-                                    </div>
-                                </div>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #8b5cf6; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">3</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">We'll discuss potential collaboration opportunities and synergies</p>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #8b5cf6; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">4</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">If aligned, we'll move forward with partnership agreements</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Contact Info -->
-                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Partnership Team Contact</h2>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Phone:</strong> <a href="tel:+256706564628" style="color: #3b82f6; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>WhatsApp:</strong> <a href="https://wa.me/256706564628" style="color: #25D366; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #718096; margin-top: 15px; font-size: 14px; line-height: 1.6;">
-                                    Have questions? Don't hesitate to reach out!
-                                </p>
-                            </div>
-
-                            <!-- CTA Button -->
-                            <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://saptechug.com/partners" style="display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
-                                    ?? Learn About Our Partnerships
-                                </a>
-                            </div>
-
-                            <!-- Footer -->
-                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
-                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAPTech Uganda
-                                </p>
-                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    Building Partnerships for Success
-                                </p>
-                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
-                                    This is an automated confirmation email. Please do not reply directly to this message.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.sendEmail(mailOptions);
-            console.log("? Partnership confirmation email sent to:", partnershipData.contactEmail);
-        } catch (error) {
-            console.error("? Error sending partnership confirmation email:", error);
-            throw error;
-        }
-    }
-
-    async sendUserSignupNotification(userData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping user signup notification");
-            return;
-        }
-        
-        try {
-            const mailOptions = {
-                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
-                to: userData.email,
-                subject: "?? Welcome to SAPTech Uganda - Account Created!",
-                html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); padding: 40px 20px; border-radius: 15px;">
-                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <div style="text-align: center; margin-bottom: 35px;">
-                                <div style="background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);">
-                                    <span style="font-size: 35px;">??</span>
-                                </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Welcome, ${userData.name}! ??</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">Your SAPTech Uganda account is ready</p>
-                            </div>
-
-                            <!-- Success Message -->
-                            <div style="background: linear-gradient(135deg, #14b8a615 0%, #0d948815 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #14b8a6; text-align: center;">
-                                <h2 style="color: #14b8a6; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Account Successfully Created!</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
-                                    You're now part of the SAPTech Uganda community. Start exploring our services and solutions.
-                                </p>
-                            </div>
-
-                            <!-- Account Details -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Your Account Details</h2>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Name:</strong> ${userData.name}
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Email:</strong> ${userData.email}
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Created:</strong> ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                                </p>
-                                <div style="background: #14b8a615; padding: 15px; border-radius: 8px; margin-top: 15px;">
-                                    <p style="margin: 0; color: #14b8a6; font-weight: 600;">? Your account is now active!</p>
-                                </div>
-                            </div>
-
-                            <!-- Features -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">?? What You Can Do Now</h2>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #14b8a6; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Access your personalized dashboard</p>
-                                </div>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #14b8a6; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Submit partnership requests and proposals</p>
-                                </div>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #14b8a6; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Request quotes for products and services</p>
-                                </div>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #14b8a6; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Connect directly with our expert team</p>
-                                </div>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #14b8a6; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Receive priority support and updates</p>
-                                </div>
-                                <div style="display: flex; align-items: flex-start;">
-                                    <span style="color: #14b8a6; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Manage your profile and preferences</p>
-                                </div>
-                            </div>
-
-                            <!-- Security Notice -->
-                            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #f59e0b;">
-                                <h3 style="color: #92400e; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">?? Security Notice</h3>
-                                <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
-                                    Your password has been securely encrypted. Keep your credentials safe and use the "Forgot Password" option if needed.
-                                </p>
-                            </div>
-
-                            <!-- Contact Info -->
-                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Need Help?</h2>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Phone:</strong> <a href="tel:+256706564628" style="color: #3b82f6; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>WhatsApp:</strong> <a href="https://wa.me/256706564628" style="color: #25D366; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #718096; margin-top: 15px; font-size: 14px; line-height: 1.6;">
-                                    Our team is here to help you succeed!
-                                </p>
-                            </div>
-
-                            <!-- CTA Button -->
-                            <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://saptechug.com/account" style="display: inline-block; background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);">
-                                    ?? Go to Dashboard
-                                </a>
-                            </div>
-
-                            <!-- Footer -->
-                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
-                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAPTech Uganda
-                                </p>
-                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    Empowering Innovation, Delivering Excellence
-                                </p>
-                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
-                                    This is an automated welcome email. Please do not reply directly to this message.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.sendEmail(mailOptions);
-            console.log("? User signup notification sent to:", userData.email);
-        } catch (error) {
-            console.error("? Error sending user signup notification:", error);
-            throw error;
-        }
-    }
-
-    async sendAdminUserSignupAlert(userData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping admin user signup alert");
-            return;
-        }
-        
-        try {
-            const notifyEmail = process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || 'saptechnologies256@gmail.com';
-            
-            const mailOptions = {
-                from: '"SAPTech Uganda System" <saptechnologies256@gmail.com>',
-                to: notifyEmail,
-                subject: `?? New User Registration: ${userData.name}`,
-                html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 20px; border-radius: 15px;">
-                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <div style="text-align: center; margin-bottom: 35px;">
-                                <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
-                                    <span style="font-size: 35px;">??</span>
-                                </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">New User Registration</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">A new user has joined the platform</p>
-                            </div>
-
-                            <!-- Alert Message -->
-                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #3b82f6; text-align: center;">
-                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Account Successfully Created!</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
-                                    A new user account has been registered on the SAPTech Uganda platform. The user has been sent a welcome email.
-                                </p>
-                            </div>
-
-                            <!-- User Details -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? User Details</h2>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Name:</strong> ${userData.name}
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Email:</strong> <a href="mailto:${userData.email}" style="color: #3b82f6; text-decoration: none;">${userData.email}</a>
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Registration Date:</strong> ${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
-                                </p>
-                                ${userData.id ? `
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>User ID:</strong> ${userData.id}
-                                </p>
-                                ` : ''}
-                                <div style="background: #10b98115; padding: 15px; border-radius: 8px; margin-top: 15px;">
-                                    <p style="margin: 0; color: #10b981; font-weight: 600;">? Account Status: Active</p>
-                                </div>
-                            </div>
-
-                            <!-- Registration Summary -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">?? Registration Summary</h2>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Email validation passed</p>
-                                </div>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Password securely encrypted</p>
-                                </div>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Welcome email sent to user</p>
-                                </div>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">User profile created</p>
-                                </div>
-                                <div style="display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Activity log initialized</p>
-                                </div>
-                            </div>
-
-                            <!-- User Access Box -->
-                            <div style="background: linear-gradient(135deg, #10b98115 0%, #059e6915 100%); padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #10b981;">
-                                <h3 style="color: #10b981; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">?? User Access Granted</h3>
-                                <p style="margin: 0 0 12px 0; color: #2d3748; font-size: 14px;">The user can now:</p>
-                                <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; font-size: 16px; margin-right: 8px;">�</span>
-                                    <p style="margin: 0; color: #4a5568; font-size: 14px;">Access their personalized dashboard</p>
-                                </div>
-                                <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; font-size: 16px; margin-right: 8px;">�</span>
-                                    <p style="margin: 0; color: #4a5568; font-size: 14px;">Submit contact forms and partnership requests</p>
-                                </div>
-                                <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; font-size: 16px; margin-right: 8px;">�</span>
-                                    <p style="margin: 0; color: #4a5568; font-size: 14px;">Manage their profile and preferences</p>
-                                </div>
-                                <div style="display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; font-size: 16px; margin-right: 8px;">�</span>
-                                    <p style="margin: 0; color: #4a5568; font-size: 14px;">Receive notifications and updates</p>
-                                </div>
-                            </div>
-
-                            <!-- Admin Actions -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">?? Admin Actions Available</h2>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #3b82f6; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">View user profile in admin dashboard</p>
-                                </div>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #3b82f6; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Monitor user activity and engagement</p>
-                                </div>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #3b82f6; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Send targeted communications</p>
-                                </div>
-                                <div style="display: flex; align-items: flex-start;">
-                                    <span style="color: #3b82f6; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Manage user permissions if needed</p>
-                                </div>
-                            </div>
-
-                            <!-- CTA Button -->
-                            <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://saptechug.com/admin" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
-                                    ?? View in Admin Dashboard
-                                </a>
-                            </div>
-
-                            <!-- Footer -->
-                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
-                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAPTech Uganda Admin System
-                                </p>
-                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    System notification - User registration successful
-                                </p>
-                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
-                                    This is an automated system notification for administrators.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.sendEmail(mailOptions);
-            console.log("? Admin user signup alert sent to:", notifyEmail);
-        } catch (error) {
-            console.error("? Error sending admin user signup alert:", error);
-            throw error;
-        }
-    }
-
-    // =====================
-    // AWARDS EMAIL NOTIFICATIONS
-    // =====================
-
-    async sendNominationSubmittedUser(nominationData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping nomination confirmation");
-            return;
-        }
-        
-        try {
-            const mailOptions = {
-                from: '"SAPTech Awards 2026" <saptechnologies256@gmail.com>',
-                to: nominationData.nominatorEmail,
-                subject: `🏆 Award Nomination Submitted Successfully - ${nominationData.nomineeName}`,
-                html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 20px; border-radius: 15px;">
-                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <div style="text-align: center; margin-bottom: 35px;">
-                                <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
-                                    <span style="font-size: 35px;">🏆</span>
-                                </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Nomination Submitted Successfully!</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">SAPTech Awards 2026</p>
-                            </div>
-
-                            <!-- Greeting -->
-                            <div style="margin-bottom: 30px;">
-                                <p style="color: #2d3748; margin: 0; font-size: 16px; line-height: 1.6;">
-                                    Dear <strong>${nominationData.nominatorName}</strong>,
-                                </p>
-                                <p style="color: #4a5568; margin: 15px 0 0 0; font-size: 15px; line-height: 1.6;">
-                                    Thank you for submitting a nomination for the <strong>SAPTech Awards 2026</strong>! Your participation helps us recognize and celebrate excellence in technology and innovation.
-                                </p>
-                            </div>
-
-                            <!-- Nomination Details -->
-                            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #f59e0b;">
-                                <h2 style="color: #92400e; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">🎯 Nomination Details</h2>
-                                <p style="margin: 8px 0; color: #78350f; font-size: 15px;">
-                                    <strong>Nominee:</strong> ${nominationData.nomineeName}
-                                </p>
-                                <p style="margin: 8px 0; color: #78350f; font-size: 15px;">
-                                    <strong>Category:</strong> ${nominationData.categoryName}
-                                </p>
-                                <p style="margin: 8px 0; color: #78350f; font-size: 15px;">
-                                    <strong>Company:</strong> ${nominationData.nomineeCompany || 'N/A'}
-                                </p>
-                                <p style="margin: 8px 0; color: #78350f; font-size: 15px;">
-                                    <strong>Country:</strong> ${nominationData.nomineeCountry}
-                                </p>
-                                <div style="background: white; padding: 12px; border-radius: 8px; margin-top: 15px;">
-                                    <p style="margin: 0; color: #f59e0b; font-weight: 600;">✅ Submission Status: Pending Review</p>
-                                </div>
-                            </div>
-
-                            <!-- What Happens Next -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">📋 What Happens Next?</h2>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #f59e0b; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">1</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Our awards team will review the nomination within <strong>48 hours</strong></p>
-                                    </div>
-                                </div>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #f59e0b; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">2</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">You'll receive an email notification when the status is updated</p>
-                                    </div>
-                                </div>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #f59e0b; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">3</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">If approved, the nomination will be published for public voting</p>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #f59e0b; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">4</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Winners will be announced after the voting period ends</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Thank You Box -->
-                            <div style="background: linear-gradient(135deg, #10b98115 0%, #059e6915 100%); padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #10b981; text-align: center;">
-                                <h3 style="color: #15803d; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">🎉 Thank You for Participating!</h3>
-                                <p style="margin: 0; color: #166534; font-size: 14px; line-height: 1.6;">
-                                    Your nomination helps us recognize and celebrate excellence in technology and innovation. We'll keep you updated on the nomination status.
-                                </p>
-                            </div>
-
-                            <!-- Contact Info -->
-                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">📞 Questions? Contact Us</h2>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Phone:</strong> <a href="tel:+256706564628" style="color: #3b82f6; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Website:</strong> <a href="https://saptechug.com" style="color: #3b82f6; text-decoration: none;">saptechug.com</a>
-                                </p>
-                                <p style="color: #718096; margin-top: 15px; font-size: 14px; line-height: 1.6;">
-                                    Our awards team is here to help!
-                                </p>
-                            </div>
-
-                            <!-- CTA Button -->
-                            <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://saptechug.com/awards" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
-                                    🏆 View Awards Program
-                                </a>
-                            </div>
-
-                            <!-- Footer -->
-                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
-                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAPTech Awards 2026
-                                </p>
-                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    Celebrating Excellence in Technology & Innovation
-                                </p>
-                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
-                                    This is an automated confirmation email. Please do not reply directly to this message.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.sendEmail(mailOptions);
-            console.log("✅ Nomination confirmation sent to:", nominationData.nominatorEmail);
-        } catch (error) {
-            console.error("❌ Error sending nomination confirmation:", error);
-            throw error;
-        }
-    }
-
-    async sendNominationSubmittedAdmin(nominationData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping admin nomination alert");
-            return;
-        }
-        
-        try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            const notifyEmail = process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || emailUser;
-            
-            const mailOptions = {
-                from: '"SAPTech Awards 2026 System" <saptechnologies256@gmail.com>',
-                replyTo: emailUser,
-                to: notifyEmail,
-                subject: `?? New Award Nomination: ${nominationData.nomineeName} - ${nominationData.categoryName}`,
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <h2 style="color: #f59e0b;">?? New Award Nomination Received</h2>
-                        <p>A new nomination has been submitted for the SAPTech Awards 2026.</p>
-                        
-                        <div style="background: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0;">
-                            <h3 style="color: #92400e; margin: 0 0 15px 0;">?? Nominee Information</h3>
-                            <p style="margin: 5px 0;"><strong>Name:</strong> ${nominationData.nomineeName}</p>
-                            <p style="margin: 5px 0;"><strong>Title:</strong> ${nominationData.nomineeTitle || 'N/A'}</p>
-                            <p style="margin: 5px 0;"><strong>Company:</strong> ${nominationData.nomineeCompany || 'N/A'}</p>
-                            <p style="margin: 5px 0;"><strong>Country:</strong> ${nominationData.nomineeCountry}</p>
-                            <p style="margin: 5px 0;"><strong>Category:</strong> ${nominationData.categoryName}</p>
-                        </div>
-                        
-                        <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 20px 0;">
-                            <h3 style="color: #1e40af; margin: 0 0 15px 0;">?? Nominator Information</h3>
-                            <p style="margin: 5px 0;"><strong>Name:</strong> ${nominationData.nominatorName}</p>
-                            <p style="margin: 5px 0;"><strong>Email:</strong> ${nominationData.nominatorEmail}</p>
-                            <p style="margin: 5px 0;"><strong>Phone:</strong> ${nominationData.nominatorPhone || 'N/A'}</p>
-                            <p style="margin: 5px 0;"><strong>Organization:</strong> ${nominationData.nominatorOrganization || 'N/A'}</p>
-                        </div>
-                        
-                        <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                            <h4 style="color: #1f2937; margin: 0 0 10px 0;">?? Nomination Reason:</h4>
-                            <p style="color: #374151; line-height: 1.6; margin: 0;">${nominationData.nominationReason}</p>
-                        </div>
-                        
-                        ${nominationData.achievements ? `
-                            <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                                <h4 style="color: #1f2937; margin: 0 0 10px 0;">?? Achievements:</h4>
-                                <p style="color: #374151; line-height: 1.6; margin: 0;">${nominationData.achievements}</p>
-                            </div>
-                        ` : ''}
-                        
-                        ${nominationData.impactDescription ? `
-                            <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                                <h4 style="color: #1f2937; margin: 0 0 10px 0;">?? Impact Description:</h4>
-                                <p style="color: #374151; line-height: 1.6; margin: 0;">${nominationData.impactDescription}</p>
-                            </div>
-                        ` : ''}
-                        
-                        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; border: 1px solid #f59e0b; margin: 20px 0;">
-                            <h4 style="color: #92400e; margin: 0 0 10px 0;">? Action Required</h4>
-                            <p style="margin: 5px 0; color: #92400e;">Please review this nomination in the admin dashboard and update its status:</p>
-                            <ul style="color: #92400e; margin: 10px 0;">
-                                <li><strong>Approve</strong> - Nomination will be published for voting</li>
-                                <li><strong>Reject</strong> - Nomination will not be published</li>
-                            </ul>
-                        </div>
-                        
-                        <p style="color: #374151;"><strong>Submitted:</strong> ${new Date(nominationData.createdAt).toLocaleString()}</p>
-                        
-                        <hr style="margin: 30px 0;">
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
-                            <h3 style="color: #1f2937; margin: 0 0 15px 0;">?? SAPTech Awards 2026 Admin Contact</h3>
-                            <p style="margin: 5px 0;"><strong>?? Phone:</strong> +256706564628</p>
-                            <p style="margin: 5px 0;"><strong>?? Admin Email:</strong> ${notifyEmail}</p>
-                            <p style="margin: 15px 0 0 0; color: #059669; font-size: 14px;">Review and manage nominations in the admin dashboard</p>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.transporter.sendMail(mailOptions);
-            console.log("? Admin nomination alert sent to:", notifyEmail);
-        } catch (error) {
-            console.error("Error sending admin nomination alert:", error);
-        }
-    }
-
-    async sendNominationStatusUpdate(nominationData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping status update notification");
-            return;
-        }
-        
-        try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            
-            const statusConfig = {
-                approved: {
-                    color: '#22c55e',
-                    bgColor: '#f0fdf4',
-                    icon: '?',
-                    title: 'Nomination Approved!',
-                    message: 'Great news! Your nomination has been approved and is now published for public voting.'
-                },
-                rejected: {
-                    color: '#ef4444',
-                    bgColor: '#fef2f2',
-                    icon: '?',
-                    title: 'Nomination Not Approved',
-                    message: 'Thank you for your submission. Unfortunately, this nomination was not approved at this time.'
-                },
-                winner: {
-                    color: '#f59e0b',
-                    bgColor: '#fffbeb',
-                    icon: '??',
-                    title: 'Congratulations - Winner Announced!',
-                    message: 'Exciting news! This nomination has been selected as a WINNER! Congratulations to the nominee!'
-                },
-                finalist: {
-                    color: '#8b5cf6',
-                    bgColor: '#faf5ff',
-                    icon: '??',
-                    title: 'Finalist Status Achieved!',
-                    message: 'Wonderful news! This nomination has been selected as a FINALIST! An outstanding achievement!'
-                }
-            };
-            
-            const config = statusConfig[nominationData.status] || statusConfig.approved;
-            
-            const mailOptions = {
-                from: '"SAPTech Awards 2026" <saptechnologies256@gmail.com>',
-                replyTo: emailUser,
-                to: nominationData.nominatorEmail,
-                subject: `${config.icon} Nomination Status Update: ${nominationData.nomineeName}`,
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <h2 style="color: ${config.color};">${config.icon} ${config.title}</h2>
-                        <p>Dear ${nominationData.nominatorName},</p>
-                        <p>${config.message}</p>
-                        
-                        <div style="background: ${config.bgColor}; padding: 20px; border-radius: 8px; border-left: 4px solid ${config.color}; margin: 20px 0;">
-                            <h3 style="color: ${config.color}; margin: 0 0 15px 0;">?? Nomination Details</h3>
-                            <p style="margin: 5px 0;"><strong>Nominee:</strong> ${nominationData.nomineeName}</p>
-                            <p style="margin: 5px 0;"><strong>Category:</strong> ${nominationData.categoryName}</p>
-                            <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: ${config.color}; font-weight: bold; text-transform: uppercase;">${nominationData.status}</span></p>
-                            <p style="margin: 15px 0 5px 0;"><strong>Updated:</strong> ${new Date().toLocaleString()}</p>
-                        </div>
-                        
-                        ${nominationData.adminNotes ? `
-                            <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                                <h4 style="color: #1f2937; margin: 0 0 10px 0;">?? Admin Notes:</h4>
-                                <p style="color: #374151; line-height: 1.6; margin: 0;">${nominationData.adminNotes}</p>
-                            </div>
-                        ` : ''}
-                        
-                        ${nominationData.status === 'approved' ? `
-                            <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #22c55e; margin: 20px 0;">
-                                <h4 style="color: #15803d; margin: 0 0 10px 0;">?? What's Next?</h4>
-                                <ul style="color: #15803d; margin: 10px 0;">
-                                    <li>The nomination is now live for public voting</li>
-                                    <li>Share with your network to gather more votes</li>
-                                    <li>Voting will close before the awards ceremony</li>
-                                    <li>Winners will be announced after voting ends</li>
-                                </ul>
-                            </div>
-                        ` : ''}
-                        
-                        ${nominationData.status === 'winner' || nominationData.status === 'finalist' ? `
-                            <div style="background: #fffbeb; padding: 20px; border-radius: 8px; border: 2px solid #f59e0b; margin: 20px 0; text-align: center;">
-                                <h3 style="color: #92400e; margin: 0 0 15px 0;">?? Congratulations! ??</h3>
-                                <p style="color: #92400e; font-size: 18px; margin: 10px 0;">This is an incredible achievement!</p>
-                                <p style="color: #92400e; margin: 10px 0;">We'll be in touch soon with more details about the awards ceremony.</p>
-                            </div>
-                        ` : ''}
-                        
-                        ${nominationData.status === 'rejected' ? `
-                            <div style="background: #fef2f2; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                                <p style="color: #991b1b; margin: 5px 0;">We appreciate your participation in the SAPTech Awards 2026. You're welcome to submit new nominations in the future.</p>
-                            </div>
-                        ` : ''}
-                        
-                        <p>Thank you for your participation in the SAPTech Awards 2026!</p>
-                        <p>Best regards,<br>The SAPTech Awards 2026 Team</p>
-                        
-                        <hr style="margin: 30px 0;">
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
-                            <h3 style="color: #1f2937; margin: 0 0 15px 0;">?? Questions? Contact Us</h3>
-                            <p style="margin: 5px 0;"><strong>?? Phone:</strong> +256706564628</p>
-                            <p style="margin: 5px 0;"><strong>?? Email:</strong> ${emailUser}</p>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.transporter.sendMail(mailOptions);
-            console.log(`? Status update (${nominationData.status}) sent to:`, nominationData.nominatorEmail);
-        } catch (error) {
-            console.error("Error sending status update notification:", error);
-        }
-    }
-
-    async sendNominationDeletedNotification(nominationData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping deletion notification");
-            return;
-        }
-        
-        try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            
-            const mailOptions = {
-                from: '"SAPTech Awards 2026" <saptechnologies256@gmail.com>',
-                replyTo: emailUser,
-                to: nominationData.nominatorEmail,
-                subject: `?? Nomination Removed: ${nominationData.nomineeName}`,
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <h2 style="color: #6b7280;">?? Nomination Removed</h2>
-                        <p>Dear ${nominationData.nominatorName},</p>
-                        <p>We want to inform you that a nomination you submitted has been removed from the SAPTech Awards 2026.</p>
-                        
-                        <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; border-left: 4px solid #6b7280; margin: 20px 0;">
-                            <h3 style="color: #374151; margin: 0 0 15px 0;">?? Nomination Details</h3>
-                            <p style="margin: 5px 0;"><strong>Nominee:</strong> ${nominationData.nomineeName}</p>
-                            <p style="margin: 5px 0;"><strong>Category:</strong> ${nominationData.categoryName}</p>
-                            <p style="margin: 5px 0;"><strong>Status:</strong> Removed</p>
-                            <p style="margin: 15px 0 5px 0;"><strong>Removed On:</strong> ${new Date().toLocaleString()}</p>
-                        </div>
-                        
-                        ${nominationData.adminNotes ? `
-                            <div style="background: #fef3c7; padding: 15px; border-radius: 8px; border: 1px solid #f59e0b; margin: 20px 0;">
-                                <h4 style="color: #92400e; margin: 0 0 10px 0;">?? Reason for Removal:</h4>
-                                <p style="color: #92400e; line-height: 1.6; margin: 0;">${nominationData.adminNotes}</p>
-                            </div>
-                        ` : ''}
-                        
-                        <p>If you have questions about this decision, please feel free to contact us.</p>
-                        <p>Thank you for your interest in the SAPTech Awards 2026.</p>
-                        <p>Best regards,<br>The SAPTech Awards 2026 Team</p>
-                        
-                        <hr style="margin: 30px 0;">
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px;">
-                            <h3 style="color: #1f2937; margin: 0 0 15px 0;">?? Contact Us</h3>
-                            <p style="margin: 5px 0;"><strong>?? Phone:</strong> +256706564628</p>
-                            <p style="margin: 5px 0;"><strong>?? Email:</strong> ${emailUser}</p>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.transporter.sendMail(mailOptions);
-            console.log("? Deletion notification sent to:", nominationData.nominatorEmail);
-        } catch (error) {
-            console.error("Error sending deletion notification:", error);
-        }
-    }
-
-    /**
-     * Send certificate via email to recipient
-     */
-    async sendCertificateEmail(certificateData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping certificate email");
-            return;
-        }
-        
-        try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            const fs = require('fs').promises;
-            const path = require('path');
-            
-            // Read certificate file
-            const certificatePath = path.join(__dirname, '../../uploads/certificates', certificateData.certificateFile);
-            const certificateBuffer = await fs.readFile(certificatePath);
-            
-            // Determine email content based on status
-            const statusConfig = {
-                winner: {
-                    color: '#d97706',
-                    bgColor: '#fef3c7',
-                    icon: '🏆',
-                    badge: 'WINNER',
-                    title: 'Congratulations on Winning at SAPTech Awards 2026!',
-                    greeting: `We are absolutely delighted to inform you that you have been selected as a <strong style="color: #d97706;">WINNER</strong> at the SAPTech Awards 2026!`,
-                    message: `Your exceptional work in <strong>${certificateData.categoryName}</strong> has truly stood out among all nominees. This prestigious recognition is a testament to your dedication, innovation, and outstanding contribution to the field of engineering and technology.`,
-                    achievement: 'Your achievement represents excellence at the highest level and serves as an inspiration to the entire community.'
-                },
-                finalist: {
-                    color: '#7c3aed',
-                    bgColor: '#ede9fe',
-                    icon: '🥈',
-                    badge: 'FINALIST',
-                    title: 'Congratulations - You Are a Finalist at SAPTech Awards 2026!',
-                    greeting: `We are thrilled to announce that you have been recognized as a <strong style="color: #7c3aed;">FINALIST</strong> at the SAPTech Awards 2026!`,
-                    message: `Your remarkable contribution to <strong>${certificateData.categoryName}</strong> has earned you this distinguished honor. Being selected as a finalist places you among the top achievers in your category.`,
-                    achievement: 'This recognition celebrates your commitment to excellence and innovation in engineering and technology.'
-                },
-                approved: {
-                    color: '#2563eb',
-                    bgColor: '#dbeafe',
-                    icon: '🎓',
-                    badge: 'PARTICIPANT',
-                    title: 'Your Certificate of Participation - SAPTech Awards 2026',
-                    greeting: `Thank you for your valuable participation in the SAPTech Awards 2026!`,
-                    message: `We appreciate your involvement in <strong>${certificateData.categoryName}</strong>. Your participation contributes to the growth and development of our technology and engineering community.`,
-                    achievement: 'We look forward to seeing your continued involvement in future editions of SAPTech Awards 2026.'
-                }
-            };
-            
-            const config = statusConfig[certificateData.status] || statusConfig.approved;
-            
-            const mailOptions = {
-                from: '"SAPTech Awards 2026" <saptechnologies256@gmail.com>',
-                replyTo: emailUser,
-                to: certificateData.recipientEmail,
-                subject: `${config.icon} ${config.badge} - Your SAPTech Awards 2026 Certificate`,
-                html: `
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    </head>
-                    <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; padding: 20px 0;">
-                            <tr>
-                                <td align="center">
-                                    <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden;">
-                                        
-                                        <!-- Header with Logo and Badge -->
-                                        <tr>
-                                            <td style="background: linear-gradient(135deg, ${config.color} 0%, #1f2937 100%); padding: 40px 30px; text-align: center;">
-                                                <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">
-                                                    ${config.icon} SAPHANIOX AWARDS 2025
-                                                </h1>
-                                                <div style="background-color: #ffffff; display: inline-block; padding: 8px 20px; border-radius: 20px; margin-top: 15px;">
-                                                    <span style="color: ${config.color}; font-weight: bold; font-size: 14px; letter-spacing: 1px;">
-                                                        ${config.badge}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        
-                                        <!-- Main Content -->
-                                        <tr>
-                                            <td style="padding: 40px 30px;">
-                                                <h2 style="color: #111827; margin: 0 0 20px 0; font-size: 24px;">
-                                                    ${config.title}
-                                                </h2>
-                                                
-                                                <p style="color: #374151; line-height: 1.6; margin: 0 0 15px 0; font-size: 16px;">
-                                                    Dear <strong>${certificateData.recipientName || certificateData.nomineeName}</strong>,
-                                                </p>
-                                                
-                                                <p style="color: #374151; line-height: 1.6; margin: 0 0 15px 0; font-size: 16px;">
-                                                    ${config.greeting}
-                                                </p>
-                                                
-                                                <p style="color: #374151; line-height: 1.6; margin: 0 0 15px 0; font-size: 16px;">
-                                                    ${config.message}
-                                                </p>
-                                                
-                                                <!-- Certificate Details Box -->
-                                                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: ${config.bgColor}; border-radius: 8px; margin: 25px 0; border-left: 4px solid ${config.color};">
-                                                    <tr>
-                                                        <td style="padding: 20px;">
-                                                            <h3 style="color: #111827; margin: 0 0 15px 0; font-size: 18px;">
-                                                                📋 Certificate Details
-                                                            </h3>
-                                                            <table width="100%" cellpadding="5" cellspacing="0">
-                                                                <tr>
-                                                                    <td style="color: #4b5563; font-weight: 600; font-size: 14px; width: 140px;">Recipient:</td>
-                                                                    <td style="color: #111827; font-size: 14px;">${certificateData.nomineeName}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td style="color: #4b5563; font-weight: 600; font-size: 14px;">Category:</td>
-                                                                    <td style="color: #111827; font-size: 14px;">${certificateData.categoryName}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td style="color: #4b5563; font-weight: 600; font-size: 14px;">Certificate ID:</td>
-                                                                    <td style="color: #111827; font-size: 14px; font-family: monospace;">${certificateData.certificateId}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td style="color: #4b5563; font-weight: 600; font-size: 14px;">Award Year:</td>
-                                                                    <td style="color: #111827; font-size: 14px;">2025</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td style="color: #4b5563; font-weight: 600; font-size: 14px;">Status:</td>
-                                                                    <td>
-                                                                        <span style="background-color: ${config.color}; color: #ffffff; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;">
-                                                                            ${config.badge}
-                                                                        </span>
-                                                                    </td>
-                                                                </tr>
-                                                            </table>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                                
-                                                <!-- Certificate Attachment Notice -->
-                                                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef3c7; border-radius: 8px; margin: 25px 0; border-left: 4px solid #f59e0b;">
-                                                    <tr>
-                                                        <td style="padding: 20px;">
-                                                            <h4 style="color: #92400e; margin: 0 0 10px 0; font-size: 16px;">
-                                                                📎 Your Official Certificate is Attached
-                                                            </h4>
-                                                            <p style="color: #78350f; margin: 0; line-height: 1.5; font-size: 14px;">
-                                                                Your official SAPTech Awards 2026 certificate is attached to this email as a high-quality PDF. You can:
-                                                            </p>
-                                                            <ul style="color: #78350f; margin: 10px 0 0 20px; line-height: 1.8; font-size: 14px;">
-                                                                <li>Download and save it for your records</li>
-                                                                <li>Print it for display</li>
-                                                                <li>Share it on LinkedIn, Twitter, and other professional platforms</li>
-                                                                <li>Include it in your portfolio and resume</li>
-                                                            </ul>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                                
-                                                <p style="color: #374151; line-height: 1.6; margin: 20px 0 15px 0; font-size: 16px;">
-                                                    ${config.achievement}
-                                                </p>
-                                                
-                                                <p style="color: #374151; line-height: 1.6; margin: 0 0 15px 0; font-size: 16px;">
-                                                    This certificate represents more than just an achievement—it symbolizes your commitment to excellence and your contribution to advancing technology and innovation in Uganda and beyond.
-                                                </p>
-                                                
-                                                <p style="color: #374151; line-height: 1.6; margin: 0 0 25px 0; font-size: 16px;">
-                                                    <strong>Congratulations once again, and we look forward to witnessing your continued success!</strong>
-                                                </p>
-                                                
-                                                <p style="color: #374151; line-height: 1.6; margin: 0; font-size: 16px;">
-                                                    Warm regards,<br>
-                                                    <strong>The SAPTech Awards 2026 Committee</strong><br>
-                                                    <span style="color: #6b7280; font-size: 14px;">SAP-Technologies Uganda</span>
-                                                </p>
-                                            </td>
-                                        </tr>
-                                        
-                                        <!-- Footer -->
-                                        <tr>
-                                            <td style="background-color: #f9fafb; padding: 30px; border-top: 1px solid #e5e7eb;">
-                                                <table width="100%" cellpadding="0" cellspacing="0">
-                                                    <tr>
-                                                        <td style="text-align: center;">
-                                                            <h3 style="color: #111827; margin: 0 0 15px 0; font-size: 18px;">
-                                                                📞 Contact Us
-                                                            </h3>
-                                                            <p style="color: #6b7280; margin: 5px 0; font-size: 14px;">
-                                                                <strong>Phone:</strong> +256 706 564 628
-                                                            </p>
-                                                            <p style="color: #6b7280; margin: 5px 0; font-size: 14px;">
-                                                                <strong>Email:</strong> ${emailUser}
-                                                            </p>
-                                                            <p style="color: #6b7280; margin: 5px 0; font-size: 14px;">
-                                                                <strong>Website:</strong> <a href="https://saptechug.com" style="color: #2563eb; text-decoration: none;">saptechug.com</a>
-                                                            </p>
-                                                            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-                                                                <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                                                                    © 2026 SAPTech Awards 2026. All rights reserved.<br>
-                                                                    Powered by SAP-Technologies Uganda
-                                                                </p>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                        
-                                    </table>
-                                </td>
-                            </tr>
-                        </table>
-                    </body>
-                    </html>
-                `,
-                attachments: [
-                    {
-                        filename: certificateData.certificateFile,
-                        content: certificateBuffer,
-                        contentType: 'application/pdf'
-                    }
-                ]
-            };
-
-            // Use appropriate email service based on configuration
-            if (this.useResend) {
-                // Resend supports attachments
-                const resendOptions = {
-                    from: '"SAPTech Awards 2026" <onboarding@resend.dev>',
-                    to: certificateData.recipientEmail,
-                    subject: `${config.icon} ${config.badge} - Your SAPTech Awards 2026 Certificate`,
-                    html: mailOptions.html,
-                    reply_to: emailUser,
-                    attachments: [{
-                        filename: certificateData.certificateFile,
-                        content: certificateBuffer
-                    }]
-                };
-                
-                const result = await this.resend.emails.send(resendOptions);
-                console.log("✅ Certificate email sent via Resend to:", certificateData.recipientEmail);
-                console.log("📧 Resend Email ID:", result.id);
-                console.log("⚠️ Note: Free Resend accounts can only send to verified emails or using onboarding@resend.dev");
-                console.log("💡 Tip: Check spam folder or verify the recipient email in Resend dashboard");
-            } else if (this.useSendGrid) {
-                // SendGrid attachments
-                const attachment = {
-                    content: certificateBuffer.toString('base64'),
-                    filename: certificateData.certificateFile,
-                    type: 'application/pdf',
-                    disposition: 'attachment'
-                };
-                
-                const msg = {
-                    from: '"SAPTech Awards 2026" <saptechnologies256@gmail.com>',
-                    to: certificateData.recipientEmail,
-                    replyTo: emailUser,
-                    subject: `${config.icon} ${config.badge} - Your SAPTech Awards 2026 Certificate`,
-                    html: mailOptions.html,
-                    attachments: [attachment]
-                };
-                
-                await sgMail.send(msg);
-                console.log("✅ Certificate email sent via SendGrid to:", certificateData.recipientEmail);
-            } else if (this.transporter) {
-                // SMTP with attachments
-                await this.transporter.sendMail(mailOptions);
-                console.log("✅ Certificate email sent via SMTP to:", certificateData.recipientEmail);
-            } else {
-                throw new Error('No email transport configured');
-            }
-        } catch (error) {
-            console.error("Error sending certificate email:", error);
-            throw error;
-        }
-    }
-
-    // Send product inquiry notification to admin
-    async sendProductInquiryToAdmin(inquiryData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping admin notification");
-            return;
-        }
-
-        try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            const adminEmail = process.env.ADMIN_EMAIL || emailUser;
-
-            const mailOptions = {
-                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
-                to: adminEmail,
-                subject: `?? New Product Inquiry - ${inquiryData.productName}`,
-                html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; border-radius: 15px;">
-                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <div style="text-align: center; margin-bottom: 35px;">
-                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
-                                    <span style="font-size: 35px;">??</span>
-                                </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">New Product Inquiry</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">A customer is interested in your product</p>
-                            </div>
-
-                            <!-- Product Info -->
-                            <div style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #667eea;">
-                                <h2 style="color: #667eea; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Product Details</h2>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Product:</strong> ${inquiryData.productName}
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Category:</strong> ${inquiryData.productCategory}
-                                </p>
-                            </div>
-
-                            <!-- Customer Info -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Customer Information</h2>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Email:</strong> <a href="mailto:${inquiryData.customerEmail}" style="color: #667eea; text-decoration: none;">${inquiryData.customerEmail}</a>
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Phone:</strong> ${inquiryData.customerPhone}
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Preferred Contact:</strong> <span style="background: #667eea20; padding: 4px 12px; border-radius: 20px; color: #667eea; font-weight: 600;">${inquiryData.preferredContact.toUpperCase()}</span>
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Date:</strong> ${new Date(inquiryData.inquiryDate).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}
-                                </p>
-                            </div>
-
-                            <!-- Message -->
-                            ${inquiryData.message !== "No additional message" ? `
-                            <div style="background: #fffbeb; padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #f59e0b;">
-                                <h2 style="color: #f59e0b; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Customer Message</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px; white-space: pre-wrap;">${inquiryData.message}</p>
-                            </div>
-                            ` : ''}
-
-                            <!-- Action Button -->
-                            <div style="text-align: center; margin-top: 35px;">
-                                <a href="mailto:${inquiryData.customerEmail}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: transform 0.2s;">
-                                    ?? Reply to Customer
-                                </a>
-                            </div>
-
-                            <!-- Footer -->
-                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
-                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    This is an automated notification from SAPTech Uganda
-                                </p>
-                                <p style="color: #cbd5e0; margin: 5px 0; font-size: 12px;">
-                                    Product Inquiry Management System
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.transporter.sendMail(mailOptions);
-            console.log("? Product inquiry notification sent to admin");
-        } catch (error) {
-            console.error("? Error sending admin inquiry notification:", error);
-            throw error;
-        }
-    }
-
-    // Send product inquiry confirmation to customer
-    async sendProductInquiryConfirmation(inquiryData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping customer confirmation");
-            return;
-        }
-
-        try {
-            const mailOptions = {
-                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
-                to: inquiryData.customerEmail,
-                subject: `? We Received Your Inquiry - ${inquiryData.productName}`,
-                html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 20px; border-radius: 15px;">
-                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <div style="text-align: center; margin-bottom: 35px;">
-                                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
-                                    <span style="font-size: 35px;">?</span>
-                                </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Thank You!</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">We've received your product inquiry</p>
-                            </div>
-
-                            <!-- Success Message -->
-                            <div style="background: linear-gradient(135deg, #10b98115 0%, #05966915 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #10b981; text-align: center;">
-                                <h2 style="color: #10b981; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Your Inquiry Has Been Received!</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
-                                    We appreciate your interest in <strong>${inquiryData.productName}</strong>. Our team will review your inquiry and get back to you as soon as possible.
-                                </p>
-                            </div>
-
-                            <!-- What's Next -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">?? What Happens Next?</h2>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #10b981; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">1</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Our product specialists will review your inquiry</p>
-                                    </div>
-                                </div>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #10b981; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">2</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">We'll contact you within <strong>24-48 hours</strong></p>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #10b981; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">3</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">We'll provide detailed information and answer your questions</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            ${inquiryData.message ? `
-                            <!-- Your Message -->
-                            <div style="background: #fffbeb; padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #f59e0b;">
-                                <h2 style="color: #f59e0b; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Your Message</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px; white-space: pre-wrap;">${inquiryData.message}</p>
-                            </div>
-                            ` : ''}
-
-                            <!-- Contact Info -->
-                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Need Immediate Assistance?</h2>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Phone:</strong> <a href="tel:+256706564628" style="color: #3b82f6; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>WhatsApp:</strong> <a href="https://wa.me/256706564628" style="color: #25D366; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #718096; margin-top: 15px; font-size: 14px; line-height: 1.6;">
-                                    Feel free to reach out if you have any urgent questions or need more information about our products and services.
-                                </p>
-                            </div>
-
-                            <!-- CTA Button -->
-                            <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://saptechug.com/products" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
-                                    ??? Explore More Products
-                                </a>
-                            </div>
-
-                            <!-- Footer -->
-                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
-                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAPTech Uganda
-                                </p>
-                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    Innovative Solutions for Your Business
-                                </p>
-                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
-                                    This is an automated confirmation email. Please do not reply directly to this message.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.transporter.sendMail(mailOptions);
-            console.log("? Product inquiry confirmation sent to customer:", inquiryData.customerEmail);
-        } catch (error) {
-            console.error("? Error sending customer inquiry confirmation:", error);
-            throw error;
-        }
-    }
-
-    // Cart Inquiry - Send to Admin (multiple products)
-    async sendCartInquiryToAdmin({ items, customerName, customerEmail, customerPhone, preferredContact, message }) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping cart inquiry admin email");
-            return;
-        }
-        try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            const adminEmail = process.env.ADMIN_EMAIL || emailUser;
-
-            const itemRows = items.map((item, i) => `
-                <tr style="background:${i % 2 === 0 ? '#f7fafc' : '#fff'};">
-                    <td style="padding:10px 14px;color:#2d3748;font-size:14px;">${i + 1}. ${item.productName || 'Unknown'}</td>
-                    <td style="padding:10px 14px;color:#2d3748;font-size:14px;text-align:center;">${item.quantity || 1}</td>
-                    <td style="padding:10px 14px;color:#3b82f6;font-size:14px;">${item.price && item.price.amount ? `${item.price.currency || 'UGX'} ${Number(item.price.amount).toLocaleString('en-US')}` : 'Contact for price'}</td>
-                </tr>`).join('');
-
-            const mailOptions = {
-                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
-                to: adminEmail,
-                subject: `🛒 New Cart Enquiry from ${customerName} — ${items.length} Product(s)`,
-                html: `
-                <div style="font-family:'Segoe UI',Tahoma,sans-serif;max-width:680px;margin:0 auto;background:#f0f4f8;padding:30px 16px;">
-                    <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
-                        <div style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);padding:28px 32px;text-align:center;">
-                            <h1 style="color:#fff;margin:0;font-size:24px;">🛒 New Cart Enquiry</h1>
-                            <p style="color:rgba(255,255,255,0.85);margin:8px 0 0;font-size:15px;">${items.length} product${items.length !== 1 ? 's' : ''} selected</p>
-                        </div>
-                        <div style="padding:28px 32px;">
-                            <h2 style="color:#3b82f6;font-size:17px;margin:0 0 16px;">Customer Details</h2>
-                            <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
-                                <tr><td style="padding:8px 0;color:#718096;width:140px;font-size:14px;">Name</td><td style="padding:8px 0;color:#2d3748;font-weight:600;font-size:14px;">${customerName}</td></tr>
-                                <tr><td style="padding:8px 0;color:#718096;font-size:14px;">Email</td><td style="padding:8px 0;color:#2d3748;font-size:14px;"><a href="mailto:${customerEmail}" style="color:#3b82f6;">${customerEmail}</a></td></tr>
-                                <tr><td style="padding:8px 0;color:#718096;font-size:14px;">Phone</td><td style="padding:8px 0;color:#2d3748;font-size:14px;">${customerPhone || 'Not provided'}</td></tr>
-                                <tr><td style="padding:8px 0;color:#718096;font-size:14px;">Preferred Contact</td><td style="padding:8px 0;color:#2d3748;font-size:14px;">${preferredContact || 'Email'}</td></tr>
-                            </table>
-
-                            <h2 style="color:#3b82f6;font-size:17px;margin:0 0 16px;">Cart Items</h2>
-                            <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;margin-bottom:24px;">
-                                <thead><tr style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);">
-                                    <th style="padding:12px 14px;color:#fff;text-align:left;font-size:14px;">Product</th>
-                                    <th style="padding:12px 14px;color:#fff;text-align:center;font-size:14px;">Qty</th>
-                                    <th style="padding:12px 14px;color:#fff;text-align:left;font-size:14px;">Unit Price</th>
-                                </tr></thead>
-                                <tbody>${itemRows}</tbody>
-                            </table>
-
-                            ${message ? `<div style="background:#fffbeb;padding:18px;border-radius:10px;border-left:4px solid #f59e0b;margin-bottom:24px;">
-                                <h3 style="color:#f59e0b;margin:0 0 10px;font-size:16px;">Customer Message</h3>
-                                <p style="color:#2d3748;margin:0;font-size:14px;white-space:pre-wrap;">${message}</p>
-                            </div>` : ''}
-
-                            <div style="text-align:center;margin-top:24px;">
-                                <a href="mailto:${customerEmail}" style="display:inline-block;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;padding:12px 32px;border-radius:30px;text-decoration:none;font-weight:600;font-size:15px;">Reply to Customer</a>
-                            </div>
-                        </div>
-                        <div style="padding:18px 32px;background:#f7fafc;text-align:center;border-top:1px solid #e2e8f0;">
-                            <p style="color:#718096;font-size:13px;margin:0;">SAPTech Uganda — Professional in Engineering &amp; Technology Solutions</p>
-                        </div>
-                    </div>
-                </div>`
-            };
-            await this.transporter.sendMail(mailOptions);
-            console.log("✅ Cart enquiry admin email sent");
-        } catch (error) {
-            console.error("❌ Error sending cart enquiry admin email:", error);
-            throw error;
-        }
-    }
-
-    // Cart Inquiry - Confirmation to Customer
-    async sendCartInquiryConfirmation({ customerEmail, customerName, items }) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping cart confirmation");
-            return;
-        }
-        try {
-            const itemList = items.map((item, i) =>
-                `<li style="padding:6px 0;color:#4a5568;font-size:14px;">${i + 1}. <strong>${item.productName || 'Unknown'}</strong> — Qty: ${item.quantity || 1}</li>`
-            ).join('');
-
-            const mailOptions = {
-                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
-                to: customerEmail,
-                subject: `✅ Enquiry Received — ${items.length} Product${items.length !== 1 ? 's' : ''} | SAPTech Uganda`,
-                html: `
-                <div style="font-family:'Segoe UI',Tahoma,sans-serif;max-width:650px;margin:0 auto;background:#f0f4f8;padding:30px 16px;">
-                    <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);">
-                        <div style="background:linear-gradient(135deg,#10b981,#059669);padding:28px 32px;text-align:center;">
-                            <h1 style="color:#fff;margin:0;font-size:26px;">✅ Enquiry Received!</h1>
-                            <p style="color:rgba(255,255,255,0.85);margin:8px 0 0;font-size:15px;">Thank you, ${customerName}. We'll get back to you shortly.</p>
-                        </div>
-                        <div style="padding:28px 32px;">
-                            <p style="color:#4a5568;font-size:15px;line-height:1.7;margin:0 0 24px;">
-                                We've received your enquiry for the following product${items.length !== 1 ? 's' : ''}:
-                            </p>
-                            <ul style="list-style:none;padding:0;margin:0 0 24px;background:#f7fafc;border-radius:10px;padding:18px 22px;">
-                                ${itemList}
-                            </ul>
-                            <div style="background:linear-gradient(135deg,#10b98115,#05966915);padding:20px;border-radius:10px;border-left:4px solid #10b981;margin-bottom:24px;">
-                                <p style="margin:0;color:#2d3748;font-size:15px;line-height:1.7;">Our team will review your enquiry and contact you within <strong>24–48 hours</strong>. For urgent enquiries, feel free to reach us on WhatsApp or phone.</p>
-                            </div>
-                            <div style="background:#f7fafc;padding:18px;border-radius:10px;margin-bottom:24px;">
-                                <p style="color:#2d3748;margin:6px 0;font-size:14px;"><strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color:#3b82f6;">saptechnologies256@gmail.com</a></p>
-                                <p style="color:#2d3748;margin:6px 0;font-size:14px;"><strong>Phone/WhatsApp:</strong> <a href="https://wa.me/256706564628" style="color:#25d366;">+256 706 564 628</a></p>
-                            </div>
-                            <div style="text-align:center;">
-                                <a href="https://saptechug.com" style="display:inline-block;background:linear-gradient(135deg,#10b981,#059669);color:#fff;padding:12px 32px;border-radius:30px;text-decoration:none;font-weight:600;font-size:15px;">Visit Our Website</a>
-                            </div>
-                        </div>
-                        <div style="padding:18px 32px;background:#f7fafc;text-align:center;border-top:1px solid #e2e8f0;">
-                            <p style="color:#718096;font-size:13px;margin:0;">SAPTech Uganda — Professional in Engineering &amp; Technology Solutions</p>
-                            <p style="color:#cbd5e0;font-size:12px;margin:8px 0 0;">This is an automated confirmation. Please do not reply to this email.</p>
-                        </div>
-                    </div>
-                </div>`
-            };
-            await this.transporter.sendMail(mailOptions);
-            console.log("✅ Cart confirmation email sent to:", customerEmail);
-        } catch (error) {
-            console.error("❌ Error sending cart confirmation email:", error);
-            throw error;
-        }
-    }
-
-    // Service Quote Request - Send to Admin
-    async sendServiceQuoteToAdmin(quoteData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping admin notification");
-            return;
-        }
-
-        try {
-            const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-            const adminEmail = process.env.ADMIN_EMAIL || emailUser;
-
-            const mailOptions = {
-                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
-                to: adminEmail,
-                subject: `?? New Service Quote Request - ${quoteData.serviceName}`,
-                html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 700px; margin: 0 auto; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 20px; border-radius: 15px;">
-                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <div style="text-align: center; margin-bottom: 35px;">
-                                <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
-                                    <span style="font-size: 35px;">??</span>
-                                </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">New Service Quote Request</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">A potential client wants a quote</p>
-                            </div>
-
-                            <!-- Service Info -->
-                            <div style="background: linear-gradient(135deg, #f59e0b15 0%, #d9770615 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #f59e0b;">
-                                <h2 style="color: #f59e0b; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">??? Service Details</h2>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Service:</strong> ${quoteData.serviceName}
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Category:</strong> ${quoteData.serviceCategory}
-                                </p>
-                            </div>
-
-                            <!-- Customer Info -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Customer Information</h2>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Name:</strong> ${quoteData.customerName}
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Email:</strong> <a href="mailto:${quoteData.customerEmail}" style="color: #f59e0b; text-decoration: none;">${quoteData.customerEmail}</a>
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Phone:</strong> <a href="tel:${quoteData.customerPhone}" style="color: #f59e0b; text-decoration: none;">${quoteData.customerPhone}</a>
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Company:</strong> ${quoteData.companyName}
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Preferred Contact:</strong> <span style="background: #f59e0b20; padding: 4px 12px; border-radius: 20px; color: #f59e0b; font-weight: 600;">${quoteData.preferredContact.toUpperCase()}</span>
-                                </p>
-                            </div>
-
-                            <!-- Project Details -->
-                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #3b82f6;">
-                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Project Information</h2>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Budget Range:</strong> <span style="background: #3b82f620; padding: 4px 12px; border-radius: 20px; color: #3b82f6; font-weight: 600;">${quoteData.budget}</span>
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Timeline:</strong> <span style="background: #10b98120; padding: 4px 12px; border-radius: 20px; color: #10b981; font-weight: 600;">${quoteData.timeline}</span>
-                                </p>
-                                <p style="margin: 8px 0; color: #2d3748; font-size: 15px;">
-                                    <strong>Date:</strong> ${new Date(quoteData.quoteDate).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}
-                                </p>
-                            </div>
-
-                            ${quoteData.projectDetails !== "No details provided" ? `
-                            <!-- Project Details -->
-                            <div style="background: #fffbeb; padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #f59e0b;">
-                                <h2 style="color: #f59e0b; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Project Details</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px; white-space: pre-wrap;">${quoteData.projectDetails}</p>
-                            </div>
-                            ` : ''}
-
-                            <!-- Action Button -->
-                            <div style="text-align: center; margin-top: 35px;">
-                                <a href="mailto:${quoteData.customerEmail}" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
-                                    ?? Send Quote to Customer
-                                </a>
-                            </div>
-
-                            <!-- Footer -->
-                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
-                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    This is an automated notification from SAPTech Uganda
-                                </p>
-                                <p style="color: #cbd5e0; margin: 5px 0; font-size: 12px;">
-                                    Service Quote Management System
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.transporter.sendMail(mailOptions);
-            console.log("? Service quote notification sent to admin");
-        } catch (error) {
-            console.error("? Error sending admin quote notification:", error);
-            throw error;
-        }
-    }
-
-    // Service Quote Request - Send confirmation to Customer
-    async sendServiceQuoteConfirmation(quoteData) {
-        if (!this.isConfigured) {
-            console.log("Email service not configured, skipping customer confirmation");
-            return;
-        }
-
-        try {
-            const mailOptions = {
-                from: '"SAPTech Uganda" <saptechnologies256@gmail.com>',
-                to: quoteData.customerEmail,
-                subject: `? Quote Request Received - ${quoteData.serviceName}`,
-                html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 20px; border-radius: 15px;">
-                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <div style="text-align: center; margin-bottom: 35px;">
-                                <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
-                                    <span style="font-size: 35px;">?</span>
-                                </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Thank You, ${quoteData.customerName}!</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">We've received your quote request</p>
-                            </div>
-
-                            <!-- Success Message -->
-                            <div style="background: linear-gradient(135deg, #f59e0b15 0%, #d9770615 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #f59e0b; text-align: center;">
-                                <h2 style="color: #f59e0b; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Your Quote Request Has Been Received!</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
-                                    We appreciate your interest in <strong>${quoteData.serviceName}</strong>. Our team will carefully review your requirements and prepare a customized quote for you.
-                                </p>
-                            </div>
-
-                            <!-- What's Next -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">?? What Happens Next?</h2>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #f59e0b; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">1</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Our service specialists will analyze your project requirements</p>
-                                    </div>
-                                </div>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #f59e0b; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">2</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">We'll prepare a detailed quote with pricing and timeline</p>
-                                    </div>
-                                </div>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #f59e0b; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">3</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Expect to hear from us within <strong>24-48 hours</strong></p>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #f59e0b; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">4</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">We'll schedule a consultation call to discuss your project</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            ${quoteData.projectDetails ? `
-                            <!-- Your Project Details -->
-                            <div style="background: #fffbeb; padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #f59e0b;">
-                                <h2 style="color: #f59e0b; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Your Project Details</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px; white-space: pre-wrap;">${quoteData.projectDetails}</p>
-                            </div>
-                            ` : ''}
-
-                            <!-- Contact Info -->
-                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Need Immediate Assistance?</h2>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Phone:</strong> <a href="tel:+256706564628" style="color: #3b82f6; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>WhatsApp:</strong> <a href="https://wa.me/256706564628" style="color: #25D366; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #718096; margin-top: 15px; font-size: 14px; line-height: 1.6;">
-                                    Have questions or want to discuss your project in more detail? Feel free to reach out anytime!
-                                </p>
-                            </div>
-
-                            <!-- CTA Button -->
-                            <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://saptechug.com/services" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
-                                    ??? Explore Our Services
-                                </a>
-                            </div>
-
-                            <!-- Footer -->
-                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
-                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAPTech Uganda
-                                </p>
-                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    Professional Services & Solutions
-                                </p>
-                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
-                                    This is an automated confirmation email. Please do not reply directly to this message.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.transporter.sendMail(mailOptions);
-            console.log("? Service quote confirmation sent to customer:", quoteData.customerEmail);
-        } catch (error) {
-            console.error("? Error sending customer quote confirmation:", error);
-            throw error;
-        }
-    }
-
-    /**
-     * Send password reset verification code email
-     */
-    async sendPasswordResetCode(userEmail, userName, verificationCode) {
-        if (!this.isConfigured) {
-            console.log("? Email service not configured, skipping password reset email");
-            return;
-        }
-
-        try {
-            const mailOptions = {
-                from: '"SAPTech Uganda Security" <saptechnologies256@gmail.com>',
-                to: userEmail,
-                subject: "?? Password Reset Code - SAPTech Uganda",
-                html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 40px 20px; border-radius: 15px;">
-                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <div style="text-align: center; margin-bottom: 35px;">
-                                <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
-                                    <span style="font-size: 35px;">??</span>
-                                </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Password Reset Request</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">Hello, ${userName}</p>
-                            </div>
-
-                            <!-- Message -->
-                            <div style="background: linear-gradient(135deg, #ef444415 0%, #dc262615 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #ef4444; text-align: center;">
-                                <h2 style="color: #ef4444; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Password Reset Requested</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
-                                    We received a request to reset your password. Use the verification code below to complete the process.
-                                </p>
-                            </div>
-
-                            <!-- Verification Code Box -->
-                            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 3px dashed #f59e0b; border-radius: 12px; padding: 35px; text-align: center; margin: 30px 0;">
-                                <p style="margin: 0 0 15px 0; color: #92400e; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px;">
-                                    YOUR VERIFICATION CODE
-                                </p>
-                                <div style="font-size: 42px; font-weight: 800; color: #dc2626; letter-spacing: 10px; font-family: 'Courier New', monospace; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
-                                    ${verificationCode}
-                                </div>
-                                <div style="margin-top: 20px; padding: 12px; background: white; border-radius: 8px;">
-                                    <p style="margin: 0; color: #f59e0b; font-size: 14px; font-weight: 600;">
-                                        ?? Expires in 10 minutes
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Instructions -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">?? How to Use This Code</h2>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #ef4444; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">1</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Go to the password reset page</p>
-                                    </div>
-                                </div>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #ef4444; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">2</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Enter the 6-digit verification code above</p>
-                                    </div>
-                                </div>
-                                <div style="margin-bottom: 15px;">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #ef4444; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">3</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Create your new secure password</p>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <span style="background: #ef4444; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">4</span>
-                                        <p style="margin: 0; padding-top: 4px; color: #4a5568; line-height: 1.6;">Log in with your new password</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Security Warning -->
-                            <div style="background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%); padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #dc2626;">
-                                <h3 style="color: #991b1b; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">?? Security Notice</h3>
-                                <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
-                                    <span style="color: #991b1b; font-size: 16px; margin-right: 8px;">�</span>
-                                    <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.6;">This code expires in 10 minutes</p>
-                                </div>
-                                <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
-                                    <span style="color: #991b1b; font-size: 16px; margin-right: 8px;">�</span>
-                                    <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.6;">Never share this code with anyone</p>
-                                </div>
-                                <div style="margin-bottom: 8px; display: flex; align-items: flex-start;">
-                                    <span style="color: #991b1b; font-size: 16px; margin-right: 8px;">�</span>
-                                    <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.6;">Our team will NEVER ask for this code</p>
-                                </div>
-                                <div style="display: flex; align-items: flex-start;">
-                                    <span style="color: #991b1b; font-size: 16px; margin-right: 8px;">�</span>
-                                    <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.6;">If you didn't request this, ignore this email</p>
-                                </div>
-                            </div>
-
-                            <!-- Contact Info -->
-                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">??? Security Concerns?</h2>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px; line-height: 1.6;">
-                                    If you suspect unauthorized access to your account, contact our security team immediately:
-                                </p>
-                                <p style="color: #2d3748; margin: 12px 0 8px 0; font-size: 15px;">
-                                    <strong>Phone:</strong> <a href="tel:+256706564628" style="color: #3b82f6; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
-                                </p>
-                            </div>
-
-                            <!-- Footer -->
-                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
-                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAPTech Uganda Security Team
-                                </p>
-                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    Protecting Your Account
-                                </p>
-                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
-                                    This is an automated security email. Please do not reply directly to this message.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.sendEmail(mailOptions);
-            console.log("? Password reset code sent to:", userEmail);
-        } catch (error) {
-            console.error("? Error sending password reset code:", error);
-            throw error;
-        }
-    }
-
-    /**
-     * Send password change confirmation email
-     */
-    async sendPasswordChangeConfirmation(userEmail, userName) {
-        if (!this.isConfigured) {
-            console.log("? Email service not configured, skipping confirmation email");
-            return;
-        }
-
-        try {
-            const mailOptions = {
-                from: '"SAPTech Uganda Security" <saptechnologies256@gmail.com>',
-                to: userEmail,
-                subject: "? Password Changed Successfully - SAPTech Uganda",
-                html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 20px; border-radius: 15px;">
-                        <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <div style="text-align: center; margin-bottom: 35px;">
-                                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
-                                    <span style="font-size: 35px;">??</span>
-                                </div>
-                                <h1 style="color: #2d3748; margin: 0 0 10px 0; font-size: 28px; font-weight: 700;">Password Changed Successfully!</h1>
-                                <p style="color: #718096; margin: 0; font-size: 16px;">Hello, ${userName}</p>
-                            </div>
-
-                            <!-- Success Message -->
-                            <div style="background: linear-gradient(135deg, #10b98115 0%, #05966915 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #10b981; text-align: center;">
-                                <h2 style="color: #10b981; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">Your Password Has Been Updated!</h2>
-                                <p style="color: #2d3748; line-height: 1.8; margin: 0; font-size: 15px;">
-                                    Your password was successfully changed. You can now log in to your account using your new password.
-                                </p>
-                            </div>
-
-                            <!-- Success Box -->
-                            <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981; border-radius: 12px; padding: 30px; text-align: center; margin: 30px 0;">
-                                <p style="margin: 0 0 15px 0; color: #065f46; font-size: 18px; font-weight: 600;">
-                                    ?? Password Update Confirmed
-                                </p>
-                                <p style="margin: 0; color: #047857; font-size: 14px;">
-                                    <strong>Changed on:</strong><br>
-                                    ${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
-                                </p>
-                            </div>
-
-                            <!-- Security Alert -->
-                            <div style="background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%); padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #dc2626;">
-                                <h3 style="color: #991b1b; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">??? Didn't Make This Change?</h3>
-                                <p style="margin: 0 0 15px 0; color: #991b1b; font-size: 14px; line-height: 1.6;">
-                                    If you didn't change your password, someone else may have access to your account. Please contact our support team immediately:
-                                </p>
-                                <p style="margin: 0; color: #991b1b; font-size: 14px;">
-                                    <strong>Emergency Contact:</strong> <a href="tel:+256706564628" style="color: #dc2626; font-weight: 600; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                            </div>
-
-                            <!-- Security Tips -->
-                            <div style="background: #f7fafc; padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">?? Security Best Practices</h2>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Use a unique password for your SAPTech Uganda account</p>
-                                </div>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Never share your password with anyone</p>
-                                </div>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Use a combination of letters, numbers, and special characters</p>
-                                </div>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Change your password regularly (every 90 days)</p>
-                                </div>
-                                <div style="display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; font-size: 18px; margin-right: 10px;">?</span>
-                                    <p style="margin: 0; color: #4a5568; line-height: 1.6;">Be cautious of phishing emails and suspicious links</p>
-                                </div>
-                            </div>
-
-                            <!-- What's Next -->
-                            <div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Next Steps</h2>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="background: #3b82f6; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">1</span>
-                                    <p style="margin: 0; padding-top: 4px; color: #1e40af; line-height: 1.6;">Log in using your new password</p>
-                                </div>
-                                <div style="margin-bottom: 12px; display: flex; align-items: flex-start;">
-                                    <span style="background: #3b82f6; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">2</span>
-                                    <p style="margin: 0; padding-top: 4px; color: #1e40af; line-height: 1.6;">Update your password manager if you use one</p>
-                                </div>
-                                <div style="display: flex; align-items: flex-start;">
-                                    <span style="background: #3b82f6; color: white; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; flex-shrink: 0;">3</span>
-                                    <p style="margin: 0; padding-top: 4px; color: #1e40af; line-height: 1.6;">Review your account activity for any suspicious behavior</p>
-                                </div>
-                            </div>
-
-                            <!-- Contact Info -->
-                            <div style="background: linear-gradient(135deg, #3b82f615 0%, #2563eb15 100%); padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-                                <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">?? Need Help?</h2>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Phone:</strong> <a href="tel:+256706564628" style="color: #3b82f6; text-decoration: none;">+256 706 564 628</a>
-                                </p>
-                                <p style="color: #2d3748; margin: 8px 0; font-size: 15px;">
-                                    <strong>Email:</strong> <a href="mailto:saptechnologies256@gmail.com" style="color: #3b82f6; text-decoration: none;">saptechnologies256@gmail.com</a>
-                                </p>
-                                <p style="color: #718096; margin-top: 15px; font-size: 14px; line-height: 1.6;">
-                                    Our security team is here to help protect your account.
-                                </p>
-                            </div>
-
-                            <!-- CTA Button -->
-                            <div style="text-align: center; margin-top: 35px;">
-                                <a href="https://saptechug.com/login" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 14px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
-                                    ?? Log In to Your Account
-                                </a>
-                            </div>
-
-                            <!-- Footer -->
-                            <div style="margin-top: 35px; padding-top: 25px; border-top: 2px solid #e2e8f0; text-align: center;">
-                                <p style="color: #2d3748; margin: 5px 0; font-size: 14px; font-weight: 600;">
-                                    SAPTech Uganda Security Team
-                                </p>
-                                <p style="color: #718096; margin: 5px 0; font-size: 13px;">
-                                    Keeping Your Account Safe
-                                </p>
-                                <p style="color: #cbd5e0; margin: 15px 0 5px 0; font-size: 12px;">
-                                    This is an automated security notification. Please do not reply directly to this message.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
-
-            await this.sendEmail(mailOptions);
-            console.log("? Password change confirmation sent to:", userEmail);
-        } catch (error) {
-            console.error("? Error sending password change confirmation:", error);
-            throw error;
-        }
-    }
+    return this.deliver({
+      to: recipientEmail,
+      fromName: this.brand.awardsName,
+      subject: `Your ${this.brand.awardsName} certificate`,
+      category: "certificate",
+      attachments,
+      html: this.buildEmail({
+        brandName: this.brand.awardsName,
+        tone: "awards",
+        title: "Certificate Ready",
+        preheader: "Your SAPTech Awards 2026 certificate is ready.",
+        greeting: `Dear ${normalizeText(recipientName, "recipient")}`,
+        intro: "Congratulations. Your official SAPTech Awards 2026 certificate has been prepared.",
+        sections: [
+          {
+            title: "Certificate details",
+            rows: [
+              { label: "Recipient", value: recipientName },
+              { label: "Category", value: certificateData.categoryName },
+              { label: "Certificate ID", value: certificateData.certificateId },
+              { label: "Recognition", value: normalizeStatus(certificateData.status) },
+              { label: "Award year", value: "2026" }
+            ]
+          },
+          { title: "How to use it", list: ["Keep the certificate for your professional records.", "Share it on LinkedIn or your portfolio.", "Contact our team if any details need correction."] }
+        ],
+        cta: certificateData.certificateUrl
+          ? { label: "Open certificate", href: certificateData.certificateUrl }
+          : { label: "Verify certificate", href: `${this.brand.websiteUrl}/verify/${certificateData.certificateId || ""}` }
+      })
+    });
+  }
+
+  async sendPasswordResetCode(userEmail, userName, verificationCode) {
+    return this.deliver({
+      to: userEmail,
+      subject: "Your SAPTech Uganda password reset code",
+      category: "password_reset",
+      html: this.buildEmail({
+        tone: "danger",
+        title: "Password Reset Code",
+        preheader: "Use this code to reset your SAPTech Uganda password.",
+        greeting: `Hello ${normalizeText(userName, "there")}`,
+        intro: "We received a request to reset your SAPTech Uganda account password. Use the verification code below to continue.",
+        sections: [
+          {
+            title: "Verification code",
+            html: `<p style="margin:0;color:#0f172a;font-size:30px;letter-spacing:6px;font-weight:800;text-align:center;">${escapeHtml(verificationCode)}</p><p style="margin:12px 0 0;color:#64748b;font-size:13px;text-align:center;">This code expires in 10 minutes.</p>`
+          },
+          { title: "Security reminder", list: ["Do not share this code with anyone.", "SAPTech Uganda will never ask for your password reset code.", "If you did not request this, you can ignore this email."] }
+        ],
+        footerNote: "This security email was sent because a password reset was requested for your account."
+      })
+    });
+  }
+
+  async sendPasswordChangeConfirmation(userEmail, userName) {
+    return this.deliver({
+      to: userEmail,
+      subject: "Your SAPTech Uganda password was changed",
+      category: "password_changed",
+      html: this.buildEmail({
+        tone: "success",
+        title: "Password Changed",
+        preheader: "Your password was changed successfully.",
+        greeting: `Hello ${normalizeText(userName, "there")}`,
+        intro: "Your SAPTech Uganda password was changed successfully.",
+        sections: [
+          { title: "Account security", rows: [{ label: "Changed", value: this.formatDate() }, { label: "Account email", value: userEmail }] },
+          { title: "If this was not you", list: ["Contact SAPTech Uganda immediately.", "Do not share any reset codes you receive.", "Review your account activity after logging in."] }
+        ],
+        cta: { label: "Contact support", href: `mailto:${this.replyToEmail}` }
+      })
+    });
+  }
 }
 
 module.exports = new EmailService();
-

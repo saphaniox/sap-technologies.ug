@@ -116,6 +116,17 @@ class NewsletterController {
             subscriber.unsubscribedAt = new Date();
             await subscriber.save();
 
+            if (emailService?.sendNewsletterUnsubscribeConfirmation) {
+                setImmediate(() => {
+                    emailService.sendNewsletterUnsubscribeConfirmation({
+                        email: subscriber.email,
+                        unsubscribedAt: subscriber.unsubscribedAt
+                    }).catch((emailError) => {
+                        console.error("Newsletter unsubscribe email failed:", emailError);
+                    });
+                });
+            }
+
             res.status(200).json({
                 status: "success",
                 message: "You have been unsubscribed from our newsletter"

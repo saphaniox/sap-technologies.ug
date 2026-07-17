@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   getPublicJobs,
+  getJobSharePage,
   getAllJobs,
   getJobById,
   createJob,
@@ -167,6 +168,7 @@ const validateApplication = [
 
 // Public routes
 router.get("/public", getPublicJobs);
+router.get("/:id/share", getJobSharePage);
 
 // Admin read route with a reserved path; keep it before public dynamic :id routes.
 router.get("/admin/applications", adminAuth, getAllJobApplications);

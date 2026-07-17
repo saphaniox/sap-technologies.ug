@@ -258,7 +258,7 @@ class ProductInquiryController {
       }
 
       // Validate status
-      const validStatuses = ["pending", "contacted", "resolved"];
+      const validStatuses = ["new", "contacted", "resolved", "closed"];
       if (status && !validStatuses.includes(status)) {
         return res.status(400).json({
           success: false,
@@ -280,6 +280,19 @@ class ProductInquiryController {
         return res.status(404).json({
           success: false,
           message: "Inquiry not found"
+        });
+      }
+
+      if (status && emailService?.sendProductInquiryStatusUpdate) {
+        setImmediate(() => {
+          emailService.sendProductInquiryStatusUpdate({
+            productName: inquiry.productName || inquiry.product?.name || "Product inquiry",
+            customerEmail: inquiry.customerEmail,
+            status: inquiry.status,
+            adminNotes: inquiry.adminNotes
+          }).catch((emailError) => {
+            console.error("Product inquiry status email failed:", emailError);
+          });
         });
       }
 

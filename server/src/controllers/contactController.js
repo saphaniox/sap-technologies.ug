@@ -43,7 +43,7 @@ class ContactController {
             // Send notifications (don't wait for them to complete)
             const notificationPromises = [];
 
-            // Send email notification to admin (works with Resend, SendGrid, or Gmail)
+            // Send email notification to admin through Nodemailer SMTP/Gmail
             if (emailService.isConfigured) {
                 notificationPromises.push(
                     emailService.sendContactNotification({ name, email, message })
@@ -125,6 +125,21 @@ class ContactController {
             const contact = await Contact.findById(req.params.id);
             if (!contact) {
                 return next(new AppError("Contact not found", 404));
+            }
+
+            if (emailService?.sendContactStatusUpdate) {
+                setImmediate(() => {
+                    emailService.sendContactStatusUpdate({
+                        name: contact.name,
+                        email: contact.email,
+                        message: contact.message,
+                        status: contact.status,
+                        submittedAt: contact.submittedAt,
+                        createdAt: contact.createdAt
+                    }).catch((emailError) => {
+                        console.error("Contact status email failed:", emailError);
+                    });
+                });
             }
 
             res.status(200).json({

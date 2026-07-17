@@ -59,7 +59,7 @@ const serviceQuoteSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["new", "contacted", "quoted", "converted", "closed"],
+    enum: ["new", "contacted", "quoted", "accepted", "rejected", "expired", "converted", "closed"],
     default: "new"
   },
   adminNotes: {

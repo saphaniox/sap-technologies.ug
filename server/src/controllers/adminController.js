@@ -5,6 +5,7 @@ const { AppError } = require("../middleware/errorHandler");
 const Gallery = require("../models/Gallery");
 const Job = require("../models/Job");
 const JobApplication = require("../models/JobApplication");
+const emailService = require("../services/emailService");
 
 // Main admin controller for managing the application
 class AdminController {
@@ -270,6 +271,7 @@ class AdminController {
         try {
             const { contactId } = req.params;
             const { status } = req.body;
+            const normalizedStatus = status === "responded" ? "replied" : status;
 
             // Allow: pending, read, replied, archived
             if (!["pending", "read", "replied", "responded", "archived"].includes(status)) {
@@ -278,7 +280,7 @@ class AdminController {
 
             const contact = await Contact.findByIdAndUpdate(
                 contactId,
-                { status },
+                { status: normalizedStatus },
                 { new: true, runValidators: true }
             );
 
@@ -286,9 +288,24 @@ class AdminController {
                 return next(new AppError("Contact not found", 404));
             }
 
+            if (emailService?.sendContactStatusUpdate) {
+                setImmediate(() => {
+                    emailService.sendContactStatusUpdate({
+                        name: contact.name,
+                        email: contact.email,
+                        message: contact.message,
+                        status: contact.status,
+                        submittedAt: contact.submittedAt,
+                        createdAt: contact.createdAt
+                    }).catch((emailError) => {
+                        console.error("Contact status email failed:", emailError);
+                    });
+                });
+            }
+
             res.status(200).json({
                 status: "success",
-                message: `Contact status updated to ${status}`,
+                message: `Contact status updated to ${normalizedStatus}`,
                 data: { contact }
             });
         } catch (error) {

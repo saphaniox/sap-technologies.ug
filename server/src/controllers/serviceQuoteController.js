@@ -189,7 +189,7 @@ class ServiceQuoteController {
       }
 
       // Validate status
-      const validStatuses = ["pending", "contacted", "quoted", "accepted", "rejected"];
+      const validStatuses = ["new", "contacted", "quoted", "accepted", "rejected", "expired", "converted", "closed"];
       if (status && !validStatuses.includes(status)) {
         return res.status(400).json({
           success: false,
@@ -213,6 +213,22 @@ class ServiceQuoteController {
       }
 
       await quote.save();
+
+      if (status && emailService?.sendServiceQuoteStatusUpdate) {
+        setImmediate(() => {
+          emailService.sendServiceQuoteStatusUpdate({
+            serviceName: quote.serviceName,
+            customerName: quote.customerName,
+            customerEmail: quote.customerEmail,
+            budget: quote.budget,
+            timeline: quote.timeline,
+            status: quote.status,
+            adminNotes: quote.adminNotes
+          }).catch((emailError) => {
+            console.error("Service quote status email failed:", emailError);
+          });
+        });
+      }
 
       res.status(200).json({
         success: true,

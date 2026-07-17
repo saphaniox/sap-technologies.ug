@@ -208,18 +208,24 @@ class CertificateService {
             const headerYOffset = logoHeight > 0 ? logoHeight + 15 : 0;
 
             // Header - SAPTech Awards 2026 logo/text
-            page.drawText('SAPHANIOX AWARDS', {
-                x: width / 2 - 180,
+            const awardsTitle = 'SAPTech Awards';
+            const awardsTitleSize = 40;
+            const awardsTitleWidth = timesRomanBold.widthOfTextAtSize(awardsTitle, awardsTitleSize);
+            page.drawText(awardsTitle, {
+                x: width / 2 - awardsTitleWidth / 2,
                 y: height - 100 - headerYOffset,
-                size: 40,
+                size: awardsTitleSize,
                 font: timesRomanBold,
                 color: rgb(0.96, 0.62, 0.07), // Gold
             });
 
-            page.drawText('2025', {
-                x: width / 2 - 30,
+            const awardsYear = '2026';
+            const awardsYearSize = 28;
+            const awardsYearWidth = helveticaBold.widthOfTextAtSize(awardsYear, awardsYearSize);
+            page.drawText(awardsYear, {
+                x: width / 2 - awardsYearWidth / 2,
                 y: height - 135 - headerYOffset,
-                size: 28,
+                size: awardsYearSize,
                 font: helveticaBold,
                 color: rgb(0.2, 0.2, 0.2),
             });
@@ -538,18 +544,24 @@ class CertificateService {
             const headerYOffset = logoHeight > 0 ? logoHeight + 15 : 0;
 
             // Header - SAPTech Awards 2026 logo/text
-            page.drawText('SAPHANIOX AWARDS', {
-                x: width / 2 - 180,
+            const awardsTitle = 'SAPTech Awards';
+            const awardsTitleSize = 40;
+            const awardsTitleWidth = timesRomanBold.widthOfTextAtSize(awardsTitle, awardsTitleSize);
+            page.drawText(awardsTitle, {
+                x: width / 2 - awardsTitleWidth / 2,
                 y: height - 100 - headerYOffset,
-                size: 40,
+                size: awardsTitleSize,
                 font: timesRomanBold,
                 color: rgb(0.75, 0.75, 0.75), // Silver
             });
 
-            page.drawText('2025', {
-                x: width / 2 - 30,
+            const awardsYear = '2026';
+            const awardsYearSize = 28;
+            const awardsYearWidth = helveticaBold.widthOfTextAtSize(awardsYear, awardsYearSize);
+            page.drawText(awardsYear, {
+                x: width / 2 - awardsYearWidth / 2,
                 y: height - 135 - headerYOffset,
-                size: 28,
+                size: awardsYearSize,
                 font: helveticaBold,
                 color: rgb(0.2, 0.2, 0.2),
             });
@@ -850,18 +862,24 @@ class CertificateService {
             const headerYOffset = logoHeight > 0 ? logoHeight + 15 : 0;
 
             // Header - SAPTech Awards 2026 logo/text
-            page.drawText('SAPHANIOX AWARDS', {
-                x: width / 2 - 180,
+            const awardsTitle = 'SAPTech Awards';
+            const awardsTitleSize = 40;
+            const awardsTitleWidth = timesRomanBold.widthOfTextAtSize(awardsTitle, awardsTitleSize);
+            page.drawText(awardsTitle, {
+                x: width / 2 - awardsTitleWidth / 2,
                 y: height - 100 - headerYOffset,
-                size: 40,
+                size: awardsTitleSize,
                 font: timesRomanBold,
                 color: rgb(0.8, 0.5, 0.2), // Bronze
             });
 
-            page.drawText('2025', {
-                x: width / 2 - 30,
+            const awardsYear = '2026';
+            const awardsYearSize = 28;
+            const awardsYearWidth = helveticaBold.widthOfTextAtSize(awardsYear, awardsYearSize);
+            page.drawText(awardsYear, {
+                x: width / 2 - awardsYearWidth / 2,
                 y: height - 135 - headerYOffset,
-                size: 28,
+                size: awardsYearSize,
                 font: helveticaBold,
                 color: rgb(0.2, 0.2, 0.2),
             });
@@ -921,10 +939,13 @@ class CertificateService {
             });
 
             // Award text
-            page.drawText('* * * SAPHANIOX AWARDS * * *', {
-                x: width / 2 - 140,
+            const awardText = 'SAPTech Awards 2026';
+            const awardTextSize = 17;
+            const awardTextWidth = timesRomanBold.widthOfTextAtSize(awardText, awardTextSize);
+            page.drawText(awardText, {
+                x: width / 2 - awardTextWidth / 2,
                 y: height - 338 - headerYOffset,
-                size: 17,
+                size: awardTextSize,
                 font: timesRomanBold,
                 color: rgb(0.8, 0.5, 0.2), // Bronze
             });
@@ -1561,4 +1582,3 @@ class CertificateService {
 }
 
 module.exports = new CertificateService();
-

@@ -36,7 +36,7 @@ class PartnershipRequestController {
             // Send notifications (don't wait for them to complete)
             const notificationPromises = [];
 
-            // Send email notification to admin (works with Resend, SendGrid, or Gmail)
+            // Send email notification to admin through Nodemailer SMTP/Gmail
             if (emailService.isConfigured) {
                 notificationPromises.push(
                     emailService.sendPartnershipNotification({
@@ -137,6 +137,20 @@ class PartnershipRequestController {
             const partnershipRequest = await PartnershipRequest.findById(req.params.id);
             if (!partnershipRequest) {
                 return next(new AppError("Partnership request not found", 404));
+            }
+
+            if (emailService?.sendPartnershipStatusUpdate) {
+                setImmediate(() => {
+                    emailService.sendPartnershipStatusUpdate({
+                        companyName: partnershipRequest.companyName,
+                        contactEmail: partnershipRequest.contactEmail,
+                        contactPerson: partnershipRequest.contactPerson,
+                        status: partnershipRequest.status,
+                        adminNotes: partnershipRequest.adminNotes
+                    }).catch((emailError) => {
+                        console.error("Partnership status email failed:", emailError);
+                    });
+                });
             }
 
             res.status(200).json({
