@@ -1,5 +1,34 @@
 const mongoose = require("mongoose");
 
+const applicationFileSchema = new mongoose.Schema({
+  url: {
+    type: String,
+    trim: true
+  },
+  originalName: {
+    type: String,
+    trim: true,
+    maxlength: [255, "File name cannot exceed 255 characters"]
+  },
+  mimeType: {
+    type: String,
+    trim: true,
+    maxlength: [120, "File type cannot exceed 120 characters"]
+  },
+  size: {
+    type: Number,
+    min: 0
+  },
+  cloudinaryId: {
+    type: String,
+    trim: true
+  },
+  uploadedAt: {
+    type: Date,
+    default: Date.now
+  }
+}, { _id: false });
+
 const jobApplicationSchema = new mongoose.Schema({
   job: {
     type: mongoose.Schema.Types.ObjectId,
@@ -33,6 +62,8 @@ const jobApplicationSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  resumeFile: applicationFileSchema,
+  coverLetterFile: applicationFileSchema,
   status: {
     type: String,
     enum: {

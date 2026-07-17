@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   getPublicJobs,
+  getJobsSitemap,
   getJobSharePage,
   getAllJobs,
   getJobById,
@@ -13,7 +14,7 @@ const {
   updateApplicationStatus
 } = require("../controllers/jobController");
 const { adminAuth } = require("../middleware/adminAuth");
-const { jobPosterUpload } = require("../config/fileUpload");
+const { jobPosterUpload, jobApplicationUpload } = require("../config/fileUpload");
 const { rateLimits } = require("../config/security");
 const multer = require("multer");
 
@@ -24,7 +25,7 @@ const handleMulterError = (err, req, res, next) => {
     if (err.code === "LIMIT_FILE_SIZE") {
       return res.status(400).json({
         status: "error",
-        message: "File size exceeds limit (max 10MB)",
+      message: "File size exceeds upload limit",
         error: err.message
       });
     }
@@ -168,13 +169,24 @@ const validateApplication = [
 
 // Public routes
 router.get("/public", getPublicJobs);
+router.get("/sitemap.xml", getJobsSitemap);
 router.get("/:id/share", getJobSharePage);
 
 // Admin read route with a reserved path; keep it before public dynamic :id routes.
 router.get("/admin/applications", adminAuth, getAllJobApplications);
 
 router.get("/:id", getJobById);
-router.post("/:id/apply", rateLimits.jobApplication, validateApplication, applyForJob);
+router.post(
+  "/:id/apply",
+  rateLimits.jobApplication,
+  jobApplicationUpload.fields([
+    { name: "resumeFile", maxCount: 1 },
+    { name: "coverLetterFile", maxCount: 1 }
+  ]),
+  handleMulterError,
+  validateApplication,
+  applyForJob
+);
 
 // Admin routes
 router.use(adminAuth);

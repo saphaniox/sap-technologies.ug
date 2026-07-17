@@ -258,7 +258,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads"), {
         
         // Only allow certain file types to be served
         const ext = filePath.substring(filePath.lastIndexOf(".")).toLowerCase();
-        const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".pdf", ".webp"];
+        const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".pdf", ".webp", ".doc", ".docx", ".rtf", ".txt", ".odt"];
         if (!allowedExtensions.includes(ext)) {
             securityLogger.warn(`Blocked attempt to access disallowed file type: ${ext}`, { path: filePath, ip: res.req.ip });
             res.status(403).end();

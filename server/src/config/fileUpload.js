@@ -23,6 +23,7 @@ const partnersDir = path.join(baseUploadDir, "partners");
 const awardsDir = path.join(baseUploadDir, "awards");
 const galleryDir = path.join(baseUploadDir, "gallery");
 const jobsDir = path.join(baseUploadDir, "jobs");
+const jobApplicationsDir = path.join(baseUploadDir, "job-applications");
 
 createUploadDir(profilePicsDir);
 createUploadDir(servicesDir);
@@ -35,6 +36,7 @@ createUploadDir(partnersDir);
 createUploadDir(awardsDir);
 createUploadDir(galleryDir);
 createUploadDir(jobsDir);
+createUploadDir(jobApplicationsDir);
 
 // Check if Cloudinary is configured
 const useCloudinary = isCloudinaryConfigured();
@@ -71,6 +73,28 @@ const imageVideoFilter = (req, file, cb) => {
     cb(null, true);
   } else {
     cb(new Error("Only image and video files are allowed!"), false);
+  }
+};
+
+const allowedDocumentMimeTypes = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/rtf",
+  "text/rtf",
+  "text/plain",
+  "application/vnd.oasis.opendocument.text"
+]);
+
+const allowedDocumentExtensions = new Set([".pdf", ".doc", ".docx", ".rtf", ".txt", ".odt"]);
+
+const documentFilter = (req, file, cb) => {
+  const extension = path.extname(file.originalname || "").toLowerCase();
+
+  if (allowedDocumentExtensions.has(extension) && allowedDocumentMimeTypes.has(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only PDF, Word, RTF, TXT, and ODT document files are allowed."), false);
   }
 };
 
@@ -157,18 +181,13 @@ const jobPosterUpload = multer({
   fileFilter: imageFilter
 });
 
-const resumeUpload = multer({
-  storage: getStorage(storageConfigs.partners, jobsDir),
+const jobApplicationUpload = multer({
+  storage: getStorage(storageConfigs.jobApplications, jobApplicationsDir),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit for resumes
+    fileSize: 8 * 1024 * 1024, // 8MB per application document
+    files: 2
   },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith("image/") || file.mimetype === "application/pdf") {
-      cb(null, true);
-    } else {
-      cb(new Error("Only image and PDF files are allowed!"), false);
-    }
-  }
+  fileFilter: documentFilter
 });
 
 const softwareUpload = multer({
@@ -212,7 +231,8 @@ module.exports = {
   awardUpload,
   galleryUpload,
   jobPosterUpload,
-  resumeUpload,
+  jobApplicationUpload,
+  resumeUpload: jobApplicationUpload,
   // Legacy export for backward compatibility
   upload: profileUpload,
   useCloudinary // Export for use in controllers

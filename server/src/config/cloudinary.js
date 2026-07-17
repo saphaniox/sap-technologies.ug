@@ -253,6 +253,16 @@ const storageConfigs = {
             },
         })
         : null,
+    jobApplications: isCloudinaryConfigured()
+        ? new CloudinaryStorage({
+            cloudinary: cloudinaryStorageClient,
+            params: {
+                folder: 'sap-technologies/job-applications',
+                resource_type: 'raw',
+                timeout: cloudinaryUploadTimeout,
+            },
+        })
+        : null,
     gallery: isCloudinaryConfigured()
         ? new CloudinaryStorage({
             cloudinary: cloudinaryStorageClient,

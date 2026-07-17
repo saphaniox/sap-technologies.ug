@@ -5,6 +5,7 @@ const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
 const emailService = require("../services/emailService");
 const { useCloudinary } = require("../config/fileUpload");
+const { deleteFromCloudinary } = require("../config/cloudinary");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 const path = require("path");
 const fs = require("fs").promises;
@@ -47,6 +48,49 @@ const cleanupUploadedPoster = async (file) => {
   } catch (unlinkError) {
     console.error("Error deleting uploaded job poster:", unlinkError);
   }
+};
+
+const getUploadedApplicationFiles = (req) => {
+  if (!req.files) return [];
+  return Object.values(req.files).flat().filter(Boolean);
+};
+
+const cleanupUploadedApplicationFiles = async (req) => {
+  await Promise.all(getUploadedApplicationFiles(req).map(async (file) => {
+    if (useCloudinary && file?.public_id) {
+      await deleteFromCloudinary(file.public_id, "raw");
+      return;
+    }
+
+    if (!file?.path) return;
+
+    try {
+      await fs.unlink(file.path);
+    } catch (unlinkError) {
+      console.error("Error deleting uploaded job application file:", unlinkError);
+    }
+  }));
+};
+
+const getUploadedApplicationFile = (req, fieldName) => {
+  const files = req.files?.[fieldName];
+  return Array.isArray(files) ? files[0] : null;
+};
+
+const buildApplicationFile = (file) => {
+  if (!file) return undefined;
+
+  const url = getFileUrl(file, "job-applications");
+  if (!url) return undefined;
+
+  return {
+    url,
+    originalName: normalizeText(file.originalname),
+    mimeType: file.mimetype,
+    size: file.size,
+    cloudinaryId: file.public_id || null,
+    uploadedAt: new Date()
+  };
 };
 
 const cleanupStoredPoster = async (posterUrl) => {
@@ -125,11 +169,130 @@ const getJobPosterUrl = (job, req) => {
   return `${getClientUrl()}/images/logo.png`;
 };
 
+const toIsoString = (value) => {
+  if (!value) return undefined;
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date.toISOString();
+};
+
+const normalizeEmploymentType = (value = "Full-time") => {
+  const normalized = String(value || "Full-time").toLowerCase();
+  if (normalized.includes("part")) return "PART_TIME";
+  if (normalized.includes("contract") || normalized.includes("freelance")) return "CONTRACTOR";
+  if (normalized.includes("intern")) return "INTERN";
+  return "FULL_TIME";
+};
+
+const isRemoteJob = (job) => (
+  /remote|work from home|telecommute/i.test(`${job.employmentType || ""} ${job.location || ""}`)
+);
+
+const buildJobDescriptionHtml = (job) => {
+  const sections = [
+    job.description,
+    job.responsibilities ? `Responsibilities: ${job.responsibilities}` : "",
+    job.requirements ? `Requirements: ${job.requirements}` : "",
+    job.benefits ? `Benefits: ${job.benefits}` : "",
+    job.salaryRange ? `Compensation: ${job.salaryRange}` : ""
+  ]
+    .map(stripHtml)
+    .filter(Boolean);
+
+  const content = sections.length ? sections : ["Apply to join SAPTech Uganda."];
+  return content.map((section) => `<p>${escapeHtml(section)}</p>`).join("");
+};
+
+const buildJobStructuredData = (job, req) => {
+  const clientUrl = getClientUrl();
+  const jobId = String(job._id);
+  const jobUrl = `${clientUrl}/jobs/${jobId}`;
+  const remote = isRemoteJob(job);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    title: job.title,
+    description: buildJobDescriptionHtml(job),
+    identifier: {
+      "@type": "PropertyValue",
+      name: "SAPTech Uganda",
+      value: jobId
+    },
+    datePosted: toIsoString(job.createdAt) || toIsoString(job.updatedAt) || new Date().toISOString(),
+    validThrough: toIsoString(job.applicationDeadline),
+    employmentType: normalizeEmploymentType(job.employmentType),
+    hiringOrganization: {
+      "@type": "Organization",
+      name: "SAPTech Uganda",
+      sameAs: clientUrl,
+      logo: `${clientUrl}/images/logo.png`
+    },
+    ...(remote ? {
+      jobLocationType: "TELECOMMUTE",
+      applicantLocationRequirements: {
+        "@type": "Country",
+        name: "Uganda"
+      }
+    } : {
+      jobLocation: {
+        "@type": "Place",
+        address: {
+          "@type": "PostalAddress",
+          streetAddress: "Ndejje",
+          addressLocality: job.location || "Ndejje, Kampala",
+          addressRegion: "Central Region",
+          addressCountry: "UG"
+        }
+      }
+    }),
+    image: getJobPosterUrl(job, req),
+    url: jobUrl
+  };
+};
+
 const buildJobShareDescription = (job) => {
   const parts = [job.employmentType, job.department, job.location].filter(Boolean);
   const prefix = parts.length ? `${parts.join(" - ")}. ` : "";
   return truncateText(`${prefix}${job.description || "Apply to join SAPTech Uganda."}`);
 };
+
+const escapeXml = (value = "") => String(value || "")
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;")
+  .replace(/'/g, "&apos;");
+
+const STATIC_SITEMAP_ROUTES = [
+  { path: "/", changefreq: "weekly", priority: "1.0", image: "/images/logo.png", imageTitle: "SAPTech Uganda logo" },
+  { path: "/about", changefreq: "monthly", priority: "0.8", image: "/images/me.jpg", imageTitle: "SAPTech Uganda engineering and technology team" },
+  { path: "/services", changefreq: "weekly", priority: "0.9", image: "/images/WEB-DESIGN.jpg", imageTitle: "Website design services for local and international clients" },
+  { path: "/portfolio", changefreq: "weekly", priority: "0.8", image: "/images/ecommerce-platform.jpg", imageTitle: "Ecommerce platform project by SAPTech Uganda" },
+  { path: "/products", changefreq: "weekly", priority: "0.8", image: "/images/sap-business-management.png", imageTitle: "SAPTech Uganda technology products and IoT devices" },
+  { path: "/software", changefreq: "weekly", priority: "0.85", image: "/images/software.jpg", imageTitle: "SAPTech Uganda software apps and business systems" },
+  { path: "/iot", changefreq: "weekly", priority: "0.85", image: "/images/ioT.jpg", imageTitle: "IoT projects and smart systems for clients worldwide" },
+  { path: "/gallery", changefreq: "weekly", priority: "0.7", image: "/images/banner2.jpg", imageTitle: "SAPTech Uganda project and service gallery" },
+  { path: "/awards", changefreq: "weekly", priority: "0.75", image: "/images/logo.png", imageTitle: "SAPTech Awards 2026 by SAPTech Uganda" },
+  { path: "/careers", changefreq: "weekly", priority: "0.7", image: "/images/logo.png", imageTitle: "SAPTech Uganda careers and job opportunities" },
+  { path: "/partners", changefreq: "monthly", priority: "0.6" },
+  { path: "/companies", changefreq: "monthly", priority: "0.6" },
+  { path: "/testimonials", changefreq: "monthly", priority: "0.6", image: "/images/testimonial-jk.jpg", imageTitle: "SAPTech Uganda client testimonial" },
+  { path: "/contact", changefreq: "monthly", priority: "0.75" },
+  { path: "/privacy-policy", changefreq: "yearly", priority: "0.4" },
+  { path: "/terms-of-service", changefreq: "yearly", priority: "0.4" }
+];
+
+const renderSitemapUrl = ({ loc, lastmod, changefreq, priority, image, imageTitle }) => `  <url>
+    <loc>${escapeXml(loc)}</loc>
+    <lastmod>${escapeXml(lastmod)}</lastmod>
+    <changefreq>${escapeXml(changefreq)}</changefreq>
+    <priority>${escapeXml(priority)}</priority>${image ? `
+    <image:image>
+      <image:loc>${escapeXml(image)}</image:loc>
+      <image:title>${escapeXml(imageTitle || "SAPTech Uganda")}</image:title>
+    </image:image>` : ""}
+  </url>`;
 
 const sendShareNotFound = (res) => res.status(404)
   .type("html")
@@ -184,6 +347,60 @@ const getPublicJobs = async (req, res) => {
   }
 };
 
+// Public - dynamic XML sitemap for static pages and active job postings
+const getJobsSitemap = async (req, res) => {
+  try {
+    const clientUrl = getClientUrl();
+    const staticLastmod = process.env.SITEMAP_STATIC_LASTMOD || "2026-06-26";
+    const jobs = await Job.find({ isActive: true })
+      .sort({ updatedAt: -1, createdAt: -1 })
+      .select("title poster posterAlt updatedAt createdAt applicationDeadline employmentType department location")
+      .lean();
+
+    const staticUrls = STATIC_SITEMAP_ROUTES.map((route) => renderSitemapUrl({
+      loc: `${clientUrl}${route.path === "/" ? "" : route.path}`,
+      lastmod: staticLastmod,
+      changefreq: route.changefreq,
+      priority: route.priority,
+      image: route.image ? `${clientUrl}${route.image}` : "",
+      imageTitle: route.imageTitle
+    }));
+
+    const jobUrls = jobs.map((job) => {
+      const jobUrl = `${clientUrl}/jobs/${job._id}`;
+      const lastmod = toIsoString(job.updatedAt) || toIsoString(job.createdAt) || new Date().toISOString();
+      const posterUrl = getJobPosterUrl(job, req);
+
+      return renderSitemapUrl({
+        loc: jobUrl,
+        lastmod,
+        changefreq: "daily",
+        priority: "0.85",
+        image: posterUrl,
+        imageTitle: job.posterAlt || `${job.title} job poster`
+      });
+    });
+
+    const urls = [...staticUrls, ...jobUrls].join("\n");
+
+    res.set({
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, max-age=300, stale-while-revalidate=600"
+    });
+
+    return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+${urls}
+</urlset>
+`);
+  } catch (error) {
+    logger.logError("JobController", error, { context: "getJobsSitemap" });
+    return res.status(500).type("text/plain").send("Error generating jobs sitemap");
+  }
+};
+
 // Public - social share preview page for one job
 const getJobSharePage = async (req, res) => {
   try {
@@ -194,7 +411,7 @@ const getJobSharePage = async (req, res) => {
 
     const clientUrl = getClientUrl();
     const jobId = String(job._id);
-    const shareUrl = `${clientUrl}/jobs/${jobId}`;
+    const jobUrl = `${clientUrl}/jobs/${jobId}`;
     const appUrl = `${clientUrl}/careers/${jobId}`;
     const posterUrl = getJobPosterUrl(job, req);
     const title = `${job.title} | Careers at SAPTech Uganda`;
@@ -207,31 +424,7 @@ const getJobSharePage = async (req, res) => {
       "SAPTech Uganda careers",
       "technology jobs Uganda"
     ].filter(Boolean).join(", ");
-    const structuredData = {
-      "@context": "https://schema.org",
-      "@type": "JobPosting",
-      title: job.title,
-      description: stripHtml(job.description || ""),
-      datePosted: job.createdAt ? job.createdAt.toISOString() : undefined,
-      validThrough: job.applicationDeadline ? job.applicationDeadline.toISOString() : undefined,
-      employmentType: String(job.employmentType || "Full-time").toUpperCase().replace(/[^A-Z0-9]+/g, "_"),
-      hiringOrganization: {
-        "@type": "Organization",
-        name: "SAPTech Uganda",
-        sameAs: clientUrl,
-        logo: `${clientUrl}/images/logo.png`
-      },
-      jobLocation: {
-        "@type": "Place",
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: job.location || "Ndejje, Kampala",
-          addressCountry: "UG"
-        }
-      },
-      image: posterUrl,
-      url: appUrl
-    };
+    const structuredData = buildJobStructuredData(job, req);
 
     res.set({
       "Content-Type": "text/html; charset=utf-8",
@@ -247,12 +440,12 @@ const getJobSharePage = async (req, res) => {
   <meta name="description" content="${escapeHtml(description)}">
   <meta name="keywords" content="${escapeHtml(keywords)}">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-  <link rel="canonical" href="${escapeHtml(appUrl)}">
+  <link rel="canonical" href="${escapeHtml(jobUrl)}">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="SAPTech Uganda">
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
-  <meta property="og:url" content="${escapeHtml(shareUrl)}">
+  <meta property="og:url" content="${escapeHtml(jobUrl)}">
   <meta property="og:image" content="${escapeHtml(posterUrl)}">
   <meta property="og:image:secure_url" content="${escapeHtml(posterUrl)}">
   <meta property="og:image:alt" content="${escapeHtml(job.posterAlt || `${job.title} job poster`)}">
@@ -261,16 +454,24 @@ const getJobSharePage = async (req, res) => {
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="twitter:image" content="${escapeHtml(posterUrl)}">
-  <meta http-equiv="refresh" content="0; url=${escapeHtml(appUrl)}">
   <script type="application/ld+json">${JSON.stringify(structuredData).replace(/</g, "\\u003c")}</script>
-  <script>window.location.replace(${JSON.stringify(appUrl)});</script>
 </head>
 <body>
-  <main style="font-family:Arial,sans-serif;max-width:680px;margin:48px auto;padding:0 20px;line-height:1.6;color:#0f172a;">
-    <img src="${escapeHtml(posterUrl)}" alt="${escapeHtml(job.posterAlt || `${job.title} job poster`)}" style="max-width:100%;border-radius:12px;border:1px solid #e2e8f0;">
-    <h1>${escapeHtml(job.title)}</h1>
+  <main style="font-family:Arial,sans-serif;max-width:760px;margin:48px auto;padding:0 20px;line-height:1.65;color:#0f172a;">
+    <img src="${escapeHtml(posterUrl)}" alt="${escapeHtml(job.posterAlt || `${job.title} job poster`)}" style="width:100%;max-height:420px;object-fit:cover;border-radius:12px;border:1px solid #e2e8f0;">
+    <p style="margin:24px 0 8px;color:#047857;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">SAPTech Uganda Careers</p>
+    <h1 style="margin:0 0 12px;font-size:clamp(2rem,5vw,3rem);line-height:1.1;">${escapeHtml(job.title)}</h1>
+    <p style="margin:0 0 18px;color:#475569;">${escapeHtml([job.employmentType, job.department, job.location].filter(Boolean).join(" - "))}</p>
     <p>${escapeHtml(description)}</p>
-    <p><a href="${escapeHtml(appUrl)}">Open this job at SAPTech Uganda</a></p>
+    ${job.responsibilities ? `<h2>Responsibilities</h2><p>${escapeHtml(stripHtml(job.responsibilities))}</p>` : ""}
+    ${job.requirements ? `<h2>Requirements</h2><p>${escapeHtml(stripHtml(job.requirements))}</p>` : ""}
+    ${job.benefits ? `<h2>Benefits</h2><p>${escapeHtml(stripHtml(job.benefits))}</p>` : ""}
+    ${job.salaryRange ? `<p><strong>Compensation:</strong> ${escapeHtml(job.salaryRange)}</p>` : ""}
+    ${job.applicationDeadline ? `<p><strong>Apply by:</strong> ${escapeHtml(new Date(job.applicationDeadline).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }))}</p>` : `<p><strong>Deadline:</strong> Rolling applications</p>`}
+    <p style="margin-top:28px;">
+      <a href="${escapeHtml(appUrl)}" style="display:inline-block;background:#047857;color:#fff;text-decoration:none;font-weight:700;padding:13px 18px;border-radius:8px;">Apply for this job</a>
+      <a href="${escapeHtml(`${clientUrl}/careers`)}" style="display:inline-block;margin-left:10px;color:#047857;font-weight:700;">View all careers</a>
+    </p>
   </main>
 </body>
 </html>`);
@@ -508,6 +709,7 @@ const applyForJob = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      await cleanupUploadedApplicationFiles(req);
       return res.status(400).json({
         status: "error",
         message: "Validation failed",
@@ -517,6 +719,7 @@ const applyForJob = async (req, res) => {
 
     const job = await Job.findById(req.params.id);
     if (!job) {
+      await cleanupUploadedApplicationFiles(req);
       return res.status(404).json({
         status: "error",
         message: "Job not found"
@@ -524,6 +727,7 @@ const applyForJob = async (req, res) => {
     }
 
     if (!job.isActive) {
+      await cleanupUploadedApplicationFiles(req);
       return res.status(400).json({
         status: "error",
         message: "This job is no longer accepting applications"
@@ -538,11 +742,15 @@ const applyForJob = async (req, res) => {
       email: email.toLowerCase().trim()
     });
     if (existing) {
+      await cleanupUploadedApplicationFiles(req);
       return res.status(400).json({
         status: "error",
         message: "You have already applied for this position"
       });
     }
+
+    const resumeFile = buildApplicationFile(getUploadedApplicationFile(req, "resumeFile"));
+    const coverLetterFile = buildApplicationFile(getUploadedApplicationFile(req, "coverLetterFile"));
 
     const application = await JobApplication.create({
       job: job._id,
@@ -551,6 +759,8 @@ const applyForJob = async (req, res) => {
       phone: normalizeText(phone),
       coverLetter: normalizeText(coverLetter),
       resumeUrl: normalizeText(resumeUrl),
+      resumeFile,
+      coverLetterFile,
       status: "pending"
     });
 
@@ -564,7 +774,11 @@ const applyForJob = async (req, res) => {
         applicantEmail: application.email,
         applicantPhone: application.phone,
         coverLetter: application.coverLetter,
-        resumeUrl: application.resumeUrl
+        resumeUrl: application.resumeUrl,
+        resumeFileName: application.resumeFile?.originalName,
+        resumeFileUrl: application.resumeFile?.url,
+        coverLetterFileName: application.coverLetterFile?.originalName,
+        coverLetterFileUrl: application.coverLetterFile?.url
       }).catch((emailError) => {
         console.error("⚠️ Error queueing job application email:", emailError);
       });
@@ -579,6 +793,7 @@ const applyForJob = async (req, res) => {
     });
   } catch (error) {
     logger.logError("JobController", error, { context: "applyForJob", jobId: req.params.id });
+    await cleanupUploadedApplicationFiles(req);
     res.status(500).json({
       status: "error",
       message: "Error submitting application",
@@ -753,6 +968,7 @@ const updateApplicationStatus = async (req, res) => {
 
 module.exports = {
   getPublicJobs,
+  getJobsSitemap,
   getJobSharePage,
   getAllJobs,
   getJobById,

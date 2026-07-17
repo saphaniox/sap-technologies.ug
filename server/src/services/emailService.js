@@ -45,6 +45,12 @@ const normalizeText = (value, fallback = "Not provided") => {
 
 const normalizeStatus = (status) => STATUS_LABELS[status] || normalizeText(status, "Updated");
 
+const formatFileReference = (name, url) => {
+  if (!name && !url) return "";
+  if (name && url) return `${name} - ${url}`;
+  return name || url;
+};
+
 const collectRecipients = (...values) => values.flatMap((value) => {
   if (!value) return [];
   return Array.isArray(value) ? value : [value];
@@ -974,6 +980,8 @@ class EmailService {
               { label: "Email", value: applicationData.applicantEmail },
               { label: "Phone", value: applicationData.applicantPhone },
               { label: "Resume URL", value: applicationData.resumeUrl },
+              { label: "CV / resume file", value: formatFileReference(applicationData.resumeFileName, applicationData.resumeFileUrl) },
+              { label: "Cover letter file", value: formatFileReference(applicationData.coverLetterFileName, applicationData.coverLetterFileUrl) },
               { label: "Received", value: this.formatDate() }
             ]
           },
@@ -1001,6 +1009,8 @@ class EmailService {
               { label: "Role", value: applicationData.jobTitle },
               { label: "Applicant", value: applicationData.applicantName },
               { label: "Email", value: applicationData.applicantEmail },
+              { label: "CV / resume file", value: applicationData.resumeFileName },
+              { label: "Cover letter file", value: applicationData.coverLetterFileName },
               { label: "Submitted", value: this.formatDate() }
             ]
           },
