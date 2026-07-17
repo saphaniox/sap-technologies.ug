@@ -15,7 +15,7 @@ class SMSAfricasTalkingService {
         
         this.isConfigured = !!(this.username && this.apiKey);
         
-        if (this.isConfigured) {
+        if (this.isConfigured && AfricasTalking) {
             try {
                 // Initialize Africa's Talking
                 const africastalking = AfricasTalking({
@@ -32,6 +32,9 @@ class SMSAfricasTalkingService {
                 console.error('❌ Error initializing Africa\'s Talking:', error);
                 this.isConfigured = false;
             }
+        } else if (this.isConfigured && !AfricasTalking) {
+            console.warn('📲 Africa\'s Talking SMS package is not installed; SMS notifications are disabled.');
+            this.isConfigured = false;
         } else {
             console.log('📲 Africa\'s Talking SMS: Not configured (add AFRICAS_TALKING_API_KEY to .env)');
         }
