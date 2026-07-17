@@ -6,7 +6,7 @@
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
     "dev:inspect": "nodemon --inspect src/app.js",
-    "build": "npm ci --include=dev",
+    "build": "node --check src/app.js",
     "postinstall": "echo 'Backend dependencies installed successfully'",
     "cleanup-logs": "node cleanup-logs.js",
     "keep-alive": "node scripts/keep-alive-server.js",
