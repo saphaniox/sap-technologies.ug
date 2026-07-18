@@ -206,7 +206,7 @@ const buildJobDescriptionHtml = (job) => {
 const buildJobStructuredData = (job, req) => {
   const clientUrl = getClientUrl();
   const jobId = String(job._id);
-  const jobUrl = `${clientUrl}/jobs/${jobId}`;
+  const jobUrl = `${clientUrl}/careers/${jobId}`;
   const remote = isRemoteJob(job);
 
   return {
@@ -367,7 +367,7 @@ const getJobsSitemap = async (req, res) => {
     }));
 
     const jobUrls = jobs.map((job) => {
-      const jobUrl = `${clientUrl}/jobs/${job._id}`;
+      const jobUrl = `${clientUrl}/careers/${job._id}`;
       const lastmod = toIsoString(job.updatedAt) || toIsoString(job.createdAt) || new Date().toISOString();
       const posterUrl = getJobPosterUrl(job, req);
 
@@ -411,8 +411,8 @@ const getJobSharePage = async (req, res) => {
 
     const clientUrl = getClientUrl();
     const jobId = String(job._id);
-    const jobUrl = `${clientUrl}/jobs/${jobId}`;
-    const appUrl = `${clientUrl}/careers/${jobId}`;
+    const jobUrl = `${clientUrl}/careers/${jobId}`;
+    const appUrl = jobUrl;
     const posterUrl = getJobPosterUrl(job, req);
     const title = `${job.title} | Careers at SAPTech Uganda`;
     const description = buildJobShareDescription(job);
@@ -458,7 +458,7 @@ const getJobSharePage = async (req, res) => {
 </head>
 <body>
   <main style="font-family:Arial,sans-serif;max-width:760px;margin:48px auto;padding:0 20px;line-height:1.65;color:#0f172a;">
-    <img src="${escapeHtml(posterUrl)}" alt="${escapeHtml(job.posterAlt || `${job.title} job poster`)}" style="width:100%;max-height:420px;object-fit:cover;border-radius:12px;border:1px solid #e2e8f0;">
+    <img src="${escapeHtml(posterUrl)}" alt="${escapeHtml(job.posterAlt || `${job.title} job poster`)}" style="width:100%;max-height:520px;object-fit:contain;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
     <p style="margin:24px 0 8px;color:#047857;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">SAPTech Uganda Careers</p>
     <h1 style="margin:0 0 12px;font-size:clamp(2rem,5vw,3rem);line-height:1.1;">${escapeHtml(job.title)}</h1>
     <p style="margin:0 0 18px;color:#475569;">${escapeHtml([job.employmentType, job.department, job.location].filter(Boolean).join(" - "))}</p>

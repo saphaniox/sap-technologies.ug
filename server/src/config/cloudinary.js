@@ -160,6 +160,14 @@ const imageTransformation = (width, height, crop = 'limit', options = {}) => {
     ];
 };
 
+const videoTransformation = (width = 1280) => ([{
+    width,
+    crop: 'limit',
+    quality: 'auto:eco',
+    fetch_format: 'mp4',
+    video_codec: 'auto'
+}]);
+
 const cloudinaryStorageClient = cloudinaryLib;
 const cloudinaryUploadTimeout = Number(process.env.CLOUDINARY_UPLOAD_TIMEOUT_MS) || 120000;
 
@@ -272,7 +280,7 @@ const storageConfigs = {
                     ? {
                         folder: 'sap-technologies/gallery',
                         resource_type: 'video',
-                        eager: [{ quality: 'auto:good', fetch_format: 'mp4' }],
+                        eager: videoTransformation(1280),
                         eager_async: true,
                         timeout: cloudinaryUploadTimeout
                     }
@@ -308,7 +316,7 @@ const storageConfigs = {
                     params = {
                         folder: 'sap-technologies/iot',
                         resource_type: 'video',
-                        eager: [{ quality: 'auto:good', fetch_format: 'mp4' }],
+                        eager: videoTransformation(1280),
                         eager_async: true,
                         timeout: cloudinaryUploadTimeout
                     };
