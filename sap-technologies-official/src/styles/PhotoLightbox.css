@@ -1,0 +1,112 @@
+.photo-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 3vw, 36px);
+}
+
+.photo-lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: rgba(5, 9, 20, 0.82);
+  cursor: zoom-out;
+}
+
+.photo-lightbox-backdrop:hover,
+.photo-lightbox-backdrop:focus {
+  transform: none;
+  box-shadow: none;
+}
+
+.photo-lightbox-panel {
+  position: relative;
+  z-index: 1;
+  width: min(96vw, 1180px);
+  max-height: 92dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.photo-lightbox-frame {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: min(64dvh, 720px);
+  overflow: hidden;
+  border-radius: 8px;
+  background: #050914;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.45);
+}
+
+.photo-lightbox-image {
+  display: block;
+  max-width: 100%;
+  max-height: calc(92dvh - 72px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.photo-lightbox-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.photo-lightbox-close {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-weight: 750;
+  text-decoration: none;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.photo-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+.image-slider .slider-image,
+.image-slider.single-image img,
+.service-image > img,
+.portfolio-image > img,
+.iot-image-container > img,
+.software-image > img,
+.nominee-photo img,
+.product-image img {
+  cursor: zoom-in;
+}
+
+@media (max-width: 640px) {
+  .photo-lightbox {
+    padding: 10px;
+  }
+
+  .photo-lightbox-frame {
+    min-height: 52dvh;
+  }
+
+  .photo-lightbox-actions {
+    justify-content: stretch;
+  }
+
+  .photo-lightbox-close {
+    flex: 1;
+  }
+}

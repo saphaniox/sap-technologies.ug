@@ -1,0 +1,19 @@
+{
+  "name": "sap-technologies-ug-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SAP Technologies Uganda client and server monorepo",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:client": "npm --prefix sap-technologies-official run dev",
+    "dev:server": "npm --prefix server run dev",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "npm --prefix sap-technologies-official run build",
+    "build:server": "npm --prefix server run build",
+    "lint:client": "npm --prefix sap-technologies-official run lint",
+    "install:all": "npm ci --prefix sap-technologies-official && npm ci --prefix server"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

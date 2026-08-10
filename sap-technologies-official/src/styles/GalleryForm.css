@@ -1,0 +1,253 @@
+.gallery-form-modal {
+  max-width: 700px;
+}
+
+.gallery-form {
+  padding: 24px;
+}
+
+.gallery-form .form-group {
+  margin-bottom: 20px;
+}
+
+.gallery-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.gallery-form input[type="text"],
+.gallery-form input[type="number"],
+.gallery-form input[type="file"],
+.gallery-form textarea,
+.gallery-form select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s;
+  background: white;
+}
+
+.gallery-form input[type="file"] {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.gallery-form input:focus,
+.gallery-form textarea:focus,
+.gallery-form select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.gallery-form input.error,
+.gallery-form textarea.error {
+  border-color: #ef4444;
+}
+
+.gallery-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.image-preview {
+  margin-top: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #e2e8f0;
+  max-width: 100%;
+}
+
+.image-preview img {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: contain;
+  display: block;
+  background: #f8fafc;
+}
+
+.media-preview-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  margin-top: 12px;
+}
+
+.media-preview-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.media-preview-card img,
+.media-preview-card video {
+  aspect-ratio: 4 / 3;
+  background: #0f172a;
+  display: block;
+  height: auto;
+  object-fit: cover;
+  width: 100%;
+}
+
+.media-preview-meta {
+  color: #475569;
+  display: grid;
+  gap: 2px;
+  font-size: 0.82rem;
+  padding: 9px 10px;
+}
+
+.media-preview-meta span,
+.media-preview-meta small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-remove-media {
+  background: #fee2e2;
+  border: 0;
+  color: #b91c1c;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 9px 10px;
+  width: 100%;
+}
+
+.btn-remove-media:hover:not(:disabled) {
+  background: #fecaca;
+}
+
+.required {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+.optional-field {
+  color: #94a3b8;
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.help-text {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.error-message {
+  display: block;
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
+.submit-error {
+  background: #fee2e2;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.checkbox-group {
+  margin-bottom: 16px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+  position: sticky;
+  bottom: 0;
+  background: white;
+  margin: 0 -24px -24px;
+  padding: 20px 24px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background: white;
+  color: #64748b;
+  border: 2px solid #e2e8f0;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .gallery-form-modal {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+}

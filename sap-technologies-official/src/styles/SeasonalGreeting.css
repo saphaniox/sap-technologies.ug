@@ -1,0 +1,338 @@
+/* Seasonal Greeting Wrapper */
+.seasonal-greeting-wrapper {
+  position: fixed;
+  top: clamp(64px, 8vw, 92px);
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-height: min(78vh, 760px);
+  overflow-y: auto;
+  background: linear-gradient(135deg, #0f1f4d 0%, #1f3e8a 50%, #0f1f4d 100%);
+  padding: 2rem 1rem;
+  z-index: 1200;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Main Greeting Container */
+.seasonal-greeting {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+  color: #fff;
+  z-index: 1;
+}
+
+/* Snowflakes Container */
+.snowflakes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Individual Snowflake */
+.snowflake {
+  position: absolute;
+  top: -10%;
+  color: rgba(255, 255, 255, 0.8);
+  user-select: none;
+  animation: fall linear infinite;
+}
+
+@keyframes fall {
+  0% {
+    top: -10%;
+    opacity: 1;
+  }
+  100% {
+    top: 110%;
+    opacity: 0.3;
+  }
+}
+
+/* Close Button */
+.seasonal-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+  line-height: 1;
+  padding: 0;
+}
+
+.seasonal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1) rotate(90deg);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Content Container */
+.seasonal-content {
+  position: relative;
+  z-index: 2;
+  padding: 1rem;
+}
+
+/* Decorations */
+.seasonal-decorations {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1rem;
+  font-size: 2.5rem;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.seasonal-decorations.bottom {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.decoration {
+  display: inline-block;
+  animation: rotate 3s linear infinite;
+}
+
+.decoration:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.decoration:nth-child(3) {
+  animation-delay: 1s;
+}
+
+@keyframes rotate {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-15deg);
+  }
+  75% {
+    transform: rotate(15deg);
+  }
+}
+
+/* Greeting Text */
+.seasonal-text {
+  margin: 1.5rem 0;
+}
+
+.seasonal-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin: 0;
+  background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 3s ease infinite;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 2px;
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.seasonal-subtitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 0.5rem 0 0 0;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Countdown */
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(90px, 130px));
+  justify-content: center;
+  gap: 1rem;
+  margin: 1.25rem 0 1.75rem;
+}
+
+.countdown-item {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 12px;
+  padding: 0.75rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  backdrop-filter: blur(3px);
+}
+
+.countdown-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #ffed4e;
+}
+
+.countdown-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 0.35rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+@keyframes glow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+                 0 0 20px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
+                 0 0 30px rgba(255, 215, 0, 0.6);
+  }
+}
+
+/* Message */
+.seasonal-message {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  max-width: 800px;
+  margin: 1.5rem auto;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 400;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  padding: 0 1rem;
+}
+
+/* From SAPTech Uganda */
+.seasonal-from {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.seasonal-from p {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  font-style: italic;
+}
+
+.seasonal-from strong {
+  color: #ffd700;
+  font-weight: 700;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .seasonal-greeting-wrapper {
+    top: 64px;
+    padding: 1.5rem 0.5rem;
+  }
+
+  .seasonal-title {
+    font-size: 2rem;
+  }
+
+  .seasonal-subtitle {
+    font-size: 1.15rem;
+  }
+
+  .countdown-grid {
+    grid-template-columns: repeat(2, minmax(100px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .countdown-value {
+    font-size: 1.6rem;
+  }
+
+  .seasonal-message {
+    font-size: 1rem;
+    padding: 0 0.5rem;
+  }
+
+  .seasonal-decorations {
+    gap: 1rem;
+    font-size: 2rem;
+  }
+
+  .seasonal-close-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .seasonal-title {
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+  }
+
+  .seasonal-subtitle {
+    font-size: 1rem;
+  }
+
+  .countdown-item {
+    padding: 0.65rem 0.4rem;
+  }
+
+  .countdown-value {
+    font-size: 1.4rem;
+  }
+
+  .seasonal-message {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .seasonal-decorations {
+    gap: 0.8rem;
+    font-size: 1.5rem;
+  }
+
+  .seasonal-from p {
+    font-size: 0.9rem;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .seasonal-greeting-wrapper {
+    background: linear-gradient(135deg, #0a1536 0%, #173371 50%, #0a1536 100%);
+  }
+}
+
+[data-theme="dark"] .seasonal-greeting-wrapper {
+  background: linear-gradient(135deg, #0a1536 0%, #173371 50%, #0a1536 100%);
+}

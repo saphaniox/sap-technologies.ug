@@ -1,0 +1,52 @@
+.adsense-placement {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  margin: 0 auto;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  line-height: 0;
+}
+
+.adsense-placement--ready {
+  width: min(100% - 32px, 1120px);
+  margin: 18px auto 28px;
+  line-height: normal;
+}
+
+.adsense-placement .adsbygoogle {
+  display: block;
+  width: 100%;
+  min-height: 0;
+}
+
+.adsense-placement--ready.adsense-placement--home {
+  margin-top: 0;
+}
+
+.adsense-placement--ready.adsense-placement--marketplace {
+  margin-bottom: 18px;
+}
+
+.adsense-placement--ready.adsense-placement--home-middle,
+.adsense-placement--ready.adsense-placement--contextual {
+  margin-top: 18px;
+}
+
+.adsense-placement--ready.adsense-placement--page-top {
+  margin-top: 18px;
+}
+
+.adsense-placement--ready.adsense-placement--page-bottom {
+  margin-top: 28px;
+}
+
+@media (max-width: 640px) {
+  .adsense-placement--ready {
+    width: calc(100% - 20px);
+    margin-bottom: 22px;
+  }
+}

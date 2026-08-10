@@ -1,0 +1,241 @@
+/* Back to Top Button Styles */
+.back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s ease;
+  font-size: 0;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.back-to-top:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.back-to-top:active {
+  transform: translateY(0);
+}
+
+.back-to-top svg {
+  transition: transform 0.3s ease;
+}
+
+.back-to-top:hover svg {
+  transform: translateY(-1px);
+}
+
+/* Ultra-responsive design for all screen sizes */
+
+/* Ultra-small screens (320px-400px) */
+@media (max-width: 400px) {
+  .back-to-top {
+    bottom: 20px;
+    right: 20px;
+    width: clamp(40px, 12vw, 45px);
+    height: clamp(40px, 12vw, 45px);
+  }
+  
+  .back-to-top svg {
+    width: clamp(18px, 5vw, 20px);
+    height: clamp(18px, 5vw, 20px);
+  }
+}
+
+/* Micro-screens (320px-360px) */
+@media (max-width: 360px) {
+  .back-to-top {
+    bottom: 15px;
+    right: 15px;
+    width: 42px;
+    height: 42px;
+    box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+  }
+  
+  .back-to-top svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Small mobile screens (401px-480px) */
+@media (min-width: 401px) and (max-width: 480px) {
+  .back-to-top {
+    bottom: 25px;
+    right: 25px;
+    width: 46px;
+    height: 46px;
+  }
+  
+  .back-to-top svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Mobile screens (481px-768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .back-to-top {
+    bottom: 25px;
+    right: 25px;
+    width: 48px;
+    height: 48px;
+  }
+  
+  .back-to-top svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* Tablet screens (769px-1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .back-to-top {
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .back-to-top svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Large screens (1025px and up) */
+@media (min-width: 1025px) {
+  .back-to-top {
+    bottom: 35px;
+    right: 35px;
+    width: 52px;
+    height: 52px;
+  }
+  
+  .back-to-top svg {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 600px) and (orientation: landscape) {
+  .back-to-top {
+    bottom: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+  }
+  
+  .back-to-top svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* High DPI screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .back-to-top {
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .back-to-top {
+    transition: none;
+  }
+  
+  .back-to-top svg {
+    transition: none;
+  }
+}
+
+/* Focus styles for accessibility */
+.back-to-top:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.back-to-top:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.back-to-top:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Dark theme support */
+[data-theme="dark"] .back-to-top {
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  box-shadow: 0 4px 15px rgba(96, 165, 250, 0.4);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+[data-theme="dark"] .back-to-top:hover {
+  background: linear-gradient(135deg, #93c5fd, #60a5fa);
+  box-shadow: 0 6px 20px rgba(96, 165, 250, 0.5);
+  border-color: rgba(96, 165, 250, 0.4);
+  transform: translateY(-2px) scale(1.05);
+}
+
+[data-theme="dark"] .back-to-top:focus {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+[data-theme="dark"] .back-to-top:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+/* Enhanced visibility in dark mode */
+[data-theme="dark"] .back-to-top svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+[data-theme="dark"] .back-to-top:hover svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transform: translateY(-1px) scale(1.05);
+}
+
+/* Light theme specific enhancements */
+[data-theme="light"] .back-to-top,
+:root .back-to-top {
+  background: linear-gradient(135deg, #1a237e, #3949ab);
+  box-shadow: 0 4px 15px rgba(26, 35, 126, 0.3);
+}
+
+[data-theme="light"] .back-to-top:hover,
+:root .back-to-top:hover {
+  background: linear-gradient(135deg, #0d1b6b, #1a237e);
+  box-shadow: 0 6px 20px rgba(26, 35, 126, 0.4);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  [data-theme="dark"] .back-to-top {
+    background: #60a5fa;
+    border: 2px solid #ffffff;
+  }
+  
+  [data-theme="dark"] .back-to-top:hover {
+    background: #93c5fd;
+    border-color: #ffffff;
+  }
+}

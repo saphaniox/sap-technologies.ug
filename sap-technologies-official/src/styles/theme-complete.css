@@ -1,0 +1,515 @@
+/* ===========================
+   COMPLETE SITE THEME COVERAGE
+   Keeps every public, admin, modal, form, and commerce surface readable in
+   both light and dark mode, including older components with hardcoded colors.
+   =========================== */
+
+:root,
+[data-theme="light"] {
+  --page-bg: #f8fafc;
+  --page-bg-soft: #eef4fb;
+  --surface-1: #ffffff;
+  --surface-2: #f8fafc;
+  --surface-3: #eef2f7;
+  --surface-elevated: #ffffff;
+  --surface-subtle: #f8fafc;
+  --text-strong: #102033;
+  --text-normal: #2c3e50;
+  --text-soft: #64748b;
+  --theme-border: rgba(15, 23, 42, 0.12);
+  --theme-border-strong: rgba(15, 23, 42, 0.2);
+  --theme-shadow: 0 18px 45px rgba(15, 23, 42, 0.1);
+  --theme-shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --theme-input-bg: #ffffff;
+  --theme-input-text: #102033;
+  --theme-placeholder: #94a3b8;
+  --theme-table-head: #eef4fb;
+  --theme-hover: rgba(52, 152, 219, 0.08);
+}
+
+[data-theme="dark"] {
+  --page-bg: #0b1120;
+  --page-bg-soft: #101827;
+  --surface-1: #111827;
+  --surface-2: #162033;
+  --surface-3: #1f2a44;
+  --surface-elevated: #111827;
+  --surface-subtle: #0f172a;
+  --text-strong: #f8fafc;
+  --text-normal: #e2e8f0;
+  --text-soft: #b7c4d7;
+  --theme-border: rgba(148, 163, 184, 0.2);
+  --theme-border-strong: rgba(148, 163, 184, 0.34);
+  --theme-shadow: 0 22px 55px rgba(0, 0, 0, 0.42);
+  --theme-shadow-soft: 0 12px 34px rgba(0, 0, 0, 0.3);
+  --theme-input-bg: #0f172a;
+  --theme-input-text: #f8fafc;
+  --theme-placeholder: #94a3b8;
+  --theme-table-head: #162033;
+  --theme-hover: rgba(93, 173, 226, 0.13);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  background: var(--page-bg);
+  color: var(--text-normal);
+}
+
+[data-theme] body {
+  background:
+    radial-gradient(circle at top left, rgba(52, 152, 219, 0.08), transparent 34rem),
+    var(--page-bg);
+  color: var(--text-normal);
+}
+
+[data-theme] .App,
+[data-theme] main,
+[data-theme] .main-content,
+[data-theme] .page,
+[data-theme] .page-content,
+[data-theme] .section {
+  background-color: transparent;
+  color: var(--text-normal);
+}
+
+html[data-theme="dark"] :is(
+  .about,
+  .about-section,
+  .services,
+  .services-section,
+  .portfolio,
+  .portfolio-section,
+  .partners,
+  .partners-section,
+  .companies,
+  .companies-section,
+  .products-section,
+  .contact,
+  .contact-section,
+  .account-page,
+  .legal-page,
+  .certificate-verify-container,
+  .awards-page,
+  .awards-standalone-page,
+  .admin-dashboard,
+  .software-page,
+  .iot-page,
+  .newsletter-section
+) {
+  background-color: var(--page-bg) !important;
+  color: var(--text-normal) !important;
+}
+
+html[data-theme="light"] :is(
+  .admin-dashboard,
+  .account-page,
+  .legal-page,
+  .certificate-verify-container,
+  .products-section,
+  .contact-section
+) {
+  background-color: var(--page-bg) !important;
+  color: var(--text-normal) !important;
+}
+
+html[data-theme] :is(
+  .card,
+  .about-card,
+  .service-card,
+  .service,
+  .portfolio-card,
+  .project-card,
+  .partner-card,
+  .company-card,
+  .product-card,
+  .testimonial-card,
+  .category-card,
+  .nomination-card,
+  .account-card,
+  .account-section,
+  .settings-section,
+  .stat-card,
+  .dashboard-card,
+  .admin-card,
+  .admin-content,
+  .admin-main,
+  .admin-info-panel,
+  .form-card,
+  .form-section,
+  .contact-card,
+  .contact-form,
+  .contact-info,
+  .newsletter,
+  .cart-drawer,
+  .cart-item,
+  .inquiry-modal,
+  .quote-modal,
+  .modal-content,
+  .auth-modal,
+  .forgot-password-modal,
+  .certificate-card,
+  .data-table,
+  .table-container,
+  .certificates-table-container,
+  .partners-container,
+  .products-search-bar,
+  .search-input-wrap,
+  .cookie-consent,
+  .alert,
+  .empty-state,
+  .loading-state
+) {
+  background-color: var(--surface-elevated) !important;
+  color: var(--text-normal) !important;
+  border-color: var(--theme-border) !important;
+  box-shadow: var(--theme-shadow-soft);
+}
+
+html[data-theme="dark"] :is(
+  .admin-sidebar,
+  .sidebar,
+  .nav-sidebar,
+  .mobile-menu,
+  .dropdown-menu,
+  .search-modal,
+  .awards-modal-content
+) {
+  background-color: var(--surface-1) !important;
+  color: var(--text-normal) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme] :is(
+  .card:hover,
+  .about-card:hover,
+  .service-card:hover,
+  .portfolio-card:hover,
+  .partner-card:hover,
+  .product-card:hover,
+  .company-card:hover,
+  .category-card:hover,
+  .nomination-card:hover
+) {
+  border-color: var(--primary-color) !important;
+  box-shadow: var(--theme-shadow) !important;
+}
+
+html[data-theme] :is(
+  .section-title,
+  .page-title,
+  .card-title,
+  .product-name,
+  .project-title,
+  .service-title,
+  .category-name,
+  .nominee-name,
+  .modal-title,
+  .form-title,
+  .admin-title,
+  .settings-section h3,
+  .data-table th,
+  .certificates-table th
+) {
+  color: var(--text-strong) !important;
+}
+
+html[data-theme] :is(
+  .card,
+  .about-card,
+  .service-card,
+  .portfolio-card,
+  .partner-card,
+  .product-card,
+  .modal-content,
+  .auth-modal,
+  .inquiry-modal,
+  .quote-modal,
+  .admin-content,
+  .account-section,
+  .legal-content,
+  .contact-form,
+  .cart-drawer,
+  .data-table,
+  .certificates-table
+) :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--text-strong) !important;
+}
+
+html[data-theme] :is(
+  .section-subtitle,
+  .page-subtitle,
+  .hero-subtitle,
+  .hero-description,
+  .product-description,
+  .project-description,
+  .service-description,
+  .category-description,
+  .nomination-reason,
+  .activity-details,
+  .section-description,
+  .helper-text,
+  .empty-state p,
+  .loading-state p,
+  .contact-card p,
+  .company-content p,
+  .partner-card p,
+  .cart-item-details,
+  .cart-summary,
+  .form-help,
+  .form-text,
+  p,
+  li
+) {
+  color: var(--text-soft);
+}
+
+html[data-theme] :is(
+  label,
+  .form-group label,
+  .filter-group label,
+  .cart-field label,
+  .detail-label,
+  .tech-stack-label,
+  .activity-action,
+  .data-table td,
+  .certificates-table td,
+  table td,
+  table th
+) {
+  color: var(--text-normal) !important;
+}
+
+html[data-theme] :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select,
+  .form-input,
+  .form-textarea,
+  .form-select,
+  .search-input,
+  .filter-select,
+  .products-search-input,
+  .newsletter-input,
+  .qty-input,
+  .status-select
+) {
+  background-color: var(--theme-input-bg) !important;
+  color: var(--theme-input-text) !important;
+  border-color: var(--theme-border) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme] :is(
+  input:not([type="checkbox"]):not([type="radio"]):focus,
+  textarea:focus,
+  select:focus,
+  .form-input:focus,
+  .form-textarea:focus,
+  .form-select:focus,
+  .search-input:focus,
+  .filter-select:focus,
+  .products-search-input:focus,
+  .newsletter-input:focus,
+  .status-select:focus
+) {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 4px var(--focus-ring, rgba(52, 152, 219, 0.22)) !important;
+}
+
+html[data-theme] input::placeholder,
+html[data-theme] textarea::placeholder {
+  color: var(--theme-placeholder) !important;
+  opacity: 1;
+}
+
+html[data-theme] select option {
+  background: var(--theme-input-bg);
+  color: var(--theme-input-text);
+}
+
+html[data-theme] :is(table, .data-table, .certificates-table) {
+  background-color: var(--surface-elevated) !important;
+  color: var(--text-normal) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme] :is(thead, .data-table th, .certificates-table th) {
+  background-color: var(--theme-table-head) !important;
+  color: var(--text-strong) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme] :is(tbody tr, .data-table td, .certificates-table td) {
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme] :is(tbody tr:hover, .data-table tr:hover, .certificates-table tr:hover) {
+  background-color: var(--theme-hover) !important;
+}
+
+html[data-theme] a:not(.btn):not(.cta-button):not(.nav-sidebar-link) {
+  color: var(--primary-color);
+}
+
+html[data-theme] :is(.btn-secondary, .cancel-btn, .close-btn, .modal-close, .search-close-btn, .nav-sidebar-close) {
+  background-color: var(--surface-2) !important;
+  color: var(--text-normal) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme] :is(.btn-secondary, .cancel-btn, .close-btn, .modal-close, .search-close-btn, .nav-sidebar-close):hover {
+  background-color: var(--surface-3) !important;
+  color: var(--text-strong) !important;
+}
+
+html[data-theme] :is(.badge, .award-badge, .tech-tag, .product-tag, .status-badge, .availability-badge, .category-badge) {
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] :is(
+  .image-slider,
+  .slider-image-container,
+  .product-image,
+  .cart-item-img,
+  .company-img,
+  .partner-logo,
+  .nominee-photo,
+  .project-image,
+  .service-image,
+  .portfolio-image
+) {
+  background-color: #0b1120 !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="light"] :is(
+  .image-slider,
+  .slider-image-container,
+  .product-image,
+  .cart-item-img,
+  .company-img,
+  .partner-logo,
+  .nominee-photo,
+  .project-image,
+  .service-image,
+  .portfolio-image
+) {
+  background-color: #ffffff !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme] :is(.legal-content, .privacy-policy, .terms-of-service) {
+  background-color: var(--surface-elevated) !important;
+  color: var(--text-normal) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme] :is(.legal-content h1, .legal-content h2, .legal-content h3) {
+  color: var(--text-strong) !important;
+}
+
+html[data-theme] :is(.legal-content p, .legal-content li) {
+  color: var(--text-soft) !important;
+}
+
+html[data-theme="dark"] :is(.swal2-popup, .swal2-modal) {
+  background-color: var(--surface-elevated) !important;
+  color: var(--text-normal) !important;
+  border: 1px solid var(--theme-border) !important;
+}
+
+html[data-theme="dark"] :is(.swal2-title) {
+  color: var(--text-strong) !important;
+}
+
+html[data-theme="dark"] :is(.swal2-html-container, .swal2-content) {
+  color: var(--text-soft) !important;
+}
+
+html[data-theme] :is(
+  .hero,
+  .hero-section,
+  .software-hero,
+  .iot-hero,
+  .cta-section,
+  .products-cta,
+  .footer,
+  .site-footer,
+  .slider,
+  .slide,
+  .seasonal-greeting-wrapper
+) {
+  box-shadow: none;
+}
+
+@media (max-width: 640px) {
+  html[data-theme] :is(.card, .product-card, .service-card, .portfolio-card, .partner-card, .cart-drawer, .modal-content, .inquiry-modal, .quote-modal) {
+    border-radius: 14px !important;
+  }
+
+  html[data-theme] :is(.admin-content, .admin-main, .account-page, .products-section, .services, .portfolio, .partners, .contact) {
+    padding-left: max(12px, env(safe-area-inset-left)) !important;
+    padding-right: max(12px, env(safe-area-inset-right)) !important;
+  }
+}
+/* ===========================
+   ONE BY ONE PAGE THEME COVERAGE
+   Extra selectors for sections that use custom class names outside generic cards.
+   =========================== */
+html[data-theme] :is(
+  .about-text,
+  .about-stats,
+  .mvv-card,
+  .mvv-header,
+  .value-item,
+  .team-member,
+  .member-bio,
+  .tech-category,
+  .project-info,
+  .service-details,
+  .service-modal,
+  .partner-request-form,
+  .product-form,
+  .project-form,
+  .service-form,
+  .software-form,
+  .iot-form
+) {
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] :is(
+  .about-text,
+  .about-stats,
+  .mvv-card,
+  .value-item,
+  .team-member,
+  .member-bio,
+  .tech-category,
+  .project-info,
+  .service-details,
+  .service-modal,
+  .partner-request-form,
+  .product-form,
+  .project-form,
+  .service-form,
+  .software-form,
+  .iot-form
+) {
+  background-color: var(--surface-elevated) !important;
+  color: var(--text-normal) !important;
+}
+
+html[data-theme="dark"] :is(
+  .mvv-description,
+  .value-content p,
+  .member-bio p,
+  .project-description,
+  .service-description,
+  .partner-description,
+  .product-description
+) {
+  color: var(--text-soft) !important;
+}

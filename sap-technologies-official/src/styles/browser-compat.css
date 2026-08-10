@@ -1,0 +1,420 @@
+/* ================================================
+   CROSS-BROWSER COMPATIBILITY & FALLBACKS
+   All CSS prefixes and vendor-specific properties
+   ================================================ */
+
+:root {
+  /* Fallback colors for older browsers */
+  --fallback-color-primary: #3b82f6;
+  --fallback-color-dark: #0f172a;
+  --fallback-color-text: #1f2937;
+  --fallback-color-light: #f9fafb;
+}
+
+/* ===========================
+   Flexbox with IE11 support
+   =========================== */
+
+@supports not (display: flex) {
+  /* Fallback for IE10 and earlier */
+  .flex, [class*="flex-"],
+  .flex-row, .flex-col,
+  .flex-wrap, .justify-center,
+  .items-center, .gap- {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+  }
+}
+
+/* All flex containers should have these prefixes */
+.flex, [class*="flex-"], [class*="justify-"], [class*="items-"] {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+/* ===========================
+   Grid with fallback
+   =========================== */
+
+@supports not (display: grid) {
+  /* Fallback for older browsers */
+  .grid, [class*="grid-"] {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: -ms-flexbox;
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
+/* ===========================
+   Transform and Animations
+   =========================== */
+
+/* Ensure transforms work in older webkit browsers */
+[class*="transform"], [class*="animate-"], [class*="transition-"] {
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  -ms-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* ===========================
+   Gradients with fallbacks
+   =========================== */
+
+[class*="gradient-"], [class*="from-"], [class*="to-"] {
+  /* Webkit browsers */
+  background: -webkit-linear-gradient(to right, currentColor);
+  /* Firefox */
+  background: -moz-linear-gradient(to right, currentColor);
+  /* Standard */
+  background: linear-gradient(to right, currentColor);
+}
+
+/* ===========================
+   Box-shadow with fallback
+   =========================== */
+
+[class*="shadow"] {
+  -webkit-box-shadow: inherit;
+  -moz-box-shadow: inherit;
+  box-shadow: inherit;
+}
+
+/* ===========================
+   Border-radius cross-browser
+   =========================== */
+
+[class*="rounded"] {
+  -webkit-border-radius: inherit;
+  -moz-border-radius: inherit;
+  -ms-border-radius: inherit;
+  border-radius: inherit;
+  background-clip: padding-box;
+}
+
+/* ===========================
+   User select behavior
+   =========================== */
+
+.select-none, [disabled], button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.select-text, textarea, input[type="text"] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* ===========================
+   Input field cross-browser
+   =========================== */
+
+input, textarea, select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  
+  /* Remove default iOS styling */
+  -webkit-border-radius: 0;
+  border-radius: 0;
+}
+
+/* Remove number input spinner */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Style range inputs consistently */
+input[type="range"] {
+  -webkit-appearance: slider-horizontal;
+  -webkit-accent-color: var(--fallback-color-primary);
+  accent-color: var(--fallback-color-primary);
+}
+
+/* ===========================
+   Scrollbar styling
+   =========================== */
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--fallback-color-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--fallback-color-primary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--fallback-color-primary) var(--fallback-color-light);
+}
+
+/* ===========================
+   Line clamping for older browsers
+   =========================== */
+
+[class*="line-clamp"] {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===========================
+   Transitions fallback
+   =========================== */
+
+[class*="transition"] {
+  -webkit-transition: inherit;
+  -moz-transition: inherit;
+  -ms-transition: inherit;
+  -o-transition: inherit;
+  transition: inherit;
+}
+
+/* ===========================
+   Filters cross-browser
+   =========================== */
+
+[class*="filter"], [class*="blur"], [class*="brightness"] {
+  -webkit-filter: inherit;
+  -moz-filter: inherit;
+  -ms-filter: inherit;
+  -o-filter: inherit;
+  filter: inherit;
+}
+
+/* ===========================
+   Will-change optimization
+   =========================== */
+
+[class*="animate"], button, [role="button"] {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===========================
+   Pointer events support
+   =========================== */
+
+[class*="pointer"], [class*="cursor"] {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+/* ===========================
+   Focus visible for accessibility
+   =========================== */
+
+:focus-visible {
+  outline: 2px solid var(--fallback-color-primary);
+  outline-offset: 2px;
+}
+
+/* Firefox focus styles */
+::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+/* ===========================
+   Image responsive fallback
+   =========================== */
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* ===========================
+   Text rendering optimization
+   =========================== */
+
+body, button, input, textarea, select {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===========================
+   Link styling consistency
+   =========================== */
+
+a {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  color: inherit;
+  text-decoration: inherit;
+}
+
+/* ===========================
+   Button reset styles
+   =========================== */
+
+button, [role="button"], input[type="button"], input[type="reset"], input[type="submit"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  padding: 0;
+}
+
+/* ===========================
+   Form elements reset
+   =========================== */
+
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+legend {
+  padding: 0;
+  margin: 0;
+}
+
+/* ===========================
+   Aspect ratio fallback for older browsers
+   =========================== */
+
+@supports not (aspect-ratio: 1) {
+  [class*="aspect-"] {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  [class*="aspect-"]::before {
+    content: '';
+    display: block;
+    padding-bottom: 75%; /* Fallback aspect ratio */
+  }
+  
+  [class*="aspect-"] > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+/* ===========================
+   Object fit fallback
+   =========================== */
+
+@supports not (object-fit: cover) {
+  img[class*="object"] {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+/* ===========================
+   Dark mode support
+   =========================== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+  }
+}
+
+/* ===========================
+   Reduced motion support
+   =========================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===========================
+   High contrast mode support
+   =========================== */
+
+@media (prefers-contrast: more) {
+  :root {
+    --fallback-color-primary: #0047bc;
+  }
+  
+  button, a, input, textarea {
+    border-width: 2px;
+  }
+}
+
+/* ===========================
+   Forced colors (Windows High Contrast)
+   =========================== */
+
+@media (forced-colors: active) {
+  button, input, textarea, select {
+    border: 1px solid ButtonBorder;
+    color: ButtonText;
+    background-color: ButtonFace;
+  }
+  
+  a {
+    color: LinkText;
+  }
+}

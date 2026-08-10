@@ -1,0 +1,247 @@
+/* Professional Icon Library Styles */
+
+.award-icon {
+  display: inline-block;
+  vertical-align: middle;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+/* Icon container for category cards */
+.category-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-icon::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: rotate(45deg);
+  transition: all 0.6s;
+}
+
+.category-icon:hover {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+
+.category-icon:hover::before {
+  left: 100%;
+}
+
+.category-icon .award-icon {
+  width: 48px;
+  height: 48px;
+  color: #ffffff;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  z-index: 1;
+}
+
+/* Stats icon containers */
+.stat-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--primary-color);
+  border-radius: 10px;
+  margin-right: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.stat-icon-wrapper .award-icon {
+  width: 20px;
+  height: 20px;
+  color: #ffffff;
+}
+
+.stat-icon-wrapper:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Specific stat colors */
+.stat-icon-wrapper.total {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-icon-wrapper.approved {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.stat-icon-wrapper.pending {
+  background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+}
+
+.stat-icon-wrapper.votes {
+  background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+}
+
+.stat-icon-wrapper.regional {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.stat-icon-wrapper.global {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+/* Admin dashboard icon styles */
+.admin-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: var(--card-bg);
+  border-radius: 14px;
+  border: 2px solid var(--primary-color);
+  transition: all 0.3s ease;
+}
+
+.admin-stat-icon .award-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--primary-color);
+}
+
+.admin-stat-icon:hover {
+  background: var(--primary-color);
+  transform: rotate(5deg) scale(1.05);
+}
+
+.admin-stat-icon:hover .award-icon {
+  color: #ffffff;
+}
+
+/* Empty state icons */
+.empty-state-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1.5rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+.empty-state-icon .award-icon {
+  width: 60px;
+  height: 60px;
+  color: var(--text-secondary);
+}
+
+/* Dark mode support */
+.dark-mode .category-icon {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .category-icon:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .stat-icon-wrapper {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .stat-icon-wrapper:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .empty-state-icon {
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .category-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+  }
+
+  .category-icon .award-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .stat-icon-wrapper {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+  }
+
+  .stat-icon-wrapper .award-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .admin-stat-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .admin-stat-icon .award-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .empty-state-icon {
+    width: 96px;
+    height: 96px;
+  }
+
+  .empty-state-icon .award-icon {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* Animation for icon entrance */
+@keyframes iconFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.category-icon,
+.stat-icon-wrapper,
+.admin-stat-icon {
+  animation: iconFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Staggered animation delays */
+.category-card:nth-child(1) .category-icon { animation-delay: 0.1s; }
+.category-card:nth-child(2) .category-icon { animation-delay: 0.2s; }
+.category-card:nth-child(3) .category-icon { animation-delay: 0.3s; }
+.category-card:nth-child(4) .category-icon { animation-delay: 0.4s; }
+.category-card:nth-child(5) .category-icon { animation-delay: 0.5s; }
+.category-card:nth-child(6) .category-icon { animation-delay: 0.6s; }

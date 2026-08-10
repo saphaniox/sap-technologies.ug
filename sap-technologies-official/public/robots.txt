@@ -1,0 +1,17 @@
+# robots.txt for SAPTech Uganda
+# https://saptechug.com
+
+User-agent: *
+Allow: /
+Allow: /images/
+Allow: /assets/
+
+# Keep private app and server paths out of search results.
+Disallow: /admin
+Disallow: /account
+Disallow: /login
+Disallow: /register
+Disallow: /api/
+
+Sitemap: https://saptechug.com/sitemap.xml
+Host: saptechug.com
