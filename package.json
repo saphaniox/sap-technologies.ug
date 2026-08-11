@@ -11,7 +11,10 @@
     "build:client": "npm --prefix sap-technologies-official run build",
     "build:server": "npm --prefix server run build",
     "lint:client": "npm --prefix sap-technologies-official run lint",
-    "install:all": "npm ci --prefix sap-technologies-official && npm ci --prefix server"
+    "install:client": "npm ci --prefix sap-technologies-official",
+    "install:server": "npm ci --prefix server",
+    "install:all": "npm run install:client && npm run install:server",
+    "vercel-build": "npm run build:client"
   },
   "engines": {
     "node": ">=20"
