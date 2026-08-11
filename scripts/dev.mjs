@@ -32,7 +32,7 @@ for (const service of services) {
   children.add(child);
 
   child.on("error", (error) => {
-    console.error(`[monorepo] Could not start ${service.name}:`, error.message);
+    console.error(`[sap-technologies-ug] Could not start ${service.name}:`, error.message);
     process.exitCode = 1;
     stopChildren();
   });
@@ -43,7 +43,7 @@ for (const service of services) {
     if (!shuttingDown) {
       process.exitCode = code ?? 1;
       const reason = signal ? `signal ${signal}` : `code ${code}`;
-      console.error(`[monorepo] ${service.name} stopped with ${reason}.`);
+      console.error(`[sap-technologies-ug] ${service.name} stopped with ${reason}.`);
       stopChildren();
     }
 
