@@ -31,7 +31,7 @@ Keep local secrets in `server/.env` and the client's local environment files. Th
 
 ## Deployment
 
-Use this repository for both deployments.
+Use this repository for the frontend and both backend deployments.
 
 ### Vercel frontend
 
@@ -42,21 +42,73 @@ Use this repository for both deployments.
 5. Use **Output Directory** `sap-technologies-official/dist`.
 6. Add the client environment variables from `sap-technologies-official/.env.example` in the Vercel project settings.
 
-### Render server
+For the backend URLs, set:
 
-Create the service from the same GitHub repository. The root `render.yaml` configures Render to build and start the API from `server/`.
+```env
+VITE_API_URL=https://your-coolify-api-domain.com
+VITE_API_FALLBACK_URL=https://sap-technologies-ug.onrender.com
+VITE_API_FALLBACK_MUTATIONS=false
+```
+
+`VITE_API_URL` is the primary Coolify API. `VITE_API_FALLBACK_URL` is the Render backup. Keep `VITE_API_FALLBACK_MUTATIONS=false` unless both backends share the same database and you are comfortable retrying write actions on the fallback server.
+
+Do not put backend secrets such as database URLs, JWT secrets, Mailjet keys, Gmail app passwords or Cloudinary secrets in Vercel client environment variables.
+
+### Coolify server primary
+
+Create a new Coolify application from the same GitHub repository:
+
+1. Repository: `saphaniox/sap-technologies.ug`
+2. Branch: `main`
+3. Build pack: **Nixpacks**
+4. Base directory / root directory: `server`
+5. Static site: **No**
+6. Port: `5000`
+7. Health check path: `/api/health`
+
+The server folder includes `nixpacks.toml`, so Coolify can install, build, and start the backend directly from `server/` without using a custom Dockerfile.
+
+In Coolify, add the backend environment variables from `server/.env.example`. At minimum production needs:
+
+- `NODE_ENV=production`
+- `PORT=5000`
+- `NIXPACKS_NODE_VERSION=20`
+- `CLIENT_URL=https://saptechug.com`
+- `FRONTEND_URL=https://saptechug.com`
+- `PRODUCTION_CLIENT_URL=https://saptechug.com`
+- `API_PUBLIC_URL=https://your-coolify-api-domain.com`
+- `ALLOWED_ORIGINS=https://saptechug.com,https://www.saptechug.com,https://sap-technologies.com,https://www.sap-technologies.com`
+- `MONGODB_URI`
+- `SESSION_SECRET`
+- `JWT_SECRET`
+- Cloudinary secrets if uploads are enabled
+- Mailjet and Gmail secrets if email sending is enabled
+
+After Coolify deploys, copy the public Coolify API URL into Vercel as `VITE_API_URL`.
+
+### Render server fallback
+
+Keep Render connected to the same GitHub repository. The root `render.yaml` configures Render to build and start the API from `server/`.
+
+Render should stay as the fallback server at:
+
+```env
+VITE_API_FALLBACK_URL=https://sap-technologies-ug.onrender.com
+```
+
+For best fallback behavior, Coolify and Render should use the same `MONGODB_URI`, `JWT_SECRET`, `SESSION_SECRET`, email provider credentials, and Cloudinary credentials. That way a valid frontend session can still work when the app has to read from Render.
 
 ### Transactional email
 
 The server sends transactional emails through Mailjet first and automatically falls back to Gmail SMTP if Mailjet fails.
 
-Configure these secret environment variables in Render:
+Configure these secret environment variables in Coolify and Render:
 
 - `EMAIL_PROVIDER_MODE=auto` as the default. Admins can later switch between `auto`, `mailjet`, and `gmail` in the admin dashboard.
 - `MAILJET_API_KEY` and `MAILJET_SECRET_KEY` for the primary provider.
 - `MAILJET_FROM_EMAIL` with a sender address verified in Mailjet.
 - `GMAIL_USER` and `GMAIL_PASS` (a Google App Password) for SMTP fallback.
 
-Keep API keys, secret keys, Gmail app passwords, database, JWT and session secrets in Render env. Use the admin dashboard for safe email settings such as provider mode, from/reply/notification emails, logo URL, tagline, phone and address.
+Keep API keys, secret keys, Gmail app passwords, database, JWT and session secrets in Coolify and Render env. Use the admin dashboard for safe email settings such as provider mode, from/reply/notification emails, logo URL, tagline, phone and address.
 
 All messages use the shared SAPTech Uganda template, including the hosted logo, responsive branding, human-readable content, plain-text alternatives, reply-to information, and security guidance.

@@ -3,17 +3,59 @@ const isLocalhost = typeof window !== 'undefined' &&
    window.location.hostname === '127.0.0.1' || 
    window.location.hostname === '0.0.0.0');
 
-const getApiUrl = () => {
-  if (isLocalhost && import.meta.env.DEV) {
-    return import.meta.env.VITE_API_URL || "";
-  }
-  return import.meta.env.VITE_API_URL || "https://sap-technologies-ug.onrender.com";
+const DEFAULT_RENDER_API_URL = "https://sap-technologies-ug.onrender.com";
+const RETRYABLE_API_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504, 521, 522, 523, 524]);
+const FALLBACK_MUTATIONS = String(import.meta.env.VITE_API_FALLBACK_MUTATIONS || "").toLowerCase() === "true";
+
+const normalizeApiUrl = (url) => {
+  const cleaned = String(url || "").trim();
+  if (!cleaned) return "";
+  return cleaned.replace(/\/+$/, "");
 };
 
-const API_BASE_URL = getApiUrl();
+const splitApiUrls = (value) => String(value || "")
+  .split(",")
+  .map(normalizeApiUrl)
+  .filter(Boolean);
+
+const uniqueApiUrls = (urls, { allowEmpty = false } = {}) => {
+  const seen = new Set();
+  return urls
+    .map(normalizeApiUrl)
+    .filter((url) => {
+      if (!url && !allowEmpty) return false;
+      if (seen.has(url)) return false;
+      seen.add(url);
+      return true;
+    });
+};
+
+const getApiUrls = () => {
+  const primaryUrl = import.meta.env.VITE_API_PRIMARY_URL || import.meta.env.VITE_API_URL;
+  const configuredUrls = splitApiUrls(import.meta.env.VITE_API_URLS);
+  const fallbackUrl = import.meta.env.VITE_API_FALLBACK_URL;
+
+  if (isLocalhost && import.meta.env.DEV) {
+    const localUrls = uniqueApiUrls([primaryUrl, ...configuredUrls, fallbackUrl], { allowEmpty: true });
+    return localUrls.length ? localUrls : [""];
+  }
+
+  const productionUrls = uniqueApiUrls([
+    primaryUrl,
+    ...configuredUrls,
+    fallbackUrl,
+    DEFAULT_RENDER_API_URL
+  ]);
+
+  return productionUrls.length ? productionUrls : [DEFAULT_RENDER_API_URL];
+};
+
+const API_BASE_URLS = getApiUrls();
+const API_BASE_URL = API_BASE_URLS[0] || "";
 
 class ApiService {
   constructor() {
+    this.baseURLs = API_BASE_URLS;
     this.baseURL = API_BASE_URL;
     this.cache = new Map();
     this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
@@ -25,9 +67,14 @@ class ApiService {
     if (import.meta.env.DEV) {
       console.log('API Configuration:', {
         baseURL: this.baseURL,
+        baseURLs: this.baseURLs,
+        renderFallback: import.meta.env.VITE_API_FALLBACK_URL || DEFAULT_RENDER_API_URL,
+        fallbackMutations: FALLBACK_MUTATIONS,
         isLocalhost,
         env: import.meta.env.MODE,
-        envApiUrl: import.meta.env.VITE_API_URL
+        envApiUrl: import.meta.env.VITE_API_URL,
+        envPrimaryApiUrl: import.meta.env.VITE_API_PRIMARY_URL,
+        envApiUrls: import.meta.env.VITE_API_URLS
       });
     }
   }
@@ -50,6 +97,39 @@ class ApiService {
       data,
       timestamp: Date.now()
     });
+  }
+
+  cloneData(data) {
+    try {
+      if (typeof structuredClone === 'function') {
+        return structuredClone(data);
+      }
+    } catch (e) {
+      // structuredClone may not exist in all environments
+    }
+
+    return JSON.parse(JSON.stringify(data));
+  }
+
+  getRequestBaseURLs(method, options = {}) {
+    const normalizedMethod = String(method || "GET").toUpperCase();
+    const isSafeRead = normalizedMethod === "GET" || normalizedMethod === "HEAD";
+    const allowMutationFallback = FALLBACK_MUTATIONS || options.allowFallbackForMutation === true;
+    const fallbackEnabled = options.useApiFallback !== false;
+
+    if (!fallbackEnabled || this.baseURLs.length <= 1 || (!isSafeRead && !allowMutationFallback)) {
+      return [this.baseURL];
+    }
+
+    return this.baseURLs;
+  }
+
+  isRetryableStatus(status) {
+    return RETRYABLE_API_STATUSES.has(Number(status));
+  }
+
+  isRetryableApiError(error) {
+    return Boolean(error?.isNetworkError || this.isRetryableStatus(error?.response?.status));
   }
 
   getStoredAuthToken() {
@@ -77,27 +157,29 @@ class ApiService {
 
   // Wake up the server (for free tier on Render)
   async wakeUpServer() {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
-      
-      if (import.meta.env.DEV) console.log('Waking up server...');
-      const response = await fetch(`${this.baseURL}/api/health`, {
-        method: 'GET',
-        signal: controller.signal,
-        // Don't wait for the response
-        priority: 'low'
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (response.ok) {
-        if (import.meta.env.DEV) console.log('Server is awake');
+    await Promise.allSettled(this.baseURLs.map(async (baseURL) => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+
+        if (import.meta.env.DEV) console.log('Waking up server...', baseURL || 'local proxy');
+        const response = await fetch(`${baseURL}/api/health`, {
+          method: 'GET',
+          signal: controller.signal,
+          // Don't wait for the response
+          priority: 'low'
+        });
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          if (import.meta.env.DEV) console.log('Server is awake:', baseURL || 'local proxy');
+        }
+      } catch (error) {
+        // Silently fail - this is just a wake-up call
+        if (import.meta.env.DEV) console.log('Server wake-up initiated (may take 30-60 seconds on first load)', baseURL || 'local proxy');
       }
-    } catch (error) {
-      // Silently fail - this is just a wake-up call
-      if (import.meta.env.DEV) console.log('Server wake-up initiated (may take 30-60 seconds on first load)');
-    }
+    }));
   }
 
   clearCache(key = null) {
@@ -143,29 +225,11 @@ class ApiService {
   async request(endpoint, options = {}) {
     // Ensure endpoint starts with /api unless it already does
     const apiEndpoint = endpoint.startsWith('/api') ? endpoint : `/api${endpoint}`;
-    const url = `${this.baseURL}${apiEndpoint}`;
     
     // Check cache for GET requests (unless explicitly disabled)
     const method = (options.method || "GET").toUpperCase();
-    const cacheKey = `${method}:${url}`;
     const useCache = options.useCache !== false && method === "GET";
-    
-    if (useCache) {
-      const cached = this.getCached(cacheKey);
-      if (cached) {
-        if (import.meta.env.DEV) console.log('Serving from cache:', cacheKey);
-        // Return a deep clone to avoid same-reference state updates in React
-        try {
-          // Use structuredClone when available for performance
-          if (typeof structuredClone === 'function') {
-            return structuredClone(cached);
-          }
-        } catch (e) {
-          // structuredClone may not exist in all environments
-        }
-        return JSON.parse(JSON.stringify(cached));
-      }
-    }
+    const requestBaseURLs = this.getRequestBaseURLs(method, options);
     
     // Set up headers - but be careful with file uploads!
     // FormData needs special handling (browser sets Content-Type automatically)
@@ -209,77 +273,130 @@ class ApiService {
       config.body = options.body;
     }
 
-    try {
-      // Actually make the request to our server
-      const response = await fetch(url, config);
-      
-      // Try to figure out what kind of response we got back
-      const contentType = response.headers.get("Content-Type");
-      let data;
-      
-      try {
-        // Most of our API returns JSON, but sometimes it's just text
-        if (contentType && contentType.includes("application/json")) {
-          data = await response.json();
-        } else {
-          data = await response.text();
+    let lastError = null;
+
+    for (let attempt = 0; attempt < requestBaseURLs.length; attempt += 1) {
+      const baseURL = requestBaseURLs[attempt];
+      const url = `${baseURL}${apiEndpoint}`;
+      const cacheKey = `${method}:${url}`;
+      const hasFallbackAttempt = attempt < requestBaseURLs.length - 1;
+
+      if (useCache) {
+        const cached = this.getCached(cacheKey);
+        if (cached) {
+          if (import.meta.env.DEV) console.log('Serving from cache:', cacheKey);
+          // Return a deep clone to avoid same-reference state updates in React
+          return this.cloneData(cached);
         }
-      } catch (parseError) {
-        // Sometimes the server sends back weird responses we can't parse
-        console.error("Failed to parse response:", parseError);
-        console.error("Response status:", response.status);
-        console.error("Response headers:", response.headers);
-        // Create a fallback error message so the app doesn't crash
-        data = { 
-          message: `Server error: ${response.status} ${response.statusText}`,
-          status: response.status 
-        };
       }
 
-      if (!response.ok) {
-        // Handle authentication errors more gracefully
-        if (response.status === 401) {
-          this.setAuthToken("");
-          throw new Error("Authentication required");
+      try {
+        // Actually make the request to our server
+        const response = await fetch(url, config);
+
+        // Try to figure out what kind of response we got back
+        const contentType = response.headers.get("Content-Type");
+        let data;
+
+        try {
+          // Most of our API returns JSON, but sometimes it's just text
+          if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+          } else {
+            data = await response.text();
+          }
+        } catch (parseError) {
+          // Sometimes the server sends back weird responses we can't parse
+          console.error("Failed to parse response:", parseError);
+          console.error("Response status:", response.status);
+          console.error("Response headers:", response.headers);
+          // Create a fallback error message so the app doesn't crash
+          data = {
+            message: `Server error: ${response.status} ${response.statusText}`,
+            status: response.status
+          };
         }
-        
-        // Create enhanced error with response data
-        const error = new Error(data?.message || `HTTP error! status: ${response.status}`);
-        error.response = {
-          status: response.status,
-          statusText: response.statusText,
-          data: data
-        };
+
+        if (!response.ok) {
+          // Handle authentication errors more gracefully
+          if (response.status === 401) {
+            this.setAuthToken("");
+            throw new Error("Authentication required");
+          }
+
+          // Create enhanced error with response data
+          const error = new Error(data?.message || `HTTP error! status: ${response.status}`);
+          error.response = {
+            status: response.status,
+            statusText: response.statusText,
+            data: data
+          };
+
+          if (hasFallbackAttempt && this.isRetryableApiError(error)) {
+            lastError = error;
+            if (import.meta.env.DEV) {
+              console.warn('Primary API failed, trying fallback:', {
+                endpoint: apiEndpoint,
+                method,
+                status: response.status,
+                failedUrl: url,
+                nextBaseURL: requestBaseURLs[attempt + 1] || 'local proxy'
+              });
+            }
+            continue;
+          }
+
+          throw error;
+        }
+
+        // Only cache successful GET responses with valid data
+        if (useCache && response.ok && data) {
+          this.setCache(cacheKey, data);
+        }
+
+        // After any successful mutating request, clear the cache so
+        // subsequent GETs fetch fresh data. This prevents the UI from
+        // showing stale data that requires a manual page refresh.
+        if (method !== 'GET' && response.ok) {
+          try {
+            this.clearCache();
+            if (import.meta.env.DEV) console.log('API cache cleared after mutation:', method, url);
+          } catch (e) {
+            // Non-fatal - log in development
+            if (import.meta.env.DEV) console.warn('Failed to clear API cache after mutation', e);
+          }
+        }
+
+        return data;
+      } catch (error) {
+        if (!error.response && !error.message?.includes("Authentication required")) {
+          error.isNetworkError = true;
+        }
+
+        if (hasFallbackAttempt && this.isRetryableApiError(error)) {
+          lastError = error;
+          if (import.meta.env.DEV) {
+            console.warn('API request failed, trying fallback:', {
+              endpoint: apiEndpoint,
+              method,
+              failedUrl: url,
+              nextBaseURL: requestBaseURLs[attempt + 1] || 'local proxy',
+              reason: error.message
+            });
+          }
+          continue;
+        }
+
+        // Only log errors that aren"t authentication-related to reduce console noise
+        if (!error.message.includes("Authentication required")) {
+          console.error("API request failed:", error);
+          console.error("Request details:", { endpoint, method, url });
+        }
         throw error;
       }
-
-      // Only cache successful GET responses with valid data
-      if (useCache && response.ok && data) {
-        this.setCache(cacheKey, data);
-      }
-
-      // After any successful mutating request, clear the cache so
-      // subsequent GETs fetch fresh data. This prevents the UI from
-      // showing stale data that requires a manual page refresh.
-      if (method !== 'GET' && response.ok) {
-        try {
-          this.clearCache();
-          if (import.meta.env.DEV) console.log('API cache cleared after mutation:', method, url);
-        } catch (e) {
-          // Non-fatal - log in development
-          if (import.meta.env.DEV) console.warn('Failed to clear API cache after mutation', e);
-        }
-      }
-
-      return data;
-    } catch (error) {
-      // Only log errors that aren"t authentication-related to reduce console noise
-      if (!error.message.includes("Authentication required")) {
-        console.error("API request failed:", error);
-        console.error("Request details:", { endpoint, method, url });
-      }
-      throw error;
     }
+
+    throw lastError || new Error(`API request failed for ${apiEndpoint}`);
   }
 
   // Authentication methods - handle user login/logout/registration
