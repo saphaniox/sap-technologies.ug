@@ -36,7 +36,7 @@ class PartnershipRequestController {
             // Send notifications (don't wait for them to complete)
             const notificationPromises = [];
 
-            // Send email notification to admin through Nodemailer SMTP/Gmail
+            // Send through Mailjet, with automatic Gmail SMTP fallback.
             if (emailService.isConfigured) {
                 notificationPromises.push(
                     emailService.sendPartnershipNotification({

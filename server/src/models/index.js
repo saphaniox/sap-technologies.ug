@@ -10,6 +10,7 @@ const Product = require("./Product");
 const ProductInquiry = require("./ProductInquiry");
 const ServiceQuote = require("./ServiceQuote");
 const Certificate = require("./Certificate");
+const AppSetting = require("./AppSetting");
 const { AwardCategory, Nomination } = require("./Award");
 
 module.exports = {
@@ -24,6 +25,7 @@ module.exports = {
     ProductInquiry,
     ServiceQuote,
     Certificate,
+    AppSetting,
     AwardCategory,
     Nomination
 };

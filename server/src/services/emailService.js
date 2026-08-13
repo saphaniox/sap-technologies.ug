@@ -2,6 +2,15 @@ const fs = require("fs");
 const path = require("path");
 const nodemailer = require("nodemailer");
 
+const DEFAULT_MAILJET_API_URL = "https://api.mailjet.com/v3.1/send";
+const EMAIL_PROVIDER_SETTING_KEY = "email.providerMode";
+const EMAIL_PUBLIC_CONFIG_SETTING_KEY = "email.publicConfig";
+const EMAIL_PROVIDER_MODES = ["auto", "mailjet", "gmail"];
+const PROVIDER_DISPLAY_NAMES = {
+  mailjet: "Mailjet",
+  "gmail-smtp": "Gmail SMTP"
+};
+
 const STATUS_LABELS = {
   new: "New",
   pending: "Pending review",
@@ -56,49 +65,388 @@ const collectRecipients = (...values) => values.flatMap((value) => {
   return Array.isArray(value) ? value : [value];
 });
 
+const normalizeProviderMode = (mode) => {
+  const normalized = String(mode || "auto").trim().toLowerCase();
+  return EMAIL_PROVIDER_MODES.includes(normalized) ? normalized : "auto";
+};
+
+const cleanString = (value, fallback = "") => {
+  if (value === undefined || value === null) return fallback;
+  const cleaned = String(value).trim();
+  return cleaned || fallback;
+};
+
+const cleanNumber = (value, fallback) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+};
+
+const cleanBoolean = (value, fallback = false) => {
+  if (value === undefined || value === null || value === "") return fallback;
+  if (typeof value === "boolean") return value;
+  return ["true", "1", "yes", "on"].includes(String(value).toLowerCase());
+};
+
+const mergeDefined = (base = {}, override = {}) => {
+  const merged = { ...base };
+
+  Object.entries(override || {}).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") return;
+    merged[key] = value;
+  });
+
+  return merged;
+};
+
+const pickPublicEmailConfig = (config = {}) => ({
+  providerMode: config.providerMode,
+  brand: config.brand,
+  sender: config.sender,
+  mailjet: config.mailjet ? {
+    apiUrl: config.mailjet.apiUrl,
+    fromEmail: config.mailjet.fromEmail,
+    timeoutMs: config.mailjet.timeoutMs,
+    sandboxMode: config.mailjet.sandboxMode
+  } : undefined,
+  gmail: config.gmail ? {
+    host: config.gmail.host,
+    port: config.gmail.port,
+    secure: config.gmail.secure,
+    fromEmail: config.gmail.fromEmail
+  } : undefined
+});
+
 class EmailService {
   constructor() {
-    this.brand = {
-      name: process.env.EMAIL_FROM_NAME || process.env.BRAND_NAME || "SAPTech Uganda",
-      awardsName: process.env.AWARDS_BRAND_NAME || "SAPTech Awards 2026",
-      legalName: process.env.COMPANY_LEGAL_NAME || "SAPTech Uganda",
-      websiteUrl: process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://saptechug.com",
-      logoUrl: process.env.EMAIL_LOGO_URL || "",
-      phone: process.env.COMPANY_PHONE || "+256 706 564 628",
-      address: process.env.COMPANY_ADDRESS || "Ndejje, Kampala, Uganda",
-      contactEmail: process.env.COMPANY_EMAIL || process.env.EMAIL_REPLY_TO || "info@saptechug.com"
-    };
-
-    const smtpUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-    this.smtpSenderEmail = process.env.SMTP_FROM_EMAIL || smtpUser || "";
-    this.replyToEmail = process.env.EMAIL_REPLY_TO || this.brand.contactEmail || "info@saptechug.com";
-    this.notifyEmail = process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || this.replyToEmail;
-    this.fromEmail = process.env.EMAIL_FROM_ADDRESS
-      || this.brand.contactEmail
-      || process.env.SMTP_FROM_EMAIL
-      || smtpUser
-      || this.replyToEmail;
-    this.fromName = process.env.EMAIL_FROM_NAME || this.brand.name;
-
+    this.brand = {};
+    this.fromName = "";
+    this.fromEmail = "";
+    this.replyToEmail = "";
+    this.notifyEmail = "";
+    this.smtpSenderEmail = "";
     this.provider = "none";
+    this.providers = [];
     this.isConfigured = false;
+    this.mailjet = null;
+    this.smtpTransporter = null;
+    this.smtpConfigKey = "";
+    this.runtimeConfigKey = "";
+    this.defaultProviderMode = normalizeProviderMode(process.env.EMAIL_PROVIDER_MODE);
+    this.providerModeCache = null;
+    this.providerModeCacheMs = Number(process.env.EMAIL_PROVIDER_CACHE_MS || 15000);
+    this.emailConfigCache = null;
+    this.emailConfigCacheMs = Number(process.env.EMAIL_CONFIG_CACHE_MS || 15000);
 
-    this.configureProvider();
+    const initialConfig = this.getEnvRuntimeConfig();
+    this.applyRuntimeConfig(initialConfig);
+    this.runtimeConfigKey = JSON.stringify(initialConfig);
+    this.loadRuntimeConfigWhenDatabaseConnects();
   }
 
-  configureProvider() {
-    const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
-    const emailPass = process.env.GMAIL_PASS || process.env.SMTP_PASS;
-    if (!emailUser || !emailPass) {
-      console.log("Email service not configured. Set SMTP_USER/SMTP_PASS or GMAIL_USER/GMAIL_PASS.");
+  loadRuntimeConfigWhenDatabaseConnects() {
+    try {
+      const mongoose = require("mongoose");
+      if (mongoose.connection.readyState === 1) {
+        this.loadRuntimeConfig(true).catch((error) => {
+          console.warn(`Email dashboard settings could not be applied: ${error.message}`);
+        });
+        return;
+      }
+
+      mongoose.connection.once("open", () => {
+        this.loadRuntimeConfig(true).catch((error) => {
+          console.warn(`Email dashboard settings could not be applied after database connection: ${error.message}`);
+        });
+      });
+    } catch {
+      // Database-backed dashboard settings are optional; env config remains valid.
+    }
+  }
+
+  getEnvRuntimeConfig() {
+    const websiteUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL || "https://saptechug.com";
+    const smtpUser = process.env.GMAIL_USER || process.env.SMTP_USER;
+    const smtpFromEmail = process.env.SMTP_FROM_EMAIL || smtpUser || "";
+    const contactEmail = process.env.COMPANY_EMAIL || process.env.EMAIL_REPLY_TO || "info@saptechug.com";
+    const fromEmail = process.env.EMAIL_FROM_ADDRESS || contactEmail || smtpFromEmail;
+
+    return {
+      providerMode: normalizeProviderMode(process.env.EMAIL_PROVIDER_MODE),
+      brand: {
+        name: process.env.EMAIL_FROM_NAME || process.env.BRAND_NAME || "SAPTech Uganda",
+        awardsName: process.env.AWARDS_BRAND_NAME || "SAPTech Awards 2026",
+        legalName: process.env.COMPANY_LEGAL_NAME || "SAPTech Uganda",
+        websiteUrl,
+        logoUrl: process.env.EMAIL_LOGO_URL || `${websiteUrl.replace(/\/$/, "")}/images/logo.png`,
+        tagline: process.env.EMAIL_BRAND_TAGLINE || "Technology that moves people and businesses forward",
+        phone: process.env.COMPANY_PHONE || "+256 706 564 628",
+        address: process.env.COMPANY_ADDRESS || "Ndejje, Kampala, Uganda",
+        contactEmail
+      },
+      sender: {
+        fromName: process.env.EMAIL_FROM_NAME || process.env.BRAND_NAME || "SAPTech Uganda",
+        fromEmail,
+        replyTo: process.env.EMAIL_REPLY_TO || contactEmail,
+        notifyEmail: process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || contactEmail
+      },
+      mailjet: {
+        apiUrl: process.env.MAILJET_API_URL || DEFAULT_MAILJET_API_URL,
+        apiKey: process.env.MAILJET_API_KEY || process.env.MJ_APIKEY_PUBLIC || "",
+        secretKey: process.env.MAILJET_SECRET_KEY || process.env.MJ_APIKEY_PRIVATE || "",
+        fromEmail: process.env.MAILJET_FROM_EMAIL || fromEmail,
+        timeoutMs: Number(process.env.MAILJET_TIMEOUT_MS || 15000),
+        sandboxMode: String(process.env.MAILJET_SANDBOX_MODE || "").toLowerCase() === "true"
+      },
+      gmail: {
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        port: Number(process.env.SMTP_PORT || 587),
+        secure: String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || Number(process.env.SMTP_PORT || 587) === 465,
+        user: smtpUser || "",
+        pass: process.env.GMAIL_PASS || process.env.SMTP_PASS || "",
+        fromEmail: smtpFromEmail || fromEmail,
+        pool: process.env.SMTP_POOL !== "false",
+        maxConnections: Number(process.env.SMTP_MAX_CONNECTIONS || 3),
+        maxMessages: Number(process.env.SMTP_MAX_MESSAGES || 75),
+        connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT_MS || 30000),
+        greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT_MS || 30000),
+        socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 45000)
+      }
+    };
+  }
+
+  mergeRuntimeConfig(base, override = {}) {
+    const merged = {
+      ...base,
+      providerMode: normalizeProviderMode(override.providerMode || base.providerMode),
+      brand: mergeDefined(base.brand, override.brand),
+      sender: mergeDefined(base.sender, override.sender),
+      mailjet: mergeDefined(base.mailjet, override.mailjet),
+      gmail: mergeDefined(base.gmail, override.gmail)
+    };
+
+    merged.mailjet.timeoutMs = cleanNumber(merged.mailjet.timeoutMs, 15000);
+    merged.mailjet.sandboxMode = cleanBoolean(merged.mailjet.sandboxMode, false);
+    merged.gmail.port = cleanNumber(merged.gmail.port, 587);
+    merged.gmail.secure = cleanBoolean(merged.gmail.secure, merged.gmail.port === 465);
+    merged.gmail.pool = cleanBoolean(merged.gmail.pool, true);
+    merged.gmail.maxConnections = cleanNumber(merged.gmail.maxConnections, 3);
+    merged.gmail.maxMessages = cleanNumber(merged.gmail.maxMessages, 75);
+    merged.gmail.connectionTimeout = cleanNumber(merged.gmail.connectionTimeout, 30000);
+    merged.gmail.greetingTimeout = cleanNumber(merged.gmail.greetingTimeout, 30000);
+    merged.gmail.socketTimeout = cleanNumber(merged.gmail.socketTimeout, 45000);
+
+    return merged;
+  }
+
+  async getStoredRuntimeConfig() {
+    try {
+      const mongoose = require("mongoose");
+      if (mongoose.connection.readyState !== 1) return null;
+      const AppSetting = require("../models/AppSetting");
+      const storedConfig = await AppSetting.getValue(EMAIL_PUBLIC_CONFIG_SETTING_KEY, null);
+      if (!storedConfig) return null;
+      return pickPublicEmailConfig(storedConfig);
+    } catch (error) {
+      console.warn(`Email dashboard settings could not be loaded; using env fallback: ${error.message}`);
+      return null;
+    }
+  }
+
+  async loadRuntimeConfig(force = false) {
+    const now = Date.now();
+    if (!force && this.emailConfigCache && now - this.emailConfigCache.loadedAt < this.emailConfigCacheMs) {
+      return this.emailConfigCache.config;
+    }
+
+    let config = this.getEnvRuntimeConfig();
+    const storedConfig = await this.getStoredRuntimeConfig();
+    if (storedConfig) config = this.mergeRuntimeConfig(config, storedConfig);
+
+    const configKey = JSON.stringify(config);
+    if (this.runtimeConfigKey !== configKey) {
+      this.applyRuntimeConfig(config);
+      this.runtimeConfigKey = configKey;
+    }
+    this.emailConfigCache = { config, loadedAt: now };
+    return config;
+  }
+
+  invalidateConfigCache() {
+    this.emailConfigCache = null;
+    this.providerModeCache = null;
+  }
+
+  applyRuntimeConfig(config) {
+    const websiteUrl = cleanString(config.brand?.websiteUrl, "https://saptechug.com");
+    this.brand = {
+      name: cleanString(config.brand?.name, "SAPTech Uganda"),
+      awardsName: cleanString(config.brand?.awardsName, "SAPTech Awards 2026"),
+      legalName: cleanString(config.brand?.legalName, "SAPTech Uganda"),
+      websiteUrl,
+      logoUrl: cleanString(config.brand?.logoUrl, `${websiteUrl.replace(/\/$/, "")}/images/logo.png`),
+      tagline: cleanString(config.brand?.tagline, "Technology that moves people and businesses forward"),
+      phone: cleanString(config.brand?.phone, "+256 706 564 628"),
+      address: cleanString(config.brand?.address, "Ndejje, Kampala, Uganda"),
+      contactEmail: cleanString(config.brand?.contactEmail || config.sender?.replyTo, "info@saptechug.com")
+    };
+
+    this.fromName = cleanString(config.sender?.fromName, this.brand.name);
+    this.fromEmail = cleanString(config.sender?.fromEmail, this.brand.contactEmail);
+    this.replyToEmail = cleanString(config.sender?.replyTo, this.brand.contactEmail);
+    this.notifyEmail = cleanString(config.sender?.notifyEmail, this.replyToEmail);
+    this.defaultProviderMode = normalizeProviderMode(config.providerMode || this.defaultProviderMode);
+
+    this.providers = [];
+    this.mailjet = null;
+    this.smtpTransporter = null;
+    this.transporter = null;
+    this.smtpConfigKey = "";
+    this.configureMailjet(config.mailjet || {});
+    this.configureSmtpFallback(config.gmail || {});
+
+    this.isConfigured = this.providers.length > 0;
+    this.provider = this.providers[0] || "none";
+  }
+
+  async getProviderMode() {
+    await this.loadRuntimeConfig();
+    const now = Date.now();
+    if (this.providerModeCache && now - this.providerModeCache.loadedAt < this.providerModeCacheMs) {
+      return this.providerModeCache.mode;
+    }
+
+    let mode = this.defaultProviderMode;
+
+    try {
+      const mongoose = require("mongoose");
+      if (mongoose.connection.readyState === 1) {
+        const AppSetting = require("../models/AppSetting");
+        mode = normalizeProviderMode(await AppSetting.getValue(EMAIL_PROVIDER_SETTING_KEY, mode));
+      }
+    } catch (error) {
+      console.warn(`Email provider setting could not be loaded; using ${mode}: ${error.message}`);
+    }
+
+    this.providerModeCache = { mode, loadedAt: now };
+    return mode;
+  }
+
+  setRuntimeProviderMode(mode) {
+    const normalizedMode = normalizeProviderMode(mode);
+    this.providerModeCache = { mode: normalizedMode, loadedAt: Date.now() };
+    return normalizedMode;
+  }
+
+  resolveProviderChain(mode = "auto") {
+    const normalizedMode = normalizeProviderMode(mode);
+
+    if (normalizedMode === "mailjet") {
+      return this.mailjet ? ["mailjet"] : [];
+    }
+
+    if (normalizedMode === "gmail") {
+      return this.smtpTransporter ? ["gmail-smtp"] : [];
+    }
+
+    return [...this.providers];
+  }
+
+  isProviderModeAvailable(mode) {
+    return this.resolveProviderChain(mode).length > 0;
+  }
+
+  providerDisplayName(provider) {
+    return PROVIDER_DISPLAY_NAMES[provider] || provider || "None";
+  }
+
+  async getDeliveryStatus() {
+    await this.loadRuntimeConfig();
+    const mode = await this.getProviderMode();
+    const chain = this.resolveProviderChain(mode);
+
+    return {
+      mode,
+      canSend: chain.length > 0,
+      activeProvider: chain[0] || "none",
+      activeProviderLabel: this.providerDisplayName(chain[0]),
+      deliveryChain: chain,
+      deliveryChainLabel: chain.map((provider) => this.providerDisplayName(provider)).join(" -> ") || "No provider configured",
+      fallbackEnabled: mode === "auto" && chain.length > 1,
+      configured: {
+        mailjet: Boolean(this.mailjet),
+        gmail: Boolean(this.smtpTransporter)
+      },
+      providers: {
+        auto: {
+          available: this.providers.length > 0,
+          label: "Auto",
+          description: "Use Mailjet first and fall back to Gmail SMTP when needed."
+        },
+        mailjet: {
+          available: Boolean(this.mailjet),
+          label: "Mailjet",
+          description: "Force Mailjet API for outgoing messages."
+        },
+        gmail: {
+          available: Boolean(this.smtpTransporter),
+          label: "Gmail",
+          description: "Force Gmail SMTP for outgoing messages."
+        }
+      },
+      sender: {
+        fromName: this.fromName,
+        fromEmail: this.fromEmail,
+        replyTo: this.replyToEmail,
+        notifyEmail: this.notifyEmail,
+        mailjetFromEmail: this.mailjet?.fromEmail || null,
+        smtpFromEmail: this.smtpSenderEmail || null
+      },
+      sandboxMode: Boolean(this.mailjet?.sandboxMode)
+    };
+  }
+
+  configureMailjet(config = {}) {
+    const apiKey = process.env.MAILJET_API_KEY || process.env.MJ_APIKEY_PUBLIC;
+    const apiSecret = process.env.MAILJET_SECRET_KEY || process.env.MJ_APIKEY_PRIVATE;
+
+    if (!apiKey && !apiSecret) return;
+    if (!apiKey || !apiSecret) {
+      console.warn("Mailjet is partially configured. Both API key and secret key are required.");
       return;
     }
 
-    const host = process.env.SMTP_HOST || "smtp.gmail.com";
-    const port = Number(process.env.SMTP_PORT || 587);
-    const secure = String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || port === 465;
+    this.mailjet = {
+      apiKey,
+      apiSecret,
+      apiUrl: cleanString(config.apiUrl, process.env.MAILJET_API_URL || DEFAULT_MAILJET_API_URL),
+      fromEmail: cleanString(config.fromEmail, process.env.MAILJET_FROM_EMAIL || this.fromEmail),
+      timeoutMs: cleanNumber(config.timeoutMs, Number(process.env.MAILJET_TIMEOUT_MS || 15000)),
+      sandboxMode: cleanBoolean(
+        config.sandboxMode,
+        String(process.env.MAILJET_SANDBOX_MODE || "").toLowerCase() === "true"
+      )
+    };
+    this.providers.push("mailjet");
+  }
 
-    this.transporter = nodemailer.createTransport({
+  configureSmtpFallback(config = {}) {
+    const emailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
+    const emailPass = process.env.GMAIL_PASS || process.env.SMTP_PASS;
+    if (!emailUser && !emailPass) return;
+    if (!emailUser || !emailPass) {
+      console.warn("Gmail SMTP fallback is partially configured. Both user and app password are required.");
+      return;
+    }
+
+    const host = cleanString(config.host, process.env.SMTP_HOST || "smtp.gmail.com");
+    const port = cleanNumber(config.port, Number(process.env.SMTP_PORT || 587));
+    const secure = cleanBoolean(
+      config.secure,
+      String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || port === 465
+    );
+    this.smtpSenderEmail = cleanString(config.fromEmail, process.env.SMTP_FROM_EMAIL || emailUser || this.fromEmail);
+
+    this.smtpTransporter = nodemailer.createTransport({
       host,
       port,
       secure,
@@ -107,28 +455,28 @@ class EmailService {
         user: emailUser,
         pass: emailPass
       },
-      pool: process.env.SMTP_POOL !== "false",
-      maxConnections: Number(process.env.SMTP_MAX_CONNECTIONS || 3),
-      maxMessages: Number(process.env.SMTP_MAX_MESSAGES || 75),
-      connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT_MS || 30000),
-      greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT_MS || 30000),
-      socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 45000),
+      pool: cleanBoolean(config.pool, process.env.SMTP_POOL !== "false"),
+      maxConnections: cleanNumber(config.maxConnections, Number(process.env.SMTP_MAX_CONNECTIONS || 3)),
+      maxMessages: cleanNumber(config.maxMessages, Number(process.env.SMTP_MAX_MESSAGES || 75)),
+      connectionTimeout: cleanNumber(config.connectionTimeout, Number(process.env.SMTP_CONNECTION_TIMEOUT_MS || 30000)),
+      greetingTimeout: cleanNumber(config.greetingTimeout, Number(process.env.SMTP_GREETING_TIMEOUT_MS || 30000)),
+      socketTimeout: cleanNumber(config.socketTimeout, Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 45000)),
       tls: {
         minVersion: "TLSv1.2",
         servername: host
       }
     });
 
-    this.isConfigured = true;
-    this.provider = "smtp";
-    console.log(`Email service configured with SMTP ${host}:${port} (${secure ? "SSL" : "STARTTLS"})`);
+    // Kept as an alias for code that previously inspected the transporter.
+    this.transporter = this.smtpTransporter;
+    this.providers.push("gmail-smtp");
 
     if (process.env.NODE_ENV !== "production") {
-      this.transporter.verify((error) => {
+      this.smtpTransporter.verify((error) => {
         if (error) {
-          console.warn(`SMTP verification failed: ${error.message}`);
+          console.warn(`Gmail SMTP fallback verification failed: ${error.message}`);
         } else {
-          console.log("SMTP connection verified.");
+          console.log("Gmail SMTP fallback connection verified.");
         }
       });
     }
@@ -143,6 +491,28 @@ class EmailService {
     const cleanEmail = this.extractEmail(email);
     if (!name) return cleanEmail;
     return `"${String(name).replace(/"/g, "")}" <${cleanEmail}>`;
+  }
+
+  parseAddress(address, fallbackName = "") {
+    if (!address) return null;
+
+    if (typeof address === "object") {
+      const email = this.extractEmail(address.address || address.email || address.Email);
+      const name = address.name || address.Name || fallbackName;
+      return email ? { Email: email, ...(name ? { Name: String(name) } : {}) } : null;
+    }
+
+    const value = String(address).trim();
+    const email = this.extractEmail(value);
+    const nameMatch = value.match(/^\s*"?([^"<]+?)"?\s*<[^>]+>\s*$/);
+    const name = nameMatch?.[1]?.trim() || fallbackName;
+    return email ? { Email: email, ...(name ? { Name: name } : {}) } : null;
+  }
+
+  mailjetRecipients(addresses) {
+    return collectRecipients(addresses)
+      .map((address) => this.parseAddress(address))
+      .filter(Boolean);
   }
 
   formatDate(value = new Date()) {
@@ -161,6 +531,7 @@ class EmailService {
     return String(html)
       .replace(/<style[\s\S]*?<\/style>/gi, "")
       .replace(/<script[\s\S]*?<\/script>/gi, "")
+      .replace(/<a\s+[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, "$2 ($1)")
       .replace(/<\/(p|div|tr|li|h1|h2|h3|h4)>/gi, "\n")
       .replace(/<br\s*\/?>/gi, "\n")
       .replace(/<[^>]+>/g, "")
@@ -231,15 +602,16 @@ class EmailService {
   }) {
     const color = TONES[tone] || TONES.default;
     const companyName = brandName || this.brand.name;
+    const greetingText = greeting && !/[,.!?]$/.test(greeting.trim()) ? `${greeting},` : greeting;
     const hiddenPreheader = preheader
       ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${escapeHtml(preheader)}</div>`
       : "";
     const logo = this.brand.logoUrl
-      ? `<img src="${escapeHtml(this.brand.logoUrl)}" alt="${escapeHtml(companyName)}" width="120" style="display:block;border:0;margin:0 auto 12px;">`
+      ? `<img src="${escapeHtml(this.brand.logoUrl)}" alt="${escapeHtml(companyName)} logo" width="104" style="display:block;width:104px;max-width:104px;height:auto;border:0;margin:0 auto 14px;background:#ffffff;border-radius:14px;padding:8px;">`
       : "";
 
     return `<!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -254,13 +626,14 @@ class EmailService {
           <tr>
             <td style="background:#0f172a;padding:28px 32px;text-align:center;">
               ${logo}
-              <p style="margin:0 0 8px;color:#93c5fd;font-size:13px;letter-spacing:.08em;text-transform:uppercase;">${escapeHtml(companyName)}</p>
+              <p style="margin:0 0 6px;color:#93c5fd;font-size:13px;letter-spacing:.08em;text-transform:uppercase;">${escapeHtml(companyName)}</p>
+              <p style="margin:0 0 14px;color:#cbd5e1;font-size:12px;line-height:1.5;">${escapeHtml(this.brand.tagline)}</p>
               <h1 style="margin:0;color:#ffffff;font-size:26px;line-height:1.25;">${escapeHtml(title)}</h1>
             </td>
           </tr>
           <tr>
             <td style="padding:30px 32px 18px;">
-              ${greeting ? `<p style="margin:0 0 14px;color:#0f172a;font-size:17px;font-weight:700;">${escapeHtml(greeting)}</p>` : ""}
+              ${greetingText ? `<p style="margin:0 0 14px;color:#0f172a;font-size:17px;font-weight:700;">${escapeHtml(greetingText)}</p>` : ""}
               ${intro ? `<p style="margin:0;color:#334155;font-size:15px;line-height:1.7;">${escapeHtml(intro)}</p>` : ""}
             </td>
           </tr>
@@ -272,6 +645,12 @@ class EmailService {
             </td>
           </tr>` : ""}
           <tr>
+            <td style="padding:0 32px 28px;">
+              <p style="margin:0;color:#334155;font-size:14px;line-height:1.7;">Need help or want to add something? Simply reply to this email and a member of our team will assist you.</p>
+              <p style="margin:14px 0 0;color:#0f172a;font-size:14px;line-height:1.6;">Warm regards,<br><strong>The ${escapeHtml(companyName)} team</strong></p>
+            </td>
+          </tr>
+          <tr>
             <td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:22px 32px;text-align:center;">
               <p style="margin:0 0 8px;color:#0f172a;font-size:14px;font-weight:700;">${escapeHtml(this.brand.legalName)}</p>
               <p style="margin:0;color:#64748b;font-size:13px;line-height:1.7;">
@@ -279,7 +658,8 @@ class EmailService {
                 ${escapeHtml(this.brand.phone)} | <a href="mailto:${escapeHtml(this.replyToEmail)}" style="color:${color.accent};text-decoration:none;">${escapeHtml(this.replyToEmail)}</a><br>
                 <a href="${escapeHtml(this.brand.websiteUrl)}" style="color:${color.accent};text-decoration:none;">${escapeHtml(this.brand.websiteUrl)}</a>
               </p>
-              ${footerNote ? `<p style="margin:14px 0 0;color:#94a3b8;font-size:12px;line-height:1.6;">${escapeHtml(footerNote)}</p>` : ""}
+              ${footerNote ? `<p style="margin:14px 0 0;color:#64748b;font-size:12px;line-height:1.6;">${escapeHtml(footerNote)}</p>` : ""}
+              <p style="margin:10px 0 0;color:#94a3b8;font-size:11px;line-height:1.6;">&copy; ${new Date().getFullYear()} ${escapeHtml(this.brand.legalName)}. Please do not share security codes or sensitive account information by email.</p>
             </td>
           </tr>
         </table>
@@ -298,24 +678,94 @@ class EmailService {
     }));
   }
 
-  async sendEmail(emailOptions) {
-    if (!this.isConfigured) {
-      throw new Error("Email service is not configured. Add SMTP_USER/SMTP_PASS or GMAIL_USER/GMAIL_PASS.");
-    }
+  mailjetAttachments(attachments = []) {
+    return attachments.map((attachment) => {
+      const content = Buffer.isBuffer(attachment.content)
+        ? attachment.content
+        : Buffer.from(attachment.content || "");
 
-    const attachments = await this.prepareAttachments(emailOptions.attachments || []);
-    const fromName = emailOptions.fromName || this.fromName;
-    const fromEmail = emailOptions.from || this.fromEmail;
-    const envelopeRecipients = collectRecipients(emailOptions.to, emailOptions.cc, emailOptions.bcc);
-    const html = emailOptions.html;
-    const text = emailOptions.text || this.htmlToText(html);
-    const headers = {
-      "X-Entity-Ref-ID": `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
-      ...(emailOptions.headers || {})
+      return {
+        ContentType: attachment.contentType || "application/octet-stream",
+        Filename: attachment.filename || (attachment.path ? path.basename(attachment.path) : "attachment"),
+        Base64Content: content.toString("base64"),
+        ...(attachment.cid ? { ContentID: attachment.cid } : {})
+      };
+    });
+  }
+
+  async sendWithMailjet(emailOptions, prepared) {
+    const message = {
+      From: this.parseAddress(this.mailjet.fromEmail, emailOptions.fromName || this.fromName),
+      To: this.mailjetRecipients(emailOptions.to),
+      Subject: emailOptions.subject,
+      TextPart: prepared.text,
+      HTMLPart: prepared.html,
+      ReplyTo: this.parseAddress(emailOptions.replyTo || this.replyToEmail),
+      Headers: prepared.headers,
+      CustomID: String(emailOptions.category || "transactional").slice(0, 255)
     };
 
-    await this.transporter.sendMail({
-      from: this.formatAddress(fromEmail, fromName),
+    const cc = this.mailjetRecipients(emailOptions.cc);
+    const bcc = this.mailjetRecipients(emailOptions.bcc);
+    if (cc.length) message.Cc = cc;
+    if (bcc.length) message.Bcc = bcc;
+
+    const regularAttachments = prepared.attachments.filter(
+      (attachment) => !attachment.cid && attachment.contentDisposition !== "inline"
+    );
+    const inlineAttachments = prepared.attachments.filter(
+      (attachment) => attachment.cid || attachment.contentDisposition === "inline"
+    );
+    if (regularAttachments.length) message.Attachments = this.mailjetAttachments(regularAttachments);
+    if (inlineAttachments.length) message.InlinedAttachments = this.mailjetAttachments(inlineAttachments);
+
+    const payload = {
+      Messages: [message],
+      AdvanceErrorHandling: true,
+      ...(this.mailjet.sandboxMode ? { SandboxMode: true } : {})
+    };
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.mailjet.timeoutMs);
+
+    try {
+      const response = await fetch(this.mailjet.apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${this.mailjet.apiKey}:${this.mailjet.apiSecret}`).toString("base64")}`,
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+
+      const responseText = await response.text();
+      let responseBody = {};
+      try {
+        responseBody = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        responseBody = { ErrorMessage: responseText.slice(0, 500) };
+      }
+
+      const result = responseBody.Messages?.[0];
+      if (!response.ok || result?.Status !== "success") {
+        const details = result?.Errors?.map((error) => error.ErrorMessage).filter(Boolean).join("; ")
+          || responseBody.ErrorMessage
+          || `HTTP ${response.status}`;
+        throw new Error(`Mailjet rejected the message: ${details}`);
+      }
+
+      return { provider: "mailjet", messageId: result.To?.[0]?.MessageID || result.MessageID };
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  async sendWithSmtp(emailOptions, prepared) {
+    const envelopeRecipients = collectRecipients(emailOptions.to, emailOptions.cc, emailOptions.bcc);
+    const info = await this.smtpTransporter.sendMail({
+      from: this.formatAddress(emailOptions.from || this.fromEmail, emailOptions.fromName || this.fromName),
       envelope: this.smtpSenderEmail
         ? { from: this.smtpSenderEmail, to: envelopeRecipients }
         : undefined,
@@ -324,12 +774,65 @@ class EmailService {
       bcc: emailOptions.bcc,
       replyTo: emailOptions.replyTo || this.replyToEmail,
       subject: emailOptions.subject,
-      html,
-      text,
-      attachments,
-      headers
+      html: prepared.html,
+      text: prepared.text,
+      attachments: prepared.attachments,
+      headers: prepared.headers
     });
-    return true;
+
+    return { provider: "gmail-smtp", messageId: info.messageId };
+  }
+
+  async sendEmail(emailOptions) {
+    await this.loadRuntimeConfig();
+
+    if (!this.isConfigured) {
+      throw new Error(
+        "Email service is not configured. Add Mailjet API credentials and/or Gmail SMTP credentials."
+      );
+    }
+
+    const attachments = await this.prepareAttachments(emailOptions.attachments || []);
+    const html = emailOptions.html;
+    const text = emailOptions.text || this.htmlToText(html);
+    const headers = {
+      "X-Entity-Ref-ID": `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+      ...(emailOptions.headers || {})
+    };
+    const prepared = { attachments, html, text, headers };
+    const providerMode = await this.getProviderMode();
+    const providerChain = this.resolveProviderChain(providerMode);
+
+    if (!providerChain.length) {
+      throw new Error(
+        `Email provider mode "${providerMode}" is not available. Configure the selected provider or switch back to auto.`
+      );
+    }
+
+    const errors = [];
+
+    for (let index = 0; index < providerChain.length; index += 1) {
+      const provider = providerChain[index];
+
+      try {
+        if (provider === "mailjet") return await this.sendWithMailjet(emailOptions, prepared);
+        if (provider === "gmail-smtp") return await this.sendWithSmtp(emailOptions, prepared);
+      } catch (error) {
+        errors.push(error);
+        const nextProvider = providerChain[index + 1];
+        if (nextProvider) {
+          console.warn(
+            `${this.providerDisplayName(provider)} delivery failed; trying ${this.providerDisplayName(nextProvider)}: ${error.message}`
+          );
+        }
+      }
+    }
+
+    if (errors.length === 1) throw errors[0];
+    throw new AggregateError(
+      errors,
+      `${providerChain.map((provider) => this.providerDisplayName(provider)).join(" and ")} delivery failed.`
+    );
   }
 
   async deliver(emailOptions) {
@@ -339,8 +842,8 @@ class EmailService {
     }
 
     try {
-      await this.sendEmail(emailOptions);
-      console.log(`Email sent via ${this.provider}: ${emailOptions.subject} -> ${emailOptions.to}`);
+      const result = await this.sendEmail(emailOptions);
+      console.log(`Email sent via ${result.provider}: ${emailOptions.subject} -> ${emailOptions.to}`);
       return true;
     } catch (error) {
       console.error(`Email failed: ${emailOptions.subject} -> ${emailOptions.to}: ${error.message}`);
@@ -1142,3 +1645,4 @@ class EmailService {
 }
 
 module.exports = new EmailService();
+module.exports.EmailService = EmailService;

@@ -1,0 +1,111 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": "sap-technologies-official/dist",
+  "installCommand": "npm run install:client",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/careers/:id",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|Slackbot|TelegramBot|Discordbot|Googlebot|Bingbot|DuckDuckBot|bot|Bot|crawler|Crawler|spider|Spider).*"
+        }
+      ],
+      "destination": "https://sap-technologies-ug.onrender.com/api/jobs/:id/share"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://sap-technologies-ug.onrender.com/api/jobs/sitemap.xml"
+    },
+    {
+      "source": "/((?!assets|images|_next|favicon.ico|favicon-16x16.png|favicon-32x32.png|favicon-48x48.png|apple-touch-icon.png|mstile-150x150.png|pwa-192.png|pwa-512.png|maskable-192.png|maskable-512.png|vite.svg|robots.txt|sitemap.xml|ads.txt|manifest.webmanifest|google-verification-template.html|registerSW.js|sw.js|workbox-.*\\.js).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(self), payment=()"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagservices.com https://fundingchoicesmessages.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https://res.cloudinary.com https://*.cloudinary.com; connect-src 'self' https://sap-technologies-ug.onrender.com https://res.cloudinary.com https://*.cloudinary.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; object-src 'none'; base-uri 'self'; form-action 'self';"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.saptechug.com"
+        }
+      ],
+      "destination": "https://saptechug.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "sap-technologies.com"
+        }
+      ],
+      "destination": "https://saptechug.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.sap-technologies.com"
+        }
+      ],
+      "destination": "https://saptechug.com/:path*",
+      "permanent": true
+    }
+  ]
+}

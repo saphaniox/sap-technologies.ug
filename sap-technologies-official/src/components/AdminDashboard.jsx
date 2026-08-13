@@ -144,6 +144,61 @@ const getStatusClass = (value) => {
   return "unknown";
 };
 
+const DEFAULT_EMAIL_CONFIG_FORM = {
+  providerMode: "auto",
+  brand: {
+    name: "SAPTech Uganda",
+    legalName: "SAPTech Uganda",
+    awardsName: "SAPTech Awards 2026",
+    websiteUrl: "https://saptechug.com",
+    logoUrl: "https://saptechug.com/images/logo.png",
+    tagline: "Technology that moves people and businesses forward",
+    phone: "+256 706 564 628",
+    address: "Ndejje, Kampala, Uganda",
+    contactEmail: "info@saptechug.com"
+  },
+  sender: {
+    fromName: "SAPTech Uganda",
+    fromEmail: "info@saptechug.com",
+    replyTo: "info@saptechug.com",
+    notifyEmail: "info@saptechug.com"
+  },
+  mailjet: {
+    fromEmail: "info@saptechug.com",
+    timeoutMs: 15000,
+    sandboxMode: false
+  },
+  gmail: {
+    fromEmail: ""
+  }
+};
+
+const mergeEmailConfigForm = (config = {}, emailDelivery = {}) => ({
+  providerMode: config.providerMode || emailDelivery.mode || DEFAULT_EMAIL_CONFIG_FORM.providerMode,
+  brand: {
+    ...DEFAULT_EMAIL_CONFIG_FORM.brand,
+    ...(config.brand || {})
+  },
+  sender: {
+    ...DEFAULT_EMAIL_CONFIG_FORM.sender,
+    ...(config.sender || {}),
+    fromName: config.sender?.fromName || emailDelivery.sender?.fromName || DEFAULT_EMAIL_CONFIG_FORM.sender.fromName,
+    fromEmail: config.sender?.fromEmail || emailDelivery.sender?.fromEmail || DEFAULT_EMAIL_CONFIG_FORM.sender.fromEmail,
+    replyTo: config.sender?.replyTo || emailDelivery.sender?.replyTo || DEFAULT_EMAIL_CONFIG_FORM.sender.replyTo,
+    notifyEmail: config.sender?.notifyEmail || emailDelivery.sender?.notifyEmail || DEFAULT_EMAIL_CONFIG_FORM.sender.notifyEmail
+  },
+  mailjet: {
+    ...DEFAULT_EMAIL_CONFIG_FORM.mailjet,
+    ...(config.mailjet || {}),
+    fromEmail: config.mailjet?.fromEmail || emailDelivery.sender?.mailjetFromEmail || DEFAULT_EMAIL_CONFIG_FORM.mailjet.fromEmail
+  },
+  gmail: {
+    ...DEFAULT_EMAIL_CONFIG_FORM.gmail,
+    ...(config.gmail || {}),
+    fromEmail: config.gmail?.fromEmail || emailDelivery.sender?.smtpFromEmail || DEFAULT_EMAIL_CONFIG_FORM.gmail.fromEmail
+  }
+});
+
 const AdminDashboard = ({ user, onClose }) => {
   // Main navigation state - tracks which admin section is currently active
   const [activeTab, setActiveTab] = useState("overview");
@@ -219,7 +274,11 @@ const AdminDashboard = ({ user, onClose }) => {
   const [currentSignature, setCurrentSignature] = useState(null);
   const [signatureFile, setSignatureFile] = useState(null);
   const [uploadingSignature, setUploadingSignature] = useState(false);
-  const [settingsSubTab, setSettingsSubTab] = useState("signature");
+  const [emailSettings, setEmailSettings] = useState(null);
+  const [emailConfigForm, setEmailConfigForm] = useState(DEFAULT_EMAIL_CONFIG_FORM);
+  const [savingEmailProvider, setSavingEmailProvider] = useState(false);
+  const [savingEmailSettings, setSavingEmailSettings] = useState(false);
+  const [settingsSubTab, setSettingsSubTab] = useState("email");
   const [allCertificates, setAllCertificates] = useState([]);
   const [certificatesPagination, setCertificatesPagination] = useState({ currentPage: 1, totalPages: 1, totalCertificates: 0 });
   const [certificatesSearch, setCertificatesSearch] = useState("");
@@ -310,6 +369,8 @@ const AdminDashboard = ({ user, onClose }) => {
           fetchCurrentSignature();
         } else if (settingsSubTab === "certificates") {
           fetchAllCertificates(certificatesPagination.currentPage);
+        } else if (settingsSubTab === "email") {
+          fetchEmailSettings();
         }
         break;
     }
@@ -367,6 +428,8 @@ const AdminDashboard = ({ user, onClose }) => {
             fetchCurrentSignature();
           } else if (settingsSubTab === "certificates") {
             fetchAllCertificates(certificatesPagination.currentPage);
+          } else if (settingsSubTab === "email") {
+            fetchEmailSettings();
           }
           break;
       }
@@ -402,6 +465,12 @@ const AdminDashboard = ({ user, onClose }) => {
     try {
       const response = await apiService.getAdminDashboardStats();
       setDashboardStats(response.data);
+      if (response.data?.emailDelivery) {
+        setEmailSettings((current) => ({
+          ...(current || {}),
+          emailDelivery: response.data.emailDelivery
+        }));
+      }
     } catch (error) {
       console.error("Stats fetch error:", error);
       if (error.message === "Authentication required" || error.message?.includes("Authentication")) {
@@ -421,6 +490,13 @@ const AdminDashboard = ({ user, onClose }) => {
     try {
       const response = await apiService.getSystemHealth();
       setSystemHealth(response.data.system || response.data);
+      const emailDelivery = response.data.system?.email || response.data?.email;
+      if (emailDelivery) {
+        setEmailSettings((current) => ({
+          ...(current || {}),
+          emailDelivery
+        }));
+      }
       setSystemHealthFetchedAt(new Date());
     } catch (error) {
       console.error("System health fetch error:", error);
@@ -1122,6 +1198,74 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
     }
   };
 
+  const fetchEmailSettings = async () => {
+    try {
+      const response = await apiService.getAdminEmailSettings();
+      setEmailSettings(response.data);
+      setEmailConfigForm(mergeEmailConfigForm(response.data?.publicConfig, response.data?.emailDelivery));
+    } catch (error) {
+      console.error("Email settings fetch error:", error);
+      setAutoMessage("Couldn't load email settings: " + error.message, true);
+    }
+  };
+
+  const handleEmailProviderChange = async (providerMode) => {
+    try {
+      setSavingEmailProvider(true);
+      const response = await apiService.updateAdminEmailProvider(providerMode);
+      setEmailSettings(response.data);
+      setEmailConfigForm((current) => ({
+        ...current,
+        providerMode,
+      }));
+      setDashboardStats((current) => current
+        ? { ...current, emailDelivery: response.data.emailDelivery }
+        : current
+      );
+      setAutoMessage(`Email provider changed to ${providerMode}`);
+      fetchDashboardStats();
+      fetchSystemHealth();
+    } catch (error) {
+      console.error("Email provider update error:", error);
+      setAutoMessage("Couldn't update email provider: " + error.message, true);
+    } finally {
+      setSavingEmailProvider(false);
+    }
+  };
+
+  const updateEmailConfigField = (section, field, value) => {
+    setEmailConfigForm((current) => ({
+      ...current,
+      [section]: {
+        ...(current[section] || {}),
+        [field]: value
+      }
+    }));
+  };
+
+  const handleEmailSettingsSave = async (event) => {
+    event.preventDefault();
+
+    try {
+      setSavingEmailSettings(true);
+      const response = await apiService.updateAdminEmailSettings(emailConfigForm);
+      setEmailSettings(response.data);
+      setEmailConfigForm(mergeEmailConfigForm(response.data?.publicConfig, response.data?.emailDelivery));
+      setDashboardStats((current) => current
+        ? { ...current, emailDelivery: response.data.emailDelivery }
+        : current
+      );
+      setAutoMessage("Email dashboard settings saved");
+      fetchDashboardStats();
+      fetchSystemHealth();
+    } catch (error) {
+      console.error("Email settings update error:", error);
+      setAutoMessage("Couldn't save email settings: " + error.message, true);
+    } finally {
+      setSavingEmailSettings(false);
+    }
+  };
+
   // Signature management handlers
   const fetchCurrentSignature = async () => {
     try {
@@ -1409,8 +1553,394 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
     </div>
   );
 
+  const getEmailDelivery = () => (
+    emailSettings?.emailDelivery
+    || dashboardStats?.emailDelivery
+    || getHealthValue(systemHealth, ["email"], null)
+    || {}
+  );
+
+  const formatStatusLabel = (value) => String(value || "unknown")
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+  const formatRelativeTime = (value) => {
+    if (!value) return NOT_REPORTED;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return NOT_REPORTED;
+
+    const seconds = Math.max(1, Math.floor((Date.now() - date.getTime()) / 1000));
+    if (seconds < 60) return "Just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  const renderStatusBreakdown = (title, counts = {}) => {
+    const entries = Object.entries(counts).filter(([, count]) => Number(count) > 0);
+
+    return (
+      <article className="status-breakdown-card">
+        <div className="status-breakdown-title">
+          <h4>{title}</h4>
+          <span>{formatDashboardNumber(entries.reduce((total, [, count]) => total + Number(count), 0))}</span>
+        </div>
+        {entries.length ? entries.map(([status, count]) => (
+          <div className="status-breakdown-row" key={`${title}-${status}`}>
+            <span>{formatStatusLabel(status)}</span>
+            <strong>{formatDashboardNumber(count)}</strong>
+          </div>
+        )) : (
+          <div className="status-breakdown-empty">No records yet</div>
+        )}
+      </article>
+    );
+  };
+
+  const renderExecutiveOverview = () => {
+    const stats = dashboardStats?.stats || {};
+    const workQueue = dashboardStats?.workQueue || [];
+    const pipeline = dashboardStats?.pipeline || {};
+    const recentActivity = dashboardStats?.recentActivity || [];
+    const emailDelivery = getEmailDelivery();
+    const openWork = stats.totalOpenWork ?? workQueue.reduce((total, item) => total + Number(item.count || 0), 0);
+    const newLeads = Number(stats.newContactsLast30Days || 0)
+      + Number(stats.newProductInquiriesLast30Days || 0)
+      + Number(stats.newServiceQuotesLast30Days || 0);
+
+    return (
+      <section className="executive-overview">
+        <div className="executive-hero">
+          <div>
+            <span className="executive-eyebrow">Live business snapshot</span>
+            <h3>Admin Command Center</h3>
+            <p>Real data from users, leads, content, careers, awards, visitors, and email delivery.</p>
+          </div>
+          <div className="executive-refresh">
+            <span>Data refreshed</span>
+            <strong>{formatDateTime(dashboardStats?.generatedAt || systemHealthFetchedAt)}</strong>
+          </div>
+        </div>
+
+        <div className="executive-kpis">
+          <article className="executive-kpi">
+            <span>Open work</span>
+            <strong>{formatDashboardNumber(openWork)}</strong>
+            <small>Items waiting for admin action</small>
+          </article>
+          <article className="executive-kpi">
+            <span>Visitors today</span>
+            <strong>{formatDashboardNumber(stats.visitorsToday || dashboardStats?.traffic?.visitorsToday || 0)}</strong>
+            <small>{formatDashboardNumber(stats.pageViewsToday || dashboardStats?.traffic?.pageViewsToday || 0)} page views</small>
+          </article>
+          <article className="executive-kpi">
+            <span>New leads</span>
+            <strong>{formatDashboardNumber(newLeads)}</strong>
+            <small>Contacts, product inquiries and quotes this month</small>
+          </article>
+          <article className={`executive-kpi email-kpi ${emailDelivery.canSend ? "healthy" : "attention"}`}>
+            <span>Email provider</span>
+            <strong>{emailDelivery.activeProviderLabel || "Not configured"}</strong>
+            <small>{emailDelivery.mode ? `${formatStatusLabel(emailDelivery.mode)} mode` : "Mode not loaded"}</small>
+          </article>
+        </div>
+
+        <div className="dashboard-intelligence-grid">
+          <article className="intelligence-panel work-queue-panel">
+            <div className="panel-title-row">
+              <div>
+                <h4>Work Queue</h4>
+                <p>Things that need attention first.</p>
+              </div>
+              <strong>{formatDashboardNumber(openWork)}</strong>
+            </div>
+            <div className="queue-list">
+              {workQueue.length ? workQueue.map((item) => (
+                <button
+                  type="button"
+                  key={item.key}
+                  className={`queue-item tone-${item.tone || "info"}`}
+                  onClick={() => setActiveTab(item.tab)}
+                >
+                  <span>{item.label}</span>
+                  <strong>{formatDashboardNumber(item.count)}</strong>
+                </button>
+              )) : (
+                <div className="dashboard-empty-state">No work queue data yet.</div>
+              )}
+            </div>
+          </article>
+
+          <article className="intelligence-panel recent-activity-panel">
+            <div className="panel-title-row">
+              <div>
+                <h4>Recent Activity</h4>
+                <p>Newest activity across operational records.</p>
+              </div>
+            </div>
+            <div className="activity-feed">
+              {recentActivity.length ? recentActivity.map((activity, index) => (
+                <button
+                  type="button"
+                  className="activity-feed-item"
+                  key={`${activity.type}-${activity.createdAt}-${index}`}
+                  onClick={() => activity.tab && setActiveTab(activity.tab)}
+                >
+                  <span className={`activity-status ${getStatusClass(activity.status)}`}>{formatStatusLabel(activity.status)}</span>
+                  <div>
+                    <strong>{activity.title}</strong>
+                    <small>{activity.type}{activity.subtitle ? ` - ${activity.subtitle}` : ""}</small>
+                  </div>
+                  <time>{formatRelativeTime(activity.createdAt)}</time>
+                </button>
+              )) : (
+                <div className="dashboard-empty-state">No recent activity yet.</div>
+              )}
+            </div>
+          </article>
+        </div>
+
+        <div className="pipeline-grid">
+          {renderStatusBreakdown("Contacts", pipeline.contactStatusCounts)}
+          {renderStatusBreakdown("Product Inquiries", pipeline.productInquiryStatusCounts)}
+          {renderStatusBreakdown("Service Quotes", pipeline.serviceQuoteStatusCounts)}
+          {renderStatusBreakdown("Job Applications", pipeline.jobApplicationStatusCounts)}
+        </div>
+      </section>
+    );
+  };
+
+  const renderEmailProviderSettings = () => {
+    const emailDelivery = getEmailDelivery();
+    const mode = emailDelivery.mode || "auto";
+    const form = emailConfigForm;
+    const providerOptions = [
+      { mode: "auto", label: "Auto", description: "Mailjet first, Gmail SMTP fallback if Mailjet cannot send." },
+      { mode: "mailjet", label: "Mailjet", description: "Send only through Mailjet API." },
+      { mode: "gmail", label: "Gmail", description: "Send only through Gmail SMTP." }
+    ];
+
+    return (
+      <div className="settings-section email-settings-section">
+        <div className="email-settings-header">
+          <div>
+            <h3>Email Delivery</h3>
+            <p className="section-description">
+              Choose how website emails are sent and edit safe branding details. API keys, secret keys, Gmail app passwords, database, JWT and session secrets stay in environment variables.
+            </p>
+          </div>
+          <span className={`email-health-badge ${emailDelivery.canSend ? "online" : "offline"}`}>
+            {emailDelivery.canSend ? "Ready to send" : "Needs configuration"}
+          </span>
+        </div>
+
+        <div className="email-provider-summary">
+          <div>
+            <span>Current mode</span>
+            <strong>{formatStatusLabel(mode)}</strong>
+          </div>
+          <div>
+            <span>Active provider</span>
+            <strong>{emailDelivery.activeProviderLabel || "Not configured"}</strong>
+          </div>
+          <div>
+            <span>Delivery chain</span>
+            <strong>{emailDelivery.deliveryChainLabel || "No provider configured"}</strong>
+          </div>
+          <div>
+            <span>Last changed</span>
+            <strong>{formatDateTime(emailSettings?.setting?.updatedAt)}</strong>
+          </div>
+        </div>
+
+        <form className="email-settings-form" onSubmit={handleEmailSettingsSave}>
+          <div className="email-form-section">
+            <div className="email-form-section-header">
+              <h4>Safe Dashboard Settings</h4>
+              <p>No API keys or passwords are stored here.</p>
+            </div>
+
+            <div className="email-settings-grid">
+              <label>
+                Provider Mode
+                <select
+                  value={form.providerMode}
+                  onChange={(event) => setEmailConfigForm((current) => ({ ...current, providerMode: event.target.value }))}
+                >
+                  <option value="auto">Auto</option>
+                  <option value="mailjet">Mailjet only</option>
+                  <option value="gmail">Gmail only</option>
+                </select>
+              </label>
+              <label>
+                From Name
+                <input
+                  type="text"
+                  value={form.sender.fromName}
+                  onChange={(event) => updateEmailConfigField("sender", "fromName", event.target.value)}
+                />
+              </label>
+              <label>
+                From Email
+                <input
+                  type="email"
+                  value={form.sender.fromEmail}
+                  onChange={(event) => updateEmailConfigField("sender", "fromEmail", event.target.value)}
+                />
+              </label>
+              <label>
+                Reply-To Email
+                <input
+                  type="email"
+                  value={form.sender.replyTo}
+                  onChange={(event) => updateEmailConfigField("sender", "replyTo", event.target.value)}
+                />
+              </label>
+              <label>
+                Admin Notification Email
+                <input
+                  type="email"
+                  value={form.sender.notifyEmail}
+                  onChange={(event) => updateEmailConfigField("sender", "notifyEmail", event.target.value)}
+                />
+              </label>
+              <label>
+                Logo URL
+                <input
+                  type="url"
+                  value={form.brand.logoUrl}
+                  onChange={(event) => updateEmailConfigField("brand", "logoUrl", event.target.value)}
+                />
+              </label>
+              <label>
+                Brand Tagline
+                <input
+                  type="text"
+                  value={form.brand.tagline}
+                  onChange={(event) => updateEmailConfigField("brand", "tagline", event.target.value)}
+                />
+              </label>
+              <label>
+                Company Phone
+                <input
+                  type="text"
+                  value={form.brand.phone}
+                  onChange={(event) => updateEmailConfigField("brand", "phone", event.target.value)}
+                />
+              </label>
+              <label className="email-form-wide">
+                Company Address
+                <input
+                  type="text"
+                  value={form.brand.address}
+                  onChange={(event) => updateEmailConfigField("brand", "address", event.target.value)}
+                />
+              </label>
+              <label>
+                Mailjet Sender Email
+                <input
+                  type="email"
+                  value={form.mailjet.fromEmail}
+                  onChange={(event) => updateEmailConfigField("mailjet", "fromEmail", event.target.value)}
+                />
+              </label>
+              <label>
+                Mailjet Timeout
+                <input
+                  type="number"
+                  min="3000"
+                  step="1000"
+                  value={form.mailjet.timeoutMs}
+                  onChange={(event) => updateEmailConfigField("mailjet", "timeoutMs", event.target.value)}
+                />
+              </label>
+              <label>
+                Gmail Sender Email
+                <input
+                  type="email"
+                  value={form.gmail.fromEmail}
+                  onChange={(event) => updateEmailConfigField("gmail", "fromEmail", event.target.value)}
+                />
+              </label>
+              <label className="email-checkbox-row">
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.mailjet.sandboxMode)}
+                  onChange={(event) => updateEmailConfigField("mailjet", "sandboxMode", event.target.checked)}
+                />
+                Mailjet sandbox mode
+              </label>
+            </div>
+
+            <div className="email-sensitive-note">
+              Keep `MAILJET_API_KEY`, `MAILJET_SECRET_KEY`, `GMAIL_USER`, and `GMAIL_PASS` in Render env. The dashboard only changes safe display and routing settings.
+            </div>
+
+            <div className="settings-actions">
+              <button type="submit" className="btn-primary" disabled={savingEmailSettings}>
+                {savingEmailSettings ? "Saving..." : "Save Email Settings"}
+              </button>
+              <button type="button" className="btn-secondary" onClick={fetchEmailSettings} disabled={savingEmailSettings}>
+                Reload
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div className="provider-option-grid">
+          {providerOptions.map((option) => {
+            const providerInfo = emailDelivery.providers?.[option.mode] || {};
+            const isAvailable = providerInfo.available ?? option.mode === "auto";
+            const isActive = mode === option.mode;
+
+            return (
+              <button
+                type="button"
+                key={option.mode}
+                className={`provider-option-card ${isActive ? "active" : ""} ${!isAvailable ? "disabled" : ""}`}
+                disabled={savingEmailProvider || !isAvailable || isActive}
+                onClick={() => handleEmailProviderChange(option.mode)}
+              >
+                <div>
+                  <span>{option.label}</span>
+                  <strong>{isActive ? "Active" : isAvailable ? "Available" : "Not configured"}</strong>
+                </div>
+                <p>{providerInfo.description || option.description}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="email-config-grid">
+          <div className="email-config-card">
+            <span>Mailjet</span>
+            <strong>{emailDelivery.configured?.mailjet ? "Env keys configured" : "Env keys missing"}</strong>
+            <small>{emailDelivery.sender?.mailjetFromEmail || "MAILJET_API_KEY and MAILJET_SECRET_KEY stay in env"}</small>
+          </div>
+          <div className="email-config-card">
+            <span>Gmail SMTP</span>
+            <strong>{emailDelivery.configured?.gmail ? "Env credentials configured" : "Env credentials missing"}</strong>
+            <small>{emailDelivery.sender?.smtpFromEmail || "GMAIL_USER and GMAIL_PASS stay in env"}</small>
+          </div>
+          <div className="email-config-card">
+            <span>Reply-to</span>
+            <strong>{emailDelivery.sender?.replyTo || NOT_REPORTED}</strong>
+            <small>Recipients can reply directly to this address.</small>
+          </div>
+        </div>
+
+        {savingEmailProvider && <div className="settings-saving-note">Saving email provider...</div>}
+      </div>
+    );
+  };
+
   const renderOperationsCenter = () => {
     const stats = dashboardStats?.stats || {};
+    const emailDelivery = getEmailDelivery();
     const processMemory = getHealthValue(systemHealth, ["process.memory", "runtime.memory", "memory"], null);
     const systemMemory = getHealthValue(systemHealth, ["system.memory", "host.memory", "os.memory", "ram"], null);
     const mongodbStorage = getHealthValue(systemHealth, ["mongodb.storage", "mongo.storage", "database.storage", "atlas.storage", "storage"], null);
@@ -1468,6 +1998,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
           {renderOpsMetric({ label: "MongoDB Atlas Storage", value: storageUsage, detail: "Storage used / limit", accent: "teal" })}
           {renderOpsMetric({ label: "Backup Status", value: backupStatus, detail: `Last: ${formatDateTime(lastBackup)}`, status: backupStatus, accent: "green" })}
           {renderOpsMetric({ label: "Visitors Online", value: visitorsOnline, detail: `${formatMetricValue(visitorsToday)} today`, accent: "pink" })}
+          {renderOpsMetric({ label: "Email Delivery", value: emailDelivery.activeProviderLabel || NOT_REPORTED, detail: emailDelivery.deliveryChainLabel, status: emailDelivery.canSend ? "online" : "offline", accent: "blue" })}
         </div>
 
         <div className="ops-panels-grid">
@@ -1531,6 +2062,20 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
             {renderDetailRow("Contact messages", stats.totalContacts || 0)}
             {renderDetailRow("Product inquiries", stats.totalProductInquiries || 0)}
             {renderDetailRow("Service quotes", stats.totalServiceQuotes || 0)}
+          </article>
+
+          <article className="ops-panel">
+            <div className="ops-panel-header">
+              <h4>Email Delivery</h4>
+              <span className={`ops-status-badge ${emailDelivery.canSend ? "online" : "offline"}`}>
+                {emailDelivery.canSend ? "Ready" : "Missing"}
+              </span>
+            </div>
+            {renderDetailRow("Mode", formatStatusLabel(emailDelivery.mode || "auto"))}
+            {renderDetailRow("Active provider", emailDelivery.activeProviderLabel || NOT_REPORTED)}
+            {renderDetailRow("Delivery chain", emailDelivery.deliveryChainLabel || NOT_REPORTED)}
+            {renderDetailRow("Mailjet", emailDelivery.configured?.mailjet ? "Configured" : "Missing keys", emailDelivery.configured?.mailjet ? "online" : "offline")}
+            {renderDetailRow("Gmail SMTP", emailDelivery.configured?.gmail ? "Configured" : "Missing credentials", emailDelivery.configured?.gmail ? "online" : "offline")}
           </article>
         </div>
       </section>
@@ -1597,7 +2142,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
         </div>
 
         {message && (
-          <div className={`message ${message.includes("Failed") ? "error" : "success"}`}>
+          <div className={`message ${/(failed|couldn't|error)/i.test(message) ? "error" : "success"}`}>
             {message}
           </div>
         )}
@@ -1701,6 +2246,8 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
           <div className="tab-content">
             {activeTab === "overview" && (
               <div className="dashboard-overview">
+                {renderExecutiveOverview()}
+
                 <div className="stats-grid">
                 <div className="stat-card">
                   <div className="stat-icon">{"\uD83D\uDC65"}</div>
@@ -3714,11 +4261,17 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
           {activeTab === "settings" && (
             <div className="tab-panel">
               <div className="section-header">
-                <h2> Certificate Settings</h2>
+                <h2>Admin Settings</h2>
               </div>
 
               {/* Settings Subtabs */}
               <div className="subtab-navigation">
+                <button
+                  className={`subtab-btn ${settingsSubTab === "email" ? "active" : ""}`}
+                  onClick={() => setSettingsSubTab("email")}
+                >
+                  Email Delivery
+                </button>
                 <button 
                   className={`subtab-btn ${settingsSubTab === "signature" ? "active" : ""}`}
                   onClick={() => setSettingsSubTab("signature")}
@@ -3732,6 +4285,8 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                    All Certificates
                 </button>
               </div>
+
+              {settingsSubTab === "email" && renderEmailProviderSettings()}
 
               {/* Signature Subtab */}
               {settingsSubTab === "signature" && (

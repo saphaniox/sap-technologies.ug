@@ -10,6 +10,9 @@ router.use(adminAuth);
 // Dashboard and statistics
 router.get("/dashboard/stats", adminController.getDashboardStats);
 router.get("/system/health", adminController.getSystemHealth);
+router.get("/settings/email", adminController.getEmailSettings);
+router.put("/settings/email", adminController.updateEmailSettings);
+router.put("/settings/email/provider", adminController.updateEmailProvider);
 
 // User management
 router.get("/users", adminController.getAllUsers);

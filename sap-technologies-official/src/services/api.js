@@ -449,6 +449,28 @@ class ApiService {
     return this.request("/api/admin/system/health", { useCache: false });
   }
 
+  async getAdminEmailSettings() {
+    return this.request("/api/admin/settings/email", { useCache: false });
+  }
+
+  async updateAdminEmailProvider(providerMode) {
+    const result = await this.request("/api/admin/settings/email/provider", {
+      method: "PUT",
+      body: JSON.stringify({ providerMode }),
+    });
+    this.clearCache();
+    return result;
+  }
+
+  async updateAdminEmailSettings(settings) {
+    const result = await this.request("/api/admin/settings/email", {
+      method: "PUT",
+      body: JSON.stringify(settings),
+    });
+    this.clearCache();
+    return result;
+  }
+
   async getAllUsers(params = {}) {
     const query = new URLSearchParams(params).toString();
     return this.request(`/api/admin/users${query ? `?${query}` : ""}`, { useCache: false });

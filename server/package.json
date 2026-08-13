@@ -7,6 +7,7 @@
     "dev": "nodemon src/app.js",
     "dev:inspect": "nodemon --inspect src/app.js",
     "build": "node --check src/app.js",
+    "check:email": "node scripts/email-service-check.js",
     "postinstall": "echo 'Backend dependencies installed successfully'",
     "cleanup-logs": "node cleanup-logs.js",
     "keep-alive": "node scripts/keep-alive-server.js",

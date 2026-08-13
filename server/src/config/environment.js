@@ -28,6 +28,10 @@ class EnvironmentConfig {
             'MONGODB_MIRROR_CATCH_UP_BATCH_SIZE',
             'MONGODB_MIRROR_CATCH_UP_PRUNE',
             'JWT_SECRET',
+            'EMAIL_PROVIDER_MODE',
+            'MAILJET_API_KEY',
+            'MAILJET_SECRET_KEY',
+            'MAILJET_FROM_EMAIL',
             'GMAIL_USER',
             'GMAIL_PASS',
             'TWILIO_SID',
@@ -291,19 +295,31 @@ class EnvironmentConfig {
      */
     getEmailConfig() {
         return {
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
-            auth: {
-                user: process.env.GMAIL_USER,
-                pass: process.env.GMAIL_PASS
+            providerMode: process.env.EMAIL_PROVIDER_MODE || 'auto',
+            primary: {
+                provider: 'mailjet',
+                apiUrl: process.env.MAILJET_API_URL || 'https://api.mailjet.com/v3.1/send',
+                apiKey: process.env.MAILJET_API_KEY || process.env.MJ_APIKEY_PUBLIC,
+                apiSecret: process.env.MAILJET_SECRET_KEY || process.env.MJ_APIKEY_PRIVATE,
+                fromEmail: process.env.MAILJET_FROM_EMAIL || process.env.EMAIL_FROM_ADDRESS,
+                timeoutMs: Number(process.env.MAILJET_TIMEOUT_MS || 15000)
+            },
+            fallback: {
+                provider: 'gmail-smtp',
+                host: process.env.SMTP_HOST || 'smtp.gmail.com',
+                port: Number(process.env.SMTP_PORT || 587),
+                secure: process.env.SMTP_SECURE === 'true',
+                auth: {
+                    user: process.env.GMAIL_USER || process.env.SMTP_USER,
+                    pass: process.env.GMAIL_PASS || process.env.SMTP_PASS
+                }
             },
             from: {
                 name: process.env.EMAIL_FROM_NAME || 'SAPTech Uganda',
-                address: process.env.EMAIL_FROM_ADDRESS || process.env.SMTP_FROM_EMAIL || process.env.GMAIL_USER
+                address: process.env.EMAIL_FROM_ADDRESS || process.env.MAILJET_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || process.env.GMAIL_USER
             },
             replyTo: process.env.EMAIL_REPLY_TO || process.env.COMPANY_EMAIL || 'info@saptechug.com',
-            smtpSender: process.env.SMTP_FROM_EMAIL || process.env.GMAIL_USER
+            logoUrl: process.env.EMAIL_LOGO_URL || 'https://saptechug.com/images/logo.png'
         };
     }
 

@@ -25,6 +25,10 @@ services:
         value: info@saptechug.com
       - key: EMAIL_REPLY_TO
         value: info@saptechug.com
+      - key: EMAIL_LOGO_URL
+        value: https://saptechug.com/images/logo.png
+      - key: EMAIL_BRAND_TAGLINE
+        value: Technology that moves people and businesses forward
       - key: COMPANY_EMAIL
         value: info@saptechug.com
       - key: COMPANY_LEGAL_NAME
@@ -35,6 +39,8 @@ services:
         value: Ndejje, Kampala, Uganda
       - key: AWARDS_BRAND_NAME
         value: SAPTech Awards 2026
+      - key: EMAIL_PROVIDER_MODE
+        value: auto
       - key: ALLOWED_ORIGINS
         value: https://saptechug.com,https://www.saptechug.com,https://sap-technologies.com,https://www.sap-technologies.com
       - key: SESSION_SECRET
@@ -57,3 +63,9 @@ services:
         sync: false
       - key: GMAIL_PASS
         sync: false
+      - key: MAILJET_API_KEY
+        sync: false
+      - key: MAILJET_SECRET_KEY
+        sync: false
+      - key: MAILJET_FROM_EMAIL
+        value: info@saptechug.com
