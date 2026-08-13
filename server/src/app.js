@@ -407,26 +407,9 @@ app.use("/api", (req, res, next) => {
 app.get("/api", (req, res) => {
     res.status(200).json({
         status: "success",
-        message: "SAPTech Uganda API - Secure MVC Architecture",
+        message: "SAPTech Uganda API is running",
         version: "2.0.0-secure",
-        security: {
-            rateLimiting: "Enabled",
-            inputSanitization: "Enabled", 
-            cors: "Configured",
-            headers: "Secured",
-            monitoring: "Active"
-        },
-        endpoints: {
-            health: "/health",
-            auth: "/api/auth/*",
-            users: "/api/users/*", 
-            contacts: "/api/contacts/*",
-            newsletter: "/api/newsletter/*",
-            admin: "/api/admin/*",
-            projects: "/api/projects/*",
-            services: "/api/services/*"
-        },
-        documentation: "Contact admin for API documentation"
+        documentation: "Contact SAPTech Uganda for API access."
     });
 });
 
@@ -453,17 +436,7 @@ if (process.env.NODE_ENV === 'production') {
         app.get('/', (req, res) => {
             res.json({
                 status: "success",
-                message: "SAPTech Uganda Backend API",
-                environment: "production",
-                frontend: "Deployed separately (e.g., Vercel)",
-                api: `${req.protocol}://${req.get('host')}/api`,
-                endpoints: {
-                    health: "/api/health",
-                    auth: "/api/auth",
-                    contact: "/api/contact",
-                    products: "/api/products",
-                    services: "/api/services"
-                }
+                message: "SAPTech Uganda API is running"
             });
         });
         
@@ -474,10 +447,7 @@ if (process.env.NODE_ENV === 'production') {
     app.get('/', (req, res) => {
         res.json({
             status: "success",
-            message: "SAPTech Uganda Backend Server",
-            environment: "development",
-            frontend: "Run 'npm run dev' in frontend/sap-technologies directory",
-            api: "http://localhost:5000/api"
+            message: "SAPTech Uganda API is running"
         });
     });
 }

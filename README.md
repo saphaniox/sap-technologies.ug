@@ -7,7 +7,7 @@ This repository contains the complete application:
 
 ## Local setup
 
-Node.js 20 or newer is recommended because the server requires it.
+Node.js 22 or newer is recommended because the server runs on Node 22 in production.
 
 ```bash
 npm run install:all
@@ -72,7 +72,7 @@ In Coolify, add the backend environment variables from `server/.env.example`. At
 
 - `NODE_ENV=production`
 - `PORT=5000`
-- `NIXPACKS_NODE_VERSION=20`
+- `NIXPACKS_NODE_VERSION=22`
 - `CLIENT_URL=https://saptechug.com`
 - `FRONTEND_URL=https://saptechug.com`
 - `PRODUCTION_CLIENT_URL=https://saptechug.com`
