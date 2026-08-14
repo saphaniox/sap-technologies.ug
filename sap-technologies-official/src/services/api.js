@@ -53,14 +53,13 @@ const getApiUrls = () => {
     return localUrls.length ? localUrls : [""];
   }
 
-  const productionUrls = uniqueApiUrls([
+  const configuredProductionUrls = uniqueApiUrls([
     primaryUrl,
     ...configuredUrls,
-    fallbackUrl,
-    DEFAULT_RENDER_API_URL
+    fallbackUrl
   ]).filter(isBrowserSafeApiUrl);
 
-  return productionUrls.length ? productionUrls : [DEFAULT_RENDER_API_URL];
+  return configuredProductionUrls.length ? configuredProductionUrls : [DEFAULT_RENDER_API_URL];
 };
 
 const API_BASE_URLS = getApiUrls();
