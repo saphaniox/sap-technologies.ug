@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
+const DEFAULT_API_URL = "https://api.saptechug.com";
+
 // Get API base URL
 const getApiUrl = () => {
   const isLocalhost = typeof window !== 'undefined' && 
@@ -11,7 +13,7 @@ const getApiUrl = () => {
   if (isLocalhost && import.meta.env.DEV) {
     return import.meta.env.VITE_API_URL || "";
   }
-  return import.meta.env.VITE_API_URL || "https://sap-technologies-ug.onrender.com";
+  return import.meta.env.VITE_API_URL || DEFAULT_API_URL;
 };
 
 const API_BASE_URL = getApiUrl();

@@ -46,11 +46,12 @@ For the backend URLs, set:
 
 ```env
 VITE_API_URL=https://your-coolify-api-domain.com
+VITE_ENABLE_API_FALLBACK=false
 VITE_API_FALLBACK_URL=
 VITE_API_FALLBACK_MUTATIONS=false
 ```
 
-`VITE_API_URL` is the primary Coolify API. `VITE_API_FALLBACK_URL` is optional; only set it to the Render URL when the Render service is active and healthy. Browser-level connection failures can fall back to Render for all requests when a fallback is configured. Keep `VITE_API_FALLBACK_MUTATIONS=false` unless you also want retryable HTTP errors such as 502/503 during write actions to fall back to Render.
+`VITE_API_URL` is the primary Coolify API. Fallback is disabled by default. Only set `VITE_ENABLE_API_FALLBACK=true` and `VITE_API_FALLBACK_URL` when the Render service is active and healthy. Browser-level connection failures can fall back to Render for all requests when fallback is enabled. Keep `VITE_API_FALLBACK_MUTATIONS=false` unless you also want retryable HTTP errors such as 502/503 during write actions to fall back to Render.
 
 Do not put backend secrets such as database URLs, JWT secrets, Mailjet keys, Gmail app passwords or Cloudinary secrets in Vercel client environment variables.
 
@@ -95,10 +96,11 @@ Keep Render connected to the same GitHub repository. The root `render.yaml` conf
 When Render is active, you can use it as the fallback server:
 
 ```env
+VITE_ENABLE_API_FALLBACK=true
 VITE_API_FALLBACK_URL=https://sap-technologies-ug.onrender.com
 ```
 
-If Render is suspended or paused, leave `VITE_API_FALLBACK_URL` empty in Vercel. A suspended Render service returns `503 Service Suspended` without usable CORS headers, which causes browser requests to end as `Failed to fetch`.
+If Render is suspended or paused, keep `VITE_ENABLE_API_FALLBACK=false` and leave `VITE_API_FALLBACK_URL` empty in Vercel. A suspended Render service returns `503 Service Suspended` without usable CORS headers, which causes browser requests to end as `Failed to fetch`.
 
 For best fallback behavior, Coolify and Render should use the same `MONGODB_URI`, `JWT_SECRET`, `SESSION_SECRET`, email provider credentials, and Cloudinary credentials. That way a valid frontend session can still work when the app has to read from Render.
 
