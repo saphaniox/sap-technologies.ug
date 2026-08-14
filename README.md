@@ -86,6 +86,8 @@ In Coolify, add the backend environment variables from `server/.env.example`. At
 
 After Coolify deploys, copy the public Coolify API URL into Vercel as `VITE_API_URL`.
 
+The Coolify API URL used in Vercel must be `https://...`, not `http://...`. Browsers block an HTTPS frontend from sending login, newsletter, contact, or admin requests to an insecure HTTP API.
+
 ### Render server fallback
 
 Keep Render connected to the same GitHub repository. The root `render.yaml` configures Render to build and start the API from `server/`.

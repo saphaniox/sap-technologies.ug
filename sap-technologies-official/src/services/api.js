@@ -18,6 +18,18 @@ const splitApiUrls = (value) => String(value || "")
   .map(normalizeApiUrl)
   .filter(Boolean);
 
+const isBrowserSafeApiUrl = (url) => {
+  if (!url) return true;
+
+  const isHttpsPage = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  if (!isHttpsPage) return true;
+
+  // Browsers block HTTPS pages from calling HTTP APIs. Drop insecure API URLs
+  // so production can still fall back to the HTTPS Render backup instead of
+  // throwing a generic "Failed to fetch".
+  return !url.toLowerCase().startsWith("http://");
+};
+
 const uniqueApiUrls = (urls, { allowEmpty = false } = {}) => {
   const seen = new Set();
   return urls
@@ -45,7 +57,7 @@ const getApiUrls = () => {
     ...configuredUrls,
     fallbackUrl,
     DEFAULT_RENDER_API_URL
-  ]);
+  ]).filter(isBrowserSafeApiUrl);
 
   return productionUrls.length ? productionUrls : [DEFAULT_RENDER_API_URL];
 };

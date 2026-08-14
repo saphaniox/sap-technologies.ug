@@ -251,12 +251,6 @@ class EnvironmentConfig {
                     return callback(null, true);
                 }
                 
-                // Allow Vercel preview deployments (e.g., sap-technologies-uganda-*.vercel.app)
-                if (origin.includes('sap-technologies-uganda') && origin.includes('.vercel.app')) {
-                    console.log('✅ CORS: Vercel preview deployment allowed:', origin);
-                    return callback(null, true);
-                }
-                
                 // Allow the canonical saptechug.com domain, legacy domain, and secure subdomains.
                 try {
                     const parsedOrigin = new URL(origin);
