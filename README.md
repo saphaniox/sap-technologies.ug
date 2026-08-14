@@ -50,7 +50,7 @@ VITE_API_FALLBACK_URL=https://sap-technologies-ug.onrender.com
 VITE_API_FALLBACK_MUTATIONS=false
 ```
 
-`VITE_API_URL` is the primary Coolify API. `VITE_API_FALLBACK_URL` is the Render backup. Keep `VITE_API_FALLBACK_MUTATIONS=false` unless both backends share the same database and you are comfortable retrying write actions on the fallback server.
+`VITE_API_URL` is the primary Coolify API. `VITE_API_FALLBACK_URL` is the Render backup. Browser-level connection failures can fall back to Render for all requests. Keep `VITE_API_FALLBACK_MUTATIONS=false` unless you also want retryable HTTP errors such as 502/503 during write actions to fall back to Render.
 
 Do not put backend secrets such as database URLs, JWT secrets, Mailjet keys, Gmail app passwords or Cloudinary secrets in Vercel client environment variables.
 

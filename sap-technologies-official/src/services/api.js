@@ -6,6 +6,7 @@ const isLocalhost = typeof window !== 'undefined' &&
 const DEFAULT_RENDER_API_URL = "https://sap-technologies-ug.onrender.com";
 const RETRYABLE_API_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504, 521, 522, 523, 524]);
 const FALLBACK_MUTATIONS = String(import.meta.env.VITE_API_FALLBACK_MUTATIONS || "").toLowerCase() === "true";
+const SAFE_READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 const normalizeApiUrl = (url) => {
   const cleaned = String(url || "").trim();
@@ -124,16 +125,21 @@ class ApiService {
   }
 
   getRequestBaseURLs(method, options = {}) {
-    const normalizedMethod = String(method || "GET").toUpperCase();
-    const isSafeRead = normalizedMethod === "GET" || normalizedMethod === "HEAD";
-    const allowMutationFallback = FALLBACK_MUTATIONS || options.allowFallbackForMutation === true;
     const fallbackEnabled = options.useApiFallback !== false;
 
-    if (!fallbackEnabled || this.baseURLs.length <= 1 || (!isSafeRead && !allowMutationFallback)) {
+    if (!fallbackEnabled || this.baseURLs.length <= 1) {
       return [this.baseURL];
     }
 
     return this.baseURLs;
+  }
+
+  canFallbackAfterHttpError(method, options = {}) {
+    const normalizedMethod = String(method || "GET").toUpperCase();
+    const isSafeRead = SAFE_READ_METHODS.has(normalizedMethod);
+    const allowMutationFallback = FALLBACK_MUTATIONS || options.allowFallbackForMutation === true;
+
+    return isSafeRead || allowMutationFallback;
   }
 
   isRetryableStatus(status) {
@@ -344,7 +350,7 @@ class ApiService {
             data: data
           };
 
-          if (hasFallbackAttempt && this.isRetryableApiError(error)) {
+          if (hasFallbackAttempt && this.canFallbackAfterHttpError(method, options) && this.isRetryableApiError(error)) {
             lastError = error;
             if (import.meta.env.DEV) {
               console.warn('Primary API failed, trying fallback:', {
