@@ -486,28 +486,32 @@ const Services = () => {
             </div>
           )}
 
-          {/* Section title with animation */}
-          <motion.h2 
-            variants={fadeInUp}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            Our Services
-          </motion.h2>
-          
-          {/* Introduction text */}
-          <p className="services-intro">
-            Discover practical technology and engineering services for businesses, schools, startups,
-            shops, homes, and organizations in Uganda, across Africa, and worldwide. We help with
-            websites, software, IoT systems, automation, electrical designs, branding, cloud,
-            cybersecurity, and power solutions.
-          </p>
+          <div className="services-hero">
+            <div className="services-hero-copy">
+              {/* Section title with animation */}
+              <motion.h2
+                variants={fadeInUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+              >
+                Our Services
+              </motion.h2>
 
-          <div className="services-keyword-strip" aria-label="Popular SAPTech Uganda services">
-            {popularServiceSearches.map((service) => (
-              <span key={service}>{service}</span>
-            ))}
+              {/* Introduction text */}
+              <p className="services-intro">
+                Discover practical technology and engineering services for businesses, schools, startups,
+                shops, homes, and organizations in Uganda, across Africa, and worldwide. We help with
+                websites, software, IoT systems, automation, electrical designs, branding, cloud,
+                cybersecurity, and power solutions.
+              </p>
+            </div>
+
+            <div className="services-keyword-strip" aria-label="Popular SAPTech Uganda services">
+              {popularServiceSearches.map((service) => (
+                <span key={service}>{service}</span>
+              ))}
+            </div>
           </div>
 
           {/* Loading spinner while fetching API services */}

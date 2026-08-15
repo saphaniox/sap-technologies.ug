@@ -152,17 +152,18 @@ const JobApplicationForm = ({ job, onClose }) => {
   if (!onClose || !job) return null;
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay application-form-overlay" role="dialog" aria-modal="true" aria-labelledby="application-form-title">
       <div className="modal-content application-form-modal">
         <div className="modal-header">
-          <h2>Apply for {job.title}</h2>
+          <h2 id="application-form-title">Apply for {job.title}</h2>
           <button
             type="button"
             className="close-button"
             onClick={onClose}
             disabled={loading}
+            aria-label="Close application form"
           >
-            x
+            ×
           </button>
         </div>
 

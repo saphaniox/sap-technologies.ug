@@ -1,5 +1,48 @@
+.application-form-overlay {
+  --application-modal-top-space: 86px;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 20000 !important;
+  padding: calc(var(--application-modal-top-space) + env(safe-area-inset-top, 0px)) clamp(12px, 2.5vw, 24px) max(18px, env(safe-area-inset-bottom, 0px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 .application-form-modal {
-  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 680px);
+  max-width: 680px;
+  max-height: calc(100dvh - var(--application-modal-top-space) - 36px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.application-form-modal .modal-header {
+  flex: 0 0 auto;
+  align-items: flex-start;
+  gap: 16px;
+  padding: clamp(18px, 3vw, 24px);
+}
+
+.application-form-modal .modal-header h2 {
+  min-width: 0;
+  font-size: clamp(1.15rem, 2.5vw, 1.5rem);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.application-form-modal .close-button {
+  flex: 0 0 auto;
+}
+
+.application-form-modal .application-form {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .job-summary {
@@ -157,7 +200,7 @@
   margin-bottom: 16px;
 }
 
-.form-actions {
+.application-form-modal .form-actions {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
@@ -170,15 +213,44 @@
   padding: 20px 24px;
 }
 
-@media (max-width: 600px) {
-  .application-form-modal {
-    max-width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
+@media (max-width: 768px) {
+  .application-form-overlay {
+    --application-modal-top-space: 74px;
+    padding-inline: 12px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
   }
 
-  .form-actions {
+  .application-form-modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - var(--application-modal-top-space) - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    border-radius: 16px;
+  }
+
+  .application-form-modal .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    padding: 16px;
+  }
+
+  .application-form-modal .modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .job-summary {
+    margin: 0 16px 16px;
+    padding: 14px;
+  }
+
+  .application-form {
+    padding: 16px;
+  }
+
+  .application-form-modal .form-actions {
     flex-direction: column;
+    margin: 0 -16px -16px;
+    padding: 16px;
   }
 
   .selected-file {
@@ -189,5 +261,26 @@
   .btn-primary,
   .btn-secondary {
     width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .application-form-overlay {
+    --application-modal-top-space: 68px;
+    padding-inline: 8px;
+  }
+
+  .application-form-modal {
+    max-height: calc(100dvh - var(--application-modal-top-space) - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    border-radius: 14px;
+  }
+
+  .application-form input[type="text"],
+  .application-form input[type="email"],
+  .application-form input[type="tel"],
+  .application-form input[type="url"],
+  .application-form textarea,
+  .file-upload-control {
+    font-size: 16px;
   }
 }
