@@ -14,11 +14,11 @@
           "value": ".*(facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|Slackbot|TelegramBot|Discordbot|Googlebot|Bingbot|DuckDuckBot|bot|Bot|crawler|Crawler|spider|Spider).*"
         }
       ],
-      "destination": "https://sap-technologies-ug.onrender.com/api/jobs/:id/share"
+      "destination": "https://api.saptechug.com/api/jobs/:id/share"
     },
     {
       "source": "/sitemap.xml",
-      "destination": "https://sap-technologies-ug.onrender.com/api/jobs/sitemap.xml"
+      "destination": "https://api.saptechug.com/api/jobs/sitemap.xml"
     },
     {
       "source": "/((?!assets|images|_next|favicon.ico|favicon-16x16.png|favicon-32x32.png|favicon-48x48.png|apple-touch-icon.png|mstile-150x150.png|pwa-192.png|pwa-512.png|maskable-192.png|maskable-512.png|vite.svg|robots.txt|sitemap.xml|ads.txt|manifest.webmanifest|google-verification-template.html|registerSW.js|sw.js|workbox-.*\\.js).*)",
@@ -68,7 +68,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagservices.com https://fundingchoicesmessages.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https://res.cloudinary.com https://*.cloudinary.com; connect-src 'self' https://sap-technologies-ug.onrender.com https://res.cloudinary.com https://*.cloudinary.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; object-src 'none'; base-uri 'self'; form-action 'self';"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagservices.com https://fundingchoicesmessages.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https://res.cloudinary.com https://*.cloudinary.com; connect-src 'self' https://api.saptechug.com https://sap-technologies-ug.onrender.com https://res.cloudinary.com https://*.cloudinary.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; object-src 'none'; base-uri 'self'; form-action 'self';"
         }
       ]
     }
