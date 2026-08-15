@@ -200,7 +200,7 @@ const DEFAULT_EMAIL_CONFIG_FORM = {
     awardsName: "SAPTech Awards 2026",
     websiteUrl: "https://saptechug.com",
     logoUrl: "https://saptechug.com/images/logo.png",
-    tagline: "Technology that moves people and businesses forward",
+    tagline: "Professional in Engineering And Technology solutions",
     phone: "+256 706 564 628",
     address: "Ndejje, Kampala, Uganda",
     contactEmail: "info@saptechug.com",
