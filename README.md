@@ -80,6 +80,7 @@ In Coolify, add the backend environment variables from `server/.env.example`. At
 - `API_PUBLIC_URL=https://your-coolify-api-domain.com`
 - `ALLOWED_ORIGINS=https://saptechug.com,https://www.saptechug.com,https://sap-technologies.com,https://www.sap-technologies.com`
 - `MONGODB_URI`
+- `MONGODB_DB_NAME=sap-technologies`
 - `SESSION_SECRET`
 - `JWT_SECRET`
 - Cloudinary secrets if uploads are enabled

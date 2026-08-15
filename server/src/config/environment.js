@@ -131,6 +131,24 @@ class EnvironmentConfig {
     getDatabaseConfig() {
         const primaryUri = process.env.MONGODB_URI || process.env.MONGODB_LOCAL;
         const secondaryUri = process.env.MONGODB_SECONDARY_URI || process.env.MONGODB_MIRROR_URI;
+        const getDatabaseNameFromUri = (uri) => {
+            if (!uri) return "";
+
+            try {
+                const parsedUri = new URL(uri);
+                return decodeURIComponent(parsedUri.pathname || "")
+                    .replace(/^\/+/, "")
+                    .split("/")[0]
+                    .trim();
+            } catch (error) {
+                return "";
+            }
+        };
+        const uriDbName = getDatabaseNameFromUri(primaryUri);
+        const shouldIgnoreDefaultTestDb = process.env.NODE_ENV === "production" && uriDbName === "test";
+        const dbName = process.env.MONGODB_DB_NAME ||
+            (shouldIgnoreDefaultTestDb ? "" : uriDbName) ||
+            "sap-technologies";
         const usesSrvUri = [primaryUri, secondaryUri].some(uri => uri?.startsWith('mongodb+srv://'));
         const tlsEnabled = process.env.DB_TLS
             ? process.env.DB_TLS === 'true'
@@ -146,6 +164,7 @@ class EnvironmentConfig {
                 tls: tlsEnabled,
                 tlsAllowInvalidCertificates: tlsEnabled && !validateTls,
                 authSource: process.env.DB_AUTH_SOURCE || 'admin',
+                dbName,
                 readPreference: process.env.DB_READ_PREFERENCE || 'primary',
                 
                 // Connection options

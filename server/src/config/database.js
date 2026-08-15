@@ -143,7 +143,8 @@ const connectDB = async () => {
             cluster: activeCluster.name,
             uri: activeCluster.uri,
             host: conn.connection.host,
-            name: conn.connection.name
+            name: conn.connection.name,
+            configuredName: dbConfig.options.dbName || null
         };
 
         const mirrorTarget = clusters.find(cluster => cluster.name !== activeCluster.name);
@@ -160,6 +161,7 @@ const connectDB = async () => {
 
         console.log(`Secure MongoDB connection established on ${activeCluster.name}: ${conn.connection.host}`);
         console.log(`Database: ${conn.connection.name}`);
+        console.log(`Configured Database: ${dbConfig.options.dbName || "not set"}`);
         console.log(`TLS Enabled: ${dbConfig.options.tls ? "Yes" : "No (Development)"}`);
         console.log(`TLS Certificate Validation: ${dbConfig.options.tlsAllowInvalidCertificates ? "Disabled" : "Enabled"}`);
 
@@ -194,6 +196,8 @@ const checkDatabaseHealth = async () => {
                 activeCluster: activeDatabase.cluster,
                 host: mongoose.connection.host,
                 name: mongoose.connection.name,
+                configuredName: activeDatabase.configuredName,
+                expectedNameMatched: !activeDatabase.configuredName || mongoose.connection.name === activeDatabase.configuredName,
                 mirror: mirrorService.getMirrorStatus()
             };
         }
