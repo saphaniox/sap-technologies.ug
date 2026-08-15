@@ -19,6 +19,19 @@ const getPartnerDisplayName = (partner) => partner?.name?.trim() || "Logo-only p
 const getPartnerInitial = (partner) => getPartnerDisplayName(partner).charAt(0).toUpperCase();
 
 const NOT_REPORTED = "Not reported yet";
+const CURRENT_EMAIL_BRAND_TAGLINE = "Professional in Engineering And Technology solutions";
+const LEGACY_EMAIL_BRAND_TAGLINE_WORDS = ["technology", "that", "moves", "people", "and", "businesses", "forward"];
+const LEGACY_EMAIL_BRAND_TAGLINE = LEGACY_EMAIL_BRAND_TAGLINE_WORDS.join(" ");
+const LEGACY_EMAIL_BRAND_TAGLINES = new Set([
+  LEGACY_EMAIL_BRAND_TAGLINE,
+  `${LEGACY_EMAIL_BRAND_TAGLINE}.`
+]);
+
+const normalizeEmailBrandTagline = (value, fallback = CURRENT_EMAIL_BRAND_TAGLINE) => {
+  const cleaned = String(value || fallback || "").trim();
+  const comparable = cleaned.replace(/\s+/g, " ").toLowerCase();
+  return LEGACY_EMAIL_BRAND_TAGLINES.has(comparable) ? CURRENT_EMAIL_BRAND_TAGLINE : cleaned;
+};
 
 const getHealthValue = (source, paths, fallback = NOT_REPORTED) => {
   if (!source) return fallback;
@@ -200,7 +213,7 @@ const DEFAULT_EMAIL_CONFIG_FORM = {
     awardsName: "SAPTech Awards 2026",
     websiteUrl: "https://saptechug.com",
     logoUrl: "https://saptechug.com/images/logo.png",
-    tagline: "Professional in Engineering And Technology solutions",
+    tagline: CURRENT_EMAIL_BRAND_TAGLINE,
     phone: "+256 706 564 628",
     address: "Ndejje, Kampala, Uganda",
     contactEmail: "info@saptechug.com",
@@ -222,32 +235,39 @@ const DEFAULT_EMAIL_CONFIG_FORM = {
   }
 };
 
-const mergeEmailConfigForm = (config = {}, emailDelivery = {}) => ({
-  providerMode: config.providerMode || emailDelivery.mode || DEFAULT_EMAIL_CONFIG_FORM.providerMode,
-  brand: {
+const mergeEmailConfigForm = (config = {}, emailDelivery = {}) => {
+  const brand = {
     ...DEFAULT_EMAIL_CONFIG_FORM.brand,
     ...(emailDelivery.brand || {}),
     ...(config.brand || {})
-  },
-  sender: {
-    ...DEFAULT_EMAIL_CONFIG_FORM.sender,
-    ...(config.sender || {}),
-    fromName: config.sender?.fromName || emailDelivery.sender?.fromName || DEFAULT_EMAIL_CONFIG_FORM.sender.fromName,
-    fromEmail: config.sender?.fromEmail || emailDelivery.sender?.fromEmail || DEFAULT_EMAIL_CONFIG_FORM.sender.fromEmail,
-    replyTo: config.sender?.replyTo || emailDelivery.sender?.replyTo || DEFAULT_EMAIL_CONFIG_FORM.sender.replyTo,
-    notifyEmail: config.sender?.notifyEmail || emailDelivery.sender?.notifyEmail || DEFAULT_EMAIL_CONFIG_FORM.sender.notifyEmail
-  },
-  mailjet: {
-    ...DEFAULT_EMAIL_CONFIG_FORM.mailjet,
-    ...(config.mailjet || {}),
-    fromEmail: config.mailjet?.fromEmail || emailDelivery.sender?.mailjetFromEmail || DEFAULT_EMAIL_CONFIG_FORM.mailjet.fromEmail
-  },
-  gmail: {
-    ...DEFAULT_EMAIL_CONFIG_FORM.gmail,
-    ...(config.gmail || {}),
-    fromEmail: config.gmail?.fromEmail || emailDelivery.sender?.smtpFromEmail || DEFAULT_EMAIL_CONFIG_FORM.gmail.fromEmail
-  }
-});
+  };
+
+  return {
+    providerMode: config.providerMode || emailDelivery.mode || DEFAULT_EMAIL_CONFIG_FORM.providerMode,
+    brand: {
+      ...brand,
+      tagline: normalizeEmailBrandTagline(brand.tagline)
+    },
+    sender: {
+      ...DEFAULT_EMAIL_CONFIG_FORM.sender,
+      ...(config.sender || {}),
+      fromName: config.sender?.fromName || emailDelivery.sender?.fromName || DEFAULT_EMAIL_CONFIG_FORM.sender.fromName,
+      fromEmail: config.sender?.fromEmail || emailDelivery.sender?.fromEmail || DEFAULT_EMAIL_CONFIG_FORM.sender.fromEmail,
+      replyTo: config.sender?.replyTo || emailDelivery.sender?.replyTo || DEFAULT_EMAIL_CONFIG_FORM.sender.replyTo,
+      notifyEmail: config.sender?.notifyEmail || emailDelivery.sender?.notifyEmail || DEFAULT_EMAIL_CONFIG_FORM.sender.notifyEmail
+    },
+    mailjet: {
+      ...DEFAULT_EMAIL_CONFIG_FORM.mailjet,
+      ...(config.mailjet || {}),
+      fromEmail: config.mailjet?.fromEmail || emailDelivery.sender?.mailjetFromEmail || DEFAULT_EMAIL_CONFIG_FORM.mailjet.fromEmail
+    },
+    gmail: {
+      ...DEFAULT_EMAIL_CONFIG_FORM.gmail,
+      ...(config.gmail || {}),
+      fromEmail: config.gmail?.fromEmail || emailDelivery.sender?.smtpFromEmail || DEFAULT_EMAIL_CONFIG_FORM.gmail.fromEmail
+    }
+  };
+};
 
 const AdminDashboard = ({ user, onClose }) => {
   // Main navigation state - tracks which admin section is currently active

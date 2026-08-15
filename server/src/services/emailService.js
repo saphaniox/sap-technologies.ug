@@ -7,6 +7,13 @@ const DEFAULT_MAILJET_API_URL = "https://api.mailjet.com/v3.1/send";
 const EMAIL_PROVIDER_SETTING_KEY = "email.providerMode";
 const EMAIL_PUBLIC_CONFIG_SETTING_KEY = "email.publicConfig";
 const EMAIL_PROVIDER_MODES = ["auto", "mailjet", "gmail"];
+const CURRENT_EMAIL_BRAND_TAGLINE = "Professional in Engineering And Technology solutions";
+const LEGACY_EMAIL_BRAND_TAGLINE_WORDS = ["technology", "that", "moves", "people", "and", "businesses", "forward"];
+const LEGACY_EMAIL_BRAND_TAGLINE = LEGACY_EMAIL_BRAND_TAGLINE_WORDS.join(" ");
+const LEGACY_EMAIL_BRAND_TAGLINES = new Set([
+  LEGACY_EMAIL_BRAND_TAGLINE,
+  `${LEGACY_EMAIL_BRAND_TAGLINE}.`
+]);
 const PROVIDER_DISPLAY_NAMES = {
   mailjet: "Mailjet",
   "gmail-smtp": "Gmail SMTP"
@@ -384,6 +391,18 @@ const cleanString = (value, fallback = "") => {
   return cleaned || fallback;
 };
 
+const normalizeComparableText = (value = "") => String(value)
+  .trim()
+  .replace(/\s+/g, " ")
+  .toLowerCase();
+
+const cleanBrandTagline = (value, fallback = CURRENT_EMAIL_BRAND_TAGLINE) => {
+  const cleaned = cleanString(value, fallback);
+  return LEGACY_EMAIL_BRAND_TAGLINES.has(normalizeComparableText(cleaned))
+    ? CURRENT_EMAIL_BRAND_TAGLINE
+    : cleaned;
+};
+
 const summarizeUserAgent = (value) => {
   const text = cleanString(value, "Not available");
   return text.length > 160 ? `${text.slice(0, 157)}...` : text;
@@ -424,7 +443,10 @@ const mergeDefined = (base = {}, override = {}) => {
 
 const pickPublicEmailConfig = (config = {}) => ({
   providerMode: config.providerMode,
-  brand: config.brand,
+  brand: config.brand ? {
+    ...config.brand,
+    tagline: cleanBrandTagline(config.brand.tagline)
+  } : undefined,
   sender: config.sender,
   mailjet: config.mailjet ? {
     apiUrl: config.mailjet.apiUrl,
@@ -504,7 +526,7 @@ class EmailService {
         legalName: process.env.COMPANY_LEGAL_NAME || "SAPTech Uganda",
         websiteUrl,
         logoUrl: process.env.EMAIL_LOGO_URL || `${websiteUrl.replace(/\/$/, "")}/images/logo.png`,
-        tagline: process.env.EMAIL_BRAND_TAGLINE || "Professional in Engineering And Technology solutions",
+        tagline: cleanBrandTagline(process.env.EMAIL_BRAND_TAGLINE),
         phone: process.env.COMPANY_PHONE || "+256 706 564 628",
         address: process.env.COMPANY_ADDRESS || "Ndejje, Kampala, Uganda",
         contactEmail,
@@ -572,7 +594,19 @@ class EmailService {
       const AppSetting = require("../models/AppSetting");
       const storedConfig = await AppSetting.getValue(EMAIL_PUBLIC_CONFIG_SETTING_KEY, null);
       if (!storedConfig) return null;
-      return pickPublicEmailConfig(storedConfig);
+      const publicConfig = pickPublicEmailConfig(storedConfig);
+
+      if (storedConfig?.brand?.tagline && publicConfig?.brand?.tagline !== storedConfig.brand.tagline) {
+        await AppSetting.setValue(EMAIL_PUBLIC_CONFIG_SETTING_KEY, {
+          ...storedConfig,
+          brand: {
+            ...storedConfig.brand,
+            tagline: publicConfig.brand.tagline
+          }
+        }, null);
+      }
+
+      return publicConfig;
     } catch (error) {
       console.warn(`Email dashboard settings could not be loaded; using env fallback: ${error.message}`);
       return null;
@@ -611,7 +645,7 @@ class EmailService {
       legalName: cleanString(config.brand?.legalName, "SAPTech Uganda"),
       websiteUrl,
       logoUrl: cleanString(config.brand?.logoUrl, `${websiteUrl.replace(/\/$/, "")}/images/logo.png`),
-      tagline: cleanString(config.brand?.tagline, "Professional in Engineering And Technology solutions"),
+      tagline: cleanBrandTagline(config.brand?.tagline),
       phone: cleanString(config.brand?.phone, "+256 706 564 628"),
       address: cleanString(config.brand?.address, "Ndejje, Kampala, Uganda"),
       contactEmail: cleanString(config.brand?.contactEmail || config.sender?.replyTo, "info@saptechug.com"),

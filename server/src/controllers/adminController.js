@@ -12,6 +12,13 @@ const emailService = require("../services/emailService");
 const EMAIL_PROVIDER_SETTING_KEY = "email.providerMode";
 const EMAIL_PUBLIC_CONFIG_SETTING_KEY = "email.publicConfig";
 const EMAIL_PROVIDER_MODES = ["auto", "mailjet", "gmail"];
+const CURRENT_EMAIL_BRAND_TAGLINE = "Professional in Engineering And Technology solutions";
+const LEGACY_EMAIL_BRAND_TAGLINE_WORDS = ["technology", "that", "moves", "people", "and", "businesses", "forward"];
+const LEGACY_EMAIL_BRAND_TAGLINE = LEGACY_EMAIL_BRAND_TAGLINE_WORDS.join(" ");
+const LEGACY_EMAIL_BRAND_TAGLINES = new Set([
+    LEGACY_EMAIL_BRAND_TAGLINE,
+    `${LEGACY_EMAIL_BRAND_TAGLINE}.`
+]);
 
 const normalizeEmailProviderMode = (mode) => {
     const normalized = String(mode || "auto").trim().toLowerCase();
@@ -22,6 +29,18 @@ const cleanSettingText = (value, fallback = "") => {
     if (value === undefined || value === null) return fallback;
     const cleaned = String(value).trim();
     return cleaned || fallback;
+};
+
+const normalizeSettingText = (value = "") => String(value)
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+
+const cleanEmailBrandTagline = (value, fallback = CURRENT_EMAIL_BRAND_TAGLINE) => {
+    const cleaned = cleanSettingText(value, fallback);
+    return LEGACY_EMAIL_BRAND_TAGLINES.has(normalizeSettingText(cleaned))
+        ? CURRENT_EMAIL_BRAND_TAGLINE
+        : cleaned;
 };
 
 const cleanSettingNumber = (value, fallback) => {
@@ -41,6 +60,14 @@ const compactObject = (object = {}) => Object.fromEntries(
     Object.entries(object).filter(([, value]) => value !== undefined && value !== null && value !== "")
 );
 
+const normalizePublicEmailConfig = (config = {}) => ({
+    ...config,
+    brand: config.brand ? {
+        ...config.brand,
+        tagline: cleanEmailBrandTagline(config.brand.tagline)
+    } : config.brand
+});
+
 const buildPublicEmailConfig = (input = {}, current = {}) => {
     const providerMode = normalizeEmailProviderMode(input.providerMode || current.providerMode || "auto");
     const brandInput = input.brand || {};
@@ -56,7 +83,7 @@ const buildPublicEmailConfig = (input = {}, current = {}) => {
             awardsName: cleanSettingText(brandInput.awardsName, current.brand?.awardsName),
             websiteUrl: cleanSettingText(brandInput.websiteUrl, current.brand?.websiteUrl),
             logoUrl: cleanSettingText(brandInput.logoUrl, current.brand?.logoUrl),
-            tagline: cleanSettingText(brandInput.tagline, current.brand?.tagline),
+            tagline: cleanEmailBrandTagline(brandInput.tagline, current.brand?.tagline || CURRENT_EMAIL_BRAND_TAGLINE),
             phone: cleanSettingText(brandInput.phone, current.brand?.phone),
             address: cleanSettingText(brandInput.address, current.brand?.address),
             contactEmail: cleanSettingText(brandInput.contactEmail, current.brand?.contactEmail),
@@ -729,12 +756,13 @@ class AdminController {
                 .populate("updatedBy", "name email")
                 .lean();
             const emailDelivery = await emailService.getDeliveryStatus({ force: true });
+            const publicConfig = normalizePublicEmailConfig(configSetting?.value || {});
 
             res.status(200).json({
                 status: "success",
                 data: {
                     emailDelivery,
-                    publicConfig: configSetting?.value || {},
+                    publicConfig,
                     publicConfigUpdatedAt: configSetting?.updatedAt || null,
                     publicConfigUpdatedBy: configSetting?.updatedBy ? {
                         name: configSetting.updatedBy.name,
@@ -758,7 +786,7 @@ class AdminController {
 
     async updateEmailSettings(req, res, next) {
         try {
-            const current = await AppSetting.getValue(EMAIL_PUBLIC_CONFIG_SETTING_KEY, {});
+            const current = normalizePublicEmailConfig(await AppSetting.getValue(EMAIL_PUBLIC_CONFIG_SETTING_KEY, {}));
             const config = buildPublicEmailConfig(req.body || {}, current);
             const validationMessage = validatePublicEmailConfig(config);
 
@@ -826,7 +854,7 @@ class AdminController {
             }
 
             const mode = normalizeEmailProviderMode(requestedMode);
-            const currentConfig = await AppSetting.getValue(EMAIL_PUBLIC_CONFIG_SETTING_KEY, {});
+            const currentConfig = normalizePublicEmailConfig(await AppSetting.getValue(EMAIL_PUBLIC_CONFIG_SETTING_KEY, {}));
             const [setting] = await Promise.all([
                 AppSetting.setValue(EMAIL_PROVIDER_SETTING_KEY, mode, req.user?._id || null),
                 AppSetting.setValue(EMAIL_PUBLIC_CONFIG_SETTING_KEY, { ...currentConfig, providerMode: mode }, req.user?._id || null)
