@@ -77,6 +77,18 @@ const jobApplicationSchema = new mongoose.Schema({
     trim: true,
     maxlength: [500, "Admin notes cannot exceed 500 characters"]
   },
+  lastContactedAt: {
+    type: Date
+  },
+  lastContactedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  },
+  lastContactSubject: {
+    type: String,
+    trim: true,
+    maxlength: [160, "Last contact subject cannot exceed 160 characters"]
+  },
   reviewedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"

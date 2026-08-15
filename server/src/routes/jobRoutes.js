@@ -11,7 +11,8 @@ const {
   applyForJob,
   getAllJobApplications,
   getJobApplications,
-  updateApplicationStatus
+  updateApplicationStatus,
+  sendJobApplicationEmail
 } = require("../controllers/jobController");
 const { adminAuth } = require("../middleware/adminAuth");
 const { jobPosterUpload, jobApplicationUpload } = require("../config/fileUpload");
@@ -167,6 +168,28 @@ const validateApplication = [
   }
 ];
 
+const validateApplicationStatusUpdate = [
+  require("express-validator").body("status")
+    .isIn(["pending", "reviewed", "interviewed", "accepted", "rejected"])
+    .withMessage("Invalid application status"),
+  require("express-validator").body("adminNotes")
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage("Admin notes cannot exceed 500 characters")
+];
+
+const validateApplicantEmail = [
+  require("express-validator").body("subject")
+    .trim()
+    .isLength({ min: 4, max: 160 })
+    .withMessage("Subject must be between 4 and 160 characters"),
+  require("express-validator").body("message")
+    .trim()
+    .isLength({ min: 10, max: 4000 })
+    .withMessage("Message must be between 10 and 4000 characters")
+];
+
 // Public routes
 router.get("/public", getPublicJobs);
 router.get("/sitemap.xml", getJobsSitemap);
@@ -196,7 +219,9 @@ router.post("/", jobPosterUpload.single("poster"), handleMulterError, validateJo
 router.put("/:id", jobPosterUpload.single("poster"), handleMulterError, validateJob, updateJob);
 router.delete("/:id", deleteJob);
 router.get("/:id/applications", getJobApplications);
-router.patch("/applications/:applicationId/status", updateApplicationStatus);
-router.patch("/:id/applications/:applicationId/status", updateApplicationStatus);
+router.patch("/applications/:applicationId/status", validateApplicationStatusUpdate, updateApplicationStatus);
+router.patch("/:id/applications/:applicationId/status", validateApplicationStatusUpdate, updateApplicationStatus);
+router.post("/applications/:applicationId/email", validateApplicantEmail, sendJobApplicationEmail);
+router.post("/:id/applications/:applicationId/email", validateApplicantEmail, sendJobApplicationEmail);
 
 module.exports = router;

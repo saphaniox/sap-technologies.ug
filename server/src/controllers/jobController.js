@@ -19,6 +19,10 @@ const normalizeText = (value) => {
   return value.trim();
 };
 
+const normalizeSingleLine = (value = "", fallback = "") => (
+  normalizeText(String(value || fallback)).replace(/[\r\n]+/g, " ").slice(0, 160)
+);
+
 const normalizeBoolean = (value, fallback) => {
   if (value === undefined) return fallback;
   if (typeof value === "boolean") return value;
@@ -923,6 +927,7 @@ const updateApplicationStatus = async (req, res) => {
     }
 
     const { status, adminNotes } = req.body;
+    const previousStatus = application.status;
 
     const updated = await JobApplication.findByIdAndUpdate(
       req.params.applicationId,
@@ -941,6 +946,7 @@ const updateApplicationStatus = async (req, res) => {
           jobTitle: updated.job?.title || "Job application",
           applicantName: updated.fullName,
           applicantEmail: updated.email,
+          previousStatus,
           status: updated.status,
           adminNotes: updated.adminNotes
         }).catch((emailError) => {
@@ -953,7 +959,7 @@ const updateApplicationStatus = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      message: "Application status updated",
+      message: "Application status updated. Applicant email queued.",
       data: { application: updated }
     });
   } catch (error) {
@@ -961,6 +967,77 @@ const updateApplicationStatus = async (req, res) => {
     res.status(500).json({
       status: "error",
       message: "Error updating application",
+      error: process.env.NODE_ENV === "development" ? error.message : "Internal server error"
+    });
+  }
+};
+
+// Admin - send a professional custom email to a job applicant
+const sendJobApplicationEmail = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        status: "error",
+        message: "Validation failed",
+        errors: errors.array()
+      });
+    }
+
+    const application = await JobApplication.findById(req.params.applicationId)
+      .populate("job", "title department location employmentType")
+      .populate("reviewedBy", "name email");
+
+    if (!application) {
+      return res.status(404).json({
+        status: "error",
+        message: "Application not found"
+      });
+    }
+
+    if (!emailService?.sendJobApplicationManualEmail) {
+      return res.status(503).json({
+        status: "error",
+        message: "Email service is not available"
+      });
+    }
+
+    const subject = normalizeSingleLine(
+      req.body.subject,
+      `Message from SAPTech Uganda about your ${application.job?.title || "application"}`
+    );
+    const message = normalizeText(req.body.message);
+
+    await emailService.sendJobApplicationManualEmail({
+      jobTitle: application.job?.title || "Job application",
+      applicantName: application.fullName,
+      applicantEmail: application.email,
+      status: application.status,
+      subject,
+      message
+    });
+
+    application.lastContactedAt = new Date();
+    application.lastContactedBy = req.user ? req.user._id : undefined;
+    application.lastContactSubject = subject;
+    await application.save();
+    await application.populate("lastContactedBy", "name email");
+
+    logger.logInfo("JobController", "Applicant email sent", {
+      applicationId: application._id,
+      subject
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Email sent to applicant successfully",
+      data: { application }
+    });
+  } catch (error) {
+    logger.logError("JobController", error, { context: "sendJobApplicationEmail", applicationId: req.params.applicationId });
+    res.status(500).json({
+      status: "error",
+      message: "Error sending applicant email",
       error: process.env.NODE_ENV === "development" ? error.message : "Internal server error"
     });
   }
@@ -978,5 +1055,6 @@ module.exports = {
   applyForJob,
   getAllJobApplications,
   getJobApplications,
-  updateApplicationStatus
+  updateApplicationStatus,
+  sendJobApplicationEmail
 };

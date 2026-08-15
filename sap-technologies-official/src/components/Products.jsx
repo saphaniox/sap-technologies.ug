@@ -9,7 +9,7 @@ import { LoadingOverlay, showAlert } from "../utils/alerts.jsx";
 import { getImageUrl, PLACEHOLDERS } from "../utils/imageUrl";
 import "../styles/Products.css";
 
-const DEFAULT_PRODUCT_CATEGORY = "IoT Devices";
+const DEFAULT_PRODUCT_CATEGORY = "all";
 
 const sortProductsForDisplay = (productList) => (
     [...productList].sort((first, second) => {
@@ -94,17 +94,13 @@ const Products = () => {
             try {
                 setLoading(true);
                 const [productsResponse, categoriesResponse] = await Promise.all([
-                    apiService.request("/api/products?limit=500"),
-                    apiService.request("/api/products/categories")
+                    apiService.request("/api/products?limit=500", { useCache: false }),
+                    apiService.request("/api/products/categories", { useCache: false })
                 ]);
 
                 const productList = productsResponse.status === "success" ? productsResponse.data.products : [];
                 const categoryList = categoriesResponse.status === "success" ? categoriesResponse.data.categories : [];
-                const defaultCategory = categoryList.find((category) =>
-                    String(category._id).toLowerCase().includes("iot")
-                )?._id || productList.find((product) =>
-                    String(product.category).toLowerCase().includes("iot")
-                )?.category || DEFAULT_PRODUCT_CATEGORY;
+                const defaultCategory = DEFAULT_PRODUCT_CATEGORY;
 
                 if (productsResponse.status === "success") {
                     allProductsRef.current = productList;
@@ -207,7 +203,7 @@ const Products = () => {
     const fetchProducts = async ({ silent = false } = {}) => {
         try {
             if (!silent) setLoading(true);
-            const response = await apiService.request("/api/products?limit=500");
+            const response = await apiService.request("/api/products?limit=500", { useCache: false });
             if (response.status === "success") {
                 allProductsRef.current = response.data.products;
                 setProducts(applyFilters(response.data.products, selectedCategory, searchTerm));

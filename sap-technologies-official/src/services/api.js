@@ -1053,6 +1053,14 @@ class ApiService {
     });
   }
 
+  async sendJobApplicationEmail(applicationId, emailData = {}) {
+    return this.request(`/api/jobs/applications/${applicationId}/email`, {
+      method: "POST",
+      body: JSON.stringify(emailData),
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
   // Products methods
   async getProducts(params = {}) {
     const queryParams = new URLSearchParams(params).toString();

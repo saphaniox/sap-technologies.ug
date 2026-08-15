@@ -54,11 +54,34 @@ const signAccessToken = (user) => jwt.sign(
     }
 );
 
+const getRequestContext = (req) => {
+    const forwardedFor = req.headers["x-forwarded-for"];
+    const ipAddress = Array.isArray(forwardedFor)
+        ? forwardedFor[0]
+        : String(forwardedFor || req.ip || req.connection?.remoteAddress || "").split(",")[0].trim();
+
+    return {
+        ipAddress,
+        userAgent: req.headers["user-agent"] || "Not available"
+    };
+};
+
+const queueEmailNotification = (label, task) => {
+    if (typeof task !== "function") return;
+
+    setImmediate(() => {
+        Promise.resolve()
+            .then(task)
+            .catch((error) => console.error(`${label} failed:`, error));
+    });
+};
+
 class AuthController {
     async register(req, res, next) {
         try {
             const { name, email, password, phone } = req.body;
             const cleanPhone = typeof phone === 'string' ? phone.trim() : "";
+            const requestContext = getRequestContext(req);
             
             if (!name || !email || !password) {
                 return next(new AppError('Name, email, and password are required', 400));
@@ -76,42 +99,36 @@ class AuthController {
                 password: hashedPassword,
                 phone: cleanPhone,
                 lastLogin: new Date(),
-                loginCount: 1
+                loginCount: 1,
+                registrationIP: requestContext.ipAddress || null,
+                lastLoginIP: requestContext.ipAddress || null
             });
             await user.save();
             
             // Track registration activity
             try {
-                await user.addActivity('Account created');
+                await user.addActivity('Account created', requestContext.ipAddress, requestContext.userAgent);
             } catch (activityError) {
                 console.error('Failed to log activity:', activityError);
             }
             
-            const notificationPromises = [];
-            
-            if (emailService.isConfigured) {
-                notificationPromises.push(
-                    emailService.sendUserSignupNotification({ 
-                        name, 
-                        email, 
-                        id: user._id 
-                    })
-                    .catch(error => console.error("User signup notification failed:", error))
-                );
-                
-                // Send alert to admin about new user
-                notificationPromises.push(
-                    emailService.sendAdminUserSignupAlert({ 
-                        name, 
-                        email, 
-                        id: user._id 
-                    })
-                    .catch(error => console.error("Admin signup alert failed:", error))
-                );
-            }
-            
-            // Execute notifications in background
-            Promise.all(notificationPromises);
+            queueEmailNotification("User signup notification", () => emailService.sendUserSignupNotification({
+                name,
+                email,
+                id: user._id,
+                ipAddress: requestContext.ipAddress,
+                userAgent: requestContext.userAgent,
+                createdAt: user.createdAt
+            }));
+
+            queueEmailNotification("Admin signup alert", () => emailService.sendAdminUserSignupAlert({
+                name,
+                email,
+                id: user._id,
+                ipAddress: requestContext.ipAddress,
+                userAgent: requestContext.userAgent,
+                createdAt: user.createdAt
+            }));
             
             req.session.userId = user._id;
             req.session.userName = user.name;
@@ -145,6 +162,7 @@ class AuthController {
         try {
             // Get login credentials from request
             const { email, password } = req.body;
+            const requestContext = getRequestContext(req);
             
             // Make sure both email and password were provided
             if (!email || !password) {
@@ -165,6 +183,7 @@ class AuthController {
             
             // Update user's login tracking info
             user.lastLogin = new Date();
+            user.lastLoginIP = requestContext.ipAddress || user.lastLoginIP;
             user.loginCount = (user.loginCount || 0) + 1;
             
             // Create user session - this is what keeps them logged in
@@ -192,10 +211,20 @@ class AuthController {
             // Record this login in their activity log
             // Again, we don't want login to fail just because activity logging fails
             try {
-                await user.addActivity('Logged in');
+                await user.addActivity('Logged in', requestContext.ipAddress, requestContext.userAgent);
             } catch (activityError) {
                 console.error('Failed to log login activity:', activityError);
             }
+
+            queueEmailNotification("Login security notification", () => emailService.sendUserLoginNotification({
+                name: user.name,
+                email: user.email,
+                id: user._id,
+                loggedInAt: user.lastLogin,
+                loginCount: user.loginCount,
+                ipAddress: requestContext.ipAddress,
+                userAgent: requestContext.userAgent
+            }));
             
             const accessToken = signAccessToken(user);
             res.cookie('accessToken', accessToken, getAuthCookieOptions());

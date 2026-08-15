@@ -119,6 +119,54 @@ const formatMemoryValue = (value) => {
   return `${number.toLocaleString()} MB`;
 };
 
+const JOB_APPLICATION_STATUS_OPTIONS = [
+  { value: "pending", label: "Pending review", tone: "pending", description: "Application is waiting for review" },
+  { value: "reviewed", label: "Reviewed", tone: "reviewed", description: "Application has been reviewed" },
+  { value: "interviewed", label: "Interview stage", tone: "interviewed", description: "Candidate has moved to interviews" },
+  { value: "accepted", label: "Accepted", tone: "accepted", description: "Candidate has been accepted" },
+  { value: "rejected", label: "Not selected", tone: "rejected", description: "Candidate will not move forward" }
+];
+
+const getJobApplicationStatusMeta = (status = "pending") => (
+  JOB_APPLICATION_STATUS_OPTIONS.find((item) => item.value === status) || JOB_APPLICATION_STATUS_OPTIONS[0]
+);
+
+const formatAdminDate = (value, options = {}) => {
+  if (!value) return "Not recorded";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not recorded";
+
+  return date.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: options.dateOnly ? undefined : "2-digit",
+    minute: options.dateOnly ? undefined : "2-digit"
+  });
+};
+
+const getApplicantInitials = (name = "") => {
+  const parts = String(name || "Applicant").trim().split(/\s+/).filter(Boolean);
+  return (parts.slice(0, 2).map((part) => part.charAt(0)).join("") || "A").toUpperCase();
+};
+
+const buildApplicantEmailDraft = (application = {}) => {
+  const firstName = String(application.fullName || "there").trim().split(/\s+/)[0] || "there";
+  const jobTitle = application.job?.title || "your application";
+
+  return {
+    subject: `Update regarding your ${jobTitle} application`,
+    message: `Hello ${firstName},
+
+Thank you for your interest in SAPTech Uganda and for the time you invested in your application.
+
+I wanted to personally follow up regarding your application for ${jobTitle}.
+
+Warm regards,
+SAPTech Uganda Recruitment Team`
+  };
+};
+
 const formatDateTime = (value) => {
   if (!value) return NOT_REPORTED;
   const date = value instanceof Date ? value : new Date(value);
@@ -155,7 +203,8 @@ const DEFAULT_EMAIL_CONFIG_FORM = {
     tagline: "Technology that moves people and businesses forward",
     phone: "+256 706 564 628",
     address: "Ndejje, Kampala, Uganda",
-    contactEmail: "info@saptechug.com"
+    contactEmail: "info@saptechug.com",
+    careersEmail: "careers@saptechug.com"
   },
   sender: {
     fromName: "SAPTech Uganda",
@@ -177,6 +226,7 @@ const mergeEmailConfigForm = (config = {}, emailDelivery = {}) => ({
   providerMode: config.providerMode || emailDelivery.mode || DEFAULT_EMAIL_CONFIG_FORM.providerMode,
   brand: {
     ...DEFAULT_EMAIL_CONFIG_FORM.brand,
+    ...(emailDelivery.brand || {}),
     ...(config.brand || {})
   },
   sender: {
@@ -269,6 +319,10 @@ const AdminDashboard = ({ user, onClose }) => {
   const [jobsSearch, setJobsSearch] = useState("");
   const [jobApplicationsSearch, setJobApplicationsSearch] = useState("");
   const [jobApplicationsStatusFilter, setJobApplicationsStatusFilter] = useState("");
+  const [selectedJobApplication, setSelectedJobApplication] = useState(null);
+  const [emailingJobApplication, setEmailingJobApplication] = useState(null);
+  const [applicantEmailForm, setApplicantEmailForm] = useState({ subject: "", message: "" });
+  const [sendingApplicantEmail, setSendingApplicantEmail] = useState(false);
   
   // Settings states
   const [currentSignature, setCurrentSignature] = useState(null);
@@ -1110,13 +1164,58 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
     }
   };
 
-  const handleJobApplicationStatusUpdate = async (applicationId, status) => {
+  const openApplicantEmailComposer = (application) => {
+    setEmailingJobApplication(application);
+    setApplicantEmailForm(buildApplicantEmailDraft(application));
+  };
+
+  const closeApplicantEmailComposer = () => {
+    setEmailingJobApplication(null);
+    setApplicantEmailForm({ subject: "", message: "" });
+  };
+
+  const handleSendApplicantEmail = async (event) => {
+    event.preventDefault();
+
+    if (!emailingJobApplication?._id) return;
+
+    if (!applicantEmailForm.subject.trim() || !applicantEmailForm.message.trim()) {
+      setAutoMessage("Please add both a subject and message before sending.", true);
+      return;
+    }
+
+    try {
+      setSendingApplicantEmail(true);
+      const response = await apiService.sendJobApplicationEmail(emailingJobApplication._id, applicantEmailForm);
+      const updatedApplication = response?.data?.application || response?.application;
+
+      if (updatedApplication?._id) {
+        setJobApplications((prev) => upsertById(prev, updatedApplication));
+        setSelectedJobApplication((current) => (
+          current?._id === updatedApplication._id ? updatedApplication : current
+        ));
+      }
+
+      setAutoMessage(`Professional email sent to ${emailingJobApplication.fullName}`);
+      closeApplicantEmailComposer();
+    } catch (error) {
+      setAutoMessage("Couldn't send applicant email: " + error.message, true);
+    } finally {
+      setSendingApplicantEmail(false);
+    }
+  };
+
+  const handleJobApplicationStatusUpdate = async (application, status) => {
+    const applicationId = application?._id || application;
     try {
       await apiService.updateApplicationStatus(applicationId, status);
       setJobApplications((prev) => prev.map((application) => (
         application._id === applicationId ? { ...application, status } : application
       )));
-      setAutoMessage("Job application status updated");
+      setSelectedJobApplication((current) => (
+        current?._id === applicationId ? { ...current, status } : current
+      ));
+      setAutoMessage("Job application status updated and applicant email queued");
       fetchJobApplications(jobApplicationsPagination.currentPage);
       fetchDashboardStats();
     } catch (error) {
@@ -1809,6 +1908,14 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                 />
               </label>
               <label>
+                Careers/HR Email
+                <input
+                  type="email"
+                  value={form.brand.careersEmail}
+                  onChange={(event) => updateEmailConfigField("brand", "careersEmail", event.target.value)}
+                />
+              </label>
+              <label>
                 Logo URL
                 <input
                   type="url"
@@ -2095,6 +2202,15 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
     return [job.title, job.department, job.location, job.employmentType, job.description]
       .some((value) => String(value || "").toLowerCase().includes(term));
   });
+
+  const jobApplicationStatusSummary = JOB_APPLICATION_STATUS_OPTIONS.map((option) => ({
+    ...option,
+    count: jobApplications.filter((application) => (application.status || "pending") === option.value).length
+  }));
+
+  const jobApplicationsAwaitingAction = jobApplications.filter((application) => (
+    ["pending", "reviewed"].includes(application.status || "pending")
+  )).length;
 
   if (loading) {
     return (
@@ -3523,10 +3639,60 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
 
           {/* Job Applications Tab */}
           {activeTab === "job-applications" && (
-            <div className="tab-panel">
-              <div className="section-header">
-                <h2>Job Applications</h2>
-                <p>Review applications submitted from the public Careers page</p>
+            <div className="tab-panel job-applications-panel">
+              <div className="section-header job-applications-header">
+                <div>
+                  <span className="section-eyebrow">Recruitment inbox</span>
+                  <h2>Job Applications</h2>
+                  <p>Review applicants, update hiring status, and send branded professional emails from one place.</p>
+                </div>
+                <div className="job-applications-header-actions">
+                  <span className="email-automation-pill">
+                    <i className="fas fa-envelope-circle-check"></i>
+                    Status changes email applicants
+                  </span>
+                  <button className="btn-refresh" onClick={() => fetchJobApplications(1)}>
+                    Refresh
+                  </button>
+                </div>
+              </div>
+
+              <div className="job-applications-insights">
+                <article>
+                  <span>Total applications</span>
+                  <strong>{jobApplicationsPagination.totalItems || jobApplications.length}</strong>
+                  <small>Matching the current filters</small>
+                </article>
+                <article>
+                  <span>Needs attention</span>
+                  <strong>{jobApplicationsAwaitingAction}</strong>
+                  <small>Pending or reviewed</small>
+                </article>
+                <article>
+                  <span>Interview stage</span>
+                  <strong>{jobApplicationStatusSummary.find((item) => item.value === "interviewed")?.count || 0}</strong>
+                  <small>Candidates to follow up</small>
+                </article>
+                <article>
+                  <span>Accepted</span>
+                  <strong>{jobApplicationStatusSummary.find((item) => item.value === "accepted")?.count || 0}</strong>
+                  <small>Successful applicants</small>
+                </article>
+              </div>
+
+              <div className="job-status-pipeline">
+                {jobApplicationStatusSummary.map((item) => (
+                  <button
+                    type="button"
+                    key={item.value}
+                    className={`job-status-card tone-${item.tone} ${jobApplicationsStatusFilter === item.value ? "active" : ""}`}
+                    onClick={() => setJobApplicationsStatusFilter(jobApplicationsStatusFilter === item.value ? "" : item.value)}
+                  >
+                    <span>{item.label}</span>
+                    <strong>{item.count}</strong>
+                    <small>{item.description}</small>
+                  </button>
+                ))}
               </div>
 
               <div className="controls-section">
@@ -3544,19 +3710,14 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                     className="filter-select"
                   >
                     <option value="">All Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="reviewed">Reviewed</option>
-                    <option value="interviewed">Interviewed</option>
-                    <option value="accepted">Accepted</option>
-                    <option value="rejected">Rejected</option>
+                    {JOB_APPLICATION_STATUS_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
                   </select>
-                  <button className="btn-refresh" onClick={() => fetchJobApplications(1)}>
-                    Refresh
-                  </button>
                 </div>
               </div>
 
-              <div className="data-table">
+              <div className="data-table professional-applications-table">
                 <div className="table-container">
                   <table>
                     <thead>
@@ -3588,7 +3749,15 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                         jobApplications.map((application) => (
                           <tr key={application._id}>
                             <td>
-                              <strong>{application.fullName}</strong>
+                              <div className="applicant-profile">
+                                <span className="applicant-avatar">{getApplicantInitials(application.fullName)}</span>
+                                <div>
+                                  <strong>{application.fullName}</strong>
+                                  <span className={`application-status-badge tone-${getJobApplicationStatusMeta(application.status).tone}`}>
+                                    {getJobApplicationStatusMeta(application.status).label}
+                                  </span>
+                                </div>
+                              </div>
                               {application.coverLetter && (
                                 <small className="table-subtext">
                                   {application.coverLetter.substring(0, 120)}
@@ -3643,40 +3812,37 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                             <td>
                               <select
                                 value={application.status || "pending"}
-                                onChange={(e) => handleJobApplicationStatusUpdate(application._id, e.target.value)}
+                                onChange={(e) => handleJobApplicationStatusUpdate(application, e.target.value)}
                                 className={`status-select status-${application.status || "pending"}`}
+                                aria-label={`Update status for ${application.fullName}`}
                               >
-                                <option value="pending">Pending</option>
-                                <option value="reviewed">Reviewed</option>
-                                <option value="interviewed">Interviewed</option>
-                                <option value="accepted">Accepted</option>
-                                <option value="rejected">Rejected</option>
+                                {JOB_APPLICATION_STATUS_OPTIONS.map((option) => (
+                                  <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
                               </select>
+                              <small className="status-email-hint">Sends a branded email</small>
                             </td>
-                            <td>{application.createdAt ? new Date(application.createdAt).toLocaleDateString() : "-"}</td>
+                            <td>
+                              <strong>{formatAdminDate(application.createdAt, { dateOnly: true })}</strong>
+                              <small className="table-subtext">
+                                Last emailed: {formatAdminDate(application.lastContactedAt)}
+                              </small>
+                            </td>
                             <td>
                               <div className="action-buttons">
                                 <button
                                   className="btn-small btn-view"
-                                  onClick={() => {
-                                    alert(`
-Applicant: ${application.fullName}
-Email: ${application.email}
-Phone: ${application.phone || "N/A"}
-Job: ${application.job?.title || "Job removed"}
-Status: ${application.status || "pending"}
-Submitted: ${application.createdAt ? new Date(application.createdAt).toLocaleString() : "N/A"}
-Resume: ${application.resumeUrl || "N/A"}
-CV File: ${application.resumeFile?.url ? getImageUrl(application.resumeFile.url) : "N/A"}
-Cover Letter File: ${application.coverLetterFile?.url ? getImageUrl(application.coverLetterFile.url) : "N/A"}
-
-Cover Letter:
-${application.coverLetter || "No cover letter provided."}
-                                    `.trim());
-                                  }}
+                                  onClick={() => setSelectedJobApplication(application)}
                                   title="View Application"
                                 >
                                   <i className="fas fa-eye"></i> View
+                                </button>
+                                <button
+                                  className="btn-small btn-email"
+                                  onClick={() => openApplicantEmailComposer(application)}
+                                  title="Send text email about this application"
+                                >
+                                  <i className="fas fa-paper-plane"></i> Text Email
                                 </button>
                               </div>
                             </td>
@@ -4488,6 +4654,151 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
         </div>
         <BackToTop />
       </div>
+
+      {selectedJobApplication && (
+        <div className="applicant-modal-overlay" onClick={() => setSelectedJobApplication(null)}>
+          <div className="applicant-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="applicant-modal-header">
+              <div className="applicant-modal-title">
+                <span className="applicant-avatar large">{getApplicantInitials(selectedJobApplication.fullName)}</span>
+                <div>
+                  <span className="section-eyebrow">Applicant profile</span>
+                  <h3>{selectedJobApplication.fullName}</h3>
+                  <p>{selectedJobApplication.job?.title || "Job application"} • {getJobApplicationStatusMeta(selectedJobApplication.status).label}</p>
+                </div>
+              </div>
+              <button className="close-modal-btn" onClick={() => setSelectedJobApplication(null)} aria-label="Close applicant details">
+                &times;
+              </button>
+            </div>
+
+            <div className="applicant-modal-grid">
+              <section className="applicant-detail-card">
+                <h4>Contact</h4>
+                <p><strong>Email:</strong> <a href={`mailto:${selectedJobApplication.email}`}>{selectedJobApplication.email}</a></p>
+                <p><strong>Phone:</strong> {selectedJobApplication.phone || "Not provided"}</p>
+                <p><strong>Submitted:</strong> {formatAdminDate(selectedJobApplication.createdAt)}</p>
+                <p><strong>Last emailed:</strong> {formatAdminDate(selectedJobApplication.lastContactedAt)}</p>
+              </section>
+
+              <section className="applicant-detail-card">
+                <h4>Role</h4>
+                <p><strong>Position:</strong> {selectedJobApplication.job?.title || "Job removed"}</p>
+                <p><strong>Department:</strong> {selectedJobApplication.job?.department || "General"}</p>
+                <p><strong>Location:</strong> {selectedJobApplication.job?.location || "Not specified"}</p>
+                <p><strong>Type:</strong> {selectedJobApplication.job?.employmentType || "Not specified"}</p>
+              </section>
+            </div>
+
+            <section className="applicant-detail-card full">
+              <h4>Cover letter</h4>
+              <p className="applicant-cover-letter">
+                {selectedJobApplication.coverLetter || "No cover letter was provided."}
+              </p>
+            </section>
+
+            <section className="applicant-detail-card full">
+              <h4>Documents</h4>
+              <div className="applicant-document-list">
+                {selectedJobApplication.resumeUrl && (
+                  <a href={selectedJobApplication.resumeUrl} target="_blank" rel="noopener noreferrer">Open resume URL</a>
+                )}
+                {selectedJobApplication.resumeFile?.url && (
+                  <a href={getImageUrl(selectedJobApplication.resumeFile.url)} target="_blank" rel="noopener noreferrer">
+                    Open CV file{selectedJobApplication.resumeFile.originalName ? ` (${selectedJobApplication.resumeFile.originalName})` : ""}
+                  </a>
+                )}
+                {selectedJobApplication.coverLetterFile?.url && (
+                  <a href={getImageUrl(selectedJobApplication.coverLetterFile.url)} target="_blank" rel="noopener noreferrer">
+                    Open cover letter file{selectedJobApplication.coverLetterFile.originalName ? ` (${selectedJobApplication.coverLetterFile.originalName})` : ""}
+                  </a>
+                )}
+                {!selectedJobApplication.resumeUrl && !selectedJobApplication.resumeFile?.url && !selectedJobApplication.coverLetterFile?.url && (
+                  <span className="table-muted">No documents uploaded.</span>
+                )}
+              </div>
+            </section>
+
+            <div className="applicant-modal-actions">
+              <button className="btn-secondary" onClick={() => setSelectedJobApplication(null)}>
+                Close
+              </button>
+              <button className="btn btn-primary" onClick={() => openApplicantEmailComposer(selectedJobApplication)}>
+                <i className="fas fa-paper-plane"></i> Text email applicant
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {emailingJobApplication && (
+        <div className="applicant-modal-overlay" onClick={closeApplicantEmailComposer}>
+          <form className="applicant-modal email-composer-modal" onSubmit={handleSendApplicantEmail} onClick={(event) => event.stopPropagation()}>
+            <div className="applicant-modal-header">
+              <div>
+                <span className="section-eyebrow">Text email about application</span>
+                <h3>Text email {emailingJobApplication.fullName}</h3>
+                <p>Write a clear text message about this application. The system sends it as a professional SAPTech Uganda email using your active provider.</p>
+              </div>
+              <button
+                type="button"
+                className="close-modal-btn"
+                onClick={closeApplicantEmailComposer}
+                disabled={sendingApplicantEmail}
+                aria-label="Close email composer"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="email-recipient-card">
+              <span className="applicant-avatar">{getApplicantInitials(emailingJobApplication.fullName)}</span>
+              <div>
+                <strong>{emailingJobApplication.fullName}</strong>
+                <small>{emailingJobApplication.email} • {emailingJobApplication.job?.title || "Job application"}</small>
+              </div>
+            </div>
+
+            <label className="composer-field">
+              <span>Subject</span>
+              <input
+                type="text"
+                value={applicantEmailForm.subject}
+                maxLength={160}
+                onChange={(event) => setApplicantEmailForm((prev) => ({ ...prev, subject: event.target.value }))}
+                placeholder="Email subject"
+                required
+              />
+            </label>
+
+            <label className="composer-field">
+              <span>Message</span>
+              <textarea
+                value={applicantEmailForm.message}
+                maxLength={4000}
+                rows={10}
+                onChange={(event) => setApplicantEmailForm((prev) => ({ ...prev, message: event.target.value }))}
+                placeholder="Write a clear, warm text email for the applicant..."
+                required
+              />
+              <small>{applicantEmailForm.message.length}/4000 characters</small>
+            </label>
+
+            <div className="applicant-modal-actions">
+              <button type="button" className="btn-secondary" onClick={closeApplicantEmailComposer} disabled={sendingApplicantEmail}>
+                Cancel
+              </button>
+              <LoadingButton
+                type="submit"
+                className="btn btn-primary"
+                loading={sendingApplicantEmail}
+              >
+                {sendingApplicantEmail ? "Sending..." : "Send text email"}
+              </LoadingButton>
+            </div>
+          </form>
+        </div>
+      )}
       
       {/* Service Form Modal */}
       {showServiceForm && (

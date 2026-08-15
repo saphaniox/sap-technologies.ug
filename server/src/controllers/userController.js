@@ -7,6 +7,7 @@ const fs = require("fs");
 const path = require("path");
 const { useCloudinary } = require("../config/fileUpload");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
+const emailService = require("../services/emailService");
 
 /**
  * Get the correct file path/URL for uploaded file
@@ -17,6 +18,28 @@ const getFileUrl = (file, folder = 'profile-pics') => {
 };
 
 const getRequestUserId = (req) => req.userId || req.user?._id || req.session?.userId;
+
+const getRequestContext = (req) => {
+    const forwardedFor = req.headers["x-forwarded-for"];
+    const ipAddress = Array.isArray(forwardedFor)
+        ? forwardedFor[0]
+        : String(forwardedFor || req.ip || req.connection?.remoteAddress || "").split(",")[0].trim();
+
+    return {
+        ipAddress,
+        userAgent: req.headers["user-agent"] || "Not available"
+    };
+};
+
+const queueEmailNotification = (label, task) => {
+    if (typeof task !== "function") return;
+
+    setImmediate(() => {
+        Promise.resolve()
+            .then(task)
+            .catch((error) => console.error(`${label} failed:`, error));
+    });
+};
 
 // Main user controller class for handling user account operations
 class UserController {
@@ -70,7 +93,14 @@ class UserController {
             }
             
             // Log this change in their activity history
-            await user.addActivity("Updated profile name");
+            const requestContext = getRequestContext(req);
+            await user.addActivity("Updated profile name", requestContext.ipAddress, requestContext.userAgent);
+
+            queueEmailNotification("Profile update notification", () => emailService.sendProfileUpdatedNotification({
+                name: user.name,
+                email: user.email,
+                updatedAt: new Date()
+            }));
 
             res.status(200).json({
                 status: "success",
@@ -92,6 +122,11 @@ class UserController {
 
             if (!email) {
                 return next(new AppError("Email is required", 400));
+            }
+
+            const currentUser = await User.findById(getRequestUserId(req)).select("name email");
+            if (!currentUser) {
+                return next(new AppError("User not found", 404));
             }
 
             // Security check: make sure this email isn't already taken by someone else
@@ -117,7 +152,17 @@ class UserController {
             }
 
             // Record this change in their activity log
-            await user.addActivity("Updated email address");
+            const requestContext = getRequestContext(req);
+            await user.addActivity("Updated email address", requestContext.ipAddress, requestContext.userAgent);
+
+            if (String(currentUser.email || "").toLowerCase() !== String(user.email || "").toLowerCase()) {
+                queueEmailNotification("Email change confirmation", () => emailService.sendEmailChangeConfirmation({
+                    name: user.name,
+                    oldEmail: currentUser.email,
+                    newEmail: user.email,
+                    updatedAt: new Date()
+                }));
+            }
 
             res.status(200).json({
                 status: "success",
@@ -160,7 +205,10 @@ class UserController {
             // Save the new password and log this security-important action
             user.password = hashedNewPassword;
             await user.save();
-            await user.addActivity("Password changed");
+            const requestContext = getRequestContext(req);
+            await user.addActivity("Password changed", requestContext.ipAddress, requestContext.userAgent);
+
+            queueEmailNotification("Password change confirmation", () => emailService.sendPasswordChangeConfirmation(user.email, user.name));
 
             res.status(200).json({
                 status: "success",
@@ -204,7 +252,14 @@ class UserController {
             await user.save();
             
             // Record this change in activity log
-            await user.addActivity("Updated profile picture");
+            const requestContext = getRequestContext(req);
+            await user.addActivity("Updated profile picture", requestContext.ipAddress, requestContext.userAgent);
+
+            queueEmailNotification("Profile photo update notification", () => emailService.sendProfilePictureUpdatedNotification({
+                name: user.name,
+                email: user.email,
+                updatedAt: new Date()
+            }));
 
             res.status(200).json({
                 status: "success",
@@ -241,6 +296,12 @@ class UserController {
                     }
                 }
             }
+
+            queueEmailNotification("Account deletion notification", () => emailService.sendAccountDeletedNotification({
+                name: user.name,
+                email: user.email,
+                deletedAt: new Date()
+            }));
 
             // Destroy their session and clear cookies - log them out completely
             if (typeof req.session?.destroy === "function") {
@@ -301,7 +362,15 @@ class UserController {
             // Make them an admin
             user.role = "admin";
             await user.save();
-            await user.addActivity("Self-promoted to admin");
+            const requestContext = getRequestContext(req);
+            await user.addActivity("Self-promoted to admin", requestContext.ipAddress, requestContext.userAgent);
+
+            queueEmailNotification("Role update notification", () => emailService.sendUserRoleUpdatedNotification({
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                updatedAt: new Date()
+            }));
 
             res.status(200).json({
                 status: "success",
@@ -332,7 +401,15 @@ class UserController {
                 // User already exists, just make them an admin
                 user.role = "admin";
                 await user.save();
-                await user.addActivity("Promoted to admin");
+                const requestContext = getRequestContext(req);
+                await user.addActivity("Promoted to admin", requestContext.ipAddress, requestContext.userAgent);
+
+                queueEmailNotification("Role update notification", () => emailService.sendUserRoleUpdatedNotification({
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    updatedAt: new Date()
+                }));
                 
                 return res.status(200).json({
                     status: "success",
@@ -354,7 +431,24 @@ class UserController {
             });
 
             await user.save();
-            await user.addActivity("Account created as admin");
+            const requestContext = getRequestContext(req);
+            await user.addActivity("Account created as admin", requestContext.ipAddress, requestContext.userAgent);
+
+            queueEmailNotification("Admin account welcome notification", () => emailService.sendUserSignupNotification({
+                name: user.name,
+                email: user.email,
+                id: user._id,
+                createdAt: user.createdAt,
+                ipAddress: requestContext.ipAddress,
+                userAgent: requestContext.userAgent
+            }));
+
+            queueEmailNotification("Admin role notification", () => emailService.sendUserRoleUpdatedNotification({
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                updatedAt: new Date()
+            }));
 
             res.status(201).json({
                 status: "success",
@@ -387,7 +481,15 @@ class UserController {
             // Make them an admin
             user.role = "admin";
             await user.save();
-            await user.addActivity("Promoted to admin");
+            const requestContext = getRequestContext(req);
+            await user.addActivity("Promoted to admin", requestContext.ipAddress, requestContext.userAgent);
+
+            queueEmailNotification("Role update notification", () => emailService.sendUserRoleUpdatedNotification({
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                updatedAt: new Date()
+            }));
 
             res.status(200).json({
                 status: "success",

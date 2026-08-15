@@ -59,7 +59,8 @@ const buildPublicEmailConfig = (input = {}, current = {}) => {
             tagline: cleanSettingText(brandInput.tagline, current.brand?.tagline),
             phone: cleanSettingText(brandInput.phone, current.brand?.phone),
             address: cleanSettingText(brandInput.address, current.brand?.address),
-            contactEmail: cleanSettingText(brandInput.contactEmail, current.brand?.contactEmail)
+            contactEmail: cleanSettingText(brandInput.contactEmail, current.brand?.contactEmail),
+            careersEmail: cleanSettingText(brandInput.careersEmail, current.brand?.careersEmail)
         }),
         sender: compactObject({
             fromName: cleanSettingText(senderInput.fromName, current.sender?.fromName),
@@ -81,6 +82,7 @@ const buildPublicEmailConfig = (input = {}, current = {}) => {
 const validatePublicEmailConfig = (config) => {
     const emails = [
         ["Brand contact email", config.brand?.contactEmail],
+        ["Careers/HR email", config.brand?.careersEmail],
         ["From email", config.sender?.fromEmail],
         ["Reply-to email", config.sender?.replyTo],
         ["Notification email", config.sender?.notifyEmail],
@@ -91,6 +93,16 @@ const validatePublicEmailConfig = (config) => {
     const invalid = emails.find(([, value]) => !isEmailLike(value));
     if (invalid) return `${invalid[0]} is not a valid email address.`;
     return "";
+};
+
+const queueEmailNotification = (label, task) => {
+    if (typeof task !== "function") return;
+
+    setImmediate(() => {
+        Promise.resolve()
+            .then(task)
+            .catch((error) => console.error(`${label} failed:`, error));
+    });
 };
 
 const countByStatus = async (Model, match = {}) => {
@@ -496,6 +508,13 @@ class AdminController {
 
             await user.addActivity(`Role changed to ${role} by admin`);
 
+            queueEmailNotification("Role update notification", () => emailService.sendUserRoleUpdatedNotification({
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                updatedAt: new Date()
+            }));
+
             res.status(200).json({
                 status: "success",
                 message: `User role updated to ${role}`,
@@ -520,6 +539,12 @@ class AdminController {
             if (!user) {
                 return next(new AppError("User not found", 404));
             }
+
+            queueEmailNotification("Admin account deletion notification", () => emailService.sendAccountDeletedNotification({
+                name: user.name,
+                email: user.email,
+                deletedAt: new Date()
+            }));
 
             res.status(200).json({
                 status: "success",
