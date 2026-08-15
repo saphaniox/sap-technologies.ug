@@ -136,18 +136,16 @@ const About = () => {
               </div>
               <div className="mvv-content">
                 <p className="mvv-lead">
-                  Empowering Africa Through Innovation & Excellence
+                  Building technology that solves real problems
                 </p>
                 <p className="mvv-description">
-                  We are dedicated to transforming businesses and communities across Uganda and Africa through 
-                  cutting-edge technology solutions. Our mission encompasses delivering world-class web design, 
-                  strategic branding, advanced electrical engineering, and bespoke software development that 
-                  converts visionary ideas into tangible realities.
+                  Our mission is to help businesses, entrepreneurs, and communities use technology with confidence.
+                  We design and build websites, software, brands, electronics, and engineering systems that are easy
+                  to use, reliable in the field, and aligned with the client&apos;s real goals.
                 </p>
                 <p className="mvv-description">
-                  By fostering innovation, maintaining unwavering quality standards, and building lasting 
-                  partnerships, we create sustainable value that propels our clients toward unprecedented growth 
-                  and competitive advantage in the digital economy.
+                  We measure success by what changes after delivery: smoother operations, stronger customer trust,
+                  better visibility, safer systems, and ideas that finally move from imagination into daily use.
                 </p>
               </div>
             </motion.div>
@@ -170,13 +168,15 @@ const About = () => {
               </div>
               <div className="mvv-content">
                 <p className="mvv-lead">
-                  Africa's Premier Technology Innovation Partner
+                  A trusted African technology partner for the future
                 </p>
                 <p className="mvv-description">
-                  We aspire to be the foremost technology partner across Africa, distinguished by our unwavering commitment to innovation, creative excellence, and technical mastery. Our vision extends beyond mere service delivery - we seek to fundamentally transform how businesses operate in the digital era.
+                  Our vision is to become one of Africa&apos;s most trusted technology partners: a team known not only for technical skill, but for honesty, care, and solutions that continue working long after launch day.
                 </p>
                 <p className="mvv-description">
-                  We envision an inclusive technological landscape where every enterprise - from ambitious startups to established industry leaders - has seamless access to sophisticated, cutting-edge solutions that empower them to compete on the global stage, drive meaningful impact, and flourish in an increasingly interconnected world.
+                  We imagine a future where startups, schools, shops, growing companies, and established organizations
+                  can access professional technology without feeling locked out by complexity. Good technology should
+                  help people compete, create, and serve better.
                 </p>
               </div>
             </motion.div>
@@ -199,7 +199,7 @@ const About = () => {
               </div>
               <div className="mvv-content">
                 <p className="mvv-lead">
-                  Principles That Define Our Excellence
+                  The standards we bring to every relationship
                 </p>
                 <div className="core-values-list">
                   <motion.div 
@@ -211,7 +211,7 @@ const About = () => {
                     </div>
                     <div className="value-content">
                       <h4>Innovation</h4>
-                      <p>Continuously pushing technological boundaries, embracing transformative ideas, and pioneering solutions that redefine industry standards.</p>
+                      <p>We stay curious and practical, choosing ideas that genuinely improve the way people work, connect, and solve problems.</p>
                     </div>
                   </motion.div>
                   <motion.div 
@@ -223,7 +223,7 @@ const About = () => {
                     </div>
                     <div className="value-content">
                       <h4>Excellence</h4>
-                      <p>Maintaining uncompromising quality standards, meticulous attention to detail, and an unwavering commitment to delivering exceptional results.</p>
+                      <p>We care about the details: clean design, stable systems, clear communication, and work we can proudly stand behind.</p>
                     </div>
                   </motion.div>
                   <motion.div 
@@ -235,7 +235,7 @@ const About = () => {
                     </div>
                     <div className="value-content">
                       <h4>Integrity</h4>
-                      <p>Operating with absolute honesty, transparency, and ethical accountability in every interaction and decision we make.</p>
+                      <p>We tell the truth, protect client trust, and make decisions that are fair, transparent, and responsible.</p>
                     </div>
                   </motion.div>
                   <motion.div 
@@ -247,7 +247,7 @@ const About = () => {
                     </div>
                     <div className="value-content">
                       <h4>Impact</h4>
-                      <p>Creating meaningful, sustainable solutions that drive positive change, empower communities, and contribute to Africa's digital transformation.</p>
+                      <p>We build for outcomes that matter: stronger businesses, safer processes, better access, and lasting value for communities.</p>
                     </div>
                   </motion.div>
                   <motion.div 
@@ -259,7 +259,7 @@ const About = () => {
                     </div>
                     <div className="value-content">
                       <h4>Collaboration</h4>
-                      <p>Fostering strategic partnerships, embracing diverse perspectives, and leveraging collective expertise to achieve extraordinary outcomes.</p>
+                      <p>We work with clients, not around them. The best solutions come from listening, sharing ideas, and building together.</p>
                     </div>
                   </motion.div>
                   <motion.div 
@@ -270,8 +270,8 @@ const About = () => {
                       <span className="value-emoji">{"\uD83C\uDFAF"}</span>
                     </div>
                     <div className="value-content">
-                      <h4>Customer-Centricity</h4>
-                      <p>Placing client success at the heart of everything we do, understanding unique needs, and delivering tailored solutions that exceed expectations.</p>
+                      <h4>Client Care</h4>
+                      <p>We treat every client&apos;s project with attention and respect, because good service should feel human from start to finish.</p>
                     </div>
                   </motion.div>
                 </div>
