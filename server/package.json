@@ -12,6 +12,8 @@
     "cleanup-logs": "node cleanup-logs.js",
     "keep-alive": "node scripts/keep-alive-server.js",
     "seed:admin": "node scripts/admin-seed.js",
+    "db:migrate:test-to-sap": "node scripts/database-name-migration.js --source=test --target=sap-technologies",
+    "db:migrate:test-to-sap:dry-run": "node scripts/database-name-migration.js --source=test --target=sap-technologies --dry-run",
     "db:mirror:sync": "node scripts/sync-database-mirror.js",
     "db:mirror:sync:exact": "node scripts/sync-database-mirror.js --prune",
     "db:mirror:sync:prune": "node scripts/sync-database-mirror.js --prune",

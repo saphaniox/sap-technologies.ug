@@ -14,7 +14,9 @@
     "install:client": "npm ci --prefix sap-technologies-official",
     "install:server": "npm ci --prefix server",
     "install:all": "npm run install:client && npm run install:server",
-    "vercel-build": "npm run build:client"
+    "vercel-build": "npm run build:client",
+    "db:migrate:test-to-sap": "npm --prefix server run db:migrate:test-to-sap",
+    "db:migrate:test-to-sap:dry-run": "npm --prefix server run db:migrate:test-to-sap:dry-run"
   },
   "engines": {
     "node": ">=20"
