@@ -321,7 +321,7 @@ class AdminController {
                 .sort((first, second) => new Date(second.createdAt) - new Date(first.createdAt))
                 .slice(0, 10);
 
-            const emailDelivery = await emailService.getDeliveryStatus();
+            const emailDelivery = await emailService.getDeliveryStatus({ force: true });
             const totalOpenWork = pendingContacts
                 + pendingPartnershipRequests
                 + newProductInquiries
@@ -703,7 +703,7 @@ class AdminController {
             const configSetting = await AppSetting.findOne({ key: EMAIL_PUBLIC_CONFIG_SETTING_KEY })
                 .populate("updatedBy", "name email")
                 .lean();
-            const emailDelivery = await emailService.getDeliveryStatus();
+            const emailDelivery = await emailService.getDeliveryStatus({ force: true });
 
             res.status(200).json({
                 status: "success",
@@ -745,7 +745,7 @@ class AdminController {
                 return next(new AppError("Email provider must be auto, mailjet, or gmail.", 400));
             }
 
-            const currentStatus = await emailService.getDeliveryStatus();
+            const currentStatus = await emailService.getDeliveryStatus({ force: true });
             if (config.providerMode === "mailjet" && !currentStatus.configured.mailjet) {
                 return next(new AppError("Mailjet keys must stay in env and are not configured yet.", 400));
             }
@@ -762,7 +762,7 @@ class AdminController {
             emailService.invalidateConfigCache?.();
             await emailService.loadRuntimeConfig?.(true);
             emailService.setRuntimeProviderMode(config.providerMode);
-            const emailDelivery = await emailService.getDeliveryStatus();
+            const emailDelivery = await emailService.getDeliveryStatus({ force: true });
 
             res.status(200).json({
                 status: "success",
@@ -791,7 +791,7 @@ class AdminController {
                 return next(new AppError("Email provider must be auto, mailjet, or gmail.", 400));
             }
 
-            const currentStatus = await emailService.getDeliveryStatus();
+            const currentStatus = await emailService.getDeliveryStatus({ force: true });
             if (requestedMode === "mailjet" && !currentStatus.configured.mailjet) {
                 return next(new AppError("Mailjet is not configured yet. Add Mailjet API keys before forcing Mailjet.", 400));
             }
@@ -809,7 +809,7 @@ class AdminController {
             emailService.invalidateConfigCache?.();
             await emailService.loadRuntimeConfig?.(true);
             emailService.setRuntimeProviderMode(mode);
-            const emailDelivery = await emailService.getDeliveryStatus();
+            const emailDelivery = await emailService.getDeliveryStatus({ force: true });
 
             res.status(200).json({
                 status: "success",
@@ -844,7 +844,7 @@ class AdminController {
                     count: await Model.countDocuments()
                 }))
             );
-            const emailDelivery = await emailService.getDeliveryStatus();
+            const emailDelivery = await emailService.getDeliveryStatus({ force: true });
 
             res.status(200).json({
                 status: "success",

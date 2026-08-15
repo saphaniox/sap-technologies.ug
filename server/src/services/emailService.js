@@ -308,10 +308,12 @@ class EmailService {
     this.provider = this.providers[0] || "none";
   }
 
-  async getProviderMode() {
-    await this.loadRuntimeConfig();
+  async getProviderMode(force = false, options = {}) {
+    if (!options.skipRuntimeLoad) {
+      await this.loadRuntimeConfig(force);
+    }
     const now = Date.now();
-    if (this.providerModeCache && now - this.providerModeCache.loadedAt < this.providerModeCacheMs) {
+    if (!force && this.providerModeCache && now - this.providerModeCache.loadedAt < this.providerModeCacheMs) {
       return this.providerModeCache.mode;
     }
 
@@ -359,9 +361,10 @@ class EmailService {
     return PROVIDER_DISPLAY_NAMES[provider] || provider || "None";
   }
 
-  async getDeliveryStatus() {
-    await this.loadRuntimeConfig();
-    const mode = await this.getProviderMode();
+  async getDeliveryStatus(options = {}) {
+    const force = Boolean(options.force);
+    await this.loadRuntimeConfig(force);
+    const mode = await this.getProviderMode(force, { skipRuntimeLoad: true });
     const chain = this.resolveProviderChain(mode);
 
     return {
@@ -783,8 +786,23 @@ class EmailService {
     return { provider: "gmail-smtp", messageId: info.messageId };
   }
 
+  async resolveEmailOptions(emailOptions = {}) {
+    const resolved = { ...emailOptions };
+
+    if (typeof resolved.html === "function") {
+      resolved.html = await resolved.html();
+    }
+
+    if (typeof resolved.text === "function") {
+      resolved.text = await resolved.text(resolved.html);
+    }
+
+    return resolved;
+  }
+
   async sendEmail(emailOptions) {
-    await this.loadRuntimeConfig();
+    await this.loadRuntimeConfig(true);
+    const resolvedEmailOptions = await this.resolveEmailOptions(emailOptions);
 
     if (!this.isConfigured) {
       throw new Error(
@@ -792,15 +810,15 @@ class EmailService {
       );
     }
 
-    const attachments = await this.prepareAttachments(emailOptions.attachments || []);
-    const html = emailOptions.html;
-    const text = emailOptions.text || this.htmlToText(html);
+    const attachments = await this.prepareAttachments(resolvedEmailOptions.attachments || []);
+    const html = resolvedEmailOptions.html;
+    const text = resolvedEmailOptions.text || this.htmlToText(html);
     const headers = {
       "X-Entity-Ref-ID": `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
-      ...(emailOptions.headers || {})
+      ...(resolvedEmailOptions.headers || {})
     };
     const prepared = { attachments, html, text, headers };
-    const providerMode = await this.getProviderMode();
+    const providerMode = await this.getProviderMode(true, { skipRuntimeLoad: true });
     const providerChain = this.resolveProviderChain(providerMode);
 
     if (!providerChain.length) {
@@ -815,8 +833,8 @@ class EmailService {
       const provider = providerChain[index];
 
       try {
-        if (provider === "mailjet") return await this.sendWithMailjet(emailOptions, prepared);
-        if (provider === "gmail-smtp") return await this.sendWithSmtp(emailOptions, prepared);
+        if (provider === "mailjet") return await this.sendWithMailjet(resolvedEmailOptions, prepared);
+        if (provider === "gmail-smtp") return await this.sendWithSmtp(resolvedEmailOptions, prepared);
       } catch (error) {
         errors.push(error);
         const nextProvider = providerChain[index + 1];
@@ -836,11 +854,6 @@ class EmailService {
   }
 
   async deliver(emailOptions) {
-    if (!this.isConfigured) {
-      console.log(`Email service not configured; skipped "${emailOptions.subject}".`);
-      return false;
-    }
-
     try {
       const result = await this.sendEmail(emailOptions);
       console.log(`Email sent via ${result.provider}: ${emailOptions.subject} -> ${emailOptions.to}`);
@@ -867,7 +880,7 @@ class EmailService {
       replyTo: contactData.email,
       subject: `New contact message from ${normalizeText(contactData.name, "Website visitor")}`,
       category: "contact_admin",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "New Contact Message",
         preheader: "A visitor submitted the contact form.",
         intro: "A new message was submitted through the website contact page.",
@@ -885,7 +898,7 @@ class EmailService {
       to: contactData.email,
       subject: "We received your message",
       category: "contact_confirmation",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "Message Received",
         preheader: "Thank you for contacting SAPTech Uganda.",
         greeting: `Hello ${normalizeText(contactData.name, "there")}`,
@@ -905,7 +918,7 @@ class EmailService {
       to: contactData.email,
       subject: `Contact request update: ${normalizeStatus(contactData.status)}`,
       category: "contact_status",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "Contact Request Update",
         preheader: "There is an update on your message to SAPTech Uganda.",
         greeting: `Hello ${normalizeText(contactData.name, "there")}`,
@@ -932,7 +945,7 @@ class EmailService {
       replyTo: partnershipData.contactEmail,
       subject: `New partnership request from ${normalizeText(partnershipData.companyName, "a company")}`,
       category: "partnership_admin",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "New Partnership Request",
         preheader: "A company submitted a partnership request.",
         intro: "A new partnership request has been submitted through the website.",
@@ -959,7 +972,7 @@ class EmailService {
       to: partnershipData.contactEmail,
       subject: "Your partnership request was received",
       category: "partnership_confirmation",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "Partnership Request Received",
         preheader: "Thank you for your interest in partnering with SAPTech Uganda.",
         greeting: `Hello ${normalizeText(partnershipData.contactPerson, "there")}`,
@@ -988,7 +1001,7 @@ class EmailService {
       to: partnershipData.contactEmail,
       subject: `Partnership request update: ${normalizeStatus(partnershipData.status)}`,
       category: "partnership_status",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         tone: partnershipData.status === "rejected" ? "warning" : partnershipData.status === "approved" ? "success" : "default",
         title: "Partnership Request Update",
         preheader: "There is an update on your partnership request.",
@@ -1015,7 +1028,7 @@ class EmailService {
       to: subscriberData.email,
       subject: "Welcome to SAPTech Uganda updates",
       category: "newsletter",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "Welcome to SAPTech Updates",
         preheader: "You are now subscribed to SAPTech Uganda updates.",
         greeting: "Welcome",
@@ -1035,7 +1048,7 @@ class EmailService {
       to: subscriberData.email,
       subject: "You have been unsubscribed from SAPTech Uganda updates",
       category: "newsletter_unsubscribe",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         tone: "warning",
         title: "Newsletter Unsubscribed",
         preheader: "You have been unsubscribed from SAPTech Uganda updates.",
@@ -1055,7 +1068,7 @@ class EmailService {
       to: userData.email,
       subject: "Welcome to your SAPTech Uganda account",
       category: "account_welcome",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "Account Created",
         preheader: "Your SAPTech Uganda account is ready.",
         greeting: `Hello ${normalizeText(userData.name, "there")}`,
@@ -1078,7 +1091,7 @@ class EmailService {
       to: this.notifyEmail,
       subject: `New user account: ${normalizeText(userData.name, userData.email)}`,
       category: "account_admin",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "New User Registration",
         preheader: "A new user registered on the website.",
         intro: "A new user account was created on SAPTech Uganda.",
@@ -1095,7 +1108,7 @@ class EmailService {
       to: this.notifyEmail,
       subject: alertData.subject || "SAPTech Uganda admin alert",
       category: "admin_alert",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: alertData.title || "Admin Alert",
         preheader: alertData.message || "A system alert was generated.",
         intro: alertData.message || "A system alert was generated.",
@@ -1110,7 +1123,7 @@ class EmailService {
       replyTo: inquiryData.customerEmail,
       subject: `Product inquiry: ${normalizeText(inquiryData.productName, "Product")}`,
       category: "product_inquiry_admin",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "New Product Inquiry",
         preheader: "A customer asked about a product.",
         intro: "A product inquiry has been submitted on the website.",
@@ -1138,7 +1151,7 @@ class EmailService {
       to: inquiryData.customerEmail,
       subject: `We received your inquiry about ${normalizeText(inquiryData.productName, "our product")}`,
       category: "product_inquiry_confirmation",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "Product Inquiry Received",
         preheader: "Thank you for your product inquiry.",
         greeting: "Hello",
@@ -1158,7 +1171,7 @@ class EmailService {
       to: inquiryData.customerEmail,
       subject: `Product inquiry update: ${normalizeStatus(inquiryData.status)}`,
       category: "product_inquiry_status",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "Product Inquiry Update",
         preheader: "Your product inquiry status has changed.",
         greeting: "Hello",
@@ -1195,7 +1208,7 @@ class EmailService {
       replyTo: customerEmail,
       subject: `Cart inquiry from ${normalizeText(customerName, customerEmail)}`,
       category: "cart_inquiry_admin",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "New Cart Inquiry",
         preheader: "A customer submitted a multi-product inquiry.",
         intro: "A customer submitted a cart inquiry with multiple products.",
@@ -1223,7 +1236,7 @@ class EmailService {
       to: customerEmail,
       subject: "We received your product enquiry",
       category: "cart_inquiry_confirmation",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "Product Enquiry Received",
         preheader: "Your product enquiry was received.",
         greeting: `Hello ${normalizeText(customerName, "there")}`,
@@ -1243,7 +1256,7 @@ class EmailService {
       replyTo: quoteData.customerEmail,
       subject: `Service quote request: ${normalizeText(quoteData.serviceName, "Service")}`,
       category: "service_quote_admin",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "New Service Quote Request",
         preheader: "A customer requested a service quote.",
         intro: "A new service quote request has been submitted through the website.",
@@ -1275,7 +1288,7 @@ class EmailService {
       to: quoteData.customerEmail,
       subject: `We received your quote request for ${normalizeText(quoteData.serviceName, "our service")}`,
       category: "service_quote_confirmation",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "Quote Request Received",
         preheader: "Your service quote request was received.",
         greeting: `Hello ${normalizeText(quoteData.customerName, "there")}`,
@@ -1295,7 +1308,7 @@ class EmailService {
       to: quoteData.customerEmail,
       subject: `Service quote update: ${normalizeStatus(quoteData.status)}`,
       category: "service_quote_status",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "Service Quote Update",
         preheader: "Your service quote status has changed.",
         greeting: `Hello ${normalizeText(quoteData.customerName, "there")}`,
@@ -1335,7 +1348,7 @@ class EmailService {
       fromName: this.brand.awardsName,
       subject: "Your SAPTech Awards 2026 nomination was received",
       category: "awards_nomination_confirmation",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         brandName: this.brand.awardsName,
         tone: "awards",
         title: "Nomination Received",
@@ -1366,7 +1379,7 @@ class EmailService {
       fromName: this.brand.awardsName,
       subject: `New SAPTech Awards 2026 nomination: ${normalizeText(nominationData.nomineeName, "Nominee")}`,
       category: "awards_nomination_admin",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         brandName: this.brand.awardsName,
         tone: "awards",
         title: "New Awards Nomination",
@@ -1399,7 +1412,7 @@ class EmailService {
       fromName: this.brand.awardsName,
       subject: `SAPTech Awards 2026 nomination update: ${normalizeStatus(nominationData.status)}`,
       category: "awards_status",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         brandName: this.brand.awardsName,
         tone: nominationData.status === "rejected" ? "warning" : "awards",
         title: "Nomination Status Update",
@@ -1430,7 +1443,7 @@ class EmailService {
       fromName: this.brand.awardsName,
       subject: "SAPTech Awards 2026 nomination update",
       category: "awards_deleted",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         brandName: this.brand.awardsName,
         tone: "warning",
         title: "Nomination Removed",
@@ -1470,7 +1483,7 @@ class EmailService {
       replyTo: applicationData.applicantEmail,
       subject: `New job application: ${normalizeText(applicationData.jobTitle, "Open role")}`,
       category: "job_application_admin",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "New Job Application",
         preheader: "A candidate submitted a job application.",
         intro: "A new job application was submitted through the careers page.",
@@ -1500,7 +1513,7 @@ class EmailService {
       to: applicationData.applicantEmail,
       subject: `Application received for ${normalizeText(applicationData.jobTitle, "your role")}`,
       category: "job_application_confirmation",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         title: "Application Received",
         preheader: "Your job application was received.",
         greeting: `Hello ${normalizeText(applicationData.applicantName, "there")}`,
@@ -1529,7 +1542,7 @@ class EmailService {
       to: applicationData.applicantEmail,
       subject: `Application update: ${normalizeStatus(applicationData.status)}`,
       category: "job_application_status",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         tone: applicationData.status === "rejected" ? "warning" : "default",
         title: "Application Status Update",
         preheader: "Your job application status has changed.",
@@ -1573,7 +1586,7 @@ class EmailService {
       subject: `Your ${this.brand.awardsName} certificate`,
       category: "certificate",
       attachments,
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         brandName: this.brand.awardsName,
         tone: "awards",
         title: "Certificate Ready",
@@ -1605,7 +1618,7 @@ class EmailService {
       to: userEmail,
       subject: "Your SAPTech Uganda password reset code",
       category: "password_reset",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         tone: "danger",
         title: "Password Reset Code",
         preheader: "Use this code to reset your SAPTech Uganda password.",
@@ -1628,7 +1641,7 @@ class EmailService {
       to: userEmail,
       subject: "Your SAPTech Uganda password was changed",
       category: "password_changed",
-      html: this.buildEmail({
+      html: () => this.buildEmail({
         tone: "success",
         title: "Password Changed",
         preheader: "Your password was changed successfully.",

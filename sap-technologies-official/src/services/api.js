@@ -4,9 +4,10 @@ const isLocalhost = typeof window !== 'undefined' &&
    window.location.hostname === '0.0.0.0');
 
 const DEFAULT_API_URL = "https://api.saptechug.com";
+const DEFAULT_API_FALLBACK_URL = "https://sap-technologies-ug.onrender.com";
 const RETRYABLE_API_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504, 521, 522, 523, 524]);
-const API_FALLBACK_ENABLED = String(import.meta.env.VITE_ENABLE_API_FALLBACK || "").toLowerCase() === "true";
-const FALLBACK_MUTATIONS = String(import.meta.env.VITE_API_FALLBACK_MUTATIONS || "").toLowerCase() === "true";
+const API_FALLBACK_ENABLED = String(import.meta.env.VITE_ENABLE_API_FALLBACK ?? "true").toLowerCase() !== "false";
+const FALLBACK_MUTATIONS = String(import.meta.env.VITE_API_FALLBACK_MUTATIONS ?? "true").toLowerCase() !== "false";
 const SAFE_READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 const normalizeApiUrl = (url) => {
@@ -46,7 +47,9 @@ const uniqueApiUrls = (urls, { allowEmpty = false } = {}) => {
 const getApiUrls = () => {
   const primaryUrl = import.meta.env.VITE_API_PRIMARY_URL || import.meta.env.VITE_API_URL || DEFAULT_API_URL;
   const configuredUrls = API_FALLBACK_ENABLED ? splitApiUrls(import.meta.env.VITE_API_URLS) : [];
-  const fallbackUrl = API_FALLBACK_ENABLED ? import.meta.env.VITE_API_FALLBACK_URL : "";
+  const fallbackUrl = API_FALLBACK_ENABLED
+    ? import.meta.env.VITE_API_FALLBACK_URL || DEFAULT_API_FALLBACK_URL
+    : "";
 
   if (isLocalhost && import.meta.env.DEV) {
     const localUrls = uniqueApiUrls([primaryUrl, ...configuredUrls, fallbackUrl], { allowEmpty: true });
@@ -81,7 +84,9 @@ class ApiService {
         baseURL: this.baseURL,
         baseURLs: this.baseURLs,
         fallbackEnabled: API_FALLBACK_ENABLED,
-        fallbackURL: API_FALLBACK_ENABLED ? import.meta.env.VITE_API_FALLBACK_URL : "",
+        fallbackURL: API_FALLBACK_ENABLED
+          ? import.meta.env.VITE_API_FALLBACK_URL || DEFAULT_API_FALLBACK_URL
+          : "",
         fallbackMutations: FALLBACK_MUTATIONS,
         isLocalhost,
         env: import.meta.env.MODE,

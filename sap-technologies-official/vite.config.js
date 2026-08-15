@@ -41,7 +41,7 @@ export default defineConfig({
         ],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\.saptechug\.com\/api\//,
+            urlPattern: /^https:\/\/(?:api\.saptechug\.com|sap-technologies-ug\.onrender\.com)\/api\//,
             handler: "NetworkFirst",
             options: {
               cacheName: "api-cache",
@@ -59,7 +59,7 @@ export default defineConfig({
           },
           {
             // Cache the API server health/wake-up endpoint with StaleWhileRevalidate
-            urlPattern: /^https:\/\/api\.saptechug\.com\/api\/health/,
+            urlPattern: /^https:\/\/(?:api\.saptechug\.com|sap-technologies-ug\.onrender\.com)\/api\/health/,
             handler: "StaleWhileRevalidate",
             options: {
               cacheName: "health-cache",
