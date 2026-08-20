@@ -25,9 +25,9 @@ const coreKeywords = [
 const routes = [
   {
     path: "/",
-    title: "SAPTech Uganda | Web Design, Software, IoT & Engineering",
-    description: "SAPTech Uganda provides web design, custom software, mobile apps, IoT projects, electrical designs, lithium battery power solutions, graphics, cloud, cybersecurity, and digital transformation for clients in Uganda and worldwide.",
-    keywords: `${coreKeywords}, web design worldwide, custom software worldwide`,
+    title: "SAPTech Uganda | Engineering & Technology Solutions",
+    description: "SAPTech Uganda builds practical websites, software, IoT systems, electrical designs, branding, cloud, cybersecurity, and power solutions for businesses, schools, startups, homes, and organizations.",
+    keywords: `${coreKeywords}, engineering and technology solutions`,
     image: "/images/logo.png"
   },
   {
@@ -39,7 +39,7 @@ const routes = [
   },
   {
     path: "/services",
-    title: "Services | Web, Software, IoT & Engineering Worldwide",
+    title: "Services | Web, Software, IoT & Engineering",
     description: "Explore SAPTech Uganda services: website design, ecommerce sites, custom software, mobile apps, cloud, cybersecurity, IoT automation, smart homes, electrical designs, lithium battery power, graphics, and branding.",
     keywords: `${coreKeywords}, ecommerce website Uganda, business website Uganda, IoT services Uganda, Arduino projects Uganda`,
     image: "/images/WEB-DESIGN.jpg"
@@ -71,6 +71,13 @@ const routes = [
     description: "Explore SAPTech Uganda IoT projects, smart home systems, security systems, farm monitoring, industrial automation, Arduino, Raspberry Pi, ESP32, sensors, and connected devices.",
     keywords: `${coreKeywords}, Internet of Things Uganda, smart home systems Uganda, automation projects Uganda, sensor networks Uganda`,
     image: "/images/ioT.jpg"
+  },
+  {
+    path: "/insights",
+    title: "Insights | Practical Technology Guides from SAPTech Uganda",
+    description: "Read practical SAPTech Uganda guides on planning websites, choosing custom software, using IoT systems, and making better engineering and technology decisions for real organizations.",
+    keywords: `${coreKeywords}, technology guides Uganda, website planning Uganda, custom software advice Uganda, IoT automation advice`,
+    image: "/images/logo.png"
   },
   {
     path: "/gallery",

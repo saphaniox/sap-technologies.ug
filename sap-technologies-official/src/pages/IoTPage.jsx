@@ -9,8 +9,8 @@ const IoTPage = () => {
   // SEO data for better search engine visibility
   const seoData = {
     title: "IoT Projects, Automation & Smart Systems | SAPTech Uganda",
-    description: "Explore SAPTech Uganda IoT projects, smart home systems, security systems, farm monitoring, industrial automation, Arduino, Raspberry Pi, ESP32, sensors, and connected devices for clients in Uganda and worldwide.",
-    keywords: "IoT projects Uganda, Internet of Things Uganda, SAPTech Uganda IoT, IoT services worldwide, IoT services Uganda, smart home systems worldwide, smart home systems Uganda, security systems Uganda, automation projects worldwide, automation projects Uganda, Arduino projects Uganda, Raspberry Pi projects Uganda, ESP32 projects Uganda, embedded systems Uganda, sensor networks Uganda, remote monitoring worldwide, smart farming Uganda, industrial IoT worldwide, connected devices Africa",
+    description: "Explore SAPTech Uganda IoT projects, smart home systems, security systems, farm monitoring, industrial automation, Arduino, Raspberry Pi, ESP32, sensors, and connected devices.",
+    keywords: "IoT projects Uganda, Internet of Things Uganda, SAPTech Uganda IoT, IoT services Uganda, smart home systems Uganda, security systems Uganda, automation projects Uganda, Arduino projects Uganda, Raspberry Pi projects Uganda, ESP32 projects Uganda, embedded systems Uganda, sensor networks Uganda, smart farming Uganda, industrial IoT, connected devices Africa",
     ogType: "website",
     ogImage: "/images/ioT.jpg",
     canonicalUrl: "/iot",

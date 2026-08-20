@@ -28,6 +28,7 @@ const Products = lazy(() => import("./components/Products"));
 const Contact = lazy(() => import("./components/Contact"));
 const Footer = lazy(() => import("./components/Footer"));
 const Testimonials = lazy(() => import("./components/Testimonials"));
+const Insights = lazy(() => import("./components/Insights"));
 import { microAnimationStyles } from "./utils/microAnimations.jsx";
 import { useVisitorTracking } from "./hooks/useVisitorTracking";
 import "./styles/App.css";
@@ -74,9 +75,9 @@ const SECTION_ROUTES = Object.keys(SECTION_ROUTE_MAP);
 const SECTION_SEO = {
   home: {
     path: "/",
-    title: "SAPTech Uganda | Web Design, Software, IoT & Engineering",
-    description: "SAPTech Uganda provides web design, custom software, mobile apps, IoT projects, electrical designs, lithium battery power solutions, graphics, cloud, cybersecurity, and digital transformation for clients in Uganda and worldwide.",
-    keywords: `${CORE_SEARCH_TERMS}, web design worldwide, custom software worldwide, remote software development, international technology company`,
+    title: "SAPTech Uganda | Engineering & Technology Solutions",
+    description: "SAPTech Uganda builds practical websites, software, IoT systems, electrical designs, branding, cloud, cybersecurity, and power solutions for businesses, schools, startups, homes, and organizations.",
+    keywords: `${CORE_SEARCH_TERMS}, engineering and technology solutions`,
     topics: ["Web design", "Software development", "IoT projects", "Electrical engineering", "Power solutions"]
   },
   about: {
@@ -88,9 +89,9 @@ const SECTION_SEO = {
   },
   services: {
     path: "/services",
-    title: "Services | Web, Software, IoT & Engineering Worldwide",
+    title: "Services | Web, Software, IoT & Engineering",
     description: "Explore SAPTech Uganda services for local and international clients: website design, ecommerce sites, custom software, mobile apps, cloud, cybersecurity, IoT automation, smart homes, security systems, electrical designs, lithium battery power, graphics, and branding.",
-    keywords: `${CORE_SEARCH_TERMS}, ecommerce website Uganda, business website Uganda, software solutions Uganda, web design worldwide, custom software worldwide, IoT services Uganda, Arduino projects Uganda, Raspberry Pi projects Uganda, ESP32 projects Uganda, circuit design Uganda`,
+    keywords: `${CORE_SEARCH_TERMS}, ecommerce website Uganda, business website Uganda, software solutions Uganda, IoT services Uganda, Arduino projects Uganda, Raspberry Pi projects Uganda, ESP32 projects Uganda, circuit design Uganda`,
     topics: ["Website design", "Ecommerce development", "Custom software", "IoT automation", "Electrical designs", "Branding"]
   },
   portfolio: {
@@ -138,6 +139,13 @@ const SECTION_SEO = {
 };
 
 const SECONDARY_PAGE_SEO = {
+  insights: {
+    title: "Insights | Practical Technology Guides from SAPTech Uganda",
+    description: "Read practical SAPTech Uganda guides on planning websites, choosing custom software, using IoT systems, and making better engineering and technology decisions for real organizations.",
+    keywords: `${CORE_SEARCH_TERMS}, technology guides Uganda, website planning Uganda, custom software advice Uganda, IoT automation advice, digital transformation guidance`,
+    path: "/insights",
+    topics: ["Technology guides", "Website planning", "Custom software", "IoT automation", "Digital operations"]
+  },
   careers: {
     title: "Careers | Join SAPTech Uganda",
     description: "Explore open career opportunities at SAPTech Uganda and apply to join a team building websites, software, IoT systems, engineering solutions, and digital tools.",
@@ -623,6 +631,20 @@ function App() {
                 ogImage="/images/logo.png"
               />
               <Gallery />
+            </>
+          )} />
+          <Route path="/insights" element={renderPublicPage(
+            <>
+              <SEO
+                title={SECONDARY_PAGE_SEO.insights.title}
+                description={SECONDARY_PAGE_SEO.insights.description}
+                keywords={SECONDARY_PAGE_SEO.insights.keywords}
+                canonicalUrl={`${SITE_URL}${SECONDARY_PAGE_SEO.insights.path}`}
+                url={`${SITE_URL}${SECONDARY_PAGE_SEO.insights.path}`}
+                ogImage="/images/logo.png"
+                structuredData={buildSectionStructuredData(SECONDARY_PAGE_SEO.insights)}
+              />
+              <Insights />
             </>
           )} />
           <Route path="/awards" element={renderPublicPage(

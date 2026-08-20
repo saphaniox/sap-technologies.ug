@@ -1,0 +1,228 @@
+.insights-page {
+  background:
+    radial-gradient(circle at top left, rgba(16, 185, 129, 0.14), transparent 34rem),
+    linear-gradient(180deg, #f8fafc 0%, #eef6f3 100%);
+  color: #102033;
+  min-height: 100vh;
+  padding: clamp(5rem, 8vw, 7rem) clamp(1rem, 4vw, 2rem) clamp(3rem, 6vw, 5rem);
+}
+
+.insights-hero,
+.insights-grid,
+.adsense-readiness-card {
+  max-width: 1180px;
+  margin-inline: auto;
+}
+
+.insights-hero {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 28px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.insights-eyebrow {
+  color: #047857;
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.9rem;
+  text-transform: uppercase;
+}
+
+.insights-hero h1 {
+  color: #0f172a;
+  font-size: clamp(2rem, 5vw, 4rem);
+  letter-spacing: -0.045em;
+  line-height: 1;
+  margin: 0 0 1rem;
+  max-width: 880px;
+}
+
+.insights-hero p {
+  color: #475569;
+  font-size: clamp(1rem, 2vw, 1.18rem);
+  line-height: 1.8;
+  margin: 0;
+  max-width: 920px;
+}
+
+.insights-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-top: 1.6rem;
+}
+
+.insights-actions a {
+  align-items: center;
+  background: linear-gradient(135deg, #059669, #0f766e);
+  border-radius: 999px;
+  color: #ffffff;
+  display: inline-flex;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0.8rem 1.2rem;
+  text-decoration: none;
+}
+
+.insights-actions a.secondary {
+  background: #ffffff;
+  border: 1px solid rgba(15, 118, 110, 0.24);
+  color: #0f766e;
+}
+
+.insights-grid {
+  display: grid;
+  gap: clamp(1rem, 3vw, 1.5rem);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.insight-card,
+.adsense-readiness-card {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.07);
+}
+
+.insight-card {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.25rem, 3vw, 1.6rem);
+}
+
+.insight-card h2,
+.adsense-readiness-card h2 {
+  color: #0f172a;
+  font-size: clamp(1.28rem, 2vw, 1.6rem);
+  line-height: 1.2;
+  margin: 0 0 0.8rem;
+}
+
+.insight-summary,
+.adsense-readiness-card p,
+.insight-sections p {
+  color: #475569;
+  line-height: 1.72;
+}
+
+.insight-summary {
+  font-weight: 600;
+  margin: 0 0 1.2rem;
+}
+
+.insight-sections {
+  display: grid;
+  gap: 1rem;
+}
+
+.insight-sections section {
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  padding-top: 1rem;
+}
+
+.insight-sections h3 {
+  color: #115e59;
+  font-size: 1rem;
+  margin: 0 0 0.4rem;
+}
+
+.insight-sections p {
+  font-size: 0.96rem;
+  margin: 0;
+}
+
+.adsense-readiness-card {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1.1fr 0.9fr;
+  margin-top: clamp(1.5rem, 4vw, 2.5rem);
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.adsense-readiness-card p {
+  margin: 0;
+}
+
+.adsense-readiness-card ul {
+  display: grid;
+  gap: 0.8rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.adsense-readiness-card li {
+  background: #ecfdf5;
+  border: 1px solid rgba(5, 150, 105, 0.18);
+  border-radius: 16px;
+  color: #064e3b;
+  font-weight: 700;
+  line-height: 1.45;
+  padding: 0.9rem 1rem;
+}
+
+@media (max-width: 980px) {
+  .insights-grid,
+  .adsense-readiness-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .insights-page {
+    padding-inline: 0.75rem;
+  }
+
+  .insights-hero,
+  .insight-card,
+  .adsense-readiness-card {
+    border-radius: 20px;
+  }
+
+  .insights-actions a {
+    width: 100%;
+  }
+}
+
+[data-theme="dark"] .insights-page {
+  background:
+    radial-gradient(circle at top left, rgba(45, 212, 191, 0.14), transparent 34rem),
+    linear-gradient(180deg, #020617 0%, #0f172a 100%);
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .insights-hero,
+[data-theme="dark"] .insight-card,
+[data-theme="dark"] .adsense-readiness-card {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+[data-theme="dark"] .insights-hero h1,
+[data-theme="dark"] .insight-card h2,
+[data-theme="dark"] .adsense-readiness-card h2 {
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .insights-hero p,
+[data-theme="dark"] .insight-summary,
+[data-theme="dark"] .adsense-readiness-card p,
+[data-theme="dark"] .insight-sections p {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .insight-sections h3 {
+  color: #5eead4;
+}
+
+[data-theme="dark"] .adsense-readiness-card li {
+  background: rgba(20, 184, 166, 0.12);
+  border-color: rgba(45, 212, 191, 0.24);
+  color: #ccfbf1;
+}

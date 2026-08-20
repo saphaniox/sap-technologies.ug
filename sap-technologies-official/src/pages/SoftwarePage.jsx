@@ -9,8 +9,8 @@ const SoftwarePage = () => {
   // SEO data for better search engine visibility
   const seoData = {
     title: "Software Apps & Business Systems | SAPTech Uganda",
-    description: "Explore SAPTech Uganda software apps, custom web applications, business management systems, ecommerce tools, school systems, inventory systems, dashboards, and digital business platforms for clients in Uganda and worldwide.",
-    keywords: "SAPTech Uganda software, software apps Uganda, custom software worldwide, custom software Uganda, web applications Uganda, web applications for global clients, business management software, school management system Uganda, inventory management system, ecommerce platform, restaurant ordering system, learning management system, digital tools Kampala, business apps worldwide",
+    description: "Explore SAPTech Uganda software apps, custom web applications, business management systems, ecommerce tools, school systems, inventory systems, dashboards, and digital business platforms.",
+    keywords: "SAPTech Uganda software, software apps Uganda, custom software Uganda, web applications Uganda, business management software, school management system Uganda, inventory management system, ecommerce platform, restaurant ordering system, learning management system, digital tools Kampala",
     ogType: "website",
     ogImage: "/images/software.jpg",
     canonicalUrl: "/software",
@@ -71,11 +71,10 @@ const SoftwarePage = () => {
 
         <section className="software-search-content" aria-labelledby="software-search-title">
           <div className="container">
-            <h2 id="software-search-title">Software solutions for businesses worldwide</h2>
+            <h2 id="software-search-title">Software solutions for real business workflows</h2>
             <p>
               SAPTech Uganda builds reliable digital systems for companies, schools, shops,
-              restaurants, startups, and organizations in Uganda, across Africa, and around
-              the world. We design browser-based tools and offline installed apps for sales, records, orders, stock,
+              restaurants, startups, and organizations. We design browser-based tools and offline installed apps for sales, records, orders, stock,
               learning, reporting, bookings, and team workflows.
             </p>
             <div className="software-search-grid" aria-label="Common software project types">

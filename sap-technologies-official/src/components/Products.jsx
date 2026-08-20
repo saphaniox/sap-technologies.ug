@@ -286,6 +286,13 @@ const Products = () => {
         return (
             <section className="products-section" id="products">
                 <div className="container">
+                    <div className="section-header">
+                        <h2 className="section-title">Our Key Products</h2>
+                        <p className="section-subtitle">
+                            Practical technology products, software tools, IoT devices, and power solutions for real business needs.
+                        </p>
+                    </div>
+                    <ProductBuyingGuide />
                     <div className="error-message">
                         <p>{error}</p>
                     </div>
@@ -406,6 +413,8 @@ const Products = () => {
                         Discover our innovative solutions designed to transform your business
                     </p>
                 </div>
+
+                <ProductBuyingGuide />
 
                 {/* Product Controls */}
                 <div className="products-controls">
@@ -684,5 +693,26 @@ const Products = () => {
         </section>
     );
 };
+
+const ProductBuyingGuide = () => (
+    <div className="product-buying-guide" aria-label="How we help clients choose technology products">
+        <article>
+            <h3>Choosing the right product</h3>
+            <p>
+                We help clients choose products by first understanding the problem: stock control, power backup,
+                automation, security, records, customer service, or daily operations. The right product should be
+                useful in the field, simple to maintain, and clear enough for the team that will use it.
+            </p>
+        </article>
+        <article>
+            <h3>Custom builds and support</h3>
+            <p>
+                Some teams need ready-made tools, while others need a custom device, dashboard, integration, or
+                installed system. SAPTech Uganda can advise on setup, training, hosting, maintenance, and safe
+                upgrades so the solution keeps working after delivery.
+            </p>
+        </article>
+    </div>
+);
 
 export default Products;

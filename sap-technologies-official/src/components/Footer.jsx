@@ -22,6 +22,7 @@ const FOOTER_LINK_GROUPS = [
       { id: "portfolio", label: "Projects" },
       { route: "/software", label: "Software Apps" },
       { route: "/iot", label: "IoT Projects" },
+      { route: "/insights", label: "Insights" },
       { id: "products", label: "Products" },
       { route: "/gallery", label: "Gallery" }
     ]
