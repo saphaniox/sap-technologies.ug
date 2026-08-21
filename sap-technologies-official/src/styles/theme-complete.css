@@ -599,3 +599,164 @@ html[data-theme="dark"] :is(
 ) {
   color: var(--text-soft) !important;
 }
+
+/* Secondary route pages with component-local styles. */
+html[data-theme="dark"] :is(
+  .careers-section,
+  .software-page,
+  .iot-page,
+  .gallery-section,
+  .insights-page,
+  .awards-standalone-page,
+  .awards-page,
+  .certificate-verify-container,
+  .not-found
+) {
+  background: var(--page-bg) !important;
+  color: var(--text-normal) !important;
+}
+
+html[data-theme="dark"] :is(
+  .careers-info-grid article,
+  .job-card,
+  .gallery-card,
+  .insight-card,
+  .adsense-readiness-card,
+  .software-card,
+  .iot-card,
+  .iot-project-card,
+  .category-card,
+  .top-nominee-card,
+  .nomination-card,
+  .verify-loading,
+  .verify-error,
+  .verify-success,
+  .certificate-card
+) {
+  background: var(--surface-elevated) !important;
+  color: var(--text-normal) !important;
+  border-color: var(--theme-border) !important;
+  box-shadow: var(--theme-shadow-soft) !important;
+}
+
+html[data-theme="dark"] :is(
+  .careers-section h1,
+  .careers-section h2,
+  .careers-section h3,
+  .software-page h1,
+  .software-page h2,
+  .software-page h3,
+  .iot-page h1,
+  .iot-page h2,
+  .iot-page h3,
+  .gallery-section h1,
+  .gallery-section h2,
+  .gallery-section h3,
+  .insights-page h1,
+  .insights-page h2,
+  .insights-page h3,
+  .awards-standalone-page h1,
+  .awards-standalone-page h2,
+  .awards-standalone-page h3,
+  .certificate-verify-container h1,
+  .certificate-verify-container h2,
+  .certificate-verify-container h3,
+  .not-found h1
+) {
+  color: var(--text-strong) !important;
+}
+
+html[data-theme="dark"] :is(
+  .careers-section p,
+  .careers-section li,
+  .software-page p,
+  .software-page li,
+  .iot-page p,
+  .iot-page li,
+  .gallery-section p,
+  .gallery-section li,
+  .insights-page p,
+  .insights-page li,
+  .certificate-verify-container p,
+  .certificate-verify-container li,
+  .not-found p,
+  .job-title-section h3,
+  .job-detail-section,
+  .job-detail-section p,
+  .detail-label,
+  .footer-text,
+  .footer-security,
+  .stat-label
+) {
+  color: var(--text-soft) !important;
+}
+
+html[data-theme="dark"] :is(
+  .job-poster,
+  .job-poster img,
+  .certificate-id,
+  .verification-stats,
+  .error-details,
+  .software-search-content,
+  .iot-search-content,
+  .gallery-filters,
+  .filter-btn,
+  .search-input,
+  .sort-select,
+  .filter-select
+) {
+  background-color: var(--surface-2) !important;
+  color: var(--text-normal) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] :is(
+  .job-badge.department,
+  .job-badge.location,
+  .job-badge.type,
+  .job-share-btn,
+  .expand-btn,
+  .job-admin-actions button,
+  .btn-home,
+  .btn-secondary,
+  .back-button,
+  .secondary,
+  .filter-btn
+) {
+  background-color: var(--surface-2) !important;
+  color: var(--text-normal) !important;
+  border-color: var(--theme-border-strong) !important;
+}
+
+html[data-theme="dark"] :is(
+  .careers-section a,
+  .software-page a,
+  .iot-page a,
+  .gallery-section a,
+  .insights-page a,
+  .certificate-verify-container a
+) {
+  color: var(--primary-color) !important;
+}
+
+html[data-theme="dark"] :is(
+  .careers-section input,
+  .careers-section textarea,
+  .careers-section select,
+  .software-page input,
+  .software-page textarea,
+  .software-page select,
+  .iot-page input,
+  .iot-page textarea,
+  .iot-page select,
+  .gallery-section input,
+  .gallery-section textarea,
+  .gallery-section select,
+  .certificate-verify-container input,
+  .certificate-verify-container textarea,
+  .certificate-verify-container select
+) {
+  background-color: var(--theme-input-bg) !important;
+  color: var(--theme-input-text) !important;
+  border-color: var(--theme-border) !important;
+}
