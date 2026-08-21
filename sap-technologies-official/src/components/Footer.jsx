@@ -139,6 +139,28 @@ const Footer = ({ onNavigate }) => {
 
         <div className="footer-social">
           <h4>Follow Us</h4>
+
+          <div className="footer-social-actions">
+            <a
+              className="social-action social-action--tiktok"
+              href="https://www.tiktok.com/@saptechug"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Follow us on TikTok"
+            >
+              Follow us on TikTok
+            </a>
+            <a
+              className="social-action social-action--whatsapp"
+              href="https://wa.me/256706564628?text=Hello%20SAPTech%20Uganda%2C%20I%20want%20to%20join%20your%20WhatsApp%20channel."
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Follow our WhatsApp Channel"
+            >
+              Follow our WhatsApp Channel
+            </a>
+          </div>
+
           <div className="social-icons">
             <a href="https://www.linkedin.com/in/saphan-muganza-a893a9258?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" title="LinkedIn">LinkedIn</a>
             <a href="https://github.com/dashboard" target="_blank" rel="noopener noreferrer" title="GitHub">GitHub</a>

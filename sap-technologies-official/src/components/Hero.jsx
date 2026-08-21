@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from "react";
+import React, { useState, useEffect, lazy, Suspense, useMemo } from "react";
 import { motion } from "framer-motion";
 import "../styles/Hero.css";
 
@@ -17,7 +17,18 @@ const Hero = () => {
   /**
    * Service texts that rotate in typing animation
    */
-  const texts = ["Web Design", "Electrical & Electronics", " Engineering & Technology" ,"Batteries (Lithium-ion) & Power", "IoT & System Design Integration",  "Graphics Design"];
+  const texts = ["Web Design", "Electrical & Electronics", "Engineering & Technology", "Batteries (Lithium-ion) & Power", "IoT & System Design Integration", "Graphics Design"];
+
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 15 }, (_, index) => ({
+        id: index,
+        left: `${((index * 11.7) % 100).toFixed(2)}%`,
+        top: `${((index * 17.3 + 7) % 100).toFixed(2)}%`,
+        delay: Number(((index * 0.45) % 3).toFixed(2))
+      })),
+    []
+  );
 
   /**
    * Typing Animation Effect
@@ -81,18 +92,18 @@ const Hero = () => {
         <Background3D />
       </Suspense>
       
-      <div className="floating-particles">
-        {[...Array(15)].map((_, i) => (
+      <div className="floating-particles" aria-hidden="true">
+        {particles.map((particle) => (
           <motion.div
-            key={i}
+            key={particle.id}
             className="particle"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              left: particle.left,
+              top: particle.top,
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 1, 0], y: [-20, -100] }}
-            transition={{ duration: 3, repeat: Infinity, delay: Math.random() * 2 }}
+            transition={{ duration: 3, repeat: Infinity, delay: particle.delay }}
           />
         ))}
       </div>

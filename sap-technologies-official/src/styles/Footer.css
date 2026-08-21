@@ -125,6 +125,42 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
+.footer-social-actions {
+  display: grid;
+  gap: 0.8rem;
+  margin-bottom: 1.25rem;
+}
+
+.social-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+}
+
+.social-action:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+.social-action--tiktok {
+  background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #111827 100%);
+}
+
+.social-action--whatsapp {
+  background: linear-gradient(135deg, #0f766e 0%, #10b981 50%, #14b8a6 100%);
+}
+
 .social-icons {
   display: flex;
   flex-wrap: wrap;
