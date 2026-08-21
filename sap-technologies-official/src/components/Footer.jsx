@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Newsletter from "./Newsletter";
 import "../styles/Footer.css";
 
+const WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/0029VaCnZ7N1SWt8esJuGa0Q";
+
 const FOOTER_LINK_GROUPS = [
   {
     title: "Company",
@@ -152,7 +154,16 @@ const Footer = ({ onNavigate }) => {
             </a>
             <a
               className="social-action social-action--whatsapp"
-              href="https://wa.me/256706564628?text=Hello%20SAPTech%20Uganda%2C%20I%20want%20to%20join%20your%20WhatsApp%20channel."
+              href={WHATSAPP_CHANNEL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Follow us on WhatsApp"
+            >
+              Follow us on WhatsApp
+            </a>
+            <a
+              className="social-action social-action--whatsapp-alt"
+              href={WHATSAPP_CHANNEL_URL}
               target="_blank"
               rel="noopener noreferrer"
               title="Follow our WhatsApp Channel"

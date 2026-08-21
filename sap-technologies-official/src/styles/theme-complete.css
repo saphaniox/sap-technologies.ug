@@ -57,6 +57,92 @@ body,
   color: var(--text-normal);
 }
 
+html[data-theme="dark"] body,
+html[data-theme="dark"] #root,
+html[data-theme="dark"] .App,
+html[data-theme="dark"] main,
+html[data-theme="dark"] .route-page-shell,
+html[data-theme="dark"] .page,
+html[data-theme="dark"] .page-content,
+html[data-theme="dark"] .main-content,
+html[data-theme="dark"] .content-panel,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .section,
+html[data-theme="dark"] section {
+  background-color: var(--page-bg) !important;
+  color: var(--text-normal) !important;
+}
+
+html[data-theme="dark"] .section-primary,
+html[data-theme="dark"] .section-secondary,
+html[data-theme="dark"] .section-plain,
+html[data-theme="dark"] .section-alt,
+html[data-theme="dark"] .section-muted,
+html[data-theme="dark"] .section-surface {
+  background-color: var(--surface-1) !important;
+  color: var(--text-normal) !important;
+}
+
+html[data-theme="dark"] .section-primary,
+html[data-theme="dark"] .section-secondary,
+html[data-theme="dark"] .section-plain,
+html[data-theme="dark"] .section-alt,
+html[data-theme="dark"] .section-muted,
+html[data-theme="dark"] .section-surface,
+html[data-theme="dark"] .section-primary > *,
+html[data-theme="dark"] .section-secondary > *,
+html[data-theme="dark"] .section-plain > *,
+html[data-theme="dark"] .section-alt > *,
+html[data-theme="dark"] .section-muted > *,
+html[data-theme="dark"] .section-surface > * {
+  color: inherit !important;
+}
+
+html[data-theme="dark"] :is(h1, h2, h3, h4, h5, h6, p, li, span, label, strong, small, em, b) {
+  color: inherit;
+}
+
+html[data-theme="dark"] :is(.section-title, .page-title, .section-subtitle, .page-subtitle) {
+  color: var(--text-strong) !important;
+}
+
+html[data-theme="dark"] :is(.section-title, .page-title) {
+  background: linear-gradient(135deg, var(--text-strong) 0%, var(--primary-color) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html[data-theme="dark"] :is(.section-subtitle, .page-subtitle, .section-description, .page-description, .text-muted, .muted-text) {
+  color: var(--text-soft) !important;
+}
+
+html[data-theme="dark"] .btn,
+html[data-theme="dark"] button,
+html[data-theme="dark"] .cta-button,
+html[data-theme="dark"] .action-btn,
+html[data-theme="dark"] .primary-btn,
+html[data-theme="dark"] .secondary-btn {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+html[data-theme="dark"] .btn:not(.btn-primary):not(.cta-button):not(.primary-btn),
+html[data-theme="dark"] .secondary-btn,
+html[data-theme="dark"] .ghost-btn,
+html[data-theme="dark"] .outline-btn {
+  background-color: var(--surface-2) !important;
+  color: var(--text-normal) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] .btn:not(.btn-primary):not(.cta-button):not(.primary-btn):hover,
+html[data-theme="dark"] .secondary-btn:hover,
+html[data-theme="dark"] .ghost-btn:hover,
+html[data-theme="dark"] .outline-btn:hover {
+  background-color: var(--surface-3) !important;
+  color: var(--text-strong) !important;
+}
+
 [data-theme] body {
   background:
     radial-gradient(circle at top left, rgba(52, 152, 219, 0.08), transparent 34rem),

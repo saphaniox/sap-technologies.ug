@@ -290,6 +290,7 @@ const normalizeText = (value, fallback = "Not provided") => {
 };
 
 const normalizeStatus = (status) => STATUS_LABELS[status] || normalizeText(status, "Updated");
+const WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/0029VaCnZ7N1SWt8esJuGa0Q";
 
 const JOB_APPLICATION_STATUS_CONTENT = {
   pending: {
@@ -990,6 +991,22 @@ class EmailService {
     const logo = this.brand.logoUrl
       ? `<img class="email-logo" src="${escapeHtml(this.brand.logoUrl)}" alt="${escapeHtml(companyName)} logo" width="104" style="display:block;width:104px;max-width:104px;height:auto;border:0;margin:0 auto 14px;background:#ffffff;border-radius:14px;padding:8px;">`
       : "";
+    const socialChannelButtons = `
+      <tr>
+        <td class="email-cta-wrap" style="padding:2px 32px 12px;text-align:center;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;border-collapse:separate;">
+            <tr>
+              <td style="padding:0 6px 8px 0;">
+                <a href="${escapeHtml(WHATSAPP_CHANNEL_URL)}" style="display:inline-block;background:linear-gradient(135deg,#0f766e 0%,#10b981 50%,#14b8a6 100%);color:#ffffff;text-decoration:none;font-weight:700;font-size:13px;padding:12px 18px;border-radius:10px;min-width:180px;text-align:center;">Follow us on WhatsApp</a>
+              </td>
+              <td style="padding:0 0 8px 6px;">
+                <a href="${escapeHtml(WHATSAPP_CHANNEL_URL)}" style="display:inline-block;background:linear-gradient(135deg,#1d4ed8 0%,#2563eb 48%,#3b82f6 100%);color:#ffffff;text-decoration:none;font-weight:700;font-size:13px;padding:12px 18px;border-radius:10px;min-width:210px;text-align:center;">Follow our WhatsApp Channel</a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    `;
 
     return `<!doctype html>
 <html lang="en">
@@ -1055,6 +1072,7 @@ class EmailService {
             </td>
           </tr>
           ${sections.map((section) => this.buildSection(section, color)).join("")}
+          ${socialChannelButtons}
           ${cta && cta.href ? `
           <tr>
             <td class="email-cta-wrap" style="padding:2px 32px 28px;text-align:center;">
