@@ -992,20 +992,16 @@ class EmailService {
       ? `<img class="email-logo" src="${escapeHtml(this.brand.logoUrl)}" alt="${escapeHtml(companyName)} logo" width="104" style="display:block;width:104px;max-width:104px;height:auto;border:0;margin:0 auto 14px;background:#ffffff;border-radius:14px;padding:8px;">`
       : "";
     const socialChannelButtons = `
-      <tr>
-        <td class="email-cta-wrap" style="padding:2px 32px 12px;text-align:center;">
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;border-collapse:separate;">
-            <tr>
-              <td style="padding:0 6px 8px 0;">
-                <a href="${escapeHtml(WHATSAPP_CHANNEL_URL)}" style="display:inline-block;background:linear-gradient(135deg,#0f766e 0%,#10b981 50%,#14b8a6 100%);color:#ffffff;text-decoration:none;font-weight:700;font-size:13px;padding:12px 18px;border-radius:10px;min-width:180px;text-align:center;">Follow us on WhatsApp</a>
-              </td>
-              <td style="padding:0 0 8px 6px;">
-                <a href="${escapeHtml(WHATSAPP_CHANNEL_URL)}" style="display:inline-block;background:linear-gradient(135deg,#1d4ed8 0%,#2563eb 48%,#3b82f6 100%);color:#ffffff;text-decoration:none;font-weight:700;font-size:13px;padding:12px 18px;border-radius:10px;min-width:210px;text-align:center;">Follow our WhatsApp Channel</a>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
+      <table class="email-social" role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:16px auto 0;border-collapse:separate;">
+        <tr>
+          <td class="email-cta-wrap" style="padding:2px 6px 8px 0;text-align:center;">
+            <a class="email-button" href="${escapeHtml(WHATSAPP_CHANNEL_URL)}" style="display:inline-block;background:linear-gradient(135deg,#0f766e 0%,#10b981 50%,#14b8a6 100%);color:#ffffff;text-decoration:none;font-weight:700;font-size:13px;padding:12px 18px;border-radius:10px;min-width:180px;text-align:center;">Follow us on WhatsApp</a>
+          </td>
+          <td class="email-cta-wrap" style="padding:2px 0 8px 6px;text-align:center;">
+            <a class="email-button" href="${escapeHtml(WHATSAPP_CHANNEL_URL)}" style="display:inline-block;background:linear-gradient(135deg,#1d4ed8 0%,#2563eb 48%,#3b82f6 100%);color:#ffffff;text-decoration:none;font-weight:700;font-size:13px;padding:12px 18px;border-radius:10px;min-width:210px;text-align:center;">Follow our WhatsApp Channel</a>
+          </td>
+        </tr>
+      </table>
     `;
 
     return `<!doctype html>
@@ -1072,7 +1068,6 @@ class EmailService {
             </td>
           </tr>
           ${sections.map((section) => this.buildSection(section, color)).join("")}
-          ${socialChannelButtons}
           ${cta && cta.href ? `
           <tr>
             <td class="email-cta-wrap" style="padding:2px 32px 28px;text-align:center;">
@@ -1093,6 +1088,7 @@ class EmailService {
                 ${escapeHtml(this.brand.phone)} | <a href="mailto:${escapeHtml(this.replyToEmail)}" style="color:${color.accent};text-decoration:none;">${escapeHtml(this.replyToEmail)}</a><br>
                 <a href="${escapeHtml(this.brand.websiteUrl)}" style="color:${color.accent};text-decoration:none;">${escapeHtml(this.brand.websiteUrl)}</a>
               </p>
+              ${socialChannelButtons}
               ${footerNote ? `<p style="margin:14px 0 0;color:#64748b;font-size:12px;line-height:1.6;">${escapeHtml(footerNote)}</p>` : ""}
               <p style="margin:10px 0 0;color:#94a3b8;font-size:11px;line-height:1.6;">&copy; ${new Date().getFullYear()} ${escapeHtml(this.brand.legalName)}. Please do not share security codes or sensitive account information by email.</p>
             </td>
@@ -2272,7 +2268,7 @@ class EmailService {
   }
 
   async sendCustomAdminEmail({ recipientEmail, recipientName, subject, message }) {
-    const cleanSubject = normalizeText(subject, "Message from SAPTech Uganda")
+    const cleanSubject = normalizeText(subject, "From SAPTech Uganda")
       .replace(/[\r\n]+/g, " ")
       .slice(0, 160);
     const cleanMessage = normalizeText(message, "");
@@ -2289,8 +2285,8 @@ class EmailService {
         title: cleanSubject,
         preheader: cleanSubject,
         greeting: `Hello ${normalizeText(recipientName, "there")}`,
-        intro: "You have received a message from SAPTech Uganda.",
-        sections: [{ title: "Message", text: cleanMessage }],
+        intro: "",
+        sections: [{ text: cleanMessage }],
         cta: { label: "Contact SAPTech Uganda", href: `mailto:${this.replyToEmail}` }
       })
     });
