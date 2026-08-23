@@ -456,6 +456,10 @@ const AdminDashboard = ({ user, onClose }) => {
           fetchSavedEmailMessages();
         }
         break;
+      case "emails":
+        fetchEmailSettings();
+        fetchSavedEmailMessages();
+        break;
     }
   }, [activeTab, settingsSubTab, certificatesSearch, certificatesTypeFilter, certificatesPagination.currentPage, usersSearch, usersRoleFilter, contactsSearch, contactsStatusFilter, newslettersSearch, servicesSearch, servicesCategoryFilter, servicesStatusFilter, projectsSearch, projectsCategoryFilter, projectsStatusFilter, partnersSearch, partnersStatusFilter, partnershipRequestsSearch, partnershipRequestsStatusFilter, productsSearch, productsCategoryFilter, productsStatusFilter, productInquiriesSearch, productInquiriesStatusFilter, serviceQuotesSearch, serviceQuotesStatusFilter, jobApplicationsSearch, jobApplicationsStatusFilter]);
 
@@ -515,6 +519,10 @@ const AdminDashboard = ({ user, onClose }) => {
             fetchEmailSettings();
             fetchSavedEmailMessages();
           }
+          break;
+        case "emails":
+          fetchEmailSettings();
+          fetchSavedEmailMessages();
           break;
       }
     }, 30000);
@@ -2449,6 +2457,11 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                 <span className="nav-icon" aria-hidden="true">{"\uD83D\uDCF0"}</span>
                 <span>Newsletter ({dashboardStats?.stats?.totalNewsletterSubscribers || 0})</span>
               </button>
+              <button className={`nav-btn ${activeTab === "emails" ? "active" : ""}`}
+                onClick={() => { setActiveTab("emails"); setSidebarOpen(false); }}>
+                <span className="nav-icon" aria-hidden="true">{"\u2709\uFE0F"}</span>
+                <span>Emails</span>
+              </button>
               <button className={`nav-btn ${activeTab === "services" ? "active" : ""}`}
                 onClick={() => { setActiveTab("services"); setSidebarOpen(false); }}>
                 <span className="nav-icon" aria-hidden="true">{"\uD83D\uDEE0\uFE0F"}</span>
@@ -2517,6 +2530,23 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
             </nav>
           </aside>
           <div className="tab-content">
+            {activeTab === "emails" && (
+              <div className="admin-email-page">
+                <div className="admin-email-page-header">
+                  <div>
+                    <span className="section-eyebrow">Communication workspace</span>
+                    <h2>Emails</h2>
+                    <p>Compose thoughtful messages, send them to any recipient, and reuse saved email drafts from one place.</p>
+                  </div>
+                  <div className="admin-email-page-status">
+                    <span className={`email-health-dot ${getEmailDelivery().canSend ? "ready" : "offline"}`}></span>
+                    <span>{getEmailDelivery().canSend ? "Ready to send" : "Email provider needs setup"}</span>
+                  </div>
+                </div>
+                {renderEmailProviderSettings()}
+              </div>
+            )}
+
             {activeTab === "overview" && (
               <div className="dashboard-overview">
                 {renderExecutiveOverview()}
