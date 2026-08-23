@@ -4756,9 +4756,9 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
           <form className="applicant-modal email-composer-modal" onSubmit={handleSendApplicantEmail} onClick={(event) => event.stopPropagation()}>
             <div className="applicant-modal-header">
               <div>
-                <span className="section-eyebrow">Text email about application</span>
-                <h3>Text email {emailingJobApplication.fullName}</h3>
-                <p>Write a clear text message about this application. The system sends it as a professional SAPTech Uganda email using your active provider.</p>
+                <span className="section-eyebrow">Applicant communication</span>
+                <h3>Send an email to {emailingJobApplication.fullName}</h3>
+                <p>Compose a clear, professional message. It will be delivered from SAPTech Uganda using your active email provider.</p>
               </div>
               <button
                 type="button"
@@ -4780,7 +4780,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
             </div>
 
             <label className="composer-field">
-              <span>Subject</span>
+              <span>Subject <small>Required</small></span>
               <input
                 type="text"
                 value={applicantEmailForm.subject}
@@ -4792,7 +4792,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
             </label>
 
             <label className="composer-field">
-              <span>Message</span>
+              <span>Message <small>Required</small></span>
               <textarea
                 value={applicantEmailForm.message}
                 maxLength={4000}
