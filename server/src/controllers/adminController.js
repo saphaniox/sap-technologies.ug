@@ -11,6 +11,7 @@ const emailService = require("../services/emailService");
 
 const EMAIL_PROVIDER_SETTING_KEY = "email.providerMode";
 const EMAIL_PUBLIC_CONFIG_SETTING_KEY = "email.publicConfig";
+const EMAIL_SAVED_MESSAGES_SETTING_KEY = "email.savedMessages";
 const EMAIL_PROVIDER_MODES = ["auto", "mailjet", "gmail"];
 const CURRENT_EMAIL_BRAND_TAGLINE = "Professional in Engineering And Technology solutions";
 const LEGACY_EMAIL_BRAND_TAGLINE_WORDS = ["technology", "that", "moves", "people", "and", "businesses", "forward"];
@@ -839,7 +840,6 @@ class AdminController {
     async updateEmailProvider(req, res, next) {
         try {
             const requestedMode = String(req.body?.providerMode || req.body?.mode || req.body?.provider || "").trim().toLowerCase();
-
             if (!EMAIL_PROVIDER_MODES.includes(requestedMode)) {
                 return next(new AppError("Email provider must be auto, mailjet, or gmail.", 400));
             }
@@ -878,6 +878,76 @@ class AdminController {
             });
         } catch (error) {
             next(error);
+        }
+    }
+
+    async sendCustomEmail(req, res, next) {
+        try {
+            const recipientEmail = cleanSettingText(req.body.recipientEmail);
+            const recipientName = cleanSettingText(req.body.recipientName, "there");
+            const subject = cleanSettingText(req.body.subject);
+            const message = cleanSettingText(req.body.message);
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+                return res.status(400).json({ status: "error", message: "Enter a valid recipient email address." });
+            }
+            if (subject.length < 4 || subject.length > 160) {
+                return res.status(400).json({ status: "error", message: "Subject must be between 4 and 160 characters." });
+            }
+            if (message.length < 10 || message.length > 4000) {
+                return res.status(400).json({ status: "error", message: "Message must be between 10 and 4000 characters." });
+            }
+
+            await emailService.sendCustomAdminEmail({ recipientEmail, recipientName, subject, message });
+
+            return res.status(200).json({ status: "success", message: "Custom email sent successfully." });
+        } catch (error) {
+            return next(error);
+        }
+    }
+
+    async getSavedEmailMessages(req, res, next) {
+        try {
+            const messages = await AppSetting.getValue(EMAIL_SAVED_MESSAGES_SETTING_KEY, []);
+            return res.status(200).json({ status: "success", data: Array.isArray(messages) ? messages : [] });
+        } catch (error) {
+            return next(error);
+        }
+    }
+
+    async saveEmailMessage(req, res, next) {
+        try {
+            const message = {
+                id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                recipientEmail: cleanSettingText(req.body.recipientEmail),
+                recipientName: cleanSettingText(req.body.recipientName),
+                subject: cleanSettingText(req.body.subject),
+                message: cleanSettingText(req.body.message),
+                savedAt: new Date().toISOString()
+            };
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(message.recipientEmail)) {
+                return res.status(400).json({ status: "error", message: "Enter a valid recipient email address." });
+            }
+            if (message.subject.length < 4 || message.subject.length > 160 || message.message.length < 10 || message.message.length > 4000) {
+                return res.status(400).json({ status: "error", message: "Subject or message length is invalid." });
+            }
+            const current = await AppSetting.getValue(EMAIL_SAVED_MESSAGES_SETTING_KEY, []);
+            const messages = [message, ...(Array.isArray(current) ? current : [])].slice(0, 100);
+            await AppSetting.setValue(EMAIL_SAVED_MESSAGES_SETTING_KEY, messages, req.user?._id || null);
+            return res.status(201).json({ status: "success", data: message });
+        } catch (error) {
+            return next(error);
+        }
+    }
+
+    async deleteSavedEmailMessage(req, res, next) {
+        try {
+            const current = await AppSetting.getValue(EMAIL_SAVED_MESSAGES_SETTING_KEY, []);
+            const messages = (Array.isArray(current) ? current : []).filter((message) => message.id !== req.params.messageId);
+            await AppSetting.setValue(EMAIL_SAVED_MESSAGES_SETTING_KEY, messages, req.user?._id || null);
+            return res.status(200).json({ status: "success", data: messages });
+        } catch (error) {
+            return next(error);
         }
     }
 

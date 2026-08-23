@@ -611,6 +611,28 @@ class ApiService {
     return result;
   }
 
+  async sendCustomAdminEmail(emailData = {}) {
+    return this.request("/api/admin/email/send", {
+      method: "POST",
+      body: JSON.stringify(emailData),
+    });
+  }
+
+  async getSavedEmailMessages() {
+    return this.request("/api/admin/email/messages", { useCache: false });
+  }
+
+  async saveEmailMessage(emailData = {}) {
+    return this.request("/api/admin/email/messages", {
+      method: "POST",
+      body: JSON.stringify(emailData),
+    });
+  }
+
+  async deleteSavedEmailMessage(messageId) {
+    return this.request(`/api/admin/email/messages/${messageId}`, { method: "DELETE" });
+  }
+
   async getAllUsers(params = {}) {
     const query = new URLSearchParams(params).toString();
     return this.request(`/api/admin/users${query ? `?${query}` : ""}`, { useCache: false });

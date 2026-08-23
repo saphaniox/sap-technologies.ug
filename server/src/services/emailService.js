@@ -823,7 +823,7 @@ class EmailService {
       config.secure,
       String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || port === 465
     );
-    this.smtpSenderEmail = cleanString(config.fromEmail, process.env.SMTP_FROM_EMAIL || emailUser || this.fromEmail);
+    this.smtpSenderEmail = cleanString(config.fromEmail, process.env.SMTP_FROM_EMAIL || emailUser);
 
     this.smtpTransporter = nodemailer.createTransport({
       host,
@@ -1199,11 +1199,10 @@ class EmailService {
 
   async sendWithSmtp(emailOptions, prepared) {
     const envelopeRecipients = collectRecipients(emailOptions.to, emailOptions.cc, emailOptions.bcc);
+    const authenticatedSender = this.smtpSenderEmail || process.env.GMAIL_USER || process.env.SMTP_USER || this.fromEmail;
     const info = await this.smtpTransporter.sendMail({
-      from: this.formatAddress(emailOptions.from || this.fromEmail, emailOptions.fromName || this.fromName),
-      envelope: this.smtpSenderEmail
-        ? { from: this.smtpSenderEmail, to: envelopeRecipients }
-        : undefined,
+      from: this.formatAddress(emailOptions.from || authenticatedSender, emailOptions.fromName || this.fromName),
+      envelope: { from: authenticatedSender, to: envelopeRecipients },
       to: emailOptions.to,
       cc: emailOptions.cc,
       bcc: emailOptions.bcc,
@@ -2268,6 +2267,31 @@ class EmailService {
           }
         ],
         cta: { label: "Reply to SAPTech Uganda", href: `mailto:${this.replyToEmail}` }
+      })
+    });
+  }
+
+  async sendCustomAdminEmail({ recipientEmail, recipientName, subject, message }) {
+    const cleanSubject = normalizeText(subject, "Message from SAPTech Uganda")
+      .replace(/[\r\n]+/g, " ")
+      .slice(0, 160);
+    const cleanMessage = normalizeText(message, "");
+
+    if (!recipientEmail) throw new Error("Recipient email is required.");
+    if (!cleanMessage) throw new Error("Message is required before sending a custom email.");
+
+    return this.deliver({
+      to: recipientEmail,
+      subject: cleanSubject,
+      category: "admin_custom_email",
+      html: () => this.buildEmail({
+        tone: "default",
+        title: cleanSubject,
+        preheader: cleanSubject,
+        greeting: `Hello ${normalizeText(recipientName, "there")}`,
+        intro: "You have received a message from SAPTech Uganda.",
+        sections: [{ title: "Message", text: cleanMessage }],
+        cta: { label: "Contact SAPTech Uganda", href: `mailto:${this.replyToEmail}` }
       })
     });
   }

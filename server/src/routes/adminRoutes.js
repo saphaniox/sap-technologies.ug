@@ -13,6 +13,10 @@ router.get("/system/health", adminController.getSystemHealth);
 router.get("/settings/email", adminController.getEmailSettings);
 router.put("/settings/email", adminController.updateEmailSettings);
 router.put("/settings/email/provider", adminController.updateEmailProvider);
+router.post("/email/send", adminController.sendCustomEmail);
+router.get("/email/messages", adminController.getSavedEmailMessages);
+router.post("/email/messages", adminController.saveEmailMessage);
+router.delete("/email/messages/:messageId", adminController.deleteSavedEmailMessage);
 
 // User management
 router.get("/users", adminController.getAllUsers);

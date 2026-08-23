@@ -352,6 +352,14 @@ const AdminDashboard = ({ user, onClose }) => {
   const [emailConfigForm, setEmailConfigForm] = useState(DEFAULT_EMAIL_CONFIG_FORM);
   const [savingEmailProvider, setSavingEmailProvider] = useState(false);
   const [savingEmailSettings, setSavingEmailSettings] = useState(false);
+  const [sendingCustomEmail, setSendingCustomEmail] = useState(false);
+  const [customEmailForm, setCustomEmailForm] = useState({
+    recipientEmail: "",
+    recipientName: "",
+    subject: "",
+    message: ""
+  });
+  const [savedEmailMessages, setSavedEmailMessages] = useState([]);
   const [settingsSubTab, setSettingsSubTab] = useState("email");
   const [allCertificates, setAllCertificates] = useState([]);
   const [certificatesPagination, setCertificatesPagination] = useState({ currentPage: 1, totalPages: 1, totalCertificates: 0 });
@@ -443,8 +451,9 @@ const AdminDashboard = ({ user, onClose }) => {
           fetchCurrentSignature();
         } else if (settingsSubTab === "certificates") {
           fetchAllCertificates(certificatesPagination.currentPage);
-        } else if (settingsSubTab === "email") {
+        } else if (settingsSubTab === "email" || settingsSubTab === "saved-emails") {
           fetchEmailSettings();
+          fetchSavedEmailMessages();
         }
         break;
     }
@@ -502,8 +511,9 @@ const AdminDashboard = ({ user, onClose }) => {
             fetchCurrentSignature();
           } else if (settingsSubTab === "certificates") {
             fetchAllCertificates(certificatesPagination.currentPage);
-          } else if (settingsSubTab === "email") {
+          } else if (settingsSubTab === "email" || settingsSubTab === "saved-emails") {
             fetchEmailSettings();
+            fetchSavedEmailMessages();
           }
           break;
       }
@@ -1833,6 +1843,68 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
     );
   };
 
+  const handleCustomEmailSend = async (event) => {
+    event.preventDefault();
+    const recipientEmail = customEmailForm.recipientEmail.trim();
+    const subject = customEmailForm.subject.trim();
+    const message = customEmailForm.message.trim();
+
+    if (!recipientEmail || !subject || !message) {
+      setAutoMessage("Please complete the recipient, subject, and message fields.", true);
+      return;
+    }
+
+    try {
+      setSendingCustomEmail(true);
+      await apiService.sendCustomAdminEmail({
+        ...customEmailForm,
+        recipientEmail,
+        subject,
+        message
+      });
+      try {
+        const savedResponse = await apiService.saveEmailMessage({ ...customEmailForm, recipientEmail, subject, message });
+        if (savedResponse?.data) setSavedEmailMessages((current) => [savedResponse.data, ...current].slice(0, 100));
+      } catch (saveError) {
+        console.warn("Custom email sent but could not be saved:", saveError);
+      }
+      setCustomEmailForm({ recipientEmail: "", recipientName: "", subject: "", message: "" });
+      setAutoMessage(`Custom email sent to ${recipientEmail}`);
+    } catch (error) {
+      setAutoMessage("Couldn't send custom email: " + error.message, true);
+    } finally {
+      setSendingCustomEmail(false);
+    }
+  };
+
+  const fetchSavedEmailMessages = async () => {
+    try {
+      const response = await apiService.getSavedEmailMessages();
+      setSavedEmailMessages(Array.isArray(response?.data) ? response.data : []);
+    } catch (error) {
+      setAutoMessage("Couldn't load saved emails: " + error.message, true);
+    }
+  };
+
+  const reuseSavedEmailMessage = (savedMessage) => {
+    setCustomEmailForm({
+      recipientEmail: savedMessage.recipientEmail || "",
+      recipientName: savedMessage.recipientName || "",
+      subject: savedMessage.subject || "",
+      message: savedMessage.message || ""
+    });
+    setSettingsSubTab("email");
+  };
+
+  const deleteSavedEmailMessage = async (messageId) => {
+    try {
+      await apiService.deleteSavedEmailMessage(messageId);
+      setSavedEmailMessages((current) => current.filter((message) => message.id !== messageId));
+    } catch (error) {
+      setAutoMessage("Couldn't delete saved email: " + error.message, true);
+    }
+  };
+
   const renderEmailProviderSettings = () => {
     const emailDelivery = getEmailDelivery();
     const mode = emailDelivery.mode || "auto";
@@ -1856,6 +1928,71 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
             {emailDelivery.canSend ? "Ready to send" : "Needs configuration"}
           </span>
         </div>
+
+        <form className="custom-email-composer" onSubmit={handleCustomEmailSend}>
+          <div className="custom-email-composer-header">
+            <div>
+              <span className="section-eyebrow">Direct message</span>
+              <h4>Send a custom email</h4>
+              <p>Enter any recipient and send a branded SAPTech Uganda email.</p>
+            </div>
+            <span className="custom-email-badge">Admin only</span>
+          </div>
+
+          <div className="custom-email-fields">
+            <label>
+              Recipient email <span>Required</span>
+              <input
+                type="email"
+                value={customEmailForm.recipientEmail}
+                onChange={(event) => setCustomEmailForm((current) => ({ ...current, recipientEmail: event.target.value }))}
+                placeholder="someone@example.com"
+                required
+              />
+            </label>
+            <label>
+              Recipient name <small>Optional</small>
+              <input
+                type="text"
+                value={customEmailForm.recipientName}
+                onChange={(event) => setCustomEmailForm((current) => ({ ...current, recipientName: event.target.value }))}
+                placeholder="Their name"
+              />
+            </label>
+            <label className="custom-email-wide">
+              Subject <span>Required</span>
+              <input
+                type="text"
+                maxLength={160}
+                value={customEmailForm.subject}
+                onChange={(event) => setCustomEmailForm((current) => ({ ...current, subject: event.target.value }))}
+                placeholder="Email subject"
+                required
+              />
+            </label>
+            <label className="custom-email-wide">
+              Message <span>Required</span>
+              <textarea
+                rows={7}
+                maxLength={4000}
+                value={customEmailForm.message}
+                onChange={(event) => setCustomEmailForm((current) => ({ ...current, message: event.target.value }))}
+                placeholder="Write your professional message..."
+                required
+              />
+              <small className="custom-email-counter">{customEmailForm.message.length}/4000 characters</small>
+            </label>
+          </div>
+
+          <div className="custom-email-actions">
+            <button type="button" className="btn-secondary" onClick={() => setCustomEmailForm({ recipientEmail: "", recipientName: "", subject: "", message: "" })} disabled={sendingCustomEmail}>
+              Clear
+            </button>
+            <button type="submit" className="btn-primary" disabled={sendingCustomEmail || !emailDelivery.canSend}>
+              <i className="fas fa-paper-plane"></i> {sendingCustomEmail ? "Sending..." : "Send custom email"}
+            </button>
+          </div>
+        </form>
 
         <div className="email-provider-summary">
           <div>
@@ -4458,6 +4595,12 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                 >
                   Email Delivery
                 </button>
+                <button
+                  className={`subtab-btn ${settingsSubTab === "saved-emails" ? "active" : ""}`}
+                  onClick={() => setSettingsSubTab("saved-emails")}
+                >
+                  Saved Emails
+                </button>
                 <button 
                   className={`subtab-btn ${settingsSubTab === "signature" ? "active" : ""}`}
                   onClick={() => setSettingsSubTab("signature")}
@@ -4473,6 +4616,49 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
               </div>
 
               {settingsSubTab === "email" && renderEmailProviderSettings()}
+
+              {settingsSubTab === "saved-emails" && (
+                <div className="settings-section saved-emails-page">
+                  <div className="saved-emails-header">
+                    <div>
+                      <h3>Saved Emails</h3>
+                      <p className="section-description">Reuse previous custom messages without rewriting them. Sent custom emails are saved automatically.</p>
+                    </div>
+                    <button type="button" className="btn-primary" onClick={() => setSettingsSubTab("email")}>
+                      <i className="fas fa-pen"></i> Compose email
+                    </button>
+                  </div>
+                  {savedEmailMessages.length === 0 ? (
+                    <div className="saved-emails-empty">
+                      <i className="fas fa-envelope-open-text"></i>
+                      <strong>No saved emails yet</strong>
+                      <span>Send a custom email and it will appear here for quick reuse.</span>
+                    </div>
+                  ) : (
+                    <div className="saved-emails-grid">
+                      {savedEmailMessages.map((savedMessage) => (
+                        <article className="saved-email-card" key={savedMessage.id}>
+                          <div className="saved-email-card-top">
+                            <span className="saved-email-icon"><i className="fas fa-envelope"></i></span>
+                            <time>{savedMessage.savedAt ? new Date(savedMessage.savedAt).toLocaleDateString() : "Saved"}</time>
+                          </div>
+                          <h4>{savedMessage.subject}</h4>
+                          <p className="saved-email-recipient">To: {savedMessage.recipientName || savedMessage.recipientEmail}</p>
+                          <p className="saved-email-preview">{savedMessage.message}</p>
+                          <div className="saved-email-actions">
+                            <button type="button" className="btn-primary" onClick={() => reuseSavedEmailMessage(savedMessage)}>
+                              <i className="fas fa-reply"></i> Reuse
+                            </button>
+                            <button type="button" className="btn-secondary" onClick={() => deleteSavedEmailMessage(savedMessage.id)}>
+                              <i className="fas fa-trash"></i> Delete
+                            </button>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Signature Subtab */}
               {settingsSubTab === "signature" && (
