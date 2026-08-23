@@ -978,7 +978,8 @@ class EmailService {
     footerNote,
     tone = "default",
     category,
-    brandName
+    brandName,
+    skipStandardClosing = false
   }) {
     const templateCategory = category || emailTemplateContext.getStore()?.category || "";
     const templateTone = resolveTemplateTone(tone, templateCategory);
@@ -1003,7 +1004,6 @@ class EmailService {
         </tr>
       </table>
     `;
-
     return `<!doctype html>
 <html lang="en">
 <head>
@@ -1074,12 +1074,12 @@ class EmailService {
               <a class="email-button" href="${escapeHtml(cta.href)}" style="display:inline-block;background:${color.accent};color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;padding:13px 22px;border-radius:8px;">${escapeHtml(cta.label || "Open")}</a>
             </td>
           </tr>` : ""}
-          <tr>
+          ${skipStandardClosing ? "" : `<tr>
             <td class="email-closing" style="padding:0 32px 28px;">
               <p class="email-copy" style="margin:0;color:#334155;font-size:14px;line-height:1.7;">Need help or want to add something? Simply reply to this email and a member of our team will assist you.</p>
               <p class="email-copy" style="margin:14px 0 0;color:#0f172a;font-size:14px;line-height:1.6;">Warm regards,<br><strong>The ${escapeHtml(companyName)} team</strong></p>
             </td>
-          </tr>
+          </tr>`}
           <tr>
             <td class="email-footer" style="background:#f8fafc;border-top:1px solid ${color.border || "#e2e8f0"};padding:22px 32px;text-align:center;">
               <p style="margin:0 0 8px;color:#0f172a;font-size:14px;font-weight:700;">${escapeHtml(this.brand.legalName)}</p>
@@ -2287,7 +2287,8 @@ class EmailService {
         greeting: `Hello ${normalizeText(recipientName, "there")}`,
         intro: "",
         sections: [{ text: cleanMessage }],
-        cta: { label: "Contact SAPTech Uganda", href: `mailto:${this.replyToEmail}` }
+        cta: null,
+        skipStandardClosing: true
       })
     });
   }
