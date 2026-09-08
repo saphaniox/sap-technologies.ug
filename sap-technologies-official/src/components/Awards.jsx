@@ -410,7 +410,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
             {/* Hero Stats */}
             <div className="awards-hero-stats animated fadeInUp delay-2">
               <div className="hero-stat">
-                <div className="stat-icon" aria-hidden="true" />
+                <div className="stat-icon">🎯</div>
                 <div className="stat-content">
                   <span className="stat-number">
                     {loading.categories ? "..." : categories.length}
@@ -419,7 +419,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
                 </div>
               </div>
               <div className="hero-stat">
-                <div className="stat-icon" aria-hidden="true" />
+                <div className="stat-icon">👥</div>
                 <div className="stat-content">
                   <span className="stat-number">
                     {loading.nominations ? "..." : nominations.length}
@@ -428,7 +428,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
                 </div>
               </div>
               <div className="hero-stat">
-                <div className="stat-icon" aria-hidden="true" />
+                <div className="stat-icon">⭐</div>
                 <div className="stat-content">
                   <span className="stat-number">
                     {loading.nominations ? "..." : nominations.reduce((total, nom) => total + (nom.votes || 0), 0)}
@@ -441,6 +441,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
             {/* Countdown Timer */}
             <div className="awards-countdown animated fadeInUp delay-4">
               <div className="countdown-header">
+                <span className="countdown-icon">⏰</span>
                 <h3>Awards Deadline</h3>
               </div>
               <div className="countdown-timer">
@@ -472,12 +473,14 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
                 className="awards-btn awards-btn-primary"
                 onClick={() => setShowNominationForm(true)}
               >
+                <span className="btn-icon">✨</span>
                 <span className="btn-text">Submit Nomination</span>
               </button>
               <button
                 className="awards-btn awards-btn-secondary"
                 onClick={() => document.getElementById('nominations')?.scrollIntoView({ behavior: 'smooth' })}
               >
+                <span className="btn-icon">🗳️</span>
                 <span className="btn-text">View & Vote</span>
               </button>
             </div>

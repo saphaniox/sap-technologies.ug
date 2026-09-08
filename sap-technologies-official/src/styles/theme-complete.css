@@ -200,36 +200,6 @@ html[data-theme="light"] :is(
   color: var(--text-normal) !important;
 }
 
-/* Keep the visual language solid, bright, and deliberate across legacy styles. */
-html[data-theme] * {
-  background-image: none !important;
-}
-
-html[data-theme] .hero {
-  background: #1a237e url('/images/banner2.jpg') center center / cover no-repeat !important;
-}
-
-html[data-theme] .particle {
-  background: #ffffff !important;
-}
-
-html[data-theme] .company-name {
-  background: transparent !important;
-  color: #1a237e !important;
-  -webkit-text-fill-color: currentColor;
-}
-
-html[data-theme] :is(.section-gradient, .hero, .cta-button, .btn-primary, .primary-btn) {
-  background-color: var(--primary-color) !important;
-  color: var(--text-color-inverse, #ffffff) !important;
-}
-
-html[data-theme] :is(.section-title, .page-title, .hero-content .highlight) {
-  background-color: transparent !important;
-  color: var(--text-strong) !important;
-  -webkit-text-fill-color: currentColor;
-}
-
 html[data-theme] :is(
   .card,
   .about-card,
