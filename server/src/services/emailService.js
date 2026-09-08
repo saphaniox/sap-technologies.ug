@@ -955,7 +955,7 @@ class EmailService {
           <table class="email-section" role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${color.soft};border:1px solid ${color.border || color.soft};border-left:4px solid ${color.accent};border-radius:10px;">
             <tr>
               <td class="email-section-body" style="padding:20px;">
-                ${section.title ? `<h3 class="email-section-title" style="margin:0 0 12px;color:${color.strong};font-size:16px;line-height:1.35;">${escapeHtml(section.title)}</h3>` : ""}
+                <h3 class="email-section-title" style="margin:0 0 12px;color:${color.strong};font-size:16px;line-height:1.35;">${escapeHtml(section.title || "Details")}</h3>
                 ${rows}
                 ${text}
                 ${list}

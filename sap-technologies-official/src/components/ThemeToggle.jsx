@@ -11,19 +11,6 @@ const ThemeToggle = ({ className = "", showLabel = false }) => {
     dark: { x: 24 }
   };
 
-  const iconVariants = {
-    light: { 
-      rotate: 0,
-      scale: 1,
-      opacity: 1
-    },
-    dark: { 
-      rotate: 180,
-      scale: 0.8,
-      opacity: 0.9
-    }
-  };
-
   return (
     <div className={`theme-toggle-container ${className}`}>
       {showLabel && (
@@ -42,22 +29,9 @@ const ThemeToggle = ({ className = "", showLabel = false }) => {
       >
         {/* Toggle Track */}
         <div className="theme-toggle-track">
-          {/* Background Icons */}
-          <div className="theme-toggle-icons">
-            <motion.div
-              className="theme-icon sun-icon"
-              animate={isDark ? iconVariants.dark : iconVariants.light}
-              transition={{ duration: 0.3 }}
-            >
-              ☀️
-            </motion.div>
-            <motion.div
-              className="theme-icon moon-icon"
-              animate={isDark ? iconVariants.dark : iconVariants.light}
-              transition={{ duration: 0.3 }}
-            >
-              🌙
-            </motion.div>
+          <div className="theme-toggle-icons" aria-hidden="true">
+            <span className="theme-icon sun-icon" />
+            <span className="theme-icon moon-icon" />
           </div>
           
           {/* Toggle Thumb */}
@@ -71,12 +45,11 @@ const ThemeToggle = ({ className = "", showLabel = false }) => {
             }}
           >
             <motion.div
-              className="thumb-icon"
+              className={`thumb-icon ${isDark ? "thumb-icon--dark" : "thumb-icon--light"}`}
               animate={{ rotate: isDark ? 360 : 0 }}
               transition={{ duration: 0.5 }}
-            >
-              {isDark ? "🌙" : "☀️"}
-            </motion.div>
+              aria-hidden="true"
+            />
           </motion.div>
         </div>
       </motion.button>
