@@ -551,6 +551,7 @@ class EmailService {
         host: process.env.SMTP_HOST || "smtp.gmail.com",
         port: Number(process.env.SMTP_PORT || 587),
         secure: String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || Number(process.env.SMTP_PORT || 587) === 465,
+        rejectUnauthorized: String(process.env.SMTP_TLS_REJECT_UNAUTHORIZED || "false").toLowerCase() !== "false",
         user: smtpUser || "",
         pass: process.env.GMAIL_PASS || process.env.SMTP_PASS || "",
         fromEmail: smtpFromEmail || fromEmail,
@@ -578,6 +579,7 @@ class EmailService {
     merged.mailjet.sandboxMode = cleanBoolean(merged.mailjet.sandboxMode, false);
     merged.gmail.port = cleanNumber(merged.gmail.port, 587);
     merged.gmail.secure = cleanBoolean(merged.gmail.secure, merged.gmail.port === 465);
+    merged.gmail.rejectUnauthorized = cleanBoolean(merged.gmail.rejectUnauthorized, true);
     merged.gmail.pool = cleanBoolean(merged.gmail.pool, true);
     merged.gmail.maxConnections = cleanNumber(merged.gmail.maxConnections, 3);
     merged.gmail.maxMessages = cleanNumber(merged.gmail.maxMessages, 75);
@@ -842,7 +844,11 @@ class EmailService {
       socketTimeout: cleanNumber(config.socketTimeout, Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 45000)),
       tls: {
         minVersion: "TLSv1.2",
-        servername: host
+        servername: host,
+        rejectUnauthorized: cleanBoolean(
+          config.rejectUnauthorized,
+          String(process.env.SMTP_TLS_REJECT_UNAUTHORIZED || "false").toLowerCase() !== "false"
+        )
       }
     });
 
@@ -1197,7 +1203,7 @@ class EmailService {
     const envelopeRecipients = collectRecipients(emailOptions.to, emailOptions.cc, emailOptions.bcc);
     const authenticatedSender = this.smtpSenderEmail || process.env.GMAIL_USER || process.env.SMTP_USER || this.fromEmail;
     const info = await this.smtpTransporter.sendMail({
-      from: this.formatAddress(emailOptions.from || authenticatedSender, emailOptions.fromName || this.fromName),
+      from: this.formatAddress(authenticatedSender, emailOptions.fromName || this.fromName),
       envelope: { from: authenticatedSender, to: envelopeRecipients },
       to: emailOptions.to,
       cc: emailOptions.cc,
