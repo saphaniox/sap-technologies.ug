@@ -7,7 +7,7 @@
 
 .insights-hero,
 .insights-grid,
-.adsense-readiness-card {
+.ad-readiness-card {
   max-width: 1180px;
   margin-inline: auto;
 }
@@ -81,7 +81,7 @@
 }
 
 .insight-card,
-.adsense-readiness-card {
+.ad-readiness-card {
   background: rgba(255, 255, 255, 0.94);
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 24px;
@@ -95,7 +95,7 @@
 }
 
 .insight-card h2,
-.adsense-readiness-card h2 {
+.ad-readiness-card h2 {
   color: #0f172a;
   font-size: clamp(1.28rem, 2vw, 1.6rem);
   line-height: 1.2;
@@ -103,7 +103,7 @@
 }
 
 .insight-summary,
-.adsense-readiness-card p,
+.ad-readiness-card p,
 .insight-sections p {
   color: #475569;
   line-height: 1.72;
@@ -135,7 +135,7 @@
   margin: 0;
 }
 
-.adsense-readiness-card {
+.ad-readiness-card {
   display: grid;
   gap: 1.5rem;
   grid-template-columns: 1.1fr 0.9fr;
@@ -143,11 +143,11 @@
   padding: clamp(1.25rem, 3vw, 2rem);
 }
 
-.adsense-readiness-card p {
+.ad-readiness-card p {
   margin: 0;
 }
 
-.adsense-readiness-card ul {
+.ad-readiness-card ul {
   display: grid;
   gap: 0.8rem;
   list-style: none;
@@ -155,7 +155,7 @@
   padding: 0;
 }
 
-.adsense-readiness-card li {
+.ad-readiness-card li {
   background: #ecfdf5;
   border: 1px solid rgba(5, 150, 105, 0.18);
   border-radius: 16px;
@@ -167,7 +167,7 @@
 
 @media (max-width: 980px) {
   .insights-grid,
-  .adsense-readiness-card {
+  .ad-readiness-card {
     grid-template-columns: 1fr;
   }
 }
@@ -179,7 +179,7 @@
 
   .insights-hero,
   .insight-card,
-  .adsense-readiness-card {
+  .ad-readiness-card {
     border-radius: 20px;
   }
 
@@ -195,20 +195,20 @@
 
 [data-theme="dark"] .insights-hero,
 [data-theme="dark"] .insight-card,
-[data-theme="dark"] .adsense-readiness-card {
+[data-theme="dark"] .ad-readiness-card {
   background: rgba(15, 23, 42, 0.9);
   border-color: rgba(148, 163, 184, 0.2);
 }
 
 [data-theme="dark"] .insights-hero h1,
 [data-theme="dark"] .insight-card h2,
-[data-theme="dark"] .adsense-readiness-card h2 {
+[data-theme="dark"] .ad-readiness-card h2 {
   color: #f8fafc;
 }
 
 [data-theme="dark"] .insights-hero p,
 [data-theme="dark"] .insight-summary,
-[data-theme="dark"] .adsense-readiness-card p,
+[data-theme="dark"] .ad-readiness-card p,
 [data-theme="dark"] .insight-sections p {
   color: #cbd5e1;
 }
@@ -217,7 +217,7 @@
   color: #5eead4;
 }
 
-[data-theme="dark"] .adsense-readiness-card li {
+[data-theme="dark"] .ad-readiness-card li {
   background: rgba(20, 184, 166, 0.12);
   border-color: rgba(45, 212, 191, 0.24);
   color: #ccfbf1;

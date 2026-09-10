@@ -11,7 +11,7 @@ import NotFound from "./components/NotFound";
 import WhatsAppButton from "./components/WhatsAppButton";
 import CookieConsent from "./components/CookieConsent";
 import PhotoLightbox from "./components/PhotoLightbox";
-import GoogleAdSense from "./components/GoogleAdSense";
+import AdNetwork, { AdPlacement } from "./components/AdNetwork";
 import SEO from "./components/SEO";
 import { CartProvider, useCart } from "./contexts/CartContext";
 import Cart from "./components/Cart";
@@ -555,14 +555,17 @@ function App() {
 
       <main>
         <Hero />
+        <AdPlacement placement="homeTop" />
         <Slider />
         <About />
         <Suspense fallback={null}>
           <Services />
+          <AdPlacement placement="homeMiddle" />
           <Portfolio />
           <Partners />
           <Companies />
           <Products />
+          <AdPlacement placement="marketplace" />
           <Testimonials />
           <Contact />
         </Suspense>
@@ -573,27 +576,34 @@ function App() {
     </>
   );
 
-  const renderPublicPage = (children) => (
+  const renderPublicPage = (children, adOptions = {}) => {
+    const topPlacement = adOptions.topPlacement || "pageTop";
+    const bottomPlacement = adOptions.bottomPlacement || "pageBottom";
+
+    return (
     <>
       {renderHeader()}
       <main className="route-page-shell">
+        <AdPlacement placement={topPlacement} />
         {children}
+        <AdPlacement placement={bottomPlacement} />
       </main>
       {renderFooter()}
       {renderSharedSiteTools()}
     </>
-  );
+    );
+  };
 
   return (
     <ErrorBoundary>
       <CartProvider>
       <div className="App">
-        <GoogleAdSense />
+        <AdNetwork />
         <Suspense fallback={null}>
         <Routes>
           <Route path="/verify/:certificateId" element={<CertificateVerify />} />
-          <Route path="/software" element={renderPublicPage(<SoftwarePage />)} />
-          <Route path="/iot" element={renderPublicPage(<IoTPage />)} />
+          <Route path="/software" element={renderPublicPage(<SoftwarePage />, { topPlacement: "software" })} />
+          <Route path="/iot" element={renderPublicPage(<IoTPage />, { topPlacement: "iot" })} />
           <Route path="/careers" element={renderPublicPage(
             <>
               <SEO
@@ -664,8 +674,8 @@ function App() {
             <>
               <SEO
                 title="Privacy Policy | SAPTech Uganda"
-                description="Read the SAPTech Uganda privacy policy, including how we handle contact information, cookies, analytics, Google AdSense advertising, and user data."
-                keywords="SAPTech Uganda privacy policy, SAPTech cookies, SAPTech AdSense privacy, Uganda technology company privacy policy"
+                description="Read the SAPTech Uganda privacy policy, including how we handle contact information, cookies, analytics, advertising partners, and user data."
+                keywords="SAPTech Uganda privacy policy, SAPTech cookies, SAPTech advertising privacy, Uganda technology company privacy policy"
                 canonicalUrl={`${SITE_URL}/privacy-policy`}
                 url={`${SITE_URL}/privacy-policy`}
                 ogImage="/images/logo.png"

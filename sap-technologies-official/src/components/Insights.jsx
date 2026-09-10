@@ -100,7 +100,7 @@ const Insights = () => (
       ))}
     </div>
 
-    <aside className="adsense-readiness-card">
+    <aside className="ad-readiness-card">
       <div>
         <span className="insights-eyebrow">Quality checklist</span>
         <h2>How we keep our pages useful</h2>

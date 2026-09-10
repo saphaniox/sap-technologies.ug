@@ -131,8 +131,8 @@ const routes = [
   {
     path: "/privacy-policy",
     title: "Privacy Policy | SAPTech Uganda",
-    description: "Read the SAPTech Uganda privacy policy, including how we handle contact information, cookies, analytics, Google AdSense advertising, and user data.",
-    keywords: "SAPTech Uganda privacy policy, SAPTech cookies, SAPTech AdSense privacy",
+    description: "Read the SAPTech Uganda privacy policy, including how we handle contact information, cookies, analytics, advertising partners, and user data.",
+    keywords: "SAPTech Uganda privacy policy, SAPTech cookies, SAPTech advertising privacy",
     image: "/images/logo.png"
   },
   {

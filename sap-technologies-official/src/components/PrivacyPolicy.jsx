@@ -115,13 +115,10 @@ const PrivacyPolicy = ({ onClose, onNavigate, onTermsOfServiceOpen }) => {
               You can control cookie settings through your browser preferences.
             </p>
             <p>
-              We may use Google AdSense and related Google services to display advertisements.
-              Google and its partners may use cookies, web beacons, IP addresses, device identifiers,
-              and browser information to serve, measure, and personalize ads. You can learn more about
-              how Google uses information from sites and apps that use its services at{" "}
-              <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">
-                Google partner sites
-              </a>.
+              We may work with advertising partners such as Monetag or Adsterra to display,
+              measure, and improve ads on our website. These partners may use cookies,
+              web beacons, IP addresses, device identifiers, browser information, and similar
+              technologies according to their own privacy policies and publisher terms.
             </p>
           </section>
 
