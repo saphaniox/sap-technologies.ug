@@ -77,8 +77,8 @@ const PartnerRequestForm = ({ isOpen, onClose }) => {
       <div className="modal-content partner-request-modal">
         <div className="modal-header">
           <h2>Partnership Request</h2>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="close-button"
             onClick={onClose}
             disabled={loading}
@@ -89,7 +89,7 @@ const PartnerRequestForm = ({ isOpen, onClose }) => {
 
         {success ? (
           <div className="success-message">
-            <div className="success-icon">✓</div>
+            <div className="success-icon"></div>
             <h3>Request Submitted!</h3>
             <p>Thank you for your partnership interest. We"ll review your request and get back to you soon.</p>
           </div>
@@ -171,16 +171,16 @@ const PartnerRequestForm = ({ isOpen, onClose }) => {
             )}
 
             <div className="form-actions">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn-secondary"
                 onClick={onClose}
                 disabled={loading}
               >
                 Cancel
               </button>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="btn-primary"
                 disabled={loading}
               >

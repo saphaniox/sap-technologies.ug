@@ -75,7 +75,7 @@ const VisitorAnalytics = () => {
     try {
       setLoading(true);
       const response = await api.get(`/admin/visitor-analytics?period=${period}`, { useCache: false });
-      
+
       if (response.success) {
         setAnalytics(normalizeAnalytics(response.data));
         setError(null);
@@ -96,7 +96,7 @@ const VisitorAnalytics = () => {
   const fetchLiveVisitors = useCallback(async () => {
     try {
       const response = await api.get("/admin/visitor-analytics/live", { useCache: false });
-      
+
       if (response.success) {
         setLiveVisitors(normalizeLiveVisitors(response.data));
       }
@@ -133,7 +133,7 @@ const VisitorAnalytics = () => {
       if (!response.ok) {
         throw new Error(`Export failed with status ${response.status}`);
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -179,8 +179,8 @@ const VisitorAnalytics = () => {
   return (
     <div className="visitor-analytics">
       <div className="analytics-header">
-        <h2>📊 Visitor Analytics</h2>
-        
+        <h2> Visitor Analytics</h2>
+
         <div className="header-controls">
           <div className="period-selector">
             <button
@@ -211,10 +211,10 @@ const VisitorAnalytics = () => {
 
           <div className="export-buttons">
             <button onClick={() => handleExport("sessions")}>
-              📥 Export Sessions
+               Export Sessions
             </button>
             <button onClick={() => handleExport("pageviews")}>
-              📥 Export Page Views
+               Export Page Views
             </button>
           </div>
         </div>
@@ -236,7 +236,7 @@ const VisitorAnalytics = () => {
           <strong>{safeLiveVisitors.count}</strong> visitors online now
         </div>
         <button onClick={fetchLiveVisitors} className="refresh-btn">
-          🔄 Refresh
+           Refresh
         </button>
       </div>
 
@@ -245,7 +245,7 @@ const VisitorAnalytics = () => {
         <>
           <div className="stats-cards">
             <div className="stat-card">
-              <div className="stat-icon">👥</div>
+              <div className="stat-icon"></div>
               <div className="stat-content">
                 <div className="stat-value">{safeAnalytics.overview.totalSessions.toLocaleString()}</div>
                 <div className="stat-label">Total Sessions</div>
@@ -253,7 +253,7 @@ const VisitorAnalytics = () => {
             </div>
 
             <div className="stat-card">
-              <div className="stat-icon">✨</div>
+              <div className="stat-icon"></div>
               <div className="stat-content">
                 <div className="stat-value">{safeAnalytics.overview.uniqueVisitors.toLocaleString()}</div>
                 <div className="stat-label">Unique Visitors</div>
@@ -261,7 +261,7 @@ const VisitorAnalytics = () => {
             </div>
 
             <div className="stat-card">
-              <div className="stat-icon">📄</div>
+              <div className="stat-icon"></div>
               <div className="stat-content">
                 <div className="stat-value">{safeAnalytics.overview.totalPageViews.toLocaleString()}</div>
                 <div className="stat-label">Page Views</div>
@@ -277,7 +277,7 @@ const VisitorAnalytics = () => {
             </div>
 
             <div className="stat-card">
-              <div className="stat-icon">📊</div>
+              <div className="stat-icon"></div>
               <div className="stat-content">
                 <div className="stat-value">{safeAnalytics.overview.avgPageViewsPerSession}</div>
                 <div className="stat-label">Pages/Session</div>

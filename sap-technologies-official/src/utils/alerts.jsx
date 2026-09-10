@@ -2,18 +2,18 @@
 // Provides consistent alert dialogs and loading spinners across the application
 
 import Swal from 'sweetalert2';
-import { 
-  BounceLoader, 
-  ClipLoader, 
-  DotLoader, 
-  FadeLoader, 
-  GridLoader, 
-  HashLoader, 
-  PacmanLoader, 
-  PulseLoader, 
-  RingLoader, 
-  ScaleLoader, 
-  SyncLoader 
+import {
+  BounceLoader,
+  ClipLoader,
+  DotLoader,
+  FadeLoader,
+  GridLoader,
+  HashLoader,
+  PacmanLoader,
+  PulseLoader,
+  RingLoader,
+  ScaleLoader,
+  SyncLoader
 } from 'react-spinners';
 
 const CENTERED_ALERT_OPTIONS = {
@@ -92,7 +92,7 @@ export const showAlert = {
       ...options,
       ...CENTERED_ALERT_OPTIONS
     };
-    
+
     return Swal.fire(finalOptions);
   },
 
@@ -111,7 +111,7 @@ export const showAlert = {
       ...options,
       ...CENTERED_ALERT_OPTIONS
     };
-    
+
     return Swal.fire(finalOptions);
   },
 
@@ -125,12 +125,12 @@ export const showAlert = {
       ...options,
       ...CENTERED_ALERT_OPTIONS
     };
-    
+
     // If timer exists and showConfirmButton isn't explicitly true, hide button for auto-close
     if ((finalOptions.timer || finalOptions.timer === 0) && finalOptions.showConfirmButton !== true) {
       finalOptions.showConfirmButton = false;
     }
-    
+
     return Swal.fire({
       icon: 'warning',
       title,
@@ -149,12 +149,12 @@ export const showAlert = {
       ...options,
       ...CENTERED_ALERT_OPTIONS
     };
-    
+
     // If timer exists and showConfirmButton isn't explicitly true, hide button for auto-close
     if ((finalOptions.timer || finalOptions.timer === 0) && finalOptions.showConfirmButton !== true) {
       finalOptions.showConfirmButton = false;
     }
-    
+
     return Swal.fire({
       icon: 'info',
       title,
@@ -240,21 +240,21 @@ export const showAlert = {
       ...options,
       ...CENTERED_ALERT_OPTIONS
     };
-    
+
     // If timer exists and showConfirmButton isn't explicitly true, hide button for auto-close
     if ((finalOptions.timer || finalOptions.timer === 0) && finalOptions.showConfirmButton !== true) {
       finalOptions.showConfirmButton = false;
     }
-    
+
     // Debug logging to see what's being passed
-    console.log('🎨 Custom Alert Debug:', {
+    console.log(' Custom Alert Debug:', {
       htmlContent,
       originalOptions: options,
       finalOptions,
       hasTimer: !!(finalOptions.timer || finalOptions.timer === 0),
       showConfirmButton: finalOptions.showConfirmButton
     });
-    
+
     return Swal.fire({
       html: htmlContent,
       ...finalOptions
@@ -268,7 +268,7 @@ export const showAlert = {
       ...options,
       ...CENTERED_ALERT_OPTIONS
     };
-    
+
     return Swal.fire({
       icon: type,
       title: message,
@@ -361,12 +361,12 @@ export const Spinners = {
 };
 
 // Loading Overlay Component
-export const LoadingOverlay = ({ 
-  isLoading, 
-  spinnerType = 'Clip', 
-  message = 'Loading...', 
+export const LoadingOverlay = ({
+  isLoading,
+  spinnerType = 'Clip',
+  message = 'Loading...',
   overlay = true,
-  spinnerProps = {} 
+  spinnerProps = {}
 }) => {
   if (!isLoading) return null;
 
@@ -407,15 +407,15 @@ export const LoadingOverlay = ({
 };
 
 // Button with loading state
-export const LoadingButton = ({ 
-  children, 
-  loading = false, 
-  spinnerType = 'Clip', 
+export const LoadingButton = ({
+  children,
+  loading = false,
+  spinnerType = 'Clip',
   spinnerSize = 20,
   disabled = false,
   onClick,
   className = '',
-  ...props 
+  ...props
 }) => {
   const SpinnerComponent = Spinners[spinnerType] || Spinners.Clip;
 
@@ -424,7 +424,7 @@ export const LoadingButton = ({
       className={`loading-button ${className} ${loading ? 'loading' : ''}`}
       disabled={disabled || loading}
       onClick={onClick}
-      style={{ 
+      style={{
         position: 'relative',
         display: 'flex',
         alignItems: 'center',
@@ -434,9 +434,9 @@ export const LoadingButton = ({
       {...props}
     >
       {loading && (
-        <SpinnerComponent 
-          loading={true} 
-          size={spinnerSize} 
+        <SpinnerComponent
+          loading={true}
+          size={spinnerSize}
           color="currentColor"
         />
       )}
@@ -464,13 +464,13 @@ export const withLoading = async (asyncFunction, options = {}) => {
 
   try {
     const result = await asyncFunction();
-    
+
     // Close loading and show success
     closeSwal();
     if (showSuccess) {
       showAlert.success(successTitle, successText);
     }
-    
+
     return result;
   } catch (error) {
     // Close loading and show error
@@ -500,17 +500,17 @@ export {
 // Export SweetAlert2 for advanced usage
 export { Swal };
 
-/* 
+/*
 Alert Usage Guide:
-- showAlert.success() - Auto-disappears after 5 seconds ✓
-- showAlert.error() - Auto-disappears after 5 seconds ✓
-- showAlert.warning() - Auto-disappears after 5 seconds ✓
-- showAlert.info() - Auto-disappears after 5 seconds ✓
+- showAlert.success() - Auto-disappears after 5 seconds
+- showAlert.error() - Auto-disappears after 5 seconds
+- showAlert.warning() - Auto-disappears after 5 seconds
+- showAlert.info() - Auto-disappears after 5 seconds
 - showAlert.criticalError() - Requires user acknowledgment (no auto-close)
 - showAlert.confirm() - Requires user action (no auto-close)
 - showAlert.deleteConfirm() - Requires user confirmation (no auto-close)
-- showAlert.toast() - Auto-disappears after 5 seconds ✓
-- showAlert.custom() - Auto-disappears after 5 seconds by default ✓
+- showAlert.toast() - Auto-disappears after 5 seconds
+- showAlert.custom() - Auto-disappears after 5 seconds by default
 
 All alerts with timers show a progress bar and can be closed by:
 - Waiting 5 seconds (auto-close)

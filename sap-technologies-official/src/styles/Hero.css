@@ -5,7 +5,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  background: linear-gradient(120deg, #1a237e 0%, #3949ab 100%), url('/images/banner2.jpg') center center/cover no-repeat;
+  background: #1a237e;
   position: relative;
   padding-top: clamp(60px, 8vw, 70px);
   margin-top: 0;
@@ -27,7 +27,7 @@
   position: absolute;
   width: 6px;
   height: 6px;
-  background: radial-gradient(circle, #fff, rgba(255,255,255,0.3));
+  background: #fff;
   border-radius: 50%;
   animation: float 6s ease-in-out infinite;
 }
@@ -74,11 +74,11 @@
 }
 
 .company-name {
-  background: linear-gradient(45deg, #1a237e, #3f51b5, #2196f3);
+  background: none;
   background-size: 200% 200%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  background-clip: border-box;
+  -webkit-background-clip: border-box;
+  color: var(--primary-color) !important;
   animation: gradientShift 3s ease-in-out infinite;
   display: inline-block;
 }
@@ -149,7 +149,7 @@
   padding: 0.85rem 1.2rem;
   border: none;
   border-radius: 14px;
-  background: linear-gradient(45deg, #1a237e, #3f51b5);
+  background: #1a237e;
   color: #ffffff;
   font-weight: 700;
   cursor: pointer;
@@ -258,13 +258,13 @@
 }
 
 .btn-primary {
-  background: linear-gradient(45deg, #1a237e, #3f51b5);
+  background: #1a237e;
   color: white;
   box-shadow: 0 4px 15px rgba(26, 35, 126, 0.3);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(45deg, #3f51b5, #2196f3);
+  background: #3f51b5;
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(26, 35, 126, 0.4);
 }
@@ -284,7 +284,7 @@
 }
 
 .welcome-badge {
-  background: linear-gradient(45deg, #ff9800, #ff5722);
+  background: #ff9800;
   color: white;
   padding: clamp(1rem, 3vw, 1.2rem) clamp(1.8rem, 4vw, 2.2rem);
   border-radius: 30px;
@@ -299,7 +299,7 @@
 }
 
 .welcome-badge:hover {
-  background: linear-gradient(45deg, #ff5722, #e91e63);
+  background: #ff5722;
   transform: translateY(-3px) scale(1.05);
   box-shadow: 0 8px 25px rgba(255, 152, 0, 0.5);
 }
@@ -737,7 +737,7 @@
 }
 
 [data-theme="dark"] .welcome-badge {
-  background: linear-gradient(135deg, #f97316, #db2777) !important;
+  background: #f97316 !important;
   box-shadow: 0 12px 28px rgba(249, 115, 22, 0.24) !important;
 }
 

@@ -1,9 +1,9 @@
-import React, { useState, useEffect, lazy, Suspense, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import "../styles/Hero.css";
 
 // Three.js is 854 kB — lazy-load so it never blocks the initial paint
-const Background3D = lazy(() => import("./Background3D"));
+
 
 const Hero = () => {
   /**
@@ -81,18 +81,14 @@ const Hero = () => {
   };
 
   return (
-    <motion.section 
+    <motion.section
       id="home"
       className="hero"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
     >
-      <Suspense fallback={null}>
-        <Background3D />
-      </Suspense>
-      
-      <div className="floating-particles" aria-hidden="true">
+<div className="floating-particles" aria-hidden="true">
         {particles.map((particle) => (
           <motion.div
             key={particle.id}
@@ -108,7 +104,7 @@ const Hero = () => {
         ))}
       </div>
 
-      <motion.div 
+      <motion.div
         className="hero-content"
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -118,7 +114,7 @@ const Hero = () => {
           className="welcome-badge"
           whileHover={{ scale: 1.1 }}
         >
-          <span>✨ Welcome to SAPTech Uganda</span>
+          <span> Welcome to SAPTech Uganda</span>
         </motion.div>
 
         <motion.h1 className="hero-title">

@@ -1,6 +1,6 @@
 /**
  * Portfolio Component
- * 
+ *
  * Displays our featured projects and showcases what we have built for clients.
  * Shows default projects immediately and loads additional projects from the API.
  */
@@ -38,10 +38,10 @@ const transformProjectRecord = (project) => ({
 const Portfolio = () => {
   // Manage projects loaded from the database API
   const [apiProjects, setApiProjects] = useState([]);
-  
+
   // Track loading state while fetching projects from the server
   const [loading, setLoading] = useState(true);
-  
+
   // Store any errors that occur during project fetching
   const [error, setError] = useState(null);
 
@@ -61,7 +61,7 @@ const Portfolio = () => {
   // Admin statistics
   const [adminStats, setAdminStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(false);
-  
+
   /**
    * WhatsApp Support Number
    */
@@ -69,7 +69,7 @@ const Portfolio = () => {
 
   /**
    * Default Portfolio Projects
-   * 
+   *
    * These projects are always shown to visitors, ensuring the page
    * has content even if the API is slow or unavailable. This provides
    * a better user experience and showcases our core capabilities.
@@ -82,14 +82,14 @@ const Portfolio = () => {
       techStack: ["React", "Node.js", "Express", "MongoDB"]
     },
     {
-      title: "Business Website", 
+      title: "Business Website",
       image: "/images/business-platform.jpg",
       description: "Responsive company site with blog, contact forms, and SEO optimization.",
       techStack: ["HTML", "CSS", "JavaScript", "Node.js"]
     },
     {
       title: "Graphics & Branding",
-      image: "/images/GRAPHICS-DESIGN.jpg", 
+      image: "/images/GRAPHICS-DESIGN.jpg",
       description: "Custom logo and brand identity design for startups and businesses.",
       techStack: ["Photoshop", "Illustrator","capcut", "Figma"]
     },
@@ -113,7 +113,7 @@ const Portfolio = () => {
     },
     {
       title: "Portfolio Website",
-      image: "/images/portfolio-app.jpg", 
+      image: "/images/portfolio-app.jpg",
       description: "Modern and responsive portfolio website showcasing projects and skills.",
       techStack: ["React", "CSS3", "JavaScript"]
     },
@@ -191,7 +191,7 @@ const Portfolio = () => {
 
   /**
    * Fetch Projects from API
-   * 
+   *
    * Loads additional projects created through the admin dashboard.
    * If the API call fails, we show an error but still display default projects.
    */
@@ -202,10 +202,10 @@ const Portfolio = () => {
         setLoading(true);
         setError(null);
       }
-      
+
       // Request projects from the backend API
       const response = await apiService.getPublicProjects();
-      
+
               // Check if we got valid project data
       if (response.success && response.data.projects.length > 0) {
         // Transform API data into consistent format
@@ -300,7 +300,7 @@ const Portfolio = () => {
         {/* Admin Info Panel - Displayed at Top for Admins */}
         {user && user.role === "admin" && (
           <div className="admin-info-panel" style={{
-            background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+            background: "#4facfe",
             color: "white",
             padding: "20px",
             borderRadius: "12px",
@@ -309,10 +309,10 @@ const Portfolio = () => {
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
               <div>
-                <h3 style={{ margin: "0 0 10px 0", fontSize: "1.5rem" }}>🚀 Admin Mode Active</h3>
+                <h3 style={{ margin: "0 0 10px 0", fontSize: "1.5rem" }}> Admin Mode Active</h3>
                 <p style={{ margin: 0, opacity: 0.9 }}>Managing portfolio as {user.name}</p>
               </div>
-              <button 
+              <button
                 className="add-project-btn admin-btn"
                 onClick={() => {
                   setEditingProject(null);
@@ -335,7 +335,7 @@ const Portfolio = () => {
                 + Add Project
               </button>
             </div>
-            
+
             {/* Admin Statistics */}
             {adminStats && !loadingStats && (
               <div style={{
@@ -379,7 +379,7 @@ const Portfolio = () => {
         {/* User Info Badge - For logged-in non-admin users */}
         {user && user.role !== "admin" && (
           <div style={{
-            background: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+            background: "#a8edea",
             color: "#333",
             padding: "15px 20px",
             borderRadius: "10px",
@@ -387,42 +387,42 @@ const Portfolio = () => {
             textAlign: "center",
             boxShadow: "0 4px 15px rgba(0,0,0,0.1)"
           }}>
-            <span style={{ fontSize: "1.1rem" }}>👋 Welcome back, <strong>{user.name}</strong>!</span>
+            <span style={{ fontSize: "1.1rem" }}> Welcome back, <strong>{user.name}</strong>!</span>
           </div>
         )}
 
         <h2>Our Featured Projects</h2>
         <div className="portfolio-intro">
           <p className="intro-main">
-            We are highly motivated and detail-oriented full-stack developers specializing in designing, 
-            developing, and deploying scalable web applications and software solutions. Based in Ndejje, Kampala, Uganda, 
-            our passionate team is committed to delivering high-quality code that meets the highest standards 
+            We are highly motivated and detail-oriented full-stack developers specializing in designing,
+            developing, and deploying scalable web applications and software solutions. Based in Ndejje, Kampala, Uganda,
+            our passionate team is committed to delivering high-quality code that meets the highest standards
             of performance and excellence.
           </p>
-          
+
           <div className="tech-stacks">
             <div className="tech-category">
               <h4>Frontend Technologies</h4>
               <p>HTML5, CSS3, JavaScript, React, Angular, Vue.js, Svelte</p>
             </div>
-            
+
             <div className="tech-category">
               <h4>Backend Technologies</h4>
               <p>Node.js, Python, Ruby on Rails, Java, PHP, C#</p>
             </div>
-            
+
             <div className="tech-category">
               <h4>Databases & Tools</h4>
               <p>MySQL, MongoDB, PostgreSQL, SQL Server, Git, GitHub</p>
             </div>
           </div>
-          
+
           <p className="intro-experience">
-            Our portfolio includes e-commerce platforms, business websites, custom software applications, 
-            and innovative IoT solutions. We stay current with the latest trends and technologies, 
+            Our portfolio includes e-commerce platforms, business websites, custom software applications,
+            and innovative IoT solutions. We stay current with the latest trends and technologies,
             ensuring we deliver exceptional results that help our clients achieve their goals.
           </p>
-          
+
           <p className="intro-cta">
             Explore our featured projects below to see what we can create for you.
           </p>
@@ -439,41 +439,41 @@ const Portfolio = () => {
         {/* Display error message if project fetching fails */}
         {error && (
           <div className="error-state">
-            <p>⚠️ {error}</p>
+            <p> {error}</p>
           </div>
         )}
 
         {/* Main Portfolio Gallery - Always visible default projects */}
         <div className="portfolio-gallery">
           {defaultPortfolioItems.map((item, index) => (
-            <div 
-              key={index} 
-              className="portfolio-card" 
+            <div
+              key={index}
+              className="portfolio-card"
             >
               {/* Project Image with gradient overlay */}
               <div className="portfolio-image">
                 {item.images && Array.isArray(item.images) && item.images.length > 0 ? (
-                  <ImageSlider 
-                    images={item.images.map(img => getImageUrl(typeof img === 'string' ? img : img.url))} 
-                    alt={item.title} 
+                  <ImageSlider
+                    images={item.images.map(img => getImageUrl(typeof img === 'string' ? img : img.url))}
+                    alt={item.title}
                   />
                 ) : (
                   <img src={item.image} alt={item.title} />
                 )}
                 <div className="image-overlay">
-                  <button 
+                  <button
                     className="whatsapp-btn-portfolio"
                     onClick={() => handleWhatsAppContact(item)}
                     title="Contact us on WhatsApp"
                   >
-                    💬 WhatsApp Inquiry
+                     WhatsApp Inquiry
                   </button>
                 </div>
 
                 {/* Admin Controls */}
                 {user && user.role === "admin" && (
                   <div className="admin-controls-portfolio">
-                    <button 
+                    <button
                       className="edit-btn"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -481,18 +481,18 @@ const Portfolio = () => {
                       }}
                       title="Edit Project"
                     >
-                      ✏️
+                      Edit
                     </button>
                   </div>
                 )}
               </div>
-              
+
               {/* Project Details - Always visible */}
               <div className="portfolio-content">
                 <h3 className="project-title">{item.title}</h3>
-                
+
                 <p className="project-description">{item.description}</p>
-                
+
                 {/* Technology Stack Section */}
                 <div className="tech-stack-section">
                   <h4 className="tech-stack-label">Technologies:</h4>
@@ -514,57 +514,57 @@ const Portfolio = () => {
             <h3 className="custom-projects-title">Additional Projects</h3>
             <div className="portfolio-gallery custom-projects">
               {apiProjects.map((item, index) => (
-                <div 
-                  key={index} 
-                  className="portfolio-card" 
+                <div
+                  key={index}
+                  className="portfolio-card"
                 >
                   {/* Project Image */}
                   <div className="portfolio-image">
                     {item.images && Array.isArray(item.images) && item.images.length > 0 ? (
-                      <ImageSlider 
-                        images={item.images.map(img => getImageUrl(typeof img === 'string' ? img : img.url))} 
-                        alt={item.title} 
+                      <ImageSlider
+                        images={item.images.map(img => getImageUrl(typeof img === 'string' ? img : img.url))}
+                        alt={item.title}
                       />
                     ) : (
                       <img src={item.image} alt={item.title} />
                     )}
                     <div className="image-overlay">
-                      <button 
+                      <button
                         className="whatsapp-btn-portfolio"
                         onClick={() => handleWhatsAppContact(item)}
                         title="Contact us on WhatsApp"
                       >
-                        💬 WhatsApp Inquiry
+                         WhatsApp Inquiry
                       </button>
                     </div>
 
                     {/* Admin Controls */}
                     {user && user.role === "admin" && (
                       <div className="admin-controls-portfolio">
-                        <button 
+                        <button
                           className="edit-btn"
                           onClick={() => handleEdit(item)}
                           title="Edit Project"
                         >
-                          ✏️
+                          Edit
                         </button>
-                        <button 
+                        <button
                           className="delete-btn"
                           onClick={() => handleDelete(item)}
                           title="Delete Project"
                         >
-                          🗑️
+                          Edit
                         </button>
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Project Information */}
                   <div className="portfolio-content">
                     <h3 className="project-title">{item.title}</h3>
-                    
+
                     <p className="project-description">{item.description}</p>
-                    
+
                     {/* Technologies Used */}
                     <div className="tech-stack-section">
                       <h4 className="tech-stack-label">Technologies:</h4>
@@ -585,7 +585,7 @@ const Portfolio = () => {
 
       {/* Project Form Modal (Admin) */}
       {showProjectForm && (
-        <ProjectForm 
+        <ProjectForm
           isOpen={showProjectForm}
           project={editingProject}
           onClose={() => {

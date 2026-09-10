@@ -170,7 +170,7 @@ export const FloatingActionButton = ({ icon, onClick, tooltip }) => {
   return (
     <motion.div
       className="floating-action-button"
-      whileHover={{ 
+      whileHover={{
         scale: 1.1,
         boxShadow: "0 8px 25px rgba(59, 130, 246, 0.3)"
       }}
@@ -244,8 +244,8 @@ export const ParallaxElement = ({ children, speed = 0.5, direction = 'vertical' 
     return () => window.removeEventListener('scroll', handleScroll);
   }, [speed]);
 
-  const transform = direction === 'vertical' 
-    ? `translateY(${offset}px)` 
+  const transform = direction === 'vertical'
+    ? `translateY(${offset}px)`
     : `translateX(${offset}px)`;
 
   return (
@@ -265,14 +265,14 @@ export const MagneticButton = ({ children, strength = 20, ...props }) => {
 
   const handleMouseMove = (e) => {
     if (!buttonRef.current) return;
-    
+
     const rect = buttonRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    
+
     const deltaX = (e.clientX - centerX) / strength;
     const deltaY = (e.clientY - centerY) / strength;
-    
+
     setPosition({ x: deltaX, y: deltaY });
   };
 

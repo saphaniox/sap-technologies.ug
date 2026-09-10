@@ -1,7 +1,5 @@
 .insights-page {
-  background:
-    radial-gradient(circle at top left, rgba(16, 185, 129, 0.14), transparent 34rem),
-    linear-gradient(180deg, #f8fafc 0%, #eef6f3 100%);
+  background: rgba(16, 185, 129, 0.14);
   color: #102033;
   min-height: 100vh;
   padding: clamp(5rem, 8vw, 7rem) clamp(1rem, 4vw, 2rem) clamp(3rem, 6vw, 5rem);
@@ -58,7 +56,7 @@
 
 .insights-actions a {
   align-items: center;
-  background: linear-gradient(135deg, #059669, #0f766e);
+  background: #059669;
   border-radius: 999px;
   color: #ffffff;
   display: inline-flex;
@@ -191,9 +189,7 @@
 }
 
 [data-theme="dark"] .insights-page {
-  background:
-    radial-gradient(circle at top left, rgba(45, 212, 191, 0.14), transparent 34rem),
-    linear-gradient(180deg, #020617 0%, #0f172a 100%);
+  background: rgba(45, 212, 191, 0.14);
   color: #e2e8f0;
 }
 

@@ -34,15 +34,15 @@ const ProjectForm = ({ project, onClose, onSave }) => {
   useEffect(() => {
     if (project) {
       // Handle technologies - convert from objects to strings for form
-      const processedTechnologies = project.technologies 
-        ? project.technologies.map(tech => 
+      const processedTechnologies = project.technologies
+        ? project.technologies.map(tech =>
             typeof tech === "string" ? tech : tech.name || ""
           )
         : [""];
-      
+
       // Handle features - convert from objects to strings for form
-      const processedFeatures = project.features 
-        ? project.features.map(feature => 
+      const processedFeatures = project.features
+        ? project.features.map(feature =>
             typeof feature === "string" ? feature : feature.title || feature
           )
         : [""];
@@ -82,7 +82,7 @@ const ProjectForm = ({ project, onClose, onSave }) => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     if (name.includes(".")) {
       const [parent, child] = name.split(".");
       setFormData(prev => ({
@@ -152,7 +152,7 @@ const ProjectForm = ({ project, onClose, onSave }) => {
     if (files.length > 0) {
       // Add new files to existing array
       setNewImageFiles(prev => [...prev, ...files]);
-      
+
       // Generate previews for new images
       files.forEach((file) => {
         const reader = new FileReader();
@@ -172,7 +172,7 @@ const ProjectForm = ({ project, onClose, onSave }) => {
 
   const handleRemoveImage = (index) => {
     const imageToRemove = imagePreviews[index];
-    
+
     if (imageToRemove.isExisting) {
       // Mark existing image for deletion
       setImagesToDelete(prev => [...prev, imageToRemove.path]);
@@ -183,7 +183,7 @@ const ProjectForm = ({ project, onClose, onSave }) => {
         setNewImageFiles(prev => prev.filter((_, i) => i !== fileIndex));
       }
     }
-    
+
     // Remove from previews
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
@@ -195,7 +195,7 @@ const ProjectForm = ({ project, onClose, onSave }) => {
 
     try {
       const submitData = new FormData();
-      
+
       // Add all form fields
       Object.keys(formData).forEach(key => {
         if (key === "images") {
@@ -229,20 +229,20 @@ const ProjectForm = ({ project, onClose, onSave }) => {
       }
 
       const successMessage = project ? "Project updated successfully." : "Project created successfully.";
-      setAlert({ 
-        type: "success", 
+      setAlert({
+        type: "success",
         message: successMessage
       });
       if (onSave) onSave(response?.data?.project || null);
       onClose();
       showAlert.success(project ? "Project updated" : "Project created", successMessage);
       setAlert({ type: "", message: "" });
-      
+
     } catch (error) {
       console.error("Project form error:", error);
       const message = error.response?.data?.message || error.message || "Failed to save project";
-      setAlert({ 
-        type: "error", 
+      setAlert({
+        type: "error",
         message
       });
       await showAlert.error("Couldn't save project", message);

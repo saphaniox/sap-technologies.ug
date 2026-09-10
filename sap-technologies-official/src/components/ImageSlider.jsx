@@ -18,13 +18,13 @@ const ImageSlider = ({ images, alt = "Image" }) => {
   }
 
   const goToPrevious = () => {
-    setCurrentIndex((prevIndex) => 
+    setCurrentIndex((prevIndex) =>
       prevIndex === 0 ? validImages.length - 1 : prevIndex - 1
     );
   };
 
   const goToNext = () => {
-    setCurrentIndex((prevIndex) => 
+    setCurrentIndex((prevIndex) =>
       prevIndex === validImages.length - 1 ? 0 : prevIndex + 1
     );
   };
@@ -46,24 +46,24 @@ const ImageSlider = ({ images, alt = "Image" }) => {
     <div className="image-slider">
       {/* Main Image Display */}
       <div className="slider-image-container">
-        <img 
-          src={validImages[currentIndex]} 
+        <img
+          src={validImages[currentIndex]}
           alt={`${alt} - ${currentIndex + 1}`}
           className="slider-image"
           loading="lazy"
           decoding="async"
         />
-        
+
         {/* Navigation Arrows */}
-        <button 
-          className="slider-button slider-button-prev" 
+        <button
+          className="slider-button slider-button-prev"
           onClick={goToPrevious}
           aria-label="Previous image"
         >
           &#10094;
         </button>
-        <button 
-          className="slider-button slider-button-next" 
+        <button
+          className="slider-button slider-button-next"
           onClick={goToNext}
           aria-label="Next image"
         >

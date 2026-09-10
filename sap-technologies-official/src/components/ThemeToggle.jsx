@@ -12,12 +12,12 @@ const ThemeToggle = ({ className = "", showLabel = false }) => {
   };
 
   const iconVariants = {
-    light: { 
+    light: {
       rotate: 0,
       scale: 1,
       opacity: 1
     },
-    dark: { 
+    dark: {
       rotate: 180,
       scale: 0.8,
       opacity: 0.9
@@ -31,7 +31,7 @@ const ThemeToggle = ({ className = "", showLabel = false }) => {
           {isDark ? "Dark" : "Light"} Mode
         </span>
       )}
-      
+
       <motion.button
         className={`theme-toggle ${isDark ? "dark" : "light"}`}
         onClick={toggleTheme}
@@ -49,17 +49,17 @@ const ThemeToggle = ({ className = "", showLabel = false }) => {
               animate={isDark ? iconVariants.dark : iconVariants.light}
               transition={{ duration: 0.3 }}
             >
-              ☀️
+              Light
             </motion.div>
             <motion.div
               className="theme-icon moon-icon"
               animate={isDark ? iconVariants.dark : iconVariants.light}
               transition={{ duration: 0.3 }}
             >
-              🌙
+              Light
             </motion.div>
           </div>
-          
+
           {/* Toggle Thumb */}
           <motion.div
             className="theme-toggle-thumb"
@@ -75,7 +75,7 @@ const ThemeToggle = ({ className = "", showLabel = false }) => {
               animate={{ rotate: isDark ? 360 : 0 }}
               transition={{ duration: 0.5 }}
             >
-              {isDark ? "🌙" : "☀️"}
+              {isDark ? "?" : "?"}
             </motion.div>
           </motion.div>
         </div>

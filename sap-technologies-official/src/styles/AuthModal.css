@@ -7,10 +7,7 @@
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.34), transparent 34%),
-    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.22), transparent 30%),
-    rgba(2, 6, 23, 0.72);
+  background: rgba(37, 99, 235, 0.34);
   backdrop-filter: blur(10px);
 }
 
@@ -62,9 +59,7 @@
   padding: 2rem;
   overflow: hidden;
   color: #ffffff;
-  background:
-    linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(30, 64, 175, 0.92)),
-    url("/images/logo.png") center 18% / 190px no-repeat;
+  background: rgba(15, 23, 42, 0.98);
 }
 
 .auth-brand-panel::before {
@@ -367,7 +362,7 @@
 }
 
 .password-requirements .requirement-met::before {
-  content: "✓";
+  content: "+";
 }
 
 .auth-submit-btn {
@@ -376,7 +371,7 @@
   margin-top: 0.2rem;
   border: none;
   border-radius: 15px;
-  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  background: #2563eb;
   color: #ffffff;
   font-size: 1rem;
   font-weight: 900;
@@ -468,7 +463,7 @@
   .auth-brand-panel {
     min-height: auto;
     padding: 1.5rem;
-    background: linear-gradient(145deg, #0f172a, #1d4ed8);
+    background: #0f172a;
   }
 
   .auth-logo-wrap {

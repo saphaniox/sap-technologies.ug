@@ -1,10 +1,7 @@
 /* About Component Styles */
 .about {
   padding: clamp(4rem, 7vw, 7rem) 0;
-  background:
-    radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 30rem),
-    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.06), transparent 25rem),
-    linear-gradient(180deg, #f8fafc 0%, #f3f4f6 52%, #eef2ff 100%);
+  background: rgba(59, 130, 246, 0.08);
 }
 
 .about .container {
@@ -57,7 +54,7 @@
   inset: 0 auto auto 0;
   width: 100%;
   height: 5px;
-  background: linear-gradient(90deg, #2563eb 0%, #7c3aed 50%, #10b981 100%);
+  background: #2563eb;
 }
 
 .about-text h3 {
@@ -111,7 +108,7 @@
 }
 
 .stat-item {
-  background: linear-gradient(135deg, #ffffff 0%, #eef2ff 100%);
+  background: #ffffff;
   border: 1px solid rgba(148, 163, 184, 0.14);
   border-radius: 24px;
   padding: 1.5rem 1rem;
@@ -153,7 +150,7 @@
   margin-top: var(--space-16);
   margin-bottom: var(--space-16);
   padding: var(--space-12) 0;
-  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 50%, #f8fafc 100%);
+  background: #f8fafc;
   border-radius: var(--border-radius-xl);
 }
 
@@ -166,7 +163,7 @@
 }
 
 .mvv-card {
-  background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+  background: #ffffff;
   border-radius: 20px;
   padding: 0;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
@@ -185,7 +182,7 @@
   left: 0;
   right: 0;
   height: 6px;
-  background: linear-gradient(90deg, var(--color-primary-500), var(--color-primary-600));
+  background: var(--color-primary-500);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -198,7 +195,7 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  background: rgba(255,255,255,0.1);
   opacity: 0;
   transition: opacity 0.5s ease;
   pointer-events: none;
@@ -222,7 +219,7 @@
 }
 
 .mission-card::before {
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  background: #667eea;
 }
 
 .mission-card:hover {
@@ -235,7 +232,7 @@
 }
 
 .vision-card::before {
-  background: linear-gradient(90deg, #10b981, #059669);
+  background: #10b981;
 }
 
 .vision-card:hover {
@@ -248,7 +245,7 @@
 }
 
 .values-card::before {
-  background: linear-gradient(90deg, #f59e0b, #d97706);
+  background: #f59e0b;
 }
 
 .values-card:hover {
@@ -259,7 +256,7 @@
 .mvv-header {
   padding: var(--space-10) var(--space-8) var(--space-6);
   text-align: center;
-  background: linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(241, 245, 249, 0.98) 100%);
+  background: rgba(248, 250, 252, 0.95);
   border-bottom: 2px solid rgba(226, 232, 240, 0.8);
   position: relative;
 }
@@ -272,7 +269,7 @@
   transform: translateX(-50%);
   width: 60px;
   height: 3px;
-  background: linear-gradient(90deg, transparent, var(--color-primary-500), transparent);
+  background: var(--color-primary-500);
   opacity: 0;
   transition: opacity 0.4s ease, width 0.4s ease;
 }
@@ -301,10 +298,10 @@
   inset: -4px;
   border-radius: 50%;
   padding: 4px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  background: rgba(255,255,255,0.4);
+  -webkit-mask: #fff;
   -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: #fff;
   mask-composite: exclude;
   opacity: 0;
   transition: opacity 0.4s ease;
@@ -320,15 +317,15 @@
 }
 
 .mission-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
 }
 
 .vision-icon {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #10b981;
 }
 
 .values-icon {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: #f59e0b;
 }
 
 .mvv-icon-wrapper .mvv-icon {
@@ -346,10 +343,10 @@
 
 .mvv-header h3 {
   font-size: 1.875rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   margin: 0;
   font-weight: 800;
   line-height: 1.2;
@@ -358,24 +355,24 @@
 }
 
 .mission-card .mvv-header h3 {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 .vision-card .mvv-header h3 {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 .values-card .mvv-header h3 {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 .mvv-content {
@@ -389,10 +386,10 @@
 .mvv-lead {
   font-size: 1.25rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   text-align: center;
   margin: 0 0 var(--space-4);
   line-height: 1.3;
@@ -418,7 +415,7 @@
   align-items: flex-start;
   gap: var(--space-4);
   padding: var(--space-5);
-  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  background: #ffffff;
   border-radius: 16px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 2px solid rgba(226, 232, 240, 0.6);
@@ -434,7 +431,7 @@
   top: 0;
   bottom: 0;
   width: 0;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(102, 126, 234, 0.02) 100%);
+  background: rgba(102, 126, 234, 0.05);
   transition: width 0.4s ease;
 }
 
@@ -443,7 +440,7 @@
 }
 
 .value-item:hover {
-  background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+  background: #ffffff;
   border-color: rgba(102, 126, 234, 0.4);
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
   transform: translateX(8px);
@@ -468,7 +465,7 @@
   position: absolute;
   inset: -3px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+  background: rgba(255,255,255,0.6);
   opacity: 0;
   transition: opacity 0.4s ease;
   z-index: -1;
@@ -484,27 +481,27 @@
 }
 
 .innovation-circle {
-  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  background: #a855f7;
 }
 
 .excellence-circle {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: #f59e0b;
 }
 
 .integrity-circle {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  background: #06b6d4;
 }
 
 .impact-circle {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #10b981;
 }
 
 .collaboration-circle {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
 }
 
 .customer-circle {
-  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+  background: #f43f5e;
 }
 
 .value-emoji {
@@ -517,10 +514,10 @@
 }
 
 .value-content h4 {
-  background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   font-weight: 700;
   font-size: 1.0625rem;
   margin: 0 0 var(--space-2);
@@ -662,7 +659,7 @@
 }
 
 .skill-tag {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: var(--color-white);
   padding: var(--space-2) var(--space-5);
   border-radius: var(--border-radius-full);
@@ -683,7 +680,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: rgba(255, 255, 255, 0.2);
   transition: left var(--transition-duration-500) var(--transition-timing-ease);
 }
 
@@ -700,7 +697,7 @@
 /* Leadership & Strategy - Gold/Orange gradient */
 .skill-tag:nth-child(1),
 .skill-tag:nth-child(2) {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: #f59e0b;
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
 }
 
@@ -712,7 +709,7 @@
 /* Electrical & Automation - Electric Blue/Cyan gradient */
 .skill-tag:nth-child(3),
 .skill-tag:nth-child(4) {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  background: #06b6d4;
   box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25);
 }
 
@@ -723,7 +720,7 @@
 
 /* Full-Stack Engineering - Tech Purple/Pink gradient */
 .skill-tag:nth-child(5) {
-  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  background: #a855f7;
   box-shadow: 0 4px 12px rgba(168, 85, 247, 0.25);
 }
 
@@ -734,7 +731,7 @@
 /* React & Node.js - Green/Emerald gradient */
 .skill-tag:contains("React"),
 .skill-tag:contains("Node") {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #10b981;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
 }
 
@@ -742,7 +739,7 @@
 .skill-tag:contains("UI"),
 .skill-tag:contains("Graphics"),
 .skill-tag:contains("Branding") {
-  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+  background: #f43f5e;
   box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25);
 }
 
@@ -1137,24 +1134,24 @@
 
 /* Dark mode support for Mission, Vision & Values */
 [data-theme="dark"] .mission-vision-section {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background: #0f172a;
 }
 
 [data-theme="dark"] .mvv-card {
-  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+  background: #111827;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
 }
 
 [data-theme="dark"] .mvv-header {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(17, 24, 39, 0.98) 100%);
+  background: rgba(30, 41, 59, 0.95);
   border-bottom: 2px solid rgba(51, 65, 85, 0.85);
 }
 
 [data-theme="dark"] .mvv-lead {
-  background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 [data-theme="dark"] .mvv-description {
@@ -1162,22 +1159,22 @@
 }
 
 [data-theme="dark"] .value-item {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  background: #1e293b;
   border-color: rgba(71, 85, 105, 0.8);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
 }
 
 [data-theme="dark"] .value-item:hover {
-  background: linear-gradient(135deg, #1e293b 0%, #172554 100%);
+  background: #1e293b;
   border-color: rgba(129, 140, 248, 0.55);
   box-shadow: 0 10px 24px rgba(30, 64, 175, 0.22);
 }
 
 [data-theme="dark"] .value-content h4 {
-  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 [data-theme="dark"] .value-content p {
@@ -1247,7 +1244,7 @@
    Applies globally, not only inside tablet media queries.
    =========================== */
 [data-theme="dark"] .about {
-  background: radial-gradient(circle at top left, rgba(93, 173, 226, 0.08), transparent 32rem), #0b1120;
+  background: rgba(93, 173, 226, 0.08);
   color: #e2e8f0;
 }
 
@@ -1281,13 +1278,13 @@
 }
 
 [data-theme="dark"] .mission-vision-section {
-  background: linear-gradient(135deg, #0b1120 0%, #111827 45%, #162033 100%);
+  background: #0b1120;
   border: 1px solid rgba(148, 163, 184, 0.16);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 22px 60px rgba(0, 0, 0, 0.28);
 }
 
 [data-theme="dark"] .mvv-card {
-  background: linear-gradient(135deg, #111827 0%, #162033 100%);
+  background: #111827;
   border-color: rgba(148, 163, 184, 0.22);
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.34);
 }
@@ -1305,11 +1302,11 @@
 }
 
 [data-theme="dark"] .mvv-card::after {
-  background: radial-gradient(circle, rgba(93, 173, 226, 0.12) 0%, transparent 70%);
+  background: rgba(93, 173, 226, 0.12);
 }
 
 [data-theme="dark"] .mvv-header {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.96) 100%);
+  background: rgba(15, 23, 42, 0.98);
   border-bottom-color: rgba(148, 163, 184, 0.18);
 }
 
@@ -1328,17 +1325,17 @@
 }
 
 [data-theme="dark"] .value-item {
-  background: linear-gradient(135deg, #162033 0%, #0f172a 100%);
+  background: #162033;
   border-color: rgba(148, 163, 184, 0.18);
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
 }
 
 [data-theme="dark"] .value-item::before {
-  background: linear-gradient(135deg, rgba(93, 173, 226, 0.12) 0%, rgba(129, 140, 248, 0.06) 100%);
+  background: rgba(93, 173, 226, 0.12);
 }
 
 [data-theme="dark"] .value-item:hover {
-  background: linear-gradient(135deg, #1e293b 0%, #172554 100%);
+  background: #1e293b;
   border-color: rgba(129, 140, 248, 0.48);
   box-shadow: 0 14px 32px rgba(30, 64, 175, 0.24);
 }
@@ -1384,10 +1381,7 @@
   position: relative;
   overflow: hidden;
   padding: clamp(2rem, 5vw, 4rem);
-  background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 28rem),
-    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.1), transparent 26rem),
-    linear-gradient(135deg, #f8fafc 0%, #eef2ff 48%, #f8fafc 100%);
+  background: rgba(37, 99, 235, 0.12);
   border: 1px solid rgba(203, 213, 225, 0.7);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 22px 70px rgba(15, 23, 42, 0.08);
 }

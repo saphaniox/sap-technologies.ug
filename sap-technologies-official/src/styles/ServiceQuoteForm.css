@@ -70,12 +70,12 @@
 .quote-modal-header h2 {
   font-size: 28px;
   font-weight: 700;
-  color: #111827;
+  color: var(--primary-color) !important;
   margin: 0 0 8px 0;
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 .service-name {
@@ -242,7 +242,7 @@
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: #f59e0b;
   color: white;
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
@@ -270,14 +270,14 @@
   padding: 40px;
   max-width: 450px;
   animation: bounceIn 0.5s ease-out;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  background: #fef3c7;
   border: 2px solid #f59e0b;
 }
 
 .success-icon {
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: #f59e0b;
   color: white;
   border-radius: 50%;
   display: flex;
@@ -304,7 +304,7 @@
 }
 
 .close-success-btn {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: #f59e0b;
   color: white;
   border: none;
   padding: 12px 32px;
@@ -381,12 +381,12 @@
 }
 
 .quote-modal::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+  background: #f59e0b;
   border-radius: 4px;
 }
 
 .quote-modal::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #d97706 0%, #b45309 100%);
+  background: #d97706;
 }
 
 /* Mobile Responsive */

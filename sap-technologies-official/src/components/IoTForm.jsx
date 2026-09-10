@@ -34,7 +34,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
     hardware: [""],
     features: [""]
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [newImageFiles, setNewImageFiles] = useState([]);
@@ -42,7 +42,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
   const [existingVideos, setExistingVideos] = useState([]);
   const [newVideoFiles, setNewVideoFiles] = useState([]);
   const [videosToDelete, setVideosToDelete] = useState([]);
-  
+
   useEffect(() => {
     if (project) {
       setFormData({
@@ -61,7 +61,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
         hardware: project.hardware?.length > 0 ? project.hardware : [""],
         features: project.features?.length > 0 ? project.features : [""]
       });
-      
+
       // Load existing images
       if (project.images && project.images.length > 0) {
         const imageUrls = project.images.map(img => ({
@@ -104,7 +104,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
       setVideosToDelete([]);
     }
   }, [project]);
-  
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -112,11 +112,11 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
       [name]: type === "checkbox" ? checked : value
     }));
   };
-  
+
   const handleImageChange = async (e) => {
     const files = Array.from(e.target.files);
     const maxImages = 10;
-    
+
     if (imagePreviews.length + files.length > maxImages) {
       showAlert.error(
         "Too many images",
@@ -125,7 +125,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
       e.target.value = "";
       return;
     }
-    
+
     // Validate files
     for (const file of files) {
       if (file.size > 30 * 1024 * 1024) {
@@ -133,7 +133,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
         e.target.value = "";
         return;
       }
-      
+
       if (!file.type.startsWith("image/")) {
         showAlert.error("Wrong file type", `"${file.name}" isn't an image file. Please only upload images.`);
         e.target.value = "";
@@ -161,10 +161,10 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
         return;
       }
     }
-    
+
     // Add files
     setNewImageFiles(prev => [...prev, ...optimizedFiles]);
-    
+
     // Generate previews
     optimizedFiles.forEach(file => {
       const reader = new FileReader();
@@ -177,10 +177,10 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
       };
       reader.readAsDataURL(file);
     });
-    
+
     e.target.value = "";
   };
-  
+
   const handleRemoveImage = (index) => {
     const imageToRemove = imagePreviews[index];
 
@@ -234,20 +234,20 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
     setVideosToDelete(prev => [...prev, videoUrl]);
     setExistingVideos(prev => prev.filter(v => v.url !== videoUrl));
   };
-  
+
   const handleArrayFieldChange = (field, index, value) => {
     const newArray = [...formData[field]];
     newArray[index] = value;
     setFormData(prev => ({ ...prev, [field]: newArray }));
   };
-  
+
   const addArrayField = (field) => {
     setFormData(prev => ({
       ...prev,
       [field]: [...prev[field], ""]
     }));
   };
-  
+
   const removeArrayField = (field, index) => {
     if (formData[field].length > 1) {
       setFormData(prev => ({
@@ -256,22 +256,22 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
       }));
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const projectTitle = formData.title.trim();
 
     if (!projectTitle) {
       showAlert.error("Project title needed", "Add a short title first. Everything else can be completed now or later.");
       return;
     }
-    
+
     try {
       setLoading(true);
-      
+
       const submitData = new FormData();
-      
+
       const normalizedFormData = {
         ...formData,
         title: projectTitle,
@@ -293,7 +293,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
           submitData.delete(key);
         }
       });
-      
+
       // Add new image files
       newImageFiles.forEach(file => {
         submitData.append("images", file);
@@ -311,15 +311,15 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
       if (videosToDelete.length > 0) {
         submitData.append("removeVideos", JSON.stringify(videosToDelete));
       }
-      
+
       const url = project ? `/api/iot/${project._id}` : "/api/iot";
       const method = project ? "PUT" : "POST";
-      
+
       const response = await apiService.request(url, {
         method: method,
         body: submitData
       });
-      
+
       if (response.status === "success") {
         const savedProject = response.data?.iotProject || null;
         onSuccess(savedProject);
@@ -336,9 +336,9 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
       setLoading(false);
     }
   };
-  
+
   if (!isOpen) return null;
-  
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content iot-form-modal" onClick={e => e.stopPropagation()}>
@@ -348,7 +348,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
             <i className="fas fa-times"></i>
           </button>
         </div>
-        
+
         {/* Instructions for adding IoT projects */}
         <div className="software-form-instructions">
           <div className="instruction-icon">Info</div>
@@ -357,12 +357,12 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
             <p>Add the project title first. Photos, links, hardware, features, and dates are optional, so you can save a clean draft without forcing every field.</p>
           </div>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="software-form">
           {/* Basic Information */}
           <div className="form-section">
             <h3>Project basics</h3>
-            
+
             <div className="form-group">
               <label htmlFor="iot-title">Project title <span className="form-required">Required</span></label>
               <input
@@ -375,7 +375,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
                 placeholder="e.g., Smart irrigation monitor"
               />
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="iot-description">Description <span className="form-optional">(optional)</span></label>
               <textarea
@@ -387,7 +387,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
                 placeholder="Write a short, human explanation: what problem it solves, where it is used, and what makes it useful."
               />
             </div>
-            
+
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="iot-category">Category <span className="form-optional">(optional)</span></label>
@@ -406,7 +406,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
                   ))}
                 </datalist>
               </div>
-              
+
               <div className="form-group">
                 <label htmlFor="iot-status">Progress <span className="form-optional">(optional)</span></label>
                 <select id="iot-status" name="status" value={formData.status} onChange={handleInputChange}>
@@ -417,7 +417,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
                 </select>
               </div>
             </div>
-            
+
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="iot-completion-date">Completion date <span className="form-optional">(optional)</span></label>
@@ -429,7 +429,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
                   onChange={handleInputChange}
                 />
               </div>
-              
+
               <div className="form-group">
                 <label htmlFor="iot-display-order">Display order <span className="form-optional">(optional)</span></label>
                 <input
@@ -444,11 +444,11 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
               </div>
             </div>
           </div>
-          
+
           {/* Technologies & Hardware */}
           <div className="form-section">
             <h3>Technical details <span className="form-optional">(optional)</span></h3>
-            
+
             <div className="form-group">
               <label>Technologies used <span className="form-optional">(optional)</span></label>
               {formData.technologies.map((tech, index) => (
@@ -478,7 +478,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
                 Add technology
               </button>
             </div>
-            
+
             <div className="form-group">
               <label>Hardware components <span className="form-optional">(optional)</span></label>
               {formData.hardware.map((hw, index) => (
@@ -508,7 +508,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
                 Add hardware
               </button>
             </div>
-            
+
             <div className="form-group">
               <label>Key features <span className="form-optional">(optional)</span></label>
               {formData.features.map((feature, index) => (
@@ -539,11 +539,11 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
               </button>
             </div>
           </div>
-          
+
           {/* Links */}
           <div className="form-section">
             <h3>Useful links <span className="form-optional">(optional)</span></h3>
-            
+
             <div className="form-group">
               <label htmlFor="iot-project-url">Project URL <span className="form-optional">(optional)</span></label>
               <input
@@ -556,7 +556,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
               />
               <small className="form-hint">Add a demo, documentation page, or case study link.</small>
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="iot-github-url">GitHub URL <span className="form-optional">(optional)</span></label>
               <input
@@ -569,7 +569,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
               />
               <small className="form-hint">Use this only when the code should be public.</small>
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="iot-video-url">Demo video URL <span className="form-optional">(optional)</span></label>
               <input
@@ -583,11 +583,11 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
               <small className="form-hint">Paste a YouTube, Vimeo, or public demo video link.</small>
             </div>
           </div>
-          
+
           {/* Images */}
           <div className="form-section">
             <h3>Project images <span className="form-optional">(optional)</span></h3>
-            
+
             <div className="form-group">
               <label htmlFor="iot-images">Upload images <span className="form-optional">(optional)</span></label>
               <input
@@ -600,7 +600,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
               />
               <small className="form-hint">Add up to 10 images. They will be compressed for faster loading.</small>
             </div>
-            
+
             {imagePreviews.length > 0 && (
               <div className="image-preview-grid">
                 {imagePreviews.map((preview, index) => (
@@ -618,7 +618,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
               </div>
             )}
           </div>
-          
+
           {/* Videos */}
           <div className="form-section">
             <h3>Project videos <span className="form-optional">(optional)</span></h3>
@@ -689,7 +689,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
           {/* Settings */}
           <div className="form-section">
             <h3>Visibility <span className="form-optional">(optional)</span></h3>
-            
+
             <div className="checkbox-group">
               <label className="checkbox-label">
                 <input
@@ -700,7 +700,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
                 />
                 <span>Show this project to visitors <span className="form-optional">(optional)</span></span>
               </label>
-              
+
               <label className="checkbox-label">
                 <input
                   type="checkbox"
@@ -712,7 +712,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
               </label>
             </div>
           </div>
-          
+
           {/* Submit Button */}
           <div className="form-actions">
             <button type="button" onClick={onClose} className="btn-cancel">

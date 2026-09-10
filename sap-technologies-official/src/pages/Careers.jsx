@@ -247,7 +247,7 @@ const Careers = () => {
       <section id="careers" className="careers-section">
         <div className="container">
           <div className="error-state">
-            <p>⚠️ {error}</p>
+            <p> {error}</p>
           </div>
         </div>
       </section>
@@ -323,7 +323,7 @@ const Careers = () => {
 
         {jobs.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">💼</div>
+            <div className="empty-icon"></div>
             <h3>No Open Positions</h3>
             <p>
               We don't have any open positions right now, but we are always interested in
@@ -351,7 +351,7 @@ const Careers = () => {
                     <h3>{job.title}</h3>
                     <div className="job-meta">
                       <span className="job-badge department">{job.department}</span>
-                      <span className="job-badge location">📍 {job.location}</span>
+                      <span className="job-badge location"> {job.location}</span>
                       <span className="job-badge type">{job.employmentType}</span>
                     </div>
                   </div>
@@ -384,14 +384,14 @@ const Careers = () => {
                           onClick={() => handleEdit(job)}
                           title="Edit Job"
                         >
-                          ✏️
+                          Edit
                         </button>
                         <button
                           className="delete-btn"
                           onClick={() => handleDelete(job)}
                           title="Delete Job"
                         >
-                          🗑️
+                          Edit
                         </button>
                       </div>
                     )}
@@ -438,7 +438,7 @@ const Careers = () => {
                             })}
                           </span>
                         ) : (
-                          <span>✨ Applications accepted on a rolling basis</span>
+                          <span> Applications accepted on a rolling basis</span>
                         )}
                       </div>
                       <button

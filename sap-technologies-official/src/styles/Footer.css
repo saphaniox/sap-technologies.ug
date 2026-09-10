@@ -1,6 +1,6 @@
 /* Footer Component Styles */
 .footer {
-  background: linear-gradient(135deg, #0b1220 0%, #162033 58%, #0f766e 140%);
+  background: #0b1220;
   color: #fff;
   padding: 3.5rem 0 1rem;
 }
@@ -154,15 +154,15 @@
 }
 
 .social-action--tiktok {
-  background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #111827 100%);
+  background: #111827;
 }
 
 .social-action--whatsapp {
-  background: linear-gradient(135deg, #0f766e 0%, #10b981 50%, #14b8a6 100%);
+  background: #0f766e;
 }
 
 .social-action--whatsapp-alt {
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 48%, #3b82f6 100%);
+  background: #1d4ed8;
 }
 
 .social-icons {
@@ -286,7 +286,7 @@
   left: 0;
   width: 0;
   height: 1px;
-  background: linear-gradient(90deg, #3949ab, #1a237e);
+  background: #3949ab;
   transition: width 0.3s ease;
 }
 

@@ -19,7 +19,7 @@ class ComponentErrorBoundary extends React.Component {
       return (
         <div className="component-error-fallback">
           <div className="error-message">
-            <span className="error-icon">⚠️</span>
+            <span className="error-icon"></span>
             <p>Unable to load {this.props.componentName || "component"}</p>
             <button 
               className="retry-btn"

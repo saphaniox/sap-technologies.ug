@@ -46,17 +46,17 @@ export const ThemeProvider = ({ children }) => {
       root.setAttribute("data-theme", theme);
       root.classList.toggle("dark-mode", theme === "dark");
       root.classList.toggle("light-mode", theme === "light");
-      
+
       // Update the CSS color-scheme property and browser chrome color.
       root.style.colorScheme = theme;
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor) {
         metaThemeColor.setAttribute("content", theme === "dark" ? "#0f172a" : "#ffffff");
       }
-      
+
       // Save to localStorage
       localStorage.setItem("sap-technologies-theme", theme);
-      
+
       // Dispatch custom event for any components that need to listen
       window.dispatchEvent(new CustomEvent("themeChanged", { detail: { theme } }));
     } catch (error) {
@@ -67,7 +67,7 @@ export const ThemeProvider = ({ children }) => {
   // Listen for system theme preference changes
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    
+
     const handleSystemThemeChange = (e) => {
       // Only update if user hasn't set a preference
       const savedTheme = localStorage.getItem("sap-technologies-theme");
@@ -77,7 +77,7 @@ export const ThemeProvider = ({ children }) => {
     };
 
     mediaQuery.addEventListener("change", handleSystemThemeChange);
-    
+
     return () => {
       mediaQuery.removeEventListener("change", handleSystemThemeChange);
     };

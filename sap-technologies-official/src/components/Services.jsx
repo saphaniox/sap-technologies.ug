@@ -44,7 +44,7 @@ const Services = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Controls quote request form visibility
   const [showQuoteForm, setShowQuoteForm] = useState(false);
-  
+
   /**
    * Data Management State
    */
@@ -54,7 +54,7 @@ const Services = () => {
   const [loading, setLoading] = useState(true);
   // Error message if API fetch fails
   const [error, setError] = useState(null);
-  
+
   /**
    * Admin State Management
    */
@@ -71,13 +71,13 @@ const Services = () => {
   // Admin statistics
   const [adminStats, setAdminStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(false);
-  
+
   /**
    * Persist service data across re-renders
    * Prevents data loss during form submission or modal transitions
    */
   const quoteServiceRef = useRef(null);
-  
+
   /**
    * WhatsApp Support Number
    */
@@ -97,7 +97,7 @@ const Services = () => {
 
   /**
    * Core Services Array
-   * 
+   *
    * These are our primary service offerings that always display.
    * Serves as fallback content if API services fail to load.
    * Ensures users always see our core capabilities regardless of backend status.
@@ -107,11 +107,11 @@ const Services = () => {
       id: "web-design",
       title: "Web Design",
       image: "/images/WEB-DESIGN.jpg",
-      icon: "🌐",
+      icon: "+",
       description: "We create modern, responsive, and visually stunning websites tailored to your business needs. Our team uses the latest technologies and best practices to ensure your site is fast, secure, and user-friendly. From e-commerce to corporate sites, we deliver solutions that help you stand out online.",
       features: [
         "Responsive Design",
-        "SEO Optimization", 
+        "SEO Optimization",
         "E-commerce Integration",
         "CMS Development",
         "Custom Web Applications"
@@ -123,13 +123,13 @@ const Services = () => {
     {
       id: "graphics-design",
       title: "Graphics & Logo",
-      image: "/images/graphics.jpg", 
-      icon: "🎨",
+      image: "/images/graphics.jpg",
+      icon: "+",
       description: "Our creative designers craft unique graphics and memorable logos that capture your brand's identity. We offer branding packages, marketing materials, and digital assets to elevate your business presence both online and offline.",
       features: [
         "Logo Design",
         "Brand Identity",
-        "Marketing Materials", 
+        "Marketing Materials",
         "Social Media Graphics",
         "Print Design"
       ],
@@ -141,7 +141,7 @@ const Services = () => {
       id: "electrical-engineering",
       title: "Electrical Engineering Designs",
       image: "/images/electrical.jpg",
-      icon: "⚡", 
+      icon: "+",
       description: "We provide professional electrical schematics, circuit designs, and engineering solutions for residential, commercial, and industrial projects. Our certified engineers ensure safety, efficiency, and compliance with Ugandan and international standards.",
       features: [
         "Circuit Design",
@@ -158,17 +158,17 @@ const Services = () => {
       id: "software-solutions",
       title: "Software Solutions",
       image: "/images/software.jpg",
-      icon: "💻",
+      icon: "+",
       description: "From custom business applications to mobile apps, we develop robust software tailored to your requirements. Our solutions streamline operations, improve productivity, and drive digital transformation for your organization.",
       features: [
         "Custom Software Development",
-        "Mobile Applications", 
+        "Mobile Applications",
         "Database Design",
         "API Integration",
         "Cloud Solutions"
       ],
       technologies: ["React", "Python", "Java", "Flutter", "AWS"],
-      pricing: "Starting from $899", 
+      pricing: "Starting from $899",
       deliveryTime: "4-12 weeks"
     }
   ];
@@ -217,7 +217,7 @@ const Services = () => {
 
   /**
    * Fetch Additional Services from API
-   * 
+   *
    * Loads custom services created through admin dashboard.
    * Transforms API response to match component structure.
    * Falls back gracefully if API is unavailable.
@@ -226,10 +226,10 @@ const Services = () => {
     try {
       if (!silent) setLoading(true);
       const response = await apiService.getPublicServices();
-      
+
       if (response.success && response.data.services.length > 0) {
         const transformedServices = response.data.services.map(transformServiceRecord);
-        
+
         setApiServices(transformedServices);
       } else {
         setApiServices([]);
@@ -265,7 +265,7 @@ const Services = () => {
    * Open quote request form for selected service
    */
   const handleGetQuote = (service) => {
-    console.log("🎯 Opening quote form for service:", {
+    console.log(" Opening quote form for service:", {
       id: service.id || service._id,
       title: service.title
     });
@@ -291,18 +291,18 @@ const Services = () => {
   const handleSubmitQuote = async (quoteData) => {
     try {
       const service = quoteServiceRef.current;
-      console.log("🔍 Service data check:", {
+      console.log(" Service data check:", {
         hasRef: !!service,
         serviceId: service?.id || service?._id,
         serviceName: service?.title,
         quoteData
       });
-      console.log("📬 Submitting service quote:", quoteData);
+      console.log(" Submitting service quote:", quoteData);
       const response = await apiService.submitServiceQuote(quoteData);
-      console.log("✅ Quote submitted successfully:", response);
+      console.log(" Quote submitted successfully:", response);
       return response;
     } catch (error) {
-      console.error("❌ Error submitting quote:", error);
+      console.error(" Error submitting quote:", error);
       throw error;
     }
   };
@@ -395,7 +395,7 @@ const Services = () => {
           {/* Admin Info Panel - Displayed at Top for Admins */}
           {user && user.role === "admin" && (
             <div className="admin-info-panel" style={{
-              background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+              background: "#f093fb",
               color: "white",
               padding: "20px",
               borderRadius: "12px",
@@ -404,10 +404,10 @@ const Services = () => {
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
                 <div>
-                  <h3 style={{ margin: "0 0 10px 0", fontSize: "1.5rem" }}>👨‍💻 Admin Mode Active</h3>
+                  <h3 style={{ margin: "0 0 10px 0", fontSize: "1.5rem" }}> Admin Mode Active</h3>
                   <p style={{ margin: 0, opacity: 0.9 }}>Managing services as {user.name}</p>
                 </div>
-                <button 
+                <button
                   className="add-service-btn admin-btn"
                   onClick={() => {
                     setEditingService(null);
@@ -430,7 +430,7 @@ const Services = () => {
                   + Add Service
                 </button>
               </div>
-              
+
               {/* Admin Statistics */}
               {adminStats && !loadingStats && (
                 <div style={{
@@ -474,7 +474,7 @@ const Services = () => {
           {/* User Info Badge - For logged-in non-admin users */}
           {user && user.role !== "admin" && (
             <div style={{
-              background: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+              background: "#a8edea",
               color: "#333",
               padding: "15px 20px",
               borderRadius: "10px",
@@ -482,7 +482,7 @@ const Services = () => {
               textAlign: "center",
               boxShadow: "0 4px 15px rgba(0,0,0,0.1)"
             }}>
-              <span style={{ fontSize: "1.1rem" }}>👋 Welcome back, <strong>{user.name}</strong>!</span>
+              <span style={{ fontSize: "1.1rem" }}> Welcome back, <strong>{user.name}</strong>!</span>
             </div>
           )}
 
@@ -525,12 +525,12 @@ const Services = () => {
           {/* Error message if API fetch fails */}
           {error && (
             <div className="error-state">
-              <p>⚠️ {error}</p>
+              <p> {error}</p>
             </div>
           )}
 
           {/* Core Services - Always displayed */}
-          <motion.div 
+          <motion.div
             className="services-list"
             variants={staggerContainer}
             initial="hidden"
@@ -538,15 +538,15 @@ const Services = () => {
             viewport={{ once: true }}
           >
             {defaultServices.map((service, index) => (
-              <motion.div 
-                key={service.id} 
+              <motion.div
+                key={service.id}
                 className="service"
                 variants={cardHover}
                 initial="rest"
                 whileHover="hover"
               >
                 <div className="service-content">
-                  <motion.div 
+                  <motion.div
                     className="service-icon"
                     variants={iconSpin}
                     initial="rest"
@@ -556,15 +556,15 @@ const Services = () => {
                   </motion.div>
                   <div className="service-image">
                     {service.images && Array.isArray(service.images) && service.images.length > 0 ? (
-                      <ImageSlider 
-                        images={service.images.map(img => getImageUrl(typeof img === 'string' ? img : img.url))} 
-                        alt={service.title} 
+                      <ImageSlider
+                        images={service.images.map(img => getImageUrl(typeof img === 'string' ? img : img.url))}
+                        alt={service.title}
                       />
                     ) : (
                       <img src={service.image} alt={service.title} className="service-img" />
                     )}
                     <div className="service-overlay">
-                      <motion.button 
+                      <motion.button
                         className="learn-more-btn"
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
@@ -572,21 +572,21 @@ const Services = () => {
                       >
                         Learn More
                       </motion.button>
-                      <motion.button 
+                      <motion.button
                         className="whatsapp-btn-service"
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handleWhatsAppContact(service)}
                         title="Contact us on WhatsApp"
                       >
-                        💬 WhatsApp
+                         WhatsApp
                       </motion.button>
                     </div>
 
                     {/* Admin Controls */}
                     {user && user.role === "admin" && (
                       <div className="admin-controls-service">
-                        <button 
+                        <button
                           className="edit-btn"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -594,7 +594,7 @@ const Services = () => {
                           }}
                           title="Edit Service"
                         >
-                          ✏️
+                          Edit
                         </button>
                       </div>
                     )}
@@ -609,7 +609,7 @@ const Services = () => {
           {/* ADDITIONAL SERVICES - API CREATED */}
           {!loading && apiServices.length > 0 && (
             <>
-              <motion.h3 
+              <motion.h3
                 variants={fadeInUp}
                 initial="hidden"
                 whileInView="visible"
@@ -618,8 +618,8 @@ const Services = () => {
               >
                 Additional Services
               </motion.h3>
-              
-              <motion.div 
+
+              <motion.div
                 className="services-list custom-services"
                 variants={staggerContainer}
                 initial="hidden"
@@ -627,15 +627,15 @@ const Services = () => {
                 viewport={{ once: true }}
               >
                 {apiServices.map((service, index) => (
-                  <motion.div 
-                    key={service.id} 
+                  <motion.div
+                    key={service.id}
                     className="service custom-service"
                     variants={cardHover}
                     initial="rest"
                     whileHover="hover"
                   >
                     <div className="service-content">
-                      <motion.div 
+                      <motion.div
                         className="service-icon"
                         variants={iconSpin}
                         initial="rest"
@@ -645,15 +645,15 @@ const Services = () => {
                       </motion.div>
                       <div className="service-image">
                         {service.images && Array.isArray(service.images) && service.images.length > 0 ? (
-                          <ImageSlider 
-                            images={service.images.map(img => getImageUrl(typeof img === 'string' ? img : img.url))} 
-                            alt={service.title} 
+                          <ImageSlider
+                            images={service.images.map(img => getImageUrl(typeof img === 'string' ? img : img.url))}
+                            alt={service.title}
                           />
                         ) : (
                           <img src={service.image} alt={service.title} className="service-img" />
                         )}
                         <div className="service-overlay">
-                          <motion.button 
+                          <motion.button
                             className="learn-more-btn"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
@@ -661,33 +661,33 @@ const Services = () => {
                           >
                             Learn More
                           </motion.button>
-                          <motion.button 
+                          <motion.button
                             className="whatsapp-btn-service"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleWhatsAppContact(service)}
                             title="Contact us on WhatsApp"
                           >
-                            💬 WhatsApp
+                             WhatsApp
                           </motion.button>
                         </div>
 
                         {/* Admin Controls */}
                         {user && user.role === "admin" && (
                           <div className="admin-controls-service">
-                            <button 
+                            <button
                               className="edit-btn"
                               onClick={() => handleEdit(service)}
                               title="Edit Service"
                             >
-                              ✏️
+                              Edit
                             </button>
-                            <button 
+                            <button
                               className="delete-btn"
                               onClick={() => handleDelete(service)}
                               title="Delete Service"
                             >
-                              🗑️
+                              Edit
                             </button>
                           </div>
                         )}
@@ -706,14 +706,14 @@ const Services = () => {
       {/* Service Details Modal */}
       <AnimatePresence>
         {isModalOpen && selectedService && (
-          <motion.div 
+          <motion.div
             className="service-modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleCloseModal}
           >
-            <motion.div 
+            <motion.div
               className="service-modal"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -733,9 +733,9 @@ const Services = () => {
               <div className="modal-content">
                 <div className="modal-image">
                   {selectedService.images && Array.isArray(selectedService.images) && selectedService.images.length > 0 ? (
-                    <ImageSlider 
-                      images={selectedService.images.map(img => getImageUrl(typeof img === 'string' ? img : img.url))} 
-                      alt={selectedService.title} 
+                    <ImageSlider
+                      images={selectedService.images.map(img => getImageUrl(typeof img === 'string' ? img : img.url))}
+                      alt={selectedService.title}
                     />
                   ) : (
                     <img src={selectedService.image} alt={selectedService.title} />
@@ -752,7 +752,7 @@ const Services = () => {
                     <h3>Key Features</h3>
                     <ul className="features-list">
                       {selectedService.features.map((feature, index) => (
-                        <li key={index}>✓ {feature}</li>
+                        <li key={index}> {feature}</li>
                       ))}
                     </ul>
                   </div>
@@ -776,7 +776,7 @@ const Services = () => {
                   </div>
 
                   <div className="modal-actions">
-                    <motion.button 
+                    <motion.button
                       className="btn-primary"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -784,7 +784,7 @@ const Services = () => {
                     >
                       Get Quote
                     </motion.button>
-                    <motion.button 
+                    <motion.button
                       className="btn-secondary"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -811,7 +811,7 @@ const Services = () => {
 
       {/* Service Form Modal (Admin) */}
       {showServiceForm && (
-        <ServiceForm 
+        <ServiceForm
           isOpen={showServiceForm}
           service={editingService}
           onClose={() => {

@@ -13,14 +13,14 @@ export const HelmetProvider = ({ children }) => {
 export const Helmet = ({ children }) => {
     useEffect(() => {
         const elements = [];
-        
+
         // Parse children to extract title and meta tags
         if (children) {
             const childArray = Array.isArray(children) ? children : [children];
-            
+
             childArray.forEach(child => {
                 if (!child) return;
-                
+
                 if (child.type === 'title') {
                     document.title = child.props.children;
                 } else if (child.type === 'meta') {
@@ -33,7 +33,7 @@ export const Helmet = ({ children }) => {
                 }
             });
         }
-        
+
         // Cleanup function to remove added elements
         return () => {
             elements.forEach(element => {
@@ -43,6 +43,6 @@ export const Helmet = ({ children }) => {
             });
         };
     }, [children]);
-    
+
     return null;
 };

@@ -75,11 +75,11 @@
 
 [class*="gradient-"], [class*="from-"], [class*="to-"] {
   /* Webkit browsers */
-  background: -webkit-linear-gradient(to right, currentColor);
+  background: #185adb;
   /* Firefox */
-  background: -moz-linear-gradient(to right, currentColor);
+  background: #185adb;
   /* Standard */
-  background: linear-gradient(to right, currentColor);
+  background: #185adb;
 }
 
 /* ===========================

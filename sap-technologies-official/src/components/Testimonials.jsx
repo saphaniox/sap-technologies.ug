@@ -42,7 +42,7 @@ const testimonials = [
 const StarRating = ({ count }) => (
   <div className="star-rating" aria-label={`${count} out of 5 stars`}>
     {Array.from({ length: 5 }).map((_, i) => (
-      <span key={i} className={i < count ? "star filled" : "star"}>★</span>
+      <span key={i} className={i < count ? "star filled" : "star"}></span>
     ))}
   </div>
 );

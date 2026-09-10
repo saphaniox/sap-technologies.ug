@@ -20,7 +20,7 @@ const IoTProjects = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [categories, setCategories] = useState([]);
-  
+
   // Admin state
   const [user, setUser] = useState(null);
   const [showIoTForm, setShowIoTForm] = useState(false);
@@ -28,12 +28,12 @@ const IoTProjects = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [adminStats, setAdminStats] = useState(null);
-  
+
   useEffect(() => {
     fetchData();
     checkUserAuth();
   }, []);
-  
+
   const fetchData = async ({ silent = false } = {}) => {
     try {
       if (!silent) setLoading(true);
@@ -41,11 +41,11 @@ const IoTProjects = () => {
         apiService.request("/api/iot"),
         apiService.request("/api/iot/categories")
       ]);
-      
+
       if (projectsResponse.status === "success") {
         setProjects(projectsResponse.data.iotProjects);
       }
-      
+
       if (categoriesResponse.status === "success") {
         setCategories(categoriesResponse.data.categories);
       }
@@ -56,7 +56,7 @@ const IoTProjects = () => {
       if (!silent) setLoading(false);
     }
   };
-  
+
   const checkUserAuth = async () => {
     try {
       const currentUser = await apiService.getCurrentUser();
@@ -68,7 +68,7 @@ const IoTProjects = () => {
       console.error("Error checking auth:", error);
     }
   };
-  
+
   const fetchAdminStats = async () => {
     try {
       const response = await apiService.request("/api/iot/admin/stats");
@@ -79,31 +79,31 @@ const IoTProjects = () => {
       console.error("Error fetching admin stats:", error);
     }
   };
-  
+
   const handleAddProject = () => {
     setEditingProject(null);
     setShowIoTForm(true);
   };
-  
+
   const handleEditProject = (project) => {
     setEditingProject(project);
     setShowIoTForm(true);
   };
-  
+
   const handleDeleteClick = (project) => {
     setProjectToDelete(project);
     setShowDeleteDialog(true);
   };
-  
+
   const handleDeleteConfirm = async () => {
     if (!projectToDelete) return;
-    
+
     try {
       const response = await apiService.request(
         `/api/iot/${projectToDelete._id}`,
         { method: "DELETE" }
       );
-      
+
       if (response.status === "success") {
         showAlert.success("Removed!", "IoT project deleted successfully.");
         setProjects((prev) => {
@@ -123,7 +123,7 @@ const IoTProjects = () => {
       setProjectToDelete(null);
     }
   };
-  
+
   const handleLike = async (projectId) => {
     try {
       const response = await apiService.request(`/api/iot/${projectId}/like`, { method: "POST" });
@@ -137,13 +137,13 @@ const IoTProjects = () => {
       console.error("Error liking project:", error);
     }
   };
-  
+
   const filteredProjects = projects.filter(project => {
     const categoryMatch = selectedCategory === "all" || project.category === selectedCategory;
     const statusMatch = selectedStatus === "all" || project.status === selectedStatus;
     return categoryMatch && statusMatch;
   });
-  
+
   const getStatusBadge = (status) => {
     const badges = {
       completed: { label: "Completed", class: "status-completed" },
@@ -153,7 +153,7 @@ const IoTProjects = () => {
     };
     return badges[status] || badges.completed;
   };
-  
+
   if (loading) {
     return (
       <section className="iot-section" id="iot">
@@ -167,11 +167,11 @@ const IoTProjects = () => {
       </section>
     );
   }
-  
+
   if (error) {
     return <div className="iot-error">{error}</div>;
   }
-  
+
   return (
     <section className="iot-section" id="iot">
       <div className="container">
@@ -207,7 +207,7 @@ const IoTProjects = () => {
             </div>
           </div>
         )}
-        
+
         {/* Section Header */}
         <div className="iot-header">
           <div className="header-content">
@@ -216,21 +216,21 @@ const IoTProjects = () => {
               A practical look at the systems we build, test, and improve for real users.
             </p>
           </div>
-          
+
           {user?.role === "admin" && (
             <button onClick={handleAddProject} className="btn-add-project">
               <i className="fas fa-plus"></i> Add Project
             </button>
           )}
         </div>
-        
+
         {/* Filters */}
         <div className="iot-filters">
           <div className="filter-group">
             <label htmlFor="iot-category-filter">Category</label>
-            <select 
+            <select
               id="iot-category-filter"
-              value={selectedCategory} 
+              value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="filter-select"
             >
@@ -240,12 +240,12 @@ const IoTProjects = () => {
               ))}
             </select>
           </div>
-          
+
           <div className="filter-group">
             <label htmlFor="iot-status-filter">Progress</label>
-            <select 
+            <select
               id="iot-status-filter"
-              value={selectedStatus} 
+              value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="filter-select"
             >
@@ -256,12 +256,12 @@ const IoTProjects = () => {
               <option value="planning">Planning</option>
             </select>
           </div>
-          
+
           <div className="results-count">
             {filteredProjects.length} of {projects.length} projects shown
           </div>
         </div>
-        
+
         {/* Projects Grid */}
         {filteredProjects.length === 0 ? (
           <div className="no-projects">
@@ -275,35 +275,35 @@ const IoTProjects = () => {
                 {project.isFeatured && (
                   <div className="featured-badge">Featured</div>
                 )}
-                
+
                 <div className="iot-image-container">
                   {project.images && project.images.length > 1 ? (
-                    <ImageSlider 
-                      images={project.images.map(img => getImageUrl(img.url))} 
+                    <ImageSlider
+                      images={project.images.map(img => getImageUrl(img.url))}
                       alt={project.title}
                     />
                   ) : (
-                    <img 
-                      src={getImageUrl(project.primaryImage) || PLACEHOLDERS.iot} 
+                    <img
+                      src={getImageUrl(project.primaryImage) || PLACEHOLDERS.iot}
                       alt={project.title}
                       className="iot-image"
                     />
                   )}
-                  
+
                   <div className={`status-badge ${getStatusBadge(project.status).class}`}>
                     {getStatusBadge(project.status).label}
                   </div>
                 </div>
-                
+
                 <div className="iot-content">
                   <h3 className="iot-title">{project.title}</h3>
-                  
+
                   {project.category && (
                     <span className="iot-category">{project.category}</span>
                   )}
-                  
+
                   <p className="iot-description">{project.description}</p>
-                  
+
                   {project.technologies && project.technologies.length > 0 && (
                     <div className="tech-tags">
                       {project.technologies.slice(0, 5).map((tech, index) => (
@@ -311,7 +311,7 @@ const IoTProjects = () => {
                       ))}
                     </div>
                   )}
-                  
+
                   {project.hardware && project.hardware.length > 0 && (
                     <div className="hardware-tags">
                       <strong>Hardware:</strong>
@@ -320,23 +320,23 @@ const IoTProjects = () => {
                       ))}
                     </div>
                   )}
-                  
+
                   <div className="iot-actions">
                     {project.projectUrl && (
-                      <a 
-                        href={project.projectUrl} 
-                        target="_blank" 
+                      <a
+                        href={project.projectUrl}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="btn-view"
                       >
                         <i className="fas fa-external-link-alt"></i> View Project
                       </a>
                     )}
-                    
+
                     {project.githubUrl && (
-                      <a 
-                        href={project.githubUrl} 
-                        target="_blank" 
+                      <a
+                        href={project.githubUrl}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="btn-github"
                       >
@@ -354,8 +354,8 @@ const IoTProjects = () => {
                         <i className="fab fa-youtube"></i> Watch Demo
                       </a>
                     )}
-                    
-                    <button 
+
+                    <button
                       onClick={() => handleLike(project._id)}
                       className="btn-like"
                     >
@@ -383,16 +383,16 @@ const IoTProjects = () => {
                       })}
                     </div>
                   )}
-                  
+
                   {user?.role === "admin" && (
                     <div className="admin-actions">
-                      <button 
+                      <button
                         onClick={() => handleEditProject(project)}
                         className="btn-edit"
                       >
                         <i className="fas fa-edit"></i> Edit
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDeleteClick(project)}
                         className="btn-delete"
                       >
@@ -406,10 +406,10 @@ const IoTProjects = () => {
           </div>
         )}
       </div>
-      
+
       {/* IoT Form Modal */}
       {showIoTForm && (
-        <IoTForm 
+        <IoTForm
           isOpen={showIoTForm}
           onClose={() => setShowIoTForm(false)}
           project={editingProject}
@@ -431,10 +431,10 @@ const IoTProjects = () => {
           }}
         />
       )}
-      
+
       {/* Delete Confirmation Dialog */}
       {showDeleteDialog && (
-        <ConfirmDialog 
+        <ConfirmDialog
           isOpen={showDeleteDialog}
           title="Delete IoT Project"
           message={`Are you sure you want to delete "${projectToDelete?.title}"? This action cannot be undone.`}

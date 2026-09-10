@@ -17,7 +17,7 @@ const Newsletter = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!email) {
       setMessage("Please pop in your email address first");
       setMessageType("error");
@@ -29,7 +29,7 @@ const Newsletter = () => {
 
     try {
       const response = await apiService.subscribeNewsletter(email);
-      setMessage(response.message || "You're subscribed! Welcome to the SAPTech community 🎉");
+      setMessage(response.message || "You're subscribed! Welcome to the SAPTech community ");
       setMessageType("success");
       setEmail(""); // Clear form
     } catch (error) {
@@ -51,29 +51,29 @@ const Newsletter = () => {
       {/* Newsletter Header with Icon */}
       <div className="newsletter-header">
         <div className="newsletter-icon">
-          📧
+          +
         </div>
         <h4>Join Our Newsletter</h4>
         <p>Get exclusive insights, updates, and premium content delivered straight to your inbox</p>
       </div>
-      
+
       {/* Newsletter Benefits */}
       <div className="newsletter-benefits">
         <div className="benefit-item">
-          <span className="benefit-icon">🚀</span>
+          <span className="benefit-icon"></span>
           <span>Latest Tech Updates</span>
         </div>
         <div className="benefit-item">
-          <span className="benefit-icon">💡</span>
+          <span className="benefit-icon"></span>
           <span>Exclusive Insights</span>
         </div>
-        
+
       </div>
-      
+
       <form onSubmit={handleSubmit} className="newsletter-form">
         <div className="newsletter-input-group">
           <div className="input-wrapper">
-            <span className="input-icon">✉️</span>
+            <span className="input-icon"></span>
             <input
               type="email"
               value={email}
@@ -84,13 +84,13 @@ const Newsletter = () => {
               required
             />
           </div>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="newsletter-button"
             disabled={loading}
           >
             <span className="button-icon">
-              {loading ? "⏳" : "🚀"}
+              {loading ? "⏳" : "+"}
             </span>
             <span className="button-text">
               {loading ? "Subscribing..." : "Subscribe Now"}
@@ -98,20 +98,20 @@ const Newsletter = () => {
           </button>
         </div>
       </form>
-      
+
       {/* Trust Indicators */}
       <div className="newsletter-trust">
         <div className="trust-item">
-          <span className="trust-icon">🔒</span>
+          <span className="trust-icon"></span>
           <span>100% Secure</span>
         </div>
-        
+
       </div>
 
       {message && (
         <div className={`newsletter-message ${messageType}`}>
           <span className="message-icon">
-            {messageType === "success" ? "✅" : "⚠️"}
+            {messageType === "success" ? "?" : "?"}
           </span>
           <span className="message-text">{message}</span>
         </div>

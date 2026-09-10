@@ -106,7 +106,7 @@ const Header = ({ isAuthenticated, userName, userRole, userProfilePic, onAuthMod
   const searchRef = useRef(null);
   const searchInputRef = useRef(null);
   const searchRequestIdRef = useRef(0);
-  
+
   const location = useLocation();
   const isAwardsPage = location.pathname === "/awards";
 
@@ -114,15 +114,15 @@ const Header = ({ isAuthenticated, userName, userRole, userProfilePic, onAuthMod
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 700);
     };
-    
+
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
-    
+
     handleResize();
     window.addEventListener("resize", handleResize);
     window.addEventListener("scroll", handleScroll);
-    
+
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("scroll", handleScroll);
@@ -346,10 +346,10 @@ const Header = ({ isAuthenticated, userName, userRole, userProfilePic, onAuthMod
 
   const navVariants = {
     hidden: { y: -100, opacity: 0 },
-    visible: { 
-      y: 0, 
+    visible: {
+      y: 0,
       opacity: 1,
-      transition: { 
+      transition: {
         duration: 0.8,
         ease: "easeOut",
         staggerChildren: 0.1
@@ -359,10 +359,10 @@ const Header = ({ isAuthenticated, userName, userRole, userProfilePic, onAuthMod
 
   const logoVariants = {
     hidden: { scale: 0, rotate: -180 },
-    visible: { 
-      scale: 1, 
+    visible: {
+      scale: 1,
       rotate: 0,
-      transition: { 
+      transition: {
         duration: 1,
         ease: "easeOut",
         type: "spring",
@@ -379,8 +379,8 @@ const Header = ({ isAuthenticated, userName, userRole, userProfilePic, onAuthMod
 
   const linkVariants = {
     hidden: { y: -20, opacity: 0 },
-    visible: { 
-      y: 0, 
+    visible: {
+      y: 0,
       opacity: 1,
       transition: { duration: 0.5 }
     },
@@ -397,8 +397,8 @@ const Header = ({ isAuthenticated, userName, userRole, userProfilePic, onAuthMod
 
   const glowVariants = {
     hidden: { opacity: 0, scale: 0 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       scale: 1,
       transition: { duration: 0.8, delay: 0.5 }
     }
@@ -417,7 +417,7 @@ const Header = ({ isAuthenticated, userName, userRole, userProfilePic, onAuthMod
           className={`nav-glow ${userRole === "admin" ? "nav-glow-admin" : ""}`}
           variants={glowVariants}
         />
-        
+
         <Motion.div
           className="logo"
           variants={logoVariants}
@@ -427,8 +427,8 @@ const Header = ({ isAuthenticated, userName, userRole, userProfilePic, onAuthMod
           style={{ cursor: "pointer" }}
         >
           <Motion.img
-            src="/images/logo.png" 
-            alt="SAP Logo" 
+            src="/images/logo.png"
+            alt="SAP Logo"
             className="logo-img"
             animate={{
               rotateY: [0, 360],

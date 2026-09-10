@@ -1,7 +1,7 @@
 /* Awards Page Styles with 3D Effects */
 .awards-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   perspective: 1000px;
   transform-style: preserve-3d;
 }
@@ -43,7 +43,7 @@
   align-items: center;
   padding: 2rem;
   border-bottom: 2px solid rgba(226, 232, 240, 0.3);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
   border-radius: 20px 20px 0 0;
   position: sticky;
@@ -87,7 +87,7 @@
 
 /* Hero Section with 3D Effects */
 .awards-hero {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
   padding: 100px 0;
   text-align: center;
@@ -117,10 +117,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+  background: rgba(120, 119, 198, 0.3);
   z-index: 1;
   animation: float 6s ease-in-out infinite;
 }
@@ -159,17 +156,10 @@
 
 /* Individual Word Colors */
 .word-saphaniox {
-  background: linear-gradient(
-    135deg, 
-    #ff6b6b 0%, 
-    #ee5a52 25%,
-    #ff8a80 50%,
-    #ff5722 75%,
-    #d32f2f 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   filter: drop-shadow(0 0 20px rgba(255, 107, 107, 0.6));
   text-shadow: 0 0 30px rgba(255, 87, 34, 0.5);
   display: inline-block;
@@ -182,17 +172,10 @@
 }
 
 .word-awards {
-  background: linear-gradient(
-    135deg, 
-    #ffd700 0%, 
-    #ffb300 25%,
-    #ffc107 50%,
-    #ff8f00 75%,
-    #f57c00 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
   text-shadow: 0 0 30px rgba(255, 193, 7, 0.5);
   display: inline-block;
@@ -205,17 +188,10 @@
 }
 
 .word-2025 {
-  background: linear-gradient(
-    135deg, 
-    #4ecdc4 0%, 
-    #26a69a 25%,
-    #00bcd4 50%,
-    #0097a7 75%,
-    #006064 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.6));
   text-shadow: 0 0 30px rgba(0, 188, 212, 0.5);
   display: inline-block;
@@ -244,15 +220,15 @@
 }
 
 .word-saphaniox::before {
-  background: linear-gradient(45deg, rgba(255, 107, 107, 0.2), rgba(238, 90, 82, 0.2));
+  background: rgba(255, 107, 107, 0.2);
 }
 
 .word-awards::before {
-  background: linear-gradient(45deg, rgba(255, 215, 0, 0.2), rgba(255, 193, 7, 0.2));
+  background: rgba(255, 215, 0, 0.2);
 }
 
 .word-2025::before {
-  background: linear-gradient(45deg, rgba(78, 205, 196, 0.2), rgba(0, 188, 212, 0.2));
+  background: rgba(78, 205, 196, 0.2);
 }
 
 .word-saphaniox:hover::before,
@@ -303,12 +279,12 @@
 }
 
 .subtitle-celebrating {
-  color: #ff6b6b;
+  color: var(--primary-color) !important;
   font-weight: 500;
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.4));
   display: inline-block;
   transition: all 0.3s ease;
@@ -320,12 +296,12 @@
 }
 
 .subtitle-excellence {
-  color: #ffd700;
+  color: var(--primary-color) !important;
   font-weight: 600;
-  background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
   display: inline-block;
   transition: all 0.3s ease;
@@ -350,12 +326,12 @@
 }
 
 .subtitle-engineering {
-  color: #4ecdc4;
+  color: var(--primary-color) !important;
   font-weight: 500;
-  background: linear-gradient(135deg, #4ecdc4 0%, #26a69a 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   filter: drop-shadow(0 0 8px rgba(78, 205, 196, 0.4));
   display: inline-block;
   transition: all 0.3s ease;
@@ -367,12 +343,12 @@
 }
 
 .subtitle-ampersand {
-  color: #a78bfa;
+  color: var(--primary-color) !important;
   font-weight: 600;
-  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.5));
   display: inline-block;
   transition: all 0.3s ease;
@@ -385,12 +361,12 @@
 }
 
 .subtitle-technology {
-  color: #60a5fa;
+  color: var(--primary-color) !important;
   font-weight: 500;
-  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.4));
   display: inline-block;
   transition: all 0.3s ease;
@@ -482,7 +458,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: rgba(255, 255, 255, 0.2);
   transition: left 0.5s;
 }
 
@@ -491,7 +467,7 @@
 }
 
 .btn-primary.btn-large {
-  background: linear-gradient(45deg, #ff6b6b, #ee5a24, #ff9ff3);
+  background: #ff6b6b;
   color: white;
   box-shadow: 
     0 8px 25px rgba(255, 107, 107, 0.4),
@@ -544,9 +520,7 @@
 /* Award Categories Section with 3D */
 .awards-categories {
   padding: 100px 0;
-  background: 
-    linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%),
-    url('/images/banner3.jpg') center/cover;
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   position: relative;
 }
@@ -558,9 +532,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(circle at 30% 70%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 70% 30%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+  background: rgba(102, 126, 234, 0.1);
   z-index: 1;
 }
 
@@ -573,13 +545,13 @@
   text-align: center;
   font-size: 3rem;
   margin-bottom: 1rem;
-  color: #2d3748;
+  color: var(--primary-color) !important;
   font-weight: 800;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(45deg, #2d3748, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 .awards-categories p {
@@ -601,7 +573,7 @@
 }
 
 .category-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 25px;
   padding: 2.5rem;
   text-align: center;
@@ -624,7 +596,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+  background: rgba(102, 126, 234, 0.05);
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 1;
@@ -644,7 +616,7 @@
 
 .category-card.active {
   border-color: #667eea;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: #667eea;
   color: white;
   transform: translateY(-15px) rotateX(5deg) rotateY(5deg) scale(1.02);
   box-shadow: 
@@ -726,7 +698,7 @@
 /* Top Nominations Section */
 .top-nominations {
   padding: 100px 0;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: #f093fb;
   color: white;
 }
 
@@ -760,7 +732,7 @@
   right: -10px;
   width: 60px;
   height: 60px;
-  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  background: #ffd700;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -806,7 +778,7 @@
 }
 
 .category-tag {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: #667eea;
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 20px;
@@ -817,7 +789,7 @@
 }
 
 .votes-display {
-  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+  background: #ff6b6b;
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 20px;
@@ -893,7 +865,7 @@
 }
 
 .nomination-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 25px;
   overflow: hidden;
   box-shadow: 
@@ -913,7 +885,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.03), rgba(118, 75, 162, 0.03));
+  background: rgba(102, 126, 234, 0.03);
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 1;
@@ -1019,7 +991,7 @@
 }
 
 .category-badge {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: #667eea;
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 20px;
@@ -1053,7 +1025,7 @@
 .achievements {
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(248, 250, 252, 0.8), rgba(237, 242, 247, 0.8));
+  background: rgba(248, 250, 252, 0.8);
   border-radius: 15px;
   border-left: 4px solid #667eea;
   transform: translateZ(8px);
@@ -1109,7 +1081,7 @@
 }
 
 .vote-btn {
-  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+  background: #ff6b6b;
   color: white;
   border: none;
   padding: 0.7rem 1.5rem;
@@ -1164,7 +1136,7 @@
 }
 
 .vote-form button[type="submit"] {
-  background: linear-gradient(45deg, #48bb78, #38a169);
+  background: #48bb78;
   color: white;
   box-shadow: 0 3px 10px rgba(72, 187, 120, 0.3);
 }
@@ -1421,7 +1393,7 @@
 
 .category-option input[type="radio"]:checked + .category-card-small {
   border-color: #667eea;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: #667eea;
   color: white;
 }
 
@@ -1456,7 +1428,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: #667eea;
   color: white;
 }
 

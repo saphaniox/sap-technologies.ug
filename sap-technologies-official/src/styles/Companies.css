@@ -83,7 +83,7 @@
 /* Coming Soon Button Styles */
 .coming-soon-btn {
   display: inline-block;
-  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  background: #ff6b6b;
   color: #fff;
   padding: 0.8rem 1.5rem;
   border-radius: 6px;
@@ -97,7 +97,7 @@
 }
 
 .coming-soon-btn:hover {
-  background: linear-gradient(135deg, #ee5a52, #ff6b6b);
+  background: #ee5a52;
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(238, 90, 82, 0.4);
 }
@@ -137,11 +137,11 @@
 }
 
 [data-theme="dark"] .companies h2 {
-  color: #ecf0f1;
-  background: linear-gradient(135deg, #5dade2, #58d68d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--primary-color) !important;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 [data-theme="dark"] .company-card {
@@ -169,22 +169,22 @@
 }
 
 [data-theme="dark"] .company-link {
-  background: linear-gradient(135deg, #5dade2, #3498db);
+  background: #5dade2;
   color: #fff;
 }
 
 [data-theme="dark"] .company-link:hover {
-  background: linear-gradient(135deg, #3498db, #2980b9);
+  background: #3498db;
   box-shadow: 0 4px 15px rgba(93, 173, 226, 0.3);
 }
 
 [data-theme="dark"] .coming-soon-btn {
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  background: #e74c3c;
   box-shadow: 0 2px 10px rgba(231, 76, 60, 0.3);
 }
 
 [data-theme="dark"] .coming-soon-btn:hover {
-  background: linear-gradient(135deg, #c0392b, #a93226);
+  background: #c0392b;
   box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
 }
 

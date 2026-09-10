@@ -24,20 +24,20 @@ const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, confirmTex
           </div>
           <h3>{title}</h3>
         </div>
-        
+
         <div className="confirm-body">
           <p>{message}</p>
         </div>
-        
+
         <div className="confirm-actions">
-          <button 
+          <button
             type="button"
             className="btn-secondary"
             onClick={onCancel}
           >
             {cancelText}
           </button>
-          <button 
+          <button
             type="button"
             className={`btn-${type}`}
             onClick={onConfirm}

@@ -34,15 +34,15 @@ const ServiceForm = ({ service, onClose, onSave }) => {
       // Handle technologies - convert from objects to strings for form
       let processedTechnologies = [""];
       if (service.technologies && Array.isArray(service.technologies) && service.technologies.length > 0) {
-        processedTechnologies = service.technologies.map(tech => 
+        processedTechnologies = service.technologies.map(tech =>
           typeof tech === "string" ? tech : (tech?.name || "")
         );
       }
-      
+
       // Handle features - ensure they're strings
       let processedFeatures = [""];
       if (service.features && Array.isArray(service.features) && service.features.length > 0) {
-        processedFeatures = service.features.map(feature => 
+        processedFeatures = service.features.map(feature =>
           typeof feature === "string" ? feature : (feature?.title || feature || "")
         );
       }
@@ -69,7 +69,7 @@ const ServiceForm = ({ service, onClose, onSave }) => {
         },
         image: null
       });
-      
+
       // Handle images - support both single image (old) and array (new)
       const images = service.images || (service.image ? [service.image] : []);
       if (images.length > 0) {
@@ -89,7 +89,7 @@ const ServiceForm = ({ service, onClose, onSave }) => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     if (name.includes(".")) {
       const [parent, child] = name.split(".");
       setFormData(prev => ({
@@ -159,7 +159,7 @@ const ServiceForm = ({ service, onClose, onSave }) => {
     if (files.length > 0) {
       // Add new files to existing array
       setNewImageFiles(prev => [...prev, ...files]);
-      
+
       // Generate previews for new images
       files.forEach((file) => {
         const reader = new FileReader();
@@ -179,7 +179,7 @@ const ServiceForm = ({ service, onClose, onSave }) => {
 
   const handleRemoveImage = (index) => {
     const imageToRemove = imagePreviews[index];
-    
+
     if (imageToRemove.isExisting) {
       // Mark existing image for deletion
       setImagesToDelete(prev => [...prev, imageToRemove.path]);
@@ -190,7 +190,7 @@ const ServiceForm = ({ service, onClose, onSave }) => {
         setNewImageFiles(prev => prev.filter((_, i) => i !== fileIndex));
       }
     }
-    
+
     // Remove from previews
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
@@ -201,13 +201,13 @@ const ServiceForm = ({ service, onClose, onSave }) => {
     setAlert({ type: "", message: "" });
     try {
       const submitData = new FormData();
-      
-      
+
+
       // Add deleteImage flag if user wants to remove existing image
       if (formData.deleteImage) {
         submitData.append('deleteImage', 'true');
       }
-      
+
       // Add all form fields
       Object.keys(formData).forEach(key => {
         if (key === "features" || key === "technologies") {
@@ -235,17 +235,17 @@ const ServiceForm = ({ service, onClose, onSave }) => {
           }
         }
       });
-      
+
       // Add new image files
       newImageFiles.forEach(file => {
         submitData.append("images", file);
       });
-      
+
       // Add images to delete
       if (imagesToDelete.length > 0) {
         submitData.append('imagesToDelete', JSON.stringify(imagesToDelete));
       }
-      
+
       let response;
       if (service?._id) {
         response = await apiService.updateService(service._id, submitData);
@@ -258,23 +258,23 @@ const ServiceForm = ({ service, onClose, onSave }) => {
       onClose();
       showAlert.success(service ? "Service updated" : "Service created", successMessage);
       setAlert({ type: "", message: "" });
-      
+
     } catch (error) {
-      console.error("❌ Service form error:", error);
-      
+      console.error(" Service form error:", error);
+
       // Handle authentication errors
       if (error.message === "Authentication required") {
         const message = "Your session has expired. Please log in again.";
-        setAlert({ 
-          type: "error", 
+        setAlert({
+          type: "error",
           message
         });
         await showAlert.error("Session expired", message);
         window.location.href = "/login";
       } else {
         const message = error.response?.data?.message || "Something went wrong saving the service. Please try again.";
-        setAlert({ 
-          type: "error", 
+        setAlert({
+          type: "error",
           message
         });
         await showAlert.error("Couldn't save service", message);
@@ -360,7 +360,7 @@ const ServiceForm = ({ service, onClose, onSave }) => {
                 value={formData.icon}
                 onChange={handleInputChange}
                 required
-                placeholder="🌐"
+                placeholder="+"
                 maxLength="2"
               />
               <small>{formData.icon?.length || 0}/2 characters</small>

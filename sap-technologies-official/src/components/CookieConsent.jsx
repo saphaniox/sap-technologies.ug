@@ -31,7 +31,7 @@ const CookieConsent = ({ onPrivacyPolicyOpen }) => {
     <div className="cookie-banner" role="dialog" aria-live="polite" aria-label="Cookie consent">
       <div className="cookie-content">
         <p className="cookie-text">
-          🍪 We use cookies to improve your experience and may use Google services for ads and
+           We use cookies to improve your experience and may use Google services for ads and
           measurement. By continuing to browse, you agree to our use of cookies in accordance with our{" "}
           <button className="cookie-policy-link" onClick={() => onPrivacyPolicyOpen && onPrivacyPolicyOpen()}>Privacy Policy</button>.
         </p>

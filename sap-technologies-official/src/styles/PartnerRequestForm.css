@@ -115,7 +115,7 @@
 .btn-primary {
   padding: 12px 24px;
   border: none;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: var(--primary-color);
   color: white;
   border-radius: 8px;
   cursor: pointer;

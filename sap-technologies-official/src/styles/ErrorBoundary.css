@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   font-family: 'Inter', sans-serif;
 }
 
@@ -117,12 +117,12 @@
 }
 
 .error-actions .btn-primary {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: #667eea;
   color: white;
 }
 
 .error-actions .btn-primary:hover {
-  background: linear-gradient(45deg, #5a67d8, #6b46c1);
+  background: #5a67d8;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }

@@ -1,7 +1,7 @@
 /* Awards Page Styles with Professional Design */
 .awards-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+  background: #f8fafc;
   padding: 0;
   margin: 0;
 }
@@ -16,11 +16,11 @@
 
 .awards-modal-content .footer-content {
   padding: 3rem 2rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  background: #f8fafc;
 }
 
 .awards-modal-content .footer-bottom {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  background: #1e293b;
   border-radius: 0 0 24px 24px;
 }
 
@@ -41,7 +41,7 @@
 
 /* Enhanced Card Styling */
 .nomination-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: #ffffff;
   border-radius: 16px;
   padding: 1.5rem;
   margin: 1rem;
@@ -77,7 +77,7 @@
 }
 
 .awards-modal-content {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: #ffffff;
   border-radius: 24px;
   width: 100%;
   max-width: 1400px;
@@ -99,7 +99,7 @@
   align-items: center;
   padding: 3rem 2rem;
   border-bottom: 1px solid rgba(226, 232, 240, 0.2);
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+  background: #4f46e5;
   color: white;
   border-radius: 24px 24px 0 0;
   position: sticky;
@@ -118,10 +118,10 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.5));
 }
 
@@ -151,7 +151,7 @@
 
 /* Hero Section with Professional Design */
 .awards-hero {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+  background: #1e293b;
   color: white;
   padding: 80px 2rem;
   text-align: center;
@@ -180,10 +180,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+  background: rgba(120, 119, 198, 0.3);
   z-index: 1;
 }
 
@@ -215,17 +212,10 @@
 
 /* Individual Word Colors */
 .word-saphaniox {
-  background: linear-gradient(
-    135deg, 
-    #ff6b6b 0%, 
-    #ee5a52 25%,
-    #ff8a80 50%,
-    #ff5722 75%,
-    #d32f2f 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   filter: drop-shadow(0 0 20px rgba(255, 107, 107, 0.6));
   text-shadow: 0 0 30px rgba(255, 87, 34, 0.5);
   display: inline-block;
@@ -237,17 +227,10 @@
 }
 
 .word-awards {
-  background: linear-gradient(
-    135deg, 
-    #ffd700 0%, 
-    #ffb300 25%,
-    #ffc107 50%,
-    #ff8f00 75%,
-    #f57c00 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
   text-shadow: 0 0 30px rgba(255, 193, 7, 0.5);
   display: inline-block;
@@ -259,17 +242,10 @@
 }
 
 .word-2025 {
-  background: linear-gradient(
-    135deg, 
-    #4ecdc4 0%, 
-    #26a69a 25%,
-    #00bcd4 50%,
-    #0097a7 75%,
-    #006064 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   filter: drop-shadow(0 0 20px rgba(78, 205, 196, 0.6));
   text-shadow: 0 0 30px rgba(0, 188, 212, 0.5);
   display: inline-block;
@@ -297,15 +273,15 @@
 }
 
 .word-saphaniox::before {
-  background: linear-gradient(45deg, rgba(255, 107, 107, 0.2), rgba(238, 90, 82, 0.2));
+  background: rgba(255, 107, 107, 0.2);
 }
 
 .word-awards::before {
-  background: linear-gradient(45deg, rgba(255, 215, 0, 0.2), rgba(255, 193, 7, 0.2));
+  background: rgba(255, 215, 0, 0.2);
 }
 
 .word-2025::before {
-  background: linear-gradient(45deg, rgba(78, 205, 196, 0.2), rgba(0, 188, 212, 0.2));
+  background: rgba(78, 205, 196, 0.2);
 }
 
 .word-saphaniox:hover::before,
@@ -346,19 +322,11 @@
 }
 
 .hero-subtitle.animated-subtitle {
-  background: linear-gradient(
-    45deg,
-    #ffffff,
-    #ffd700,
-    #ff6b6b,
-    #667eea,
-    #4ecdc4,
-    #ffffff
-  );
+  background: none;
   background-size: 200% 200%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.3));
 }
 
@@ -369,11 +337,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(
-    circle at center,
-    rgba(255, 215, 0, 0.2) 0%,
-    transparent 70%
-  );
+  background: rgba(255, 215, 0, 0.2);
   border-radius: 10px;
   z-index: -1;
 }
@@ -453,7 +417,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: rgba(255, 255, 255, 0.2);
   transition: left 0.5s;
 }
 
@@ -462,7 +426,7 @@
 }
 
 .btn-primary.btn-large {
-  background: linear-gradient(45deg, #ff3333, #ff6b6b, #ff1744, #e91e63);
+  background: #ff3333;
   background-size: 300% 300%;
   color: white;
   font-weight: 700;
@@ -478,7 +442,7 @@
 }
 
 .btn-secondary.btn-large {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(37, 99, 235, 0.9) 100%);
+  background: rgba(59, 130, 246, 0.8);
   color: white;
   border: 2px solid rgba(59, 130, 246, 0.6);
   backdrop-filter: blur(15px);
@@ -497,7 +461,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  background: rgba(255, 255, 255, 0.3);
   transition: left 0.5s;
 }
 
@@ -506,7 +470,7 @@
 }
 
 .btn-secondary.btn-large:hover {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 1) 0%, rgba(37, 99, 235, 1) 100%);
+  background: rgba(59, 130, 246, 1);
   border-color: rgba(59, 130, 246, 1);
   box-shadow: 
     0 25px 50px rgba(59, 130, 246, 0.5),
@@ -519,7 +483,7 @@
   margin-top: 2.5rem;
   position: relative;
   padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 15px;
   backdrop-filter: blur(15px);
@@ -536,7 +500,7 @@
   right: 0;
   bottom: 0;
   border-radius: 15px;
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: rgba(255, 255, 255, 0.1);
   pointer-events: none;
 }
 
@@ -566,7 +530,7 @@
 
 .company-name {
   font-weight: 700;
-  color: #ffffff;
+  color: var(--primary-color) !important;
   text-shadow: 
     0 0 15px rgba(0, 150, 255, 0.6),
     0 0 25px rgba(0, 150, 255, 0.4),
@@ -574,11 +538,11 @@
   font-style: normal;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  background: linear-gradient(45deg, #ffffff, #87ceeb, #4169e1, #ffffff);
+  background: none;
   background-size: 300% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 .enhanced-company-name {
@@ -594,7 +558,7 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(0, 150, 255, 0.6), transparent);
+  background: rgba(0, 150, 255, 0.6);
   animation: underlineGlow 3s ease-in-out infinite;
 }
 
@@ -628,9 +592,7 @@
 /* Award Categories Section with 3D */
 .awards-categories {
   padding: 100px 0;
-  background: 
-    linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%),
-    url('/images/banner3.jpg') center/cover;
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   position: relative;
 }
@@ -642,9 +604,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(circle at 30% 70%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 70% 30%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+  background: rgba(102, 126, 234, 0.1);
   z-index: 1;
 }
 
@@ -657,13 +617,13 @@
   text-align: center;
   font-size: 3rem;
   margin-bottom: 1rem;
-  color: #2d3748;
+  color: var(--primary-color) !important;
   font-weight: 800;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(45deg, #2d3748, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 .awards-categories p {
@@ -685,7 +645,7 @@
 }
 
 .category-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 25px;
   padding: 2.5rem;
   text-align: center;
@@ -708,7 +668,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+  background: rgba(102, 126, 234, 0.05);
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 1;
@@ -760,7 +720,7 @@
 
 .category-card.active {
   border-color: #667eea;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: #667eea;
   color: white;
   transform: translateY(-15px) rotateX(5deg) rotateY(5deg) scale(1.02);
   box-shadow: 
@@ -861,7 +821,7 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   border-radius: 6px;
   padding: 4px 6px;
   box-shadow: 
@@ -922,7 +882,7 @@
 
 /* Active category card countdown badge enhancement */
 .category-card.active .category-countdown-badge {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: #f093fb;
   box-shadow: 
     0 6px 18px rgba(240, 147, 251, 0.35),
     0 3px 10px rgba(245, 87, 108, 0.25);
@@ -945,7 +905,7 @@
 /* Top Nominations Section */
 .top-nominations {
   padding: 100px 0;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: #f093fb;
   color: white;
 }
 
@@ -979,7 +939,7 @@
   right: -10px;
   width: 60px;
   height: 60px;
-  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  background: #ffd700;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1025,7 +985,7 @@
 }
 
 .category-tag {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: #667eea;
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 20px;
@@ -1036,7 +996,7 @@
 }
 
 .votes-display {
-  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+  background: #ff6b6b;
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 20px;
@@ -1112,7 +1072,7 @@
 }
 
 .nomination-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 25px;
   overflow: hidden;
   box-shadow: 
@@ -1132,7 +1092,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.03), rgba(118, 75, 162, 0.03));
+  background: rgba(102, 126, 234, 0.03);
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 1;
@@ -1237,7 +1197,7 @@
 }
 
 .category-badge {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: #667eea;
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 20px;
@@ -1271,7 +1231,7 @@
 .achievements {
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(248, 250, 252, 0.8), rgba(237, 242, 247, 0.8));
+  background: rgba(248, 250, 252, 0.8);
   border-radius: 15px;
   border-left: 4px solid #667eea;
   transform: translateZ(8px);
@@ -1327,7 +1287,7 @@
 }
 
 .vote-btn {
-  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+  background: #ff6b6b;
   color: white;
   border: none;
   padding: 0.7rem 1.5rem;
@@ -1382,7 +1342,7 @@
 }
 
 .vote-form button[type="submit"] {
-  background: linear-gradient(45deg, #48bb78, #38a169);
+  background: #48bb78;
   color: white;
   box-shadow: 0 3px 10px rgba(72, 187, 120, 0.3);
 }
@@ -1555,7 +1515,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: #f8fafc;
   border-radius: 15px;
   margin-bottom: 2rem;
 }
@@ -1580,7 +1540,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  background: rgba(102, 126, 234, 0.1);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -1604,7 +1564,7 @@
 
 .nomination-type-selector label.active {
   border-color: #667eea;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
   transform: translateY(-2px);
@@ -1645,15 +1605,15 @@
 .form-section h3 {
   font-size: 1.4rem;
   margin-bottom: 1.5rem;
-  color: #1a202c;
+  color: var(--primary-color) !important;
   padding-bottom: 0.75rem;
   border-bottom: 3px solid #667eea;
   font-weight: 700;
   letter-spacing: 0.5px;
-  background: linear-gradient(to right, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 .form-row {
@@ -1836,7 +1796,7 @@
 
 .category-option input[type="radio"]:checked + .category-card-small {
   border-color: #667eea;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: #667eea;
   color: white;
 }
 
@@ -1871,7 +1831,7 @@
 }
 
 .btn-primary {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: #667eea;
   color: white;
 }
 
@@ -2052,7 +2012,7 @@
 
 /* Professional Button Styling */
 .awards-page .btn-primary {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  background: #4f46e5;
   color: white;
   border: none;
   padding: 12px 32px;
@@ -2069,7 +2029,7 @@
 }
 
 .awards-page .btn-primary:hover {
-  background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+  background: #4338ca;
   transform: translateY(-2px);
   box-shadow: 
     0 8px 24px rgba(79, 70, 229, 0.4),
@@ -2077,7 +2037,7 @@
 }
 
 .awards-page .btn-secondary {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: #f8fafc;
   color: #475569;
   border: 1px solid rgba(148, 163, 184, 0.3);
   padding: 12px 32px;
@@ -2091,7 +2051,7 @@
 }
 
 .awards-page .btn-secondary:hover {
-  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+  background: #e2e8f0;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
@@ -2171,7 +2131,7 @@
 
 /* Professional Search and Filter Bar */
 .awards-filters {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: #ffffff;
   padding: 2rem;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -2206,7 +2166,7 @@
 
 /* Enhanced Vote Button */
 .vote-btn {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #10b981;
   color: white;
   border: none;
   padding: 8px 20px;
@@ -2220,7 +2180,7 @@
 }
 
 .vote-btn:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: #059669;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
@@ -2230,7 +2190,7 @@
   display: inline-flex;
   align-items: center;
   padding: 4px 12px;
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  background: #fbbf24;
   color: #92400e;
   border-radius: 20px;
   font-size: 0.875rem;
@@ -2259,7 +2219,7 @@
 
 /* Main Page Background */
 [data-theme="dark"] .awards-page {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 50%, #1e3a52 100%);
+  background: #1a1a1a;
 }
 
 /* Container Styling */
@@ -2279,7 +2239,7 @@
 
 /* Modal Content */
 [data-theme="dark"] .awards-modal-content {
-  background: linear-gradient(135deg, #2c3e50 0%, #1a1a1a 100%);
+  background: #2c3e50;
   box-shadow: 
     0 25px 50px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(93, 173, 226, 0.1),
@@ -2289,16 +2249,16 @@
 
 /* Modal Header */
 [data-theme="dark"] .awards-modal-header {
-  background: linear-gradient(135deg, rgba(44, 62, 80, 0.95), rgba(26, 26, 26, 0.95));
+  background: rgba(44, 62, 80, 0.95);
   border-bottom: 1px solid rgba(62, 74, 92, 0.5);
 }
 
 [data-theme="dark"] .awards-modal-header h2 {
-  color: #ecf0f1;
-  background: linear-gradient(135deg, #5dade2, #58d68d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--primary-color) !important;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 /* Close Button */
@@ -2316,7 +2276,7 @@
 
 /* Hero Section */
 [data-theme="dark"] .awards-hero {
-  background: linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(44, 62, 80, 0.95));
+  background: rgba(26, 26, 26, 0.95);
 }
 
 [data-theme="dark"] .awards-hero h1,
@@ -2336,14 +2296,14 @@
 /* CTA Buttons in Hero */
 [data-theme="dark"] .hero-cta,
 [data-theme="dark"] .cta-primary {
-  background: linear-gradient(135deg, #5dade2, #3498db);
+  background: #5dade2;
   border: 2px solid rgba(93, 173, 226, 0.3);
   color: #fff;
 }
 
 [data-theme="dark"] .hero-cta:hover,
 [data-theme="dark"] .cta-primary:hover {
-  background: linear-gradient(135deg, #3498db, #2980b9);
+  background: #3498db;
   box-shadow: 0 12px 35px rgba(93, 173, 226, 0.4);
 }
 
@@ -2397,11 +2357,11 @@
 
 [data-theme="dark"] .section-title,
 [data-theme="dark"] .categories-title {
-  color: #ecf0f1;
-  background: linear-gradient(135deg, #5dade2, #58d68d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--primary-color) !important;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 [data-theme="dark"] .section-subtitle {
@@ -2409,7 +2369,7 @@
 }
 
 [data-theme="dark"] .category-card {
-  background: linear-gradient(135deg, rgba(44, 62, 80, 0.95), rgba(28, 40, 52, 0.95));
+  background: rgba(44, 62, 80, 0.95);
   border: 2px solid rgba(62, 74, 92, 0.5);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
@@ -2476,7 +2436,7 @@
 
 /* Nomination Cards */
 [data-theme="dark"] .nomination-card {
-  background: linear-gradient(135deg, rgba(44, 62, 80, 0.95), rgba(28, 40, 52, 0.95));
+  background: rgba(44, 62, 80, 0.95);
   border: 1px solid rgba(62, 74, 92, 0.5);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
@@ -2526,12 +2486,12 @@
 }
 
 [data-theme="dark"] .vote-btn {
-  background: linear-gradient(135deg, #5dade2, #3498db);
+  background: #5dade2;
   border: 1px solid rgba(93, 173, 226, 0.3);
 }
 
 [data-theme="dark"] .vote-btn:hover {
-  background: linear-gradient(135deg, #3498db, #2980b9);
+  background: #3498db;
   box-shadow: 0 6px 20px rgba(93, 173, 226, 0.4);
 }
 
@@ -2588,7 +2548,7 @@
 }
 
 [data-theme="dark"] .pagination-btn.active {
-  background: linear-gradient(135deg, #5dade2, #3498db);
+  background: #5dade2;
   border-color: #5dade2;
   color: #fff;
 }
@@ -2624,7 +2584,7 @@
 
 /* Dark Mode - Nomination Type Selector */
 [data-theme="dark"] .nomination-type-selector {
-  background: linear-gradient(135deg, rgba(44, 62, 80, 0.8) 0%, rgba(52, 73, 94, 0.8) 100%);
+  background: rgba(44, 62, 80, 0.8);
 }
 
 [data-theme="dark"] .nomination-type-selector label {
@@ -2634,7 +2594,7 @@
 }
 
 [data-theme="dark"] .nomination-type-selector label::before {
-  background: linear-gradient(135deg, rgba(93, 173, 226, 0.15) 0%, rgba(155, 89, 182, 0.15) 100%);
+  background: rgba(93, 173, 226, 0.15);
 }
 
 [data-theme="dark"] .nomination-type-selector label:hover {
@@ -2644,7 +2604,7 @@
 
 [data-theme="dark"] .nomination-type-selector label.active {
   border-color: #5dade2;
-  background: linear-gradient(135deg, #5dade2 0%, #9b59b6 100%);
+  background: #5dade2;
   color: white;
   box-shadow: 0 6px 20px rgba(93, 173, 226, 0.5);
 }
@@ -2697,12 +2657,12 @@
 }
 
 [data-theme="dark"] .form-section h3 {
-  color: #5dade2;
+  color: var(--primary-color) !important;
   border-bottom-color: #5dade2;
-  background: linear-gradient(to right, #5dade2, #9b59b6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 [data-theme="dark"] .char-count {
@@ -2748,13 +2708,13 @@
 /* Form Buttons */
 [data-theme="dark"] .form-submit-btn,
 [data-theme="dark"] .submit-btn {
-  background: linear-gradient(135deg, #5dade2, #3498db);
+  background: #5dade2;
   border: 1px solid rgba(93, 173, 226, 0.3);
 }
 
 [data-theme="dark"] .form-submit-btn:hover,
 [data-theme="dark"] .submit-btn:hover {
-  background: linear-gradient(135deg, #3498db, #2980b9);
+  background: #3498db;
   box-shadow: 0 8px 25px rgba(93, 173, 226, 0.4);
 }
 
@@ -2819,11 +2779,11 @@
 }
 
 [data-theme="dark"] .awards-modal-content .footer-content {
-  background: linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(44, 62, 80, 0.95));
+  background: rgba(26, 26, 26, 0.95);
 }
 
 [data-theme="dark"] .awards-modal-content .footer-bottom {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);
+  background: #1a1a1a;
 }
 
 /* Scrollbar for Dark Mode */
@@ -2853,7 +2813,7 @@
 .awards-standalone-page {
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: #f8fafc;
   overflow-x: hidden;
   display: block !important;
   visibility: visible !important;
@@ -2869,7 +2829,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   padding: 20px 0;
   z-index: 1000;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -2958,7 +2918,7 @@
   justify-content: center;
   padding: 140px 20px 80px;
   overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   visibility: visible !important;
 }
 
@@ -3010,31 +2970,26 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    135deg,
-    rgba(102, 126, 234, 0.9) 0%,
-    rgba(118, 75, 162, 0.9) 50%,
-    rgba(102, 126, 234, 0.9) 100%
-  );
+  background: rgba(102, 126, 234, 0.9);
   animation: gradientShift 15s ease infinite;
   z-index: 2;
 }
 
 @keyframes gradientShift {
   0% { 
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+    background: rgba(102, 126, 234, 0.9);
   }
   25% { 
-    background: linear-gradient(135deg, rgba(118, 75, 162, 0.9) 0%, rgba(237, 100, 166, 0.9) 100%);
+    background: rgba(118, 75, 162, 0.9);
   }
   50% { 
-    background: linear-gradient(135deg, rgba(237, 100, 166, 0.9) 0%, rgba(255, 154, 158, 0.9) 100%);
+    background: rgba(237, 100, 166, 0.9);
   }
   75% { 
-    background: linear-gradient(135deg, rgba(255, 154, 158, 0.9) 0%, rgba(102, 126, 234, 0.9) 100%);
+    background: rgba(255, 154, 158, 0.9);
   }
   100% { 
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+    background: rgba(102, 126, 234, 0.9);
   }
 }
 
@@ -3164,13 +3119,7 @@
   align-items: center;
   gap: 12px;
   padding: 14px 32px;
-  background: linear-gradient(135deg, 
-    rgba(255, 215, 0, 0.95) 0%,
-    rgba(255, 165, 0, 0.95) 25%,
-    rgba(255, 20, 147, 0.95) 50%,
-    rgba(138, 43, 226, 0.95) 75%,
-    rgba(255, 215, 0, 0.95) 100%
-  );
+  background: rgba(255, 215, 0, 0.95);
   background-size: 300% 300%;
   backdrop-filter: blur(10px);
   border-radius: 50px;
@@ -3194,12 +3143,7 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.4) 50%,
-    transparent 70%
-  );
+  background: rgba(255, 255, 255, 0.4);
   animation: shine 3s infinite;
 }
 
@@ -3287,10 +3231,10 @@
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 @keyframes fadeInDown {
@@ -3439,7 +3383,7 @@
 }
 
 .awards-btn-primary {
-  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  background: #ffd700;
   color: #667eea;
   box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
 }
@@ -3837,7 +3781,7 @@
 
 .awards-categories {
   padding: 100px 20px;
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  background: #f8fafc;
   position: relative;
   overflow: hidden;
 }
@@ -3849,9 +3793,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 50%, rgba(118, 75, 162, 0.05) 0%, transparent 50%);
+  background: rgba(102, 126, 234, 0.05);
   pointer-events: none;
 }
 
@@ -3867,10 +3809,10 @@
   font-weight: 800;
   text-align: center;
   margin-bottom: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   animation: fadeInUp 0.8s ease;
 }
 
@@ -3913,7 +3855,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  background: rgba(102, 126, 234, 0.05);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -3937,7 +3879,7 @@
 
 .category-card.active {
   border-color: #667eea;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
   transform: scale(1.05);
 }
@@ -4007,7 +3949,7 @@
 
 .awards-nominations {
   padding: 100px 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: #ffffff;
 }
 
 .awards-nominations .container {
@@ -4020,10 +3962,10 @@
   font-weight: 800;
   text-align: center;
   margin-bottom: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   animation: fadeInUp 0.8s ease;
 }
 
@@ -4133,7 +4075,7 @@
 
 .nominee-category {
   display: inline-block;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
   padding: 6px 15px;
   border-radius: 50px;
@@ -4166,7 +4108,7 @@
 .vote-button {
   width: 100%;
   padding: 15px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
   border: none;
   border-radius: 0 0 20px 20px;
@@ -4181,7 +4123,7 @@
 }
 
 .vote-button:hover {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  background: #764ba2;
   transform: translateY(-2px);
 }
 
@@ -4532,12 +4474,12 @@
 }
 
 .social-btn.instagram {
-  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  background: #f09433;
   color: white;
 }
 
 .social-btn.instagram:hover {
-  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  background: #f09433;
   transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(225, 48, 108, 0.4);
   filter: brightness(1.1);
@@ -4552,7 +4494,7 @@
   top: 100px;
   right: 20px;
   z-index: 10000;
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: #10b981;
   color: white;
   padding: 15px 25px;
   border-radius: 12px;
@@ -4620,12 +4562,7 @@
 
 .skeleton-card {
   height: 200px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.2) 50%,
-    rgba(255, 255, 255, 0.1) 100%
-  );
+  background: rgba(255, 255, 255, 0.1);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 15px;
@@ -4633,12 +4570,7 @@
 
 .skeleton-nomination-card {
   height: 400px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.2) 50%,
-    rgba(255, 255, 255, 0.1) 100%
-  );
+  background: rgba(255, 255, 255, 0.1);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 20px;
@@ -4686,7 +4618,7 @@
 }
 
 .empty-state .btn-primary {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: #667eea;
   color: white;
   border: none;
   padding: 15px 35px;
@@ -4719,12 +4651,12 @@
    ============================================ */
 
 [data-theme="dark"] .awards-standalone-page {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: #0f172a;
 }
 
 [data-theme="dark"] .awards-categories,
 [data-theme="dark"] .awards-nominations {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  background: #1e293b;
 }
 
 [data-theme="dark"] .category-card {

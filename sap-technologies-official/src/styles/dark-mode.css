@@ -8,7 +8,7 @@
    =========================== */
 
 [data-theme="dark"] .hero {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);
+    background: #1a1a1a;
 }
 
 [data-theme="dark"] .hero-content h1 {
@@ -16,10 +16,10 @@
 }
 
 [data-theme="dark"] .hero-content .highlight {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    background: none;
+    -webkit-background-clip: border-box;
+    -webkit-text-fill-color: currentColor;
+    background-clip: border-box;
 }
 
 [data-theme="dark"] .hero-content p {
@@ -43,11 +43,11 @@
 }
 
 [data-theme="dark"] .about-section .section-title {
-    color: var(--text-color);
-    background: linear-gradient(135deg, var(--text-color) 0%, var(--primary-color) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--primary-color) !important;
+    background: none;
+    -webkit-background-clip: border-box;
+    -webkit-text-fill-color: currentColor;
+    background-clip: border-box;
 }
 
 [data-theme="dark"] .about-section .section-subtitle,
@@ -70,7 +70,7 @@
 }
 
 [data-theme="dark"] .about-card .icon {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    background: var(--primary-color);
 }
 
 /* ===========================
@@ -78,15 +78,15 @@
    =========================== */
 
 [data-theme="dark"] .services-section {
-    background: linear-gradient(135deg, var(--bg-color) 0%, var(--bg-secondary) 100%);
+    background: var(--bg-color);
 }
 
 [data-theme="dark"] .services-section .section-title {
-    color: var(--text-color);
-    background: linear-gradient(135deg, var(--text-color) 0%, var(--secondary-color) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--primary-color) !important;
+    background: none;
+    -webkit-background-clip: border-box;
+    -webkit-text-fill-color: currentColor;
+    background-clip: border-box;
 }
 
 [data-theme="dark"] .services-section .section-subtitle {
@@ -113,7 +113,7 @@
 }
 
 [data-theme="dark"] .service-icon {
-    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    background: var(--secondary-color);
     box-shadow: 0 8px 24px rgba(88, 214, 141, 0.3);
 }
 
@@ -141,11 +141,11 @@
 }
 
 [data-theme="dark"] .portfolio-section .section-title {
-    color: var(--text-color);
-    background: linear-gradient(135deg, var(--text-color) 0%, var(--accent-color) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--primary-color) !important;
+    background: none;
+    -webkit-background-clip: border-box;
+    -webkit-text-fill-color: currentColor;
+    background-clip: border-box;
 }
 
 [data-theme="dark"] .portfolio-section .section-subtitle {
@@ -195,7 +195,7 @@
    =========================== */
 
 [data-theme="dark"] .partners-section {
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    background: var(--bg-secondary);
 }
 
 [data-theme="dark"] .partners-section .section-title {
@@ -247,15 +247,15 @@
    =========================== */
 
 [data-theme="dark"] .contact-section {
-    background: linear-gradient(135deg, var(--bg-color) 0%, var(--bg-secondary) 100%);
+    background: var(--bg-color);
 }
 
 [data-theme="dark"] .contact-section .section-title {
-    color: var(--text-color);
-    background: linear-gradient(135deg, var(--text-color) 0%, var(--primary-color) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--primary-color) !important;
+    background: none;
+    -webkit-background-clip: border-box;
+    -webkit-text-fill-color: currentColor;
+    background-clip: border-box;
 }
 
 [data-theme="dark"] .contact-section .section-subtitle {
@@ -282,7 +282,7 @@
 }
 
 [data-theme="dark"] .contact-icon {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    background: var(--primary-color);
 }
 
 [data-theme="dark"] .contact-form {
@@ -480,7 +480,7 @@
    =========================== */
 
 [data-theme="dark"] .certificate-verify-container {
-    background: linear-gradient(135deg, var(--bg-color) 0%, var(--bg-secondary) 100%);
+    background: var(--bg-color);
 }
 
 [data-theme="dark"] .verify-loading,
@@ -516,7 +516,7 @@
    =========================== */
 
 [data-theme="dark"] .newsletter-section {
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    background: var(--bg-secondary);
 }
 
 [data-theme="dark"] .newsletter-section h3 {
@@ -666,11 +666,11 @@
 }
 
 [data-theme="dark"] .company-name {
-    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+    background: none;
     background-size: 200% 200%;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    background-clip: border-box;
+    -webkit-background-clip: border-box;
+    -webkit-text-fill-color: currentColor;
 }
 
 [data-theme="dark"] .btn-secondary {

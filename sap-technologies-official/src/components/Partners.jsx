@@ -21,7 +21,7 @@ const Partners = () => {
   const [loading, setLoading] = useState(true);
   // Error message if API fails
   const [error, setError] = useState("");
-  
+
   /**
    * UI State Management
    */
@@ -162,7 +162,7 @@ const Partners = () => {
             </p>
             <div className="partners-actions">
               {user && user.role === "admin" ? (
-                <button 
+                <button
                   className="add-partner-btn admin-btn"
                   onClick={() => {
                     setEditingPartner(null);
@@ -172,7 +172,7 @@ const Partners = () => {
                   + Add Partner
                 </button>
               ) : (
-                <button 
+                <button
                   className="add-partner-btn request-btn"
                   onClick={() => setShowRequestForm(true)}
                 >
@@ -190,10 +190,10 @@ const Partners = () => {
             )}
           </div>
         </div>
-        
+
         {/* Partner Form Modal */}
         {showPartnerForm && (
-          <PartnerForm 
+          <PartnerForm
             isOpen={showPartnerForm}
             partner={editingPartner}
             onClose={() => {
@@ -206,7 +206,7 @@ const Partners = () => {
 
         {/* Partner Request Modal */}
         {showRequestForm && (
-          <PartnerRequestForm 
+          <PartnerRequestForm
             isOpen={showRequestForm}
             onClose={() => setShowRequestForm(false)}
           />
@@ -225,7 +225,7 @@ const Partners = () => {
             </p>
             <div className="partners-actions">
               {user && user.role === "admin" ? (
-                <button 
+                <button
                   className="add-partner-btn admin-btn"
                   onClick={() => {
                     setEditingPartner(null);
@@ -235,7 +235,7 @@ const Partners = () => {
                   + Add Partner
                 </button>
               ) : (
-                <button 
+                <button
                   className="add-partner-btn request-btn"
                   onClick={() => setShowRequestForm(true)}
                 >
@@ -250,7 +250,7 @@ const Partners = () => {
             <div key={partner._id} className="partner-card">
               {user && user.role === "admin" && (
                 <div className="partner-admin-controls">
-                  <button 
+                  <button
                     className="edit-btn"
                     onClick={() => handleEdit(partner)}
                     title="Edit Partner"
@@ -260,7 +260,7 @@ const Partners = () => {
                       <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
                   </button>
-                  <button 
+                  <button
                     className="delete-btn"
                     onClick={() => handleDelete(partner)}
                     title="Delete Partner"
@@ -275,8 +275,8 @@ const Partners = () => {
                 </div>
               )}
               <div className="partner-logo">
-                <img 
-                  src={getImageUrl(partner.logo)} 
+                <img
+                  src={getImageUrl(partner.logo)}
                   alt={`${getPartnerDisplayName(partner)} logo`}
                   onError={(e) => {
                     e.target.style.display = "none";
@@ -287,30 +287,30 @@ const Partners = () => {
                   <span>{getPartnerInitial(partner)}</span>
                 </div>
               </div>
-              
+
               <div className="partner-info">
                 {partner.name?.trim() && <h3 className="partner-name">{partner.name}</h3>}
-                
+
                 {partner.description && (
                   <p className="partner-description">{partner.description}</p>
                 )}
-                
+
                 {partner.website && (
                   <div className="partner-contact">
                     {partner.website.match(/^https?:\/\/.+/) ? (
-                      <a 
-                        href={partner.website} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                      <a
+                        href={partner.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="partner-website"
                       >
                         Visit Website
-                        <svg 
-                          width="14" 
-                          height="14" 
-                          viewBox="0 0 24 24" 
-                          fill="none" 
-                          stroke="currentColor" 
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
                           strokeWidth="2"
                         >
                           <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
@@ -331,10 +331,10 @@ const Partners = () => {
           ))}
         </div>
       </div>
-      
+
       {/* Partner Form Modal */}
       {showPartnerForm && (
-        <PartnerForm 
+        <PartnerForm
           isOpen={showPartnerForm}
           partner={editingPartner}
           onClose={() => {
@@ -347,7 +347,7 @@ const Partners = () => {
 
       {/* Partner Request Modal */}
       {showRequestForm && (
-        <PartnerRequestForm 
+        <PartnerRequestForm
           isOpen={showRequestForm}
           onClose={() => setShowRequestForm(false)}
         />

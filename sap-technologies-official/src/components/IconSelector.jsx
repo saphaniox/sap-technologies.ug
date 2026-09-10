@@ -1,6 +1,6 @@
 /**
  * Icon Selector Component for Award Categories
- * 
+ *
  * Professional icon picker with preview for admin panel
  */
 
@@ -49,7 +49,7 @@ export const IconSelector = ({ selectedIcon = 'trophy', onSelect, showLabel = tr
   return (
     <div className="icon-selector">
       {showLabel && <label className="icon-selector-label">Category Icon</label>}
-      
+
       <div className="icon-selector-trigger" onClick={() => setIsOpen(!isOpen)}>
         <div className="selected-icon-preview">
           <Icon name={selectedIcon} size={32} />

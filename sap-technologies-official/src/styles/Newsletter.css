@@ -4,7 +4,7 @@
   margin: 2rem auto;
   padding: 2.5rem;
   max-width: 500px;
-  background: linear-gradient(145deg, #ffffff 0%, #f0f9ff 100%);
+  background: #ffffff;
   border: 3px solid rgba(59, 130, 246, 0.3);
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(59, 130, 246, 0.15), 0 4px 8px rgba(59, 130, 246, 0.1);
@@ -137,7 +137,7 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.875rem 1.75rem;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: #3b82f6;
   color: white;
   border: none;
   border-radius: 10px;
@@ -151,7 +151,7 @@
 }
 
 .newsletter-button:hover {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: #2563eb;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
 }
@@ -255,7 +255,7 @@
 
 /* ==================== DARK MODE ==================== */
 [data-theme="dark"] .newsletter {
-  background: linear-gradient(145deg, rgba(44, 62, 80, 0.95), rgba(28, 40, 52, 0.98));
+  background: rgba(44, 62, 80, 0.95);
   border: 2px solid rgba(62, 74, 92, 0.4);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
@@ -315,12 +315,12 @@
 }
 
 [data-theme="dark"] .newsletter-button {
-  background: linear-gradient(135deg, #5dade2, #3498db);
+  background: #5dade2;
   box-shadow: 0 4px 12px rgba(93, 173, 226, 0.3);
 }
 
 [data-theme="dark"] .newsletter-button:hover {
-  background: linear-gradient(135deg, #3498db, #2980b9);
+  background: #3498db;
   box-shadow: 0 6px 20px rgba(93, 173, 226, 0.4);
 }
 

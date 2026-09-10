@@ -43,7 +43,7 @@ const AlertsDemo = () => {
       "Are you sure?",
       "This action will demonstrate confirmation dialog."
     );
-    
+
     if (result.isConfirmed) {
       showAlert.success("Confirmed!", "You clicked Yes");
     } else {
@@ -53,7 +53,7 @@ const AlertsDemo = () => {
 
   const demoDelete = async () => {
     const result = await showAlert.deleteConfirm("user account");
-    
+
     if (result.isConfirmed) {
       showAlert.success("Deleted!", "The item has been deleted.");
     }
@@ -65,7 +65,7 @@ const AlertsDemo = () => {
       "text",
       "Type your name here..."
     );
-    
+
     if (result.isConfirmed && result.value) {
       showAlert.success("Hello!", `Nice to meet you, ${result.value}!`);
     }
@@ -77,7 +77,7 @@ const AlertsDemo = () => {
 
   const demoLoading = async () => {
     showAlert.loading("Processing your request...", "Please wait while we handle this");
-    
+
     // Simulate async operation
     setTimeout(() => {
       showAlert.success("Complete!", "Your request has been processed.");
@@ -119,14 +119,14 @@ const AlertsDemo = () => {
   };
 
   const spinnerTypes = [
-    "Bounce", "Clip", "Dot", "Fade", "Grid", 
+    "Bounce", "Clip", "Dot", "Fade", "Grid",
     "Hash", "Pacman", "Pulse", "Ring", "Scale", "Sync"
   ];
 
   return (
     <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
       <h1>SweetAlert2 & React Spinners Demo</h1>
-      
+
       {/* SweetAlert2 Demos */}
       <section style={{ marginBottom: "40px" }}>
         <h2>SweetAlert2 Examples</h2>
@@ -169,7 +169,7 @@ const AlertsDemo = () => {
           <button onClick={demoOverlay} style={buttonStyle}>
             Show Loading Overlay
           </button>
-          
+
           <LoadingButton
             loading={buttonLoading}
             onClick={demoButtonLoading}

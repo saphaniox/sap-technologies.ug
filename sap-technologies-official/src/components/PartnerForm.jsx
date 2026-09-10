@@ -53,7 +53,7 @@ const PartnerForm = ({ isOpen, onClose, partner, onSave }) => {
       ...prev,
       [name]: type === "checkbox" ? checked : value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -90,14 +90,14 @@ const PartnerForm = ({ isOpen, onClose, partner, onSave }) => {
       }
 
       setLogoFile(file);
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setLogoPreview(e.target.result);
       };
       reader.readAsDataURL(file);
-      
+
       // Clear error
       setErrors(prev => ({
         ...prev,
@@ -135,13 +135,13 @@ const PartnerForm = ({ isOpen, onClose, partner, onSave }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     setLoading(true);
-    
+
     try {
       const formDataToSend = new FormData();
       formDataToSend.append("name", formData.name.trim());
@@ -149,17 +149,17 @@ const PartnerForm = ({ isOpen, onClose, partner, onSave }) => {
       formDataToSend.append("description", formData.description.trim());
       formDataToSend.append("isActive", formData.isActive);
       formDataToSend.append("order", formData.order);
-      
+
       if (logoFile) {
         formDataToSend.append("logo", logoFile);
       }
 
-      const url = partner 
+      const url = partner
         ? `${apiService.baseURL}/api/partners/${partner._id}`
         : `${apiService.baseURL}/api/partners`;
-      
+
       const method = partner ? "PUT" : "POST";
-      
+
       const response = await fetch(url, {
         method,
         body: formDataToSend,
@@ -209,8 +209,8 @@ const PartnerForm = ({ isOpen, onClose, partner, onSave }) => {
       <div className="modal-content partner-form-modal">
         <div className="modal-header">
           <h2>{partner ? "Edit Partner" : "Add New Partner"}</h2>
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="close-button"
             onClick={onClose}
             disabled={loading}
@@ -338,16 +338,16 @@ const PartnerForm = ({ isOpen, onClose, partner, onSave }) => {
           )}
 
           <div className="form-actions">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="btn-secondary"
               onClick={onClose}
               disabled={loading}
             >
               Cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn-primary"
               disabled={loading}
             >

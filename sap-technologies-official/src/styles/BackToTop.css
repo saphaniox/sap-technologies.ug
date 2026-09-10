@@ -5,7 +5,7 @@
   right: 30px;
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: #3b82f6;
   color: white;
   border: none;
   border-radius: 50%;
@@ -22,7 +22,7 @@
 }
 
 .back-to-top:hover {
-  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  background: #1d4ed8;
   transform: translateY(-2px) scale(1.05);
   box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
@@ -182,13 +182,13 @@
 
 /* Dark theme support */
 [data-theme="dark"] .back-to-top {
-  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  background: #60a5fa;
   box-shadow: 0 4px 15px rgba(96, 165, 250, 0.4);
   border: 1px solid rgba(96, 165, 250, 0.2);
 }
 
 [data-theme="dark"] .back-to-top:hover {
-  background: linear-gradient(135deg, #93c5fd, #60a5fa);
+  background: #93c5fd;
   box-shadow: 0 6px 20px rgba(96, 165, 250, 0.5);
   border-color: rgba(96, 165, 250, 0.4);
   transform: translateY(-2px) scale(1.05);
@@ -217,13 +217,13 @@
 /* Light theme specific enhancements */
 [data-theme="light"] .back-to-top,
 :root .back-to-top {
-  background: linear-gradient(135deg, #1a237e, #3949ab);
+  background: #1a237e;
   box-shadow: 0 4px 15px rgba(26, 35, 126, 0.3);
 }
 
 [data-theme="light"] .back-to-top:hover,
 :root .back-to-top:hover {
-  background: linear-gradient(135deg, #0d1b6b, #1a237e);
+  background: #0d1b6b;
   box-shadow: 0 6px 20px rgba(26, 35, 126, 0.4);
 }
 

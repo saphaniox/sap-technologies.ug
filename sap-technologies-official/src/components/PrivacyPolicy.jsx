@@ -28,7 +28,7 @@ const PrivacyPolicy = ({ onClose, onNavigate, onTermsOfServiceOpen }) => {
 
   return (
     <div className="legal-modal" role="dialog" aria-modal="true" aria-labelledby="privacy-policy-title" onClick={onClose}>
-      <motion.div 
+      <motion.div
         className="legal-content"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -97,7 +97,7 @@ const PrivacyPolicy = ({ onClose, onNavigate, onTermsOfServiceOpen }) => {
           <section>
             <h2>4. Data Security</h2>
             <p>
-              We implement appropriate security measures to protect your personal information against 
+              We implement appropriate security measures to protect your personal information against
               unauthorized access, alteration, disclosure, or destruction. This includes:
             </p>
             <ul>
@@ -111,7 +111,7 @@ const PrivacyPolicy = ({ onClose, onNavigate, onTermsOfServiceOpen }) => {
           <section>
             <h2>5. Cookies and Tracking Technologies</h2>
             <p>
-              We use cookies and similar technologies to enhance your experience on our website. 
+              We use cookies and similar technologies to enhance your experience on our website.
               You can control cookie settings through your browser preferences.
             </p>
             <p>
@@ -140,7 +140,7 @@ const PrivacyPolicy = ({ onClose, onNavigate, onTermsOfServiceOpen }) => {
           <section>
             <h2>7. International Data Transfers</h2>
             <p>
-              Your information may be transferred to and processed in countries other than your own. 
+              Your information may be transferred to and processed in countries other than your own.
               We ensure appropriate safeguards are in place to protect your data.
             </p>
           </section>
@@ -148,7 +148,7 @@ const PrivacyPolicy = ({ onClose, onNavigate, onTermsOfServiceOpen }) => {
           <section>
             <h2>8. Children's Privacy</h2>
             <p>
-              Our services are not intended for individuals under 13 years of age. We do not 
+              Our services are not intended for individuals under 13 years of age. We do not
               knowingly collect personal information from children under 13.
             </p>
           </section>
@@ -156,7 +156,7 @@ const PrivacyPolicy = ({ onClose, onNavigate, onTermsOfServiceOpen }) => {
           <section>
             <h2>9. Updates to This Policy</h2>
             <p>
-              We may update this Privacy Policy from time to time. We will notify you of any 
+              We may update this Privacy Policy from time to time. We will notify you of any
               material changes by posting the new policy on this page.
             </p>
           </section>

@@ -17,12 +17,12 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
     features: [""],
     technologies: [""]
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [newImageFiles, setNewImageFiles] = useState([]);
   const [imagesToDelete, setImagesToDelete] = useState([]);
-  
+
   useEffect(() => {
     if (software) {
       setFormData({
@@ -42,7 +42,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
         features: software.features?.length > 0 ? software.features : [""],
         technologies: software.technologies?.length > 0 ? software.technologies : [""]
       });
-      
+
       // Load existing images
       if (software.images && software.images.length > 0) {
         const imageUrls = software.images.map(img => ({
@@ -77,7 +77,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
       setImagesToDelete([]);
     }
   }, [software]);
-  
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -85,11 +85,11 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
       [name]: type === "checkbox" ? checked : value
     }));
   };
-  
+
   const handleImageChange = async (e) => {
     const files = Array.from(e.target.files);
     const maxImages = 5;
-    
+
     if (imagePreviews.length + files.length > maxImages) {
       showAlert.error(
         "Too many images",
@@ -98,7 +98,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
       e.target.value = "";
       return;
     }
-    
+
     // Validate files before doing browser-side compression.
     for (const file of files) {
       if (file.size > 25 * 1024 * 1024) {
@@ -106,7 +106,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
         e.target.value = "";
         return;
       }
-      
+
       if (!file.type.startsWith("image/")) {
         showAlert.error("Wrong file type", `"${file.name}" isn't an image file. Please only upload images.`);
         e.target.value = "";
@@ -134,10 +134,10 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
         return;
       }
     }
-    
+
     // Add files
     setNewImageFiles(prev => [...prev, ...optimizedFiles]);
-    
+
     // Generate previews
     optimizedFiles.forEach(file => {
       const reader = new FileReader();
@@ -150,13 +150,13 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
       };
       reader.readAsDataURL(file);
     });
-    
+
     e.target.value = "";
   };
-  
+
   const handleRemoveImage = (index) => {
     const imageToRemove = imagePreviews[index];
-    
+
     if (imageToRemove.isExisting) {
       if (imageToRemove.originalUrl) {
         setImagesToDelete(prev => [...prev, imageToRemove.originalUrl]);
@@ -167,23 +167,23 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
         setNewImageFiles(prev => prev.filter((_, i) => i !== fileIndex));
       }
     }
-    
+
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
-  
+
   const handleArrayFieldChange = (field, index, value) => {
     const newArray = [...formData[field]];
     newArray[index] = value;
     setFormData(prev => ({ ...prev, [field]: newArray }));
   };
-  
+
   const addArrayField = (field) => {
     setFormData(prev => ({
       ...prev,
       [field]: [...prev[field], ""]
     }));
   };
-  
+
   const removeArrayField = (field, index) => {
     if (formData[field].length > 1) {
       setFormData(prev => ({
@@ -192,14 +192,14 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
       }));
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const submitData = new FormData();
-      
+
       // Add basic fields
       submitData.append("name", formData.name);
       submitData.append("description", formData.description);
@@ -210,7 +210,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
       submitData.append("status", formData.status);
       submitData.append("isPublic", formData.isPublic);
       submitData.append("order", formData.order);
-      
+
       // Add arrays as JSON
       submitData.append("features", JSON.stringify(
         formData.features.filter(f => f.trim())
@@ -218,7 +218,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
       submitData.append("technologies", JSON.stringify(
         formData.technologies.filter(t => t.trim())
       ));
-      
+
       // For updates, keep existing images and append new ones
       if (software) {
         submitData.append("keepExistingImages", "true");
@@ -227,29 +227,29 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
       if (imagesToDelete.length > 0) {
         submitData.append("imagesToDelete", JSON.stringify(imagesToDelete));
       }
-      
+
       // Add new images
       newImageFiles.forEach(file => {
         submitData.append("images", file);
       });
-      
+
       // Determine endpoint
       const endpoint = software
         ? `/api/software/${software._id}`
         : "/api/software";
       const method = software ? "PUT" : "POST";
-      
+
       const response = await apiService.request(endpoint, {
         method: method,
         body: submitData
       });
-      
+
       if (response.status === "success") {
         const savedSoftware = response.data?.software || null;
         onSuccess(savedSoftware);
         onClose();
         showAlert.success(
-          "Saved! ✅",
+          "Saved! ",
           software ? "Software updated successfully." : "Software added successfully!"
         );
       }
@@ -260,9 +260,9 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
       setLoading(false);
     }
   };
-  
+
   if (!isOpen) return null;
-  
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content software-form-modal" onClick={e => e.stopPropagation()}>
@@ -272,21 +272,21 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
             <i className="fas fa-times"></i>
           </button>
         </div>
-        
+
         {/* Instructions for adding software */}
         <div className="software-form-instructions">
-          <div className="instruction-icon">💡</div>
+          <div className="instruction-icon"></div>
           <div className="instruction-content">
             <strong>How to Add a Web App:</strong>
             <p>Simply provide the web app's URL and optional logo/screenshot - no need to upload .exe files, SDK, or other software files. Users will launch your app directly through their browsers.</p>
           </div>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="software-form">
           {/* Basic Information */}
           <div className="form-section">
             <h3>Basic Information</h3>
-            
+
             <div className="form-group">
               <label>Software Name *</label>
               <input
@@ -298,7 +298,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
                 placeholder="e.g., SAP Invoice Generator"
               />
             </div>
-            
+
             <div className="form-group">
               <label>Description <span className="form-optional">(optional)</span></label>
               <textarea
@@ -309,16 +309,16 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
                 placeholder="Brief description of what this software does..."
               />
             </div>
-            
+
             <div className="form-group">
               <label>Platform Links <span className="form-optional">(optional)</span></label>
               <div className="platform-links-group">
                 {[
-                  { key: 'web',       icon: '🌐', label: 'Website',    placeholder: 'https://your-app.com' },
-                  { key: 'playstore', icon: '📱', label: 'Play Store',  placeholder: 'https://play.google.com/store/apps/...' },
-                  { key: 'appstore',  icon: '🍎', label: 'App Store',   placeholder: 'https://apps.apple.com/...' },
-                  { key: 'github',    icon: '🐙', label: 'GitHub',      placeholder: 'https://github.com/...' },
-                  { key: 'other',     icon: '🔗', label: 'Other',       placeholder: 'https://...' }
+                  { key: 'web',       icon: '+', label: 'Website',    placeholder: 'https://your-app.com' },
+                  { key: 'playstore', icon: '+', label: 'Play Store',  placeholder: 'https://play.google.com/store/apps/...' },
+                  { key: 'appstore',  icon: '+', label: 'App Store',   placeholder: 'https://apps.apple.com/...' },
+                  { key: 'github',    icon: '+', label: 'GitHub',      placeholder: 'https://github.com/...' },
+                  { key: 'other',     icon: '+', label: 'Other',       placeholder: 'https://...' }
                 ].map(({ key, icon, label, placeholder }) => (
                   <div key={key} className="platform-link-row">
                     <span className="platform-icon">{icon}</span>
@@ -337,7 +337,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
               </div>
               <small className="form-hint">Add links for each platform where your app is available. Leave unused ones blank.</small>
             </div>
-            
+
             <div className="form-row">
               <div className="form-group">
                 <label>Category <span className="form-optional">(optional)</span></label>
@@ -349,7 +349,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
                   placeholder="e.g., Productivity, Business, etc."
                 />
               </div>
-              
+
               <div className="form-group">
                 <label>Status <span className="form-optional">(optional)</span></label>
                 <select name="status" value={formData.status} onChange={handleInputChange}>
@@ -360,7 +360,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
                 </select>
               </div>
             </div>
-            
+
             <div className="form-row">
               <div className="form-group">
                 <label>Display Order <span className="form-optional">(optional)</span></label>
@@ -372,7 +372,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
                   min="0"
                 />
               </div>
-              
+
               <div className="form-group">
                 <label className="checkbox-label">
                   <input
@@ -386,11 +386,11 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
               </div>
             </div>
           </div>
-          
+
           {/* Images */}
           <div className="form-section">
             <h3>Images <span className="form-optional">(optional)</span></h3>
-            
+
             <div className="form-group">
               <label>Upload Images (Max 5) <span className="form-optional">(optional)</span></label>
               <input
@@ -402,7 +402,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
               />
               <small>Supported formats: JPG, PNG, GIF (Max 10MB each)</small>
             </div>
-            
+
             {imagePreviews.length > 0 && (
               <div className="image-previews">
                 {imagePreviews.map((preview, index) => (
@@ -421,7 +421,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
               </div>
             )}
           </div>
-          
+
           {/* Features */}
           <div className="form-section">
             <h3>Features (Optional)</h3>
@@ -452,7 +452,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
               <i className="fas fa-plus"></i> Add Feature
             </button>
           </div>
-          
+
           {/* Technologies */}
           <div className="form-section">
             <h3>Technologies Used (Optional)</h3>
@@ -483,7 +483,7 @@ const SoftwareForm = ({ isOpen, onClose, software, onSuccess }) => {
               <i className="fas fa-plus"></i> Add Technology
             </button>
           </div>
-          
+
           {/* Form Actions */}
           <div className="form-actions">
             <button type="button" onClick={onClose} className="btn-cancel" disabled={loading}>

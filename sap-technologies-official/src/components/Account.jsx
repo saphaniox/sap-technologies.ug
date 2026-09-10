@@ -44,10 +44,10 @@ const Account = ({ onClose }) => {
     try {
       setLoading(true);
       const response = await apiService.getAccount();
-      
+
       // The API returns { status: "success", data: { user: {...} } }
       const user = response?.data?.user;
-      
+
       if (user) {
         setUserDetails(user);
         setFormData({
@@ -89,12 +89,12 @@ const Account = ({ onClose }) => {
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     setMessage("");
-    
+
     try {
       await apiService.updateAccount({ name: formData.name });
       await fetchUserDetails();
       setIsEditing(false);
-      setMessage("Profile updated successfully! 🎉");
+      setMessage("Profile updated successfully! ");
       setTimeout(() => setMessage(""), 4000);
     } catch (error) {
       setMessage("Hmm, couldn't update your profile: " + error.message);
@@ -105,11 +105,11 @@ const Account = ({ onClose }) => {
   const handleEmailUpdate = async (e) => {
     e.preventDefault();
     setMessage("");
-    
+
     try {
       await apiService.updateEmail(formData.email);
       await fetchUserDetails();
-      setMessage("Email updated successfully! ✅");
+      setMessage("Email updated successfully! ");
       setTimeout(() => setMessage(""), 4000);
     } catch (error) {
       setMessage("Couldn't update your email: " + error.message);
@@ -120,19 +120,19 @@ const Account = ({ onClose }) => {
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
     setMessage("");
-    
+
     if (formData.newPassword !== formData.confirmPassword) {
       setMessage("Those passwords don't match — please try again");
       setTimeout(() => setMessage(""), 5000);
       return;
     }
-    
+
     if (formData.newPassword.length < 6) {
       setMessage("Your new password needs to be at least 6 characters");
       setTimeout(() => setMessage(""), 5000);
       return;
     }
-    
+
     try {
       await apiService.updatePassword({
         currentPassword: formData.currentPassword,
@@ -145,7 +145,7 @@ const Account = ({ onClose }) => {
         newPassword: "",
         confirmPassword: ""
       });
-      setMessage("Password updated successfully! 🔒");
+      setMessage("Password updated successfully! ");
       setTimeout(() => setMessage(""), 4000);
     } catch (error) {
       setMessage("Couldn't update your password: " + error.message);
@@ -269,25 +269,25 @@ const Account = ({ onClose }) => {
         )}
 
         <div className="account-tabs">
-          <button 
+          <button
             className={`tab-btn ${activeTab === "profile" ? "active" : ""}`}
             onClick={() => setActiveTab("profile")}
           >
             Profile
           </button>
-          <button 
+          <button
             className={`tab-btn ${activeTab === "security" ? "active" : ""}`}
             onClick={() => setActiveTab("security")}
           >
             Security
           </button>
-          <button 
+          <button
             className={`tab-btn ${activeTab === "activity" ? "active" : ""}`}
             onClick={() => setActiveTab("activity")}
           >
             Activity
           </button>
-          <button 
+          <button
             className={`tab-btn ${activeTab === "danger" ? "active" : ""}`}
             onClick={() => setActiveTab("danger")}
           >
@@ -301,10 +301,10 @@ const Account = ({ onClose }) => {
               <div className="profile-picture-section">
                 <div className="profile-pic-container">
                   {userDetails?.profilePic ? (
-                    <img 
-                      src={getImageUrl(userDetails.profilePic)} 
-                      alt="Profile" 
-                      className="profile-pic" 
+                    <img
+                      src={getImageUrl(userDetails.profilePic)}
+                      alt="Profile"
+                      className="profile-pic"
                     />
                   ) : (
                     <div className="profile-pic-initials">
@@ -476,8 +476,8 @@ const Account = ({ onClose }) => {
                   <p>No recent activity</p>
                 )}
               </div>
-              <button 
-                className="btn-secondary" 
+              <button
+                className="btn-secondary"
                 onClick={fetchUserActivity}
               >
                 Refresh Activity

@@ -83,23 +83,23 @@ const Slider = () => {
             </div>
           </div>
         ))}
-        
-        <button 
-          className="slider-arrow left" 
+
+        <button
+          className="slider-arrow left"
           onClick={prevSlide}
           aria-label="Previous Slide"
         >
           &#10094;
         </button>
-        
-        <button 
-          className="slider-arrow right" 
+
+        <button
+          className="slider-arrow right"
           onClick={nextSlide}
           aria-label="Next Slide"
         >
           &#10095;
         </button>
-        
+
         <div className="slider-dots">
           {slides.map((_, index) => (
             <span

@@ -1,6 +1,6 @@
-const isLocalhost = typeof window !== 'undefined' && 
-  (window.location.hostname === 'localhost' || 
-   window.location.hostname === '127.0.0.1' || 
+const isLocalhost = typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' ||
+   window.location.hostname === '127.0.0.1' ||
    window.location.hostname === '0.0.0.0');
 
 const DEFAULT_API_URL = "https://api.saptechug.com";
@@ -78,7 +78,7 @@ class ApiService {
     this.authStatusPromise = null;
     this.authStatusCache = null;
     this.authStatusCacheTimeout = 60 * 1000; // Avoid repeated anonymous /account checks
-    
+
     if (import.meta.env.DEV) {
       console.log('API Configuration:', {
         baseURL: this.baseURL,
@@ -100,13 +100,13 @@ class ApiService {
   getCached(key) {
     const cached = this.cache.get(key);
     if (!cached) return null;
-    
+
     const now = Date.now();
     if (now - cached.timestamp > this.cacheTimeout) {
       this.cache.delete(key);
       return null;
     }
-    
+
     return cached.data;
   }
 
@@ -248,19 +248,19 @@ class ApiService {
   async request(endpoint, options = {}) {
     // Ensure endpoint starts with /api unless it already does
     const apiEndpoint = endpoint.startsWith('/api') ? endpoint : `/api${endpoint}`;
-    
+
     // Check cache for GET requests (unless explicitly disabled)
     const method = (options.method || "GET").toUpperCase();
     const useCache = options.useCache !== false && method === "GET";
     const requestBaseURLs = this.getRequestBaseURLs(method, options);
-    
+
     // Set up headers - but be careful with file uploads!
     // FormData needs special handling (browser sets Content-Type automatically)
     const headers = {};
     if (options.body && !(options.body instanceof FormData)) {
       headers["Content-Type"] = "application/json";
     }
-    
+
     // Add visitor tracking headers
     const sessionId = sessionStorage.getItem("visitor_session_id");
     const fingerprint = sessionStorage.getItem("x-fingerprint");
@@ -274,13 +274,13 @@ class ApiService {
     if (this.authToken) {
       headers.Authorization = `Bearer ${this.authToken}`;
     }
-    
+
     // Merge headers properly, avoiding issues with undefined
     const mergedHeaders = {
       ...headers,
       ...(options.headers || {})
     };
-    
+
     const config = {
       method: method,
       headers: mergedHeaders,
@@ -290,7 +290,7 @@ class ApiService {
       // cache which we manage explicitly.
       ...(method === 'GET' ? { cache: options.cacheMode || 'no-store' } : {}),
     };
-    
+
     // Add body if present
     if (options.body) {
       config.body = options.body;
@@ -424,7 +424,7 @@ class ApiService {
 
   // Authentication methods - handle user login/logout/registration
   // These are the core methods that let users access their accounts
-  
+
   async login(credentials) {
     // Send login request with email/password
     const response = await this.request("/api/login", {
@@ -562,7 +562,7 @@ class ApiService {
   async uploadProfilePic(file) {
     const formData = new FormData();
     formData.append("profilePic", file);
-    
+
     return this.request("/api/users/profile-pic", {
       method: "POST",
       headers: {}, // Remove Content-Type to let browser set it for FormData
@@ -715,7 +715,7 @@ class ApiService {
     const config = {
       method: "POST",
     };
-    
+
     // If serviceData is FormData, don"t set content-type header
     if (serviceData instanceof FormData) {
       config.body = serviceData;
@@ -723,7 +723,7 @@ class ApiService {
       config.body = JSON.stringify(serviceData);
       config.headers = { "Content-Type": "application/json" };
     }
-    
+
     const result = await this.request("/api/admin/services", config);
     // Clear services cache after mutation
     this.clearCache();
@@ -734,7 +734,7 @@ class ApiService {
     const config = {
       method: "PUT",
     };
-    
+
     // If serviceData is FormData, don"t set content-type header
     if (serviceData instanceof FormData) {
       config.body = serviceData;
@@ -742,7 +742,7 @@ class ApiService {
       config.body = JSON.stringify(serviceData);
       config.headers = { "Content-Type": "application/json" };
     }
-    
+
     const result = await this.request(`/api/admin/services/${serviceId}`, config);
     // Clear services cache after mutation
     this.clearCache();
@@ -786,7 +786,7 @@ class ApiService {
     const config = {
       method: "POST",
     };
-    
+
     // If projectData is FormData, don"t set content-type header
     if (projectData instanceof FormData) {
       config.body = projectData;
@@ -794,7 +794,7 @@ class ApiService {
       config.body = JSON.stringify(projectData);
       config.headers = { "Content-Type": "application/json" };
     }
-    
+
     const result = await this.request("/api/admin/projects", config);
     // Clear projects cache after mutation
     this.clearCache();
@@ -805,7 +805,7 @@ class ApiService {
     const config = {
       method: "PUT",
     };
-    
+
     // If projectData is FormData, don"t set content-type header
     if (projectData instanceof FormData) {
       config.body = projectData;

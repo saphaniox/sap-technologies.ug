@@ -29,7 +29,7 @@
 }
 
 .account-header {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+  background: var(--primary-color);
   padding: 25px 35px;
   border-radius: 20px 20px 0 0;
   display: flex;
@@ -185,7 +185,7 @@
 .profile-pic-initials {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -284,12 +284,12 @@
 }
 
 .role-badge.admin {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: #667eea;
   color: white;
 }
 
 .role-badge.user {
-  background: linear-gradient(45deg, #48bb78, #38a169);
+  background: #48bb78;
   color: white;
 }
 
@@ -537,40 +537,40 @@
 }
 
 .btn-primary {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: #667eea;
   color: white;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(45deg, #5a67d8, #6b46c1);
+  background: #5a67d8;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
 .btn-secondary {
-  background: linear-gradient(45deg, #718096, #4a5568);
+  background: #718096;
   color: white;
 }
 
 .btn-secondary:hover {
-  background: linear-gradient(45deg, #4a5568, #2d3748);
+  background: #4a5568;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(113, 128, 150, 0.4);
 }
 
 .btn-danger {
-  background: linear-gradient(45deg, #e53e3e, #c53030);
+  background: #e53e3e;
   color: white;
 }
 
 .btn-danger:hover {
-  background: linear-gradient(45deg, #c53030, #9c2626);
+  background: #c53030;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(229, 62, 62, 0.4);
 }
 
 .btn-edit {
-  background: linear-gradient(45deg, #48bb78, #38a169);
+  background: #48bb78;
   color: white;
   padding: 10px 18px;
   border: none;
@@ -585,7 +585,7 @@
 }
 
 .btn-edit:hover {
-  background: linear-gradient(45deg, #38a169, #2f855a);
+  background: #38a169;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
 }

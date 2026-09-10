@@ -87,9 +87,9 @@ const SeasonalGreeting = () => {
               {/* Decorative Elements */}
               <div className="seasonal-decorations">
                 <>
-                  <span className="decoration">🚀</span>
+                  <span className="decoration"></span>
                   <span className="decoration">⏳</span>
-                  <span className="decoration">✨</span>
+                  <span className="decoration"></span>
                 </>
               </div>
 
@@ -143,9 +143,9 @@ const SeasonalGreeting = () => {
               {/* Decorative Bottom */}
               <div className="seasonal-decorations bottom">
                 <>
-                  <span className="decoration">🔒</span>
-                  <span className="decoration">⚡</span>
-                  <span className="decoration">🎯</span>
+                  <span className="decoration"></span>
+                  <span className="decoration"></span>
+                  <span className="decoration"></span>
                 </>
               </div>
 

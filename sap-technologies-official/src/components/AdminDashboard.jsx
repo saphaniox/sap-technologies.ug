@@ -273,7 +273,7 @@ const AdminDashboard = ({ user, onClose }) => {
   // Main navigation state - tracks which admin section is currently active
   const [activeTab, setActiveTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false); // sidebar collapsed by default on mobile
-  
+
   // Data states - all the information we display in different admin sections
   const [dashboardStats, setDashboardStats] = useState(null); // Overview numbers and charts
   const [systemHealth, setSystemHealth] = useState(null); // Server performance info
@@ -291,13 +291,13 @@ const AdminDashboard = ({ user, onClose }) => {
   const [galleryItems, setGalleryItems] = useState([]); // Gallery images
   const [jobs, setJobs] = useState([]); // Job postings
   const [jobApplications, setJobApplications] = useState([]); // Job applications
-  
+
   // UI state for loading and error handling
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false); // For updates/deletions without blocking UI
   const [error, setError] = useState("");
   const [message, setMessage] = useState(""); // Success/error messages for user actions
-  
+
   // Pagination states - for handling large lists of data
   // We don't want to load 1000 users at once, so we paginate them
   const [usersPagination, setUsersPagination] = useState({ currentPage: 1, totalPages: 1 });
@@ -343,7 +343,7 @@ const AdminDashboard = ({ user, onClose }) => {
   const [emailingJobApplication, setEmailingJobApplication] = useState(null);
   const [applicantEmailForm, setApplicantEmailForm] = useState({ subject: "", message: "" });
   const [sendingApplicantEmail, setSendingApplicantEmail] = useState(false);
-  
+
   // Settings states
   const [currentSignature, setCurrentSignature] = useState(null);
   const [signatureFile, setSignatureFile] = useState(null);
@@ -692,9 +692,9 @@ const AdminDashboard = ({ user, onClose }) => {
         category: productsCategoryFilter,
         status: productsStatusFilter === "all" ? "" : productsStatusFilter
       };
-      
+
       const response = await apiService.getProductsAdmin(params);
-      
+
       if (response && response.data) {
         setProducts(response.data.products || []);
         setProductsPagination(response.data.pagination || { currentPage: 1, totalPages: 1 });
@@ -716,9 +716,9 @@ const AdminDashboard = ({ user, onClose }) => {
         search: productInquiriesSearch,
         status: productInquiriesStatusFilter === "all" ? "" : productInquiriesStatusFilter
       };
-      
+
       const response = await apiService.getProductInquiries(params);
-      
+
       if (response && response.data) {
         setProductInquiries(response.data.inquiries || []);
         // Backend returns: totalPages, currentPage, total (not wrapped in pagination object)
@@ -747,9 +747,9 @@ const AdminDashboard = ({ user, onClose }) => {
         search: serviceQuotesSearch,
         status: serviceQuotesStatusFilter === "all" ? "" : serviceQuotesStatusFilter
       };
-      
+
       const response = await apiService.getServiceQuotes(params);
-      
+
       if (response && response.data) {
         setServiceQuotes(response.data.quotes || []);
         // Backend returns: pagination: { page, limit, total, pages }
@@ -1264,7 +1264,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
   const handleUpdateInquiryStatus = async (inquiryId, newStatus) => {
     try {
       const response = await apiService.updateInquiryStatus(inquiryId, { status: newStatus });
-      
+
       if (response && response.data) {
         setProductInquiries((prev) => prev.map((inquiry) => (
           inquiry._id === inquiryId ? { ...inquiry, status: newStatus } : inquiry
@@ -1284,7 +1284,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
 
     try {
       const response = await apiService.deleteInquiry(inquiryId);
-      
+
       if (response) {
         // Instantly remove from UI
         setProductInquiries(prev => prev.filter(inquiry => inquiry._id !== inquiryId));
@@ -1302,7 +1302,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
   const handleUpdateQuoteStatus = async (quoteId, newStatus) => {
     try {
       const response = await apiService.updateQuoteStatus(quoteId, { status: newStatus });
-      
+
       if (response && response.data) {
         setServiceQuotes((prev) => prev.map((quote) => (
           quote._id === quoteId ? { ...quote, status: newStatus } : quote
@@ -1322,7 +1322,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
 
     try {
       const response = await apiService.deleteQuote(quoteId);
-      
+
       if (response) {
         // Instantly remove from UI
         setServiceQuotes(prev => prev.filter(quote => quote._id !== quoteId));
@@ -1410,10 +1410,10 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
         method: 'GET',
         useCache: false
       });
-      
+
       // Handle both response.signature and response.data patterns
       const signatureData = response.signature || response.data?.signature || response.data;
-      
+
       // Check if signature exists and is not corrupted
       if (signatureData && signatureData.isCorrupted) {
         console.warn(' Signature file is corrupted:', signatureData.actualSize, 'bytes');
@@ -1442,7 +1442,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
         method: 'GET',
         useCache: false
       });
-      
+
       if (response && response.data) {
         setAllCertificates(response.data.certificates);
         setCertificatesPagination(response.data.pagination);
@@ -1457,7 +1457,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
 
   const handleSignatureUpload = async (e) => {
     e.preventDefault();
-    
+
     if (!signatureFile) {
       const message = "Please select a signature image first.";
       setAutoMessage(message, true);
@@ -1468,21 +1468,21 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
     // Validate file size (minimum 1KB, maximum 5MB)
     const minSize = 1024; // 1KB
     const maxSize = 5 * 1024 * 1024; // 5MB
-    
+
     if (signatureFile.size < minSize) {
       const message = `Signature file seems too small (${signatureFile.size} bytes, min 1KB). It may be corrupted. Please try a different image.`;
       setAutoMessage(message, true);
       showAlert.error("Image too small", message);
       return;
     }
-    
+
     if (signatureFile.size > maxSize) {
       const message = `That file is too large (${(signatureFile.size / 1024 / 1024).toFixed(2)}MB). Please keep it under 5MB.`;
       setAutoMessage(message, true);
       showAlert.error("Image too large", message);
       return;
     }
-    
+
     if (!signatureFile.type?.startsWith("image/")) {
       const message = `That file type (${signatureFile.type || "unknown"}) is not an image.`;
       setAutoMessage(message, true);
@@ -1556,7 +1556,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
 
     try {
       setUpdating(true);
-      
+
       const response = await apiService.request(`/api/certificates/delete/${nominationId}`, {
         method: 'DELETE'
       });
@@ -2860,7 +2860,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                         <td>{contact.phone || "N/A"}</td>
                         <td>{contact.subject || "General Inquiry"}</td>
                         <td className="message-cell">
-                          {contact.message.length > 50 
+                          {contact.message.length > 50
                             ? `${contact.message.substring(0, 50)}...`
                             : contact.message
                           }
@@ -3019,8 +3019,8 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                   </select>
                 </div>
                 <div className="action-buttons">
-                  <button 
-                    onClick={() => setShowServiceForm(true)} 
+                  <button
+                    onClick={() => setShowServiceForm(true)}
                     className="btn-primary"
                   >
                      Add Service
@@ -3063,8 +3063,8 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                           </button>
                         </td>
                         <td>
-                          {service.pricing?.basePrice ? 
-                            `${service.pricing.currency || "$"}${service.pricing.basePrice}` : 
+                          {service.pricing?.basePrice ?
+                            `${service.pricing.currency || "$"}${service.pricing.basePrice}` :
                             "Contact"
                           }
                         </td>
@@ -3163,8 +3163,8 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                   </select>
                 </div>
                 <div className="action-buttons">
-                  <button 
-                    onClick={() => setShowProjectForm(true)} 
+                  <button
+                    onClick={() => setShowProjectForm(true)}
                     className="btn-primary"
                   >
                      Add Project
@@ -3210,8 +3210,8 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                         <td>{project.client?.name || "Internal"}</td>
                         <td>
                           <div className="progress-bar">
-                            <div 
-                              className="progress-fill" 
+                            <div
+                              className="progress-fill"
                               style={{ width: `${project.progress || 0}%` }}
                             ></div>
                             <span className="progress-text">{project.progress || 0}%</span>
@@ -3265,7 +3265,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
             <div className="tab-panel">
               <div className="tab-panel-header">
                 <h3>Partners Management</h3>
-                <button 
+                <button
                   className="btn-primary"
                   onClick={() => setShowPartnerForm(true)}
                 >
@@ -3311,8 +3311,8 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                         <td>
                           <div className="partner-logo-cell">
                             {partner.logo ? (
-                              <img 
-                                src={getImageUrl(partner.logo)} 
+                              <img
+                                src={getImageUrl(partner.logo)}
                                 alt={`${getPartnerDisplayName(partner)} logo`}
                                 className="partner-logo-thumbnail"
                               />
@@ -3326,9 +3326,9 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                         <td>{partner.name?.trim() || <span className="no-description">Logo only</span>}</td>
                         <td>
                           {partner.website ? (
-                            <a 
-                              href={partner.website} 
-                              target="_blank" 
+                            <a
+                              href={partner.website}
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="website-link"
                             >
@@ -3342,7 +3342,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                           <div className="description-cell">
                             {partner.description ? (
                               <span title={partner.description}>
-                                {partner.description.length > 50 
+                                {partner.description.length > 50
                                   ? partner.description.substring(0, 50) + "..."
                                   : partner.description
                                 }
@@ -3416,7 +3416,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
             <div className="tab-panel">
               <div className="tab-panel-header">
                 <h3>Partnership Requests</h3>
-                <button 
+                <button
                   className="btn-primary"
                   onClick={() => fetchPartnershipRequests(1)}
                 >
@@ -3471,9 +3471,9 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                         </td>
                         <td>
                           {request.website ? (
-                            <a 
-                              href={request.website} 
-                              target="_blank" 
+                            <a
+                              href={request.website}
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="website-link"
                             >
@@ -3486,7 +3486,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                         <td>
                           <div className="description-cell">
                             <span title={request.description}>
-                              {request.description.length > 60 
+                              {request.description.length > 60
                                 ? request.description.substring(0, 60) + "..."
                                 : request.description
                               }
@@ -4077,7 +4077,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
               {/* Products Controls */}
               <div className="controls-section">
                 <div className="left-controls">
-                  <button 
+                  <button
                     className="btn btn-primary"
                     onClick={() => setShowProductForm(true)}
                   >
@@ -4146,7 +4146,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                             <div>
                               <p>No products found</p>
                               <small>
-                                {productsSearch || productsCategoryFilter || (productsStatusFilter && productsStatusFilter !== "all") 
+                                {productsSearch || productsCategoryFilter || (productsStatusFilter && productsStatusFilter !== "all")
                                   ? "Try adjusting your filters or search terms"
                                   : "Click 'Add New Product' to create your first product"
                                 }
@@ -4159,7 +4159,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                           <tr key={product._id}>
                             <td>
                               <div className="product-image-cell">
-                                <img 
+                                <img
                                   src={getImageUrl(product.image) || PLACEHOLDERS.product}
                                   alt={product.name}
                                   className="table-product-image"
@@ -4244,7 +4244,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                 {/* Products Pagination */}
                 {productsPagination.totalPages > 1 && (
                   <div className="pagination">
-                    <button 
+                    <button
                       className="btn-page"
                       onClick={() => fetchProducts(productsPagination.currentPage - 1)}
                       disabled={!productsPagination.hasPrev}
@@ -4255,12 +4255,12 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                       Page {productsPagination.currentPage} of {productsPagination.totalPages}
                       ({productsPagination.totalProducts || 0} products)
                     </span>
-                    <button 
+                    <button
                       className="btn-page"
                       onClick={() => fetchProducts(productsPagination.currentPage + 1)}
                       disabled={!productsPagination.hasNext}
                     >
-                      Next 
+                      Next
                     </button>
                   </div>
                 )}
@@ -4323,7 +4323,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
                             <div>
                               <p>No product inquiries found</p>
                               <small>
-                                {productInquiriesSearch || productInquiriesStatusFilter 
+                                {productInquiriesSearch || productInquiriesStatusFilter
                                   ? "Try adjusting your filters or search terms"
                                   : "Product inquiries will appear here when customers submit them"
                                 }
@@ -4400,7 +4400,7 @@ IP: ${inquiry.metadata?.ipAddress || 'N/A'}
                 {/* Product Inquiries Pagination */}
                 {productInquiriesPagination.totalPages > 1 && (
                   <div className="pagination">
-                    <button 
+                    <button
                       className="btn-page"
                       onClick={() => fetchProductInquiries(productInquiriesPagination.currentPage - 1)}
                       disabled={!productInquiriesPagination.hasPrev}
@@ -4411,12 +4411,12 @@ IP: ${inquiry.metadata?.ipAddress || 'N/A'}
                       Page {productInquiriesPagination.currentPage} of {productInquiriesPagination.totalPages}
                       ({productInquiriesPagination.totalInquiries || 0} inquiries)
                     </span>
-                    <button 
+                    <button
                       className="btn-page"
                       onClick={() => fetchProductInquiries(productInquiriesPagination.currentPage + 1)}
                       disabled={!productInquiriesPagination.hasNext}
                     >
-                      Next 
+                      Next
                     </button>
                   </div>
                 )}
@@ -4482,7 +4482,7 @@ IP: ${inquiry.metadata?.ipAddress || 'N/A'}
                             <div>
                               <p>No service quotes found</p>
                               <small>
-                                {serviceQuotesSearch || serviceQuotesStatusFilter 
+                                {serviceQuotesSearch || serviceQuotesStatusFilter
                                   ? "Try adjusting your filters or search terms"
                                   : "Service quote requests will appear here when customers submit them"
                                 }
@@ -4572,7 +4572,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                 {/* Service Quotes Pagination */}
                 {serviceQuotesPagination.totalPages > 1 && (
                   <div className="pagination">
-                    <button 
+                    <button
                       className="btn-page"
                       onClick={() => fetchServiceQuotes(serviceQuotesPagination.currentPage - 1)}
                       disabled={!serviceQuotesPagination.hasPrev}
@@ -4583,12 +4583,12 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                       Page {serviceQuotesPagination.currentPage} of {serviceQuotesPagination.totalPages}
                       ({serviceQuotesPagination.totalQuotes || 0} quotes)
                     </span>
-                    <button 
+                    <button
                       className="btn-page"
                       onClick={() => fetchServiceQuotes(serviceQuotesPagination.currentPage + 1)}
                       disabled={!serviceQuotesPagination.hasNext}
                     >
-                      Next 
+                      Next
                     </button>
                   </div>
                 )}
@@ -4631,13 +4631,13 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                 >
                   Saved Emails
                 </button>
-                <button 
+                <button
                   className={`subtab-btn ${settingsSubTab === "signature" ? "active" : ""}`}
                   onClick={() => setSettingsSubTab("signature")}
                 >
                    Signature
                 </button>
-                <button 
+                <button
                   className={`subtab-btn ${settingsSubTab === "certificates" ? "active" : ""}`}
                   onClick={() => setSettingsSubTab("certificates")}
                 >
@@ -4695,7 +4695,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                 <div className="settings-section">
                   <h3>Certificate Signature</h3>
                   <p className="section-description">
-                    Upload a signature image that will appear on all generated certificates. 
+                    Upload a signature image that will appear on all generated certificates.
                     The signature will be displayed above "SAPTech Awards 2026 Committee" text.
                   </p>
 
@@ -4707,7 +4707,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                         <p><strong>Uploaded:</strong> {new Date(currentSignature.uploadedAt).toLocaleDateString()}</p>
                         <p><strong>Size:</strong> {(currentSignature.size / 1024).toFixed(2)} KB</p>
                       </div>
-                      <button 
+                      <button
                         className="btn-delete"
                         onClick={handleDeleteSignature}
                       >
@@ -4736,8 +4736,8 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                       <small>Accepted formats: any image format (Max 5MB)</small>
                     </div>
 
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       className="btn-primary"
                       disabled={!signatureFile || uploadingSignature}
                     >
@@ -4746,7 +4746,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                   </form>
 
                   <div className="signature-preview-note">
-                    <strong>Note:</strong> The signature will be embedded in certificates at 120x40 pixels. 
+                    <strong>Note:</strong> The signature will be embedded in certificates at 120x40 pixels.
                     For best results, use a transparent PNG with your signature centered.
                   </div>
                 </div>
@@ -4810,8 +4810,8 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                                 <td>{cert.categoryName || "N/A"}</td>
                                 <td>
                                   <span className={`badge badge-${cert.status}`}>
-                                    {cert.status === "winner" ? " Winner" : 
-                                     cert.status === "finalist" ? " Finalist" : 
+                                    {cert.status === "winner" ? " Winner" :
+                                     cert.status === "finalist" ? " Finalist" :
                                      " Participation"}
                                   </span>
                                 </td>
@@ -4825,7 +4825,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                                   </span>
                                 </td>
                                 <td className="actions-cell">
-                                  <a 
+                                  <a
                                     href={cert.downloadUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -4834,7 +4834,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                                   >
                                      Download
                                   </a>
-                                  <a 
+                                  <a
                                     href={cert.verificationUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -4861,7 +4861,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                       {/* Pagination */}
                       {certificatesPagination.totalPages > 1 && (
                         <div className="pagination">
-                          <button 
+                          <button
                             className="btn-page"
                             onClick={() => fetchAllCertificates(certificatesPagination.currentPage - 1)}
                             disabled={!certificatesPagination.hasPrevPage}
@@ -4872,12 +4872,12 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                             Page {certificatesPagination.currentPage} of {certificatesPagination.totalPages}
                             ({certificatesPagination.totalCertificates || 0} certificates)
                           </span>
-                          <button 
+                          <button
                             className="btn-page"
                             onClick={() => fetchAllCertificates(certificatesPagination.currentPage + 1)}
                             disabled={!certificatesPagination.hasNextPage}
                           >
-                            Next 
+                            Next
                           </button>
                         </div>
                       )}
@@ -5035,11 +5035,11 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
           </form>
         </div>
       )}
-      
+
       {/* Service Form Modal */}
       {showServiceForm && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10001 }}>
-          <ServiceForm 
+          <ServiceForm
             service={editingService}
             onClose={() => {
               setShowServiceForm(false);
@@ -5049,10 +5049,10 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
           />
         </div>
       )}
-      
+
       {/* Project Form Modal */}
       {showProjectForm && (
-        <ProjectForm 
+        <ProjectForm
           project={editingProject}
           onClose={() => {
             setShowProjectForm(false);
@@ -5064,7 +5064,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
 
       {/* Partner Form Modal */}
       {showPartnerForm && (
-        <PartnerForm 
+        <PartnerForm
           isOpen={showPartnerForm}
           partner={editingPartner}
           onClose={() => {
@@ -5077,7 +5077,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
 
       {/* Product Form Modal */}
       {showProductForm && (
-        <ProductForm 
+        <ProductForm
           isOpen={showProductForm}
           product={editingProduct}
           onClose={() => {

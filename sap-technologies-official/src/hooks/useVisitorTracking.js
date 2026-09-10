@@ -5,11 +5,11 @@ const DEFAULT_API_URL = "https://api.saptechug.com";
 
 // Get API base URL
 const getApiUrl = () => {
-  const isLocalhost = typeof window !== 'undefined' && 
-    (window.location.hostname === 'localhost' || 
-     window.location.hostname === '127.0.0.1' || 
+  const isLocalhost = typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+     window.location.hostname === '127.0.0.1' ||
      window.location.hostname === '0.0.0.0');
-  
+
   if (isLocalhost && import.meta.env.DEV) {
     return import.meta.env.VITE_API_URL || "";
   }
@@ -69,7 +69,7 @@ const generateFingerprint = () => {
   ctx.fillText("Browser Fingerprint", 4, 17);
 
   const canvasData = canvas.toDataURL();
-  
+
   // Combine with other browser properties
   const fingerprint = {
     canvas: canvasData,
@@ -97,12 +97,12 @@ const generateFingerprint = () => {
 // Get or create session ID
 const getSessionId = () => {
   let sessionId = getStoredSessionItem("visitor_session_id");
-  
+
   if (!sessionId) {
     sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     setStoredSessionItem("visitor_session_id", sessionId);
   }
-  
+
   return sessionId;
 };
 
@@ -156,7 +156,7 @@ export const useVisitorTracking = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const scrollableHeight = Math.max(1, documentHeight - windowHeight);
       const scrollPercentage = Math.min(100, Math.max(0, Math.round((scrollTop / scrollableHeight) * 100)));
-      
+
       maxScrollRef.current = Math.max(maxScrollRef.current, scrollPercentage);
     };
 
@@ -165,7 +165,7 @@ export const useVisitorTracking = () => {
     // Send page view update when user leaves
     const sendPageViewUpdate = async () => {
       const timeOnPage = Math.floor((Date.now() - startTimeRef.current) / 1000);
-      
+
       try {
         await sendTrackingPayload({
           sessionId: sessionId.current,
@@ -222,7 +222,7 @@ export const trackEvent = async (eventName, eventValue = "") => {
   try {
     const sessionId = getSessionId();
     const fingerprint = generateFingerprint();
-    
+
     await sendTrackingPayload({
       sessionId,
       fingerprint,

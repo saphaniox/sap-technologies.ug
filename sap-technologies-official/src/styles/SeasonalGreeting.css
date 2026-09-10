@@ -7,7 +7,7 @@
   width: 100%;
   max-height: min(78vh, 760px);
   overflow-y: auto;
-  background: linear-gradient(135deg, #0f1f4d 0%, #1f3e8a 50%, #0f1f4d 100%);
+  background: #0f1f4d;
   padding: 2rem 1rem;
   z-index: 1200;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -147,11 +147,11 @@
   font-size: 3rem;
   font-weight: 800;
   margin: 0;
-  background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700);
+  background: none;
   background-size: 200% 200%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
   animation: gradientShift 3s ease infinite;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   letter-spacing: 2px;
@@ -329,10 +329,10 @@
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   .seasonal-greeting-wrapper {
-    background: linear-gradient(135deg, #0a1536 0%, #173371 50%, #0a1536 100%);
+    background: #0a1536;
   }
 }
 
 [data-theme="dark"] .seasonal-greeting-wrapper {
-  background: linear-gradient(135deg, #0a1536 0%, #173371 50%, #0a1536 100%);
+  background: #0a1536;
 }

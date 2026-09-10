@@ -1,6 +1,6 @@
 .careers-section {
   padding: 80px 0;
-  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+  background: #f8fafc;
   min-height: 60vh;
 }
 
@@ -12,10 +12,10 @@
 .careers-header h2 {
   font-size: 2.5rem;
   margin-bottom: 12px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 .careers-subtitle {
@@ -56,7 +56,7 @@
 }
 
 .add-job-btn {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #10b981;
   color: white;
   border: none;
   padding: 12px 24px;
@@ -124,7 +124,7 @@
 }
 
 .job-card.uses-logo-poster .job-poster {
-  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+  background: #f8fafc;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -297,7 +297,7 @@
 }
 
 .apply-btn {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #10b981;
   color: white;
   border: none;
   padding: 12px 28px;

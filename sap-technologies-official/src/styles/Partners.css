@@ -1,7 +1,7 @@
 /* Partners Section Styles */
 .partners {
   padding: 4rem 0;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: #f5f7fa;
   position: relative;
   overflow: hidden;
 }
@@ -48,7 +48,7 @@
 }
 
 .add-partner-btn.admin-btn {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: var(--primary-color);
   color: white;
 }
 
@@ -58,7 +58,7 @@
 }
 
 .add-partner-btn.request-btn {
-  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  background: #27ae60;
   color: white;
 }
 
@@ -70,12 +70,12 @@
 .partners-header h2 {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #2d3748;
+  color: var(--primary-color) !important;
   margin-bottom: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  background-clip: border-box;
 }
 
 .partners-subtitle {
@@ -166,7 +166,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
 }
 
 .partner-card:hover {
@@ -204,7 +204,7 @@
   justify-content: center;
   width: 52px;
   height: 52px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   border-radius: 50%;
   color: white;
   font-size: 1.5rem;

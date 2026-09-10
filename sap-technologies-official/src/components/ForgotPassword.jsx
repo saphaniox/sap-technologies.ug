@@ -34,9 +34,9 @@ const ForgotPassword = ({ isOpen, onClose }) => {
 
     try {
       const response = await apiService.requestPasswordReset(email);
-      
+
       await showAlert.success(
-        "Check your inbox! 📧",
+        "Check your inbox! ",
         response.message || "We've sent a verification code to your email. It should arrive any second.",
         {
           timer: 3000,
@@ -46,7 +46,7 @@ const ForgotPassword = ({ isOpen, onClose }) => {
 
       setStep(2);
       setCountdown(60); // Start countdown for resend button
-      
+
       // Countdown timer
       const timer = setInterval(() => {
         setCountdown((prev) => {
@@ -112,7 +112,7 @@ const ForgotPassword = ({ isOpen, onClose }) => {
       });
 
       await showAlert.success(
-        "Password updated! 🔓",
+        "Password updated! ",
         response.message || "You're all set. Go ahead and log in with your new password.",
         {
           timer: 3000,
@@ -142,9 +142,9 @@ const ForgotPassword = ({ isOpen, onClose }) => {
 
     try {
       const response = await apiService.resendResetCode(email);
-      
+
       await showAlert.success(
-        "New code sent! 📨",
+        "New code sent! ",
         response.message || "A fresh verification code is on its way to your email.",
         {
           timer: 2000,
@@ -179,15 +179,15 @@ const ForgotPassword = ({ isOpen, onClose }) => {
     <div className="forgot-password-overlay" onClick={handleClose}>
       <div className="forgot-password-modal" onClick={(e) => e.stopPropagation()}>
         <button className="close-btn" onClick={handleClose} aria-label="Close">
-          ✕
+          Close
         </button>
 
         <div className="modal-header">
-          <div className="icon">🔐</div>
+          <div className="icon"></div>
           <h2>{step === 1 ? "Forgot Password?" : "Reset Password"}</h2>
           <p>
             {step === 1
-              ? "Enter your email to receive a verification code"
+              Close "Enter your email to receive a verification code"
               : "Enter the code sent to your email and your new password"}
           </p>
         </div>
@@ -198,7 +198,7 @@ const ForgotPassword = ({ isOpen, onClose }) => {
             <div className="form-group">
               <label htmlFor="email">Email Address</label>
               <div className="input-wrapper">
-                <span className="input-icon">📧</span>
+                <span className="input-icon"></span>
                 <input
                   type="email"
                   id="email"
@@ -229,7 +229,7 @@ const ForgotPassword = ({ isOpen, onClose }) => {
             <div className="form-group">
               <label htmlFor="code">Verification Code</label>
               <div className="input-wrapper">
-                <span className="input-icon">🔢</span>
+                <span className="input-icon"></span>
                 <input
                   type="text"
                   id="code"
@@ -250,7 +250,7 @@ const ForgotPassword = ({ isOpen, onClose }) => {
             <div className="form-group">
               <label htmlFor="newPassword">New Password</label>
               <div className="input-wrapper">
-                <span className="input-icon">🔒</span>
+                <span className="input-icon"></span>
                 <input
                   type={showPassword ? "text" : "password"}
                   id="newPassword"
@@ -267,7 +267,7 @@ const ForgotPassword = ({ isOpen, onClose }) => {
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label="Toggle password visibility"
                 >
-                  {showPassword ? "👁️" : "👁️‍🗨️"}
+                  {showPassword ? "?" : "?"}
                 </button>
               </div>
             </div>
@@ -275,7 +275,7 @@ const ForgotPassword = ({ isOpen, onClose }) => {
             <div className="form-group">
               <label htmlFor="confirmPassword">Confirm Password</label>
               <div className="input-wrapper">
-                <span className="input-icon">🔒</span>
+                <span className="input-icon"></span>
                 <input
                   type={showPassword ? "text" : "password"}
                   id="confirmPassword"

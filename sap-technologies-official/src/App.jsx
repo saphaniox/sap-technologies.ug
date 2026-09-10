@@ -242,14 +242,14 @@ function App() {
 
   // Enable visitor tracking
   useVisitorTracking();
-  
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState("");
   const [userDetails, setUserDetails] = useState(null);
-  
+
   const [authModal, setAuthModal] = useState({ isOpen: false, mode: "login" });
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  
+
   // Persist page visibility across refreshes
   const [showAccount, setShowAccount] = useState(() => {
     return localStorage.getItem("showAccount") === "true";
@@ -275,15 +275,15 @@ function App() {
   useEffect(() => {
     // Start keep-alive service to prevent server from sleeping
     keepAliveService.start();
-    
+
     // Also do an immediate wake-up call
     apiService.wakeUpServer();
-    
+
     checkAuthStatus();
     initializeAnimations();
-    
+
     localStorage.removeItem("showAwards");
-    
+
     const styleElement = document.createElement("style");
     styleElement.textContent = microAnimationStyles;
     document.head.appendChild(styleElement);
@@ -298,7 +298,7 @@ function App() {
   const checkAuthStatus = async () => {
     try {
       const authStatus = await apiService.checkAuthStatus();
-      
+
       if (authStatus.isAuthenticated && authStatus.user) {
         setIsAuthenticated(true);
         setUserName(authStatus.user.name || "");
@@ -428,7 +428,7 @@ function App() {
 
   useEffect(() => {
     const hashSectionId = location.hash
-      ? decodeURIComponent(location.hash.replace("#", ""))
+      + decodeURIComponent(location.hash.replace("#", ""))
       : "";
     const routeSectionId = getSectionIdFromPath(location.pathname);
     const targetSectionId = hashSectionId || routeSectionId;
@@ -722,7 +722,7 @@ function CartFloatButton() {
       aria-label={`Open cart, ${cartCount} item${cartCount !== 1 ? "s" : ""}`}
       title="View cart"
     >
-      🛒
+      +
       <span className="cart-float-badge">{cartCount}</span>
     </button>
   );

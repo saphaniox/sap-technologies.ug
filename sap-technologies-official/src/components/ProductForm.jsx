@@ -55,7 +55,7 @@ const ProductForm = ({ isOpen, onClose, product, onSuccess }) => {
                 features: product.features?.length > 0 ? product.features : [""],
                 tags: product.tags?.length > 0 ? product.tags : [""]
             });
-            
+
             // Handle images - support both single image (old) and array (new)
             if (product.images && Array.isArray(product.images) && product.images.length > 0) {
                 const imageUrls = product.images.map(img => ({
@@ -124,7 +124,7 @@ const ProductForm = ({ isOpen, onClose, product, onSuccess }) => {
     const handleImageChange = async (e) => {
         const files = Array.from(e.target.files);
         const maxImages = 5;
-        
+
         // Check if adding these files would exceed the limit
         const totalImages = imagePreviews.length + files.length;
         if (totalImages > maxImages) {
@@ -180,7 +180,7 @@ const ProductForm = ({ isOpen, onClose, product, onSuccess }) => {
             let optimizedFiles;
             try {
                 // Only remove background if the toggle is enabled
-                const processedFiles = removeBackground 
+                const processedFiles = removeBackground
                     ? await Promise.all(files.map((file) => removeConnectedBackgroundToWhite(file)))
                     : files;
 
@@ -221,7 +221,7 @@ const ProductForm = ({ isOpen, onClose, product, onSuccess }) => {
 
             // Add new files to existing array
             setNewImageFiles(prev => [...prev, ...optimizedFiles]);
-            
+
             // Generate previews for new images
             optimizedFiles.forEach((file) => {
                 const reader = new FileReader();
@@ -245,7 +245,7 @@ const ProductForm = ({ isOpen, onClose, product, onSuccess }) => {
                 reader.readAsDataURL(file);
             });
         }
-        
+
         // Reset file input
         e.target.value = '';
         setImageProcessing(false);
@@ -253,7 +253,7 @@ const ProductForm = ({ isOpen, onClose, product, onSuccess }) => {
 
     const handleRemoveImage = (index) => {
         const imageToRemove = imagePreviews[index];
-        
+
         if (imageToRemove.isExisting) {
             // Mark existing image for deletion
             setImagesToDelete(prev => [...prev, imageToRemove.path]);
@@ -264,7 +264,7 @@ const ProductForm = ({ isOpen, onClose, product, onSuccess }) => {
                 setNewImageFiles(prev => prev.filter((_, i) => i !== fileIndex));
             }
         }
-        
+
         // Remove from previews
         setImagePreviews(prev => prev.filter((_, i) => i !== index));
     };
@@ -315,7 +315,7 @@ const ProductForm = ({ isOpen, onClose, product, onSuccess }) => {
 
         try {
             const submitData = new FormData();
-            
+
             // Add basic fields
             submitData.append("name", formData.name);
             submitData.append("shortDescription", formData.shortDescription);
@@ -344,7 +344,7 @@ const ProductForm = ({ isOpen, onClose, product, onSuccess }) => {
             newImageFiles.forEach(file => {
                 submitData.append("images", file);
             });
-            
+
             // Add images to delete
             if (imagesToDelete.length > 0) {
                 submitData.append('imagesToDelete', JSON.stringify(imagesToDelete));
@@ -365,9 +365,9 @@ const ProductForm = ({ isOpen, onClose, product, onSuccess }) => {
                 onClose();
 
                 await showAlert.success(
-                    "Saved! 🎉",
+                    "Saved! ",
                     product ? "Product updated successfully." : "Product added successfully!",
-                    { 
+                    {
                         showConfirmButton: true,
                         confirmButtonText: "Great!",
                         timer: 4000
@@ -375,13 +375,13 @@ const ProductForm = ({ isOpen, onClose, product, onSuccess }) => {
                 );
             }
         } catch (error) {
-            console.error("❌ Product form error:", error);
-            console.error("❌ Error response data:", error.response?.data);
-            console.error("❌ Error response errors array:", error.response?.data?.errors);
-            
+            console.error(" Product form error:", error);
+            console.error(" Error response data:", error.response?.data);
+            console.error(" Error response errors array:", error.response?.data?.errors);
+
             // Handle validation errors with field details
 let errorMessage = error.message || "Something went wrong saving the product. Please try again.";
-            
+
             if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
                 // Format validation errors nicely
                 const validationErrors = error.response.data.errors
@@ -396,7 +396,7 @@ let errorMessage = error.message || "Something went wrong saving the product. Pl
             } else if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;
             }
-            
+
             await showAlert.error(
                 "Couldn't save the product",
                 errorMessage,
@@ -425,7 +425,7 @@ let errorMessage = error.message || "Something went wrong saving the product. Pl
                     {/* Basic Information */}
                     <div className="form-section">
                         <h3>Basic Information</h3>
-                        
+
                         <div className="form-group">
                             <label htmlFor="name">Product Name *</label>
                             <input
@@ -483,7 +483,7 @@ let errorMessage = error.message || "Something went wrong saving the product. Pl
                                         <option value="Enterprise Software">Enterprise Software</option>
                                         <option value="SaaS Products">SaaS Products</option>
                                     </optgroup>
-                                    
+
                                     <optgroup label="Hardware & Electronics">
                                         <option value="IoT Devices">IoT Devices</option>
                                         <option value="Hardware">Hardware</option>
@@ -493,7 +493,7 @@ let errorMessage = error.message || "Something went wrong saving the product. Pl
                                         <option value="Computer Hardware">Computer Hardware</option>
                                         <option value="Smart Home Devices">Smart Home Devices</option>
                                     </optgroup>
-                                    
+
                                     <optgroup label="Emerging Tech">
                                         <option value="AI/ML Products">AI/ML Products</option>
                                         <option value="Automation Solutions">Automation Solutions</option>
@@ -501,7 +501,7 @@ let errorMessage = error.message || "Something went wrong saving the product. Pl
                                         <option value="Blockchain Solutions">Blockchain Solutions</option>
                                         <option value="Cloud Services">Cloud Services</option>
                                     </optgroup>
-                                    
+
                                     <optgroup label="Industry Specific">
                                         <option value="Security Solutions">Security Solutions</option>
                                         <option value="POS Systems">POS Systems</option>
@@ -510,7 +510,7 @@ let errorMessage = error.message || "Something went wrong saving the product. Pl
                                         <option value="Educational Tech">Educational Tech</option>
                                         <option value="Financial Tech">Financial Tech</option>
                                     </optgroup>
-                                    
+
                                     <optgroup label="General">
                                         <option value="Accessories">Accessories</option>
                                         <option value="Components">Components</option>
@@ -549,16 +549,16 @@ let errorMessage = error.message || "Something went wrong saving the product. Pl
                                         onChange={(e) => setRemoveBackground(e.target.checked)}
                                     />
                                     <span className="toggle-text">
-                                        {removeBackground ? '✓ Remove Background (White)' : '✗ Keep Original Background'}
+                                        {removeBackground ? ' Remove Background (White)' : ' Keep Original Background'}
                                     </span>
                                 </label>
                                 <small className="toggle-help">
-                                    {removeBackground 
+                                    {removeBackground
                                         ? 'Images will be cleaned onto a white background automatically'
                                         : 'Images will keep their original background'}
                                 </small>
                             </div>
-                            
+
                             <input
                                 type="file"
                                 multiple
@@ -578,7 +578,7 @@ let errorMessage = error.message || "Something went wrong saving the product. Pl
                             >
                                 <i className="fas fa-plus"></i> {imageProcessing ? "Preparing Images..." : `Add Images (${imagePreviews.length}/5)`}
                             </button>
-                            
+
                             {/* Image Previews Grid */}
                             {imagePreviews.length > 0 && (
                                 <div className="image-previews-grid">
@@ -606,7 +606,7 @@ let errorMessage = error.message || "Something went wrong saving the product. Pl
                     {/* Price Configuration */}
                     <div className="form-section">
                         <h3>Price Configuration</h3>
-                        
+
                         <div className="form-group">
                             <label htmlFor="price.type">Price Type *</label>
                             <select
@@ -641,8 +641,8 @@ let errorMessage = error.message || "Something went wrong saving the product. Pl
                                         placeholder="Enter price amount"
                                     />
                                     <small className="form-help">
-                                        {formData.price.type === "fixed" 
-                                            ? "Exact selling price" 
+                                        {formData.price.type === "fixed"
+                                            ? "Exact selling price"
                                             : "Base price for negotiations"}
                                     </small>
                                 </div>
@@ -754,7 +754,7 @@ let errorMessage = error.message || "Something went wrong saving the product. Pl
                     {/* Settings */}
                     <div className="form-section">
                         <h3>Settings</h3>
-                        
+
                         <div className="form-row">
                             <div className="form-group">
                                 <label htmlFor="displayOrder">Display Order <span className="optional">(optional)</span></label>
@@ -779,7 +779,7 @@ let errorMessage = error.message || "Something went wrong saving the product. Pl
                                 />
                                 <span>Active (visible to users)</span>
                             </label>
-                            
+
                             <label className="checkbox-label">
                                 <input
                                     type="checkbox"

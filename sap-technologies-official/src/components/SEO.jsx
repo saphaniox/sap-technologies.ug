@@ -8,7 +8,7 @@ const toAbsoluteUrl = (value) => {
   return `${window.location.origin}${path}`;
 };
 
-const SEO = ({ 
+const SEO = ({
   title = "SAPTech Uganda | Web Design, Software, IoT & Engineering",
   description = "SAPTech Uganda offers engineering and technology services for clients in Uganda and worldwide, including web design, software development, IoT systems, electrical designs, graphics, cloud, cybersecurity, and digital transformation.",
   keywords = "SAPTech Uganda, engineering and technology solutions, web design Uganda, software development Uganda, IoT projects Uganda, electrical engineering Uganda",
@@ -57,7 +57,7 @@ const SEO = ({
 // Helper function to update meta tags
 const updateMetaTag = (attribute, key, content) => {
   let element = document.querySelector(`meta[${attribute}="${key}"]`);
-  
+
   if (element) {
     element.setAttribute('content', content);
   } else {

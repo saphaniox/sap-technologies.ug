@@ -70,7 +70,7 @@ html[data-theme="dark"] .legal-content {
 }
 
 .legal-content {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+  background: #1a1a2e;
   border-radius: 15px;
   width: 100%;
   max-width: 900px;
@@ -82,7 +82,7 @@ html[data-theme="dark"] .legal-content {
 }
 
 .legal-header {
-  background: linear-gradient(135deg, #0d7377 0%, #14a085 100%);
+  background: #0d7377;
   color: white;
   padding: 26px 84px 26px 30px;
   border-radius: 15px 15px 0 0;

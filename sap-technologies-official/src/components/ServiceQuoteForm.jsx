@@ -145,10 +145,10 @@ const ServiceQuoteForm = ({ service, onClose, onSubmit }) => {
       }, 2500);
     } catch (error) {
       console.error(" Error submitting quote request:", error);
-      
+
       // Show error alert notification
       showAlert.error("Quote didn't go through", error.message || "Something went wrong submitting your request. Please try again.");
-      
+
       setErrors({
         submit: error.message || "Failed to submit quote request. Please try again."
       });

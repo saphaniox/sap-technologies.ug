@@ -2,7 +2,7 @@
 
 .certificate-verify-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #667eea;
     padding: 60px 20px;
     display: flex;
     align-items: center;
@@ -56,7 +56,7 @@
 .error-icon {
     width: 100px;
     height: 100px;
-    background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+    background: #f56565;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -116,7 +116,7 @@
 }
 
 .btn-retry {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #667eea;
     color: white;
     border: none;
 }
@@ -179,7 +179,7 @@
 .success-icon {
     width: 100px;
     height: 100px;
-    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    background: #48bb78;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -210,7 +210,7 @@
 
 /* Certificate Card */
 .certificate-card {
-    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    background: #f7fafc;
     border-radius: 15px;
     padding: 40px;
     margin-bottom: 30px;
@@ -244,17 +244,17 @@
 }
 
 .badge-winner {
-    background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+    background: #f6ad55;
     color: white;
 }
 
 .badge-finalist {
-    background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
+    background: #9f7aea;
     color: white;
 }
 
 .badge-participation {
-    background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+    background: #4299e1;
     color: white;
 }
 
@@ -344,7 +344,7 @@
 .btn-download {
     flex: 1;
     padding: 15px 30px;
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    background: #f59e0b;
     color: white;
     border: none;
     border-radius: 10px;

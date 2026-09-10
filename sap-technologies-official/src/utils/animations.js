@@ -21,15 +21,15 @@ export const refreshAnimations = () => {
 
 // Custom animation variants for Framer Motion
 export const fadeInUp = {
-  hidden: { 
-    opacity: 0, 
+  hidden: {
+    opacity: 0,
     y: 60,
     transition: { duration: 0.5 }
   },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { 
+    transition: {
       duration: 0.8,
       ease: "easeOut"
     }
@@ -37,15 +37,15 @@ export const fadeInUp = {
 };
 
 export const fadeInLeft = {
-  hidden: { 
-    opacity: 0, 
+  hidden: {
+    opacity: 0,
     x: -60,
     transition: { duration: 0.5 }
   },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     x: 0,
-    transition: { 
+    transition: {
       duration: 0.8,
       ease: "easeOut"
     }
@@ -53,15 +53,15 @@ export const fadeInLeft = {
 };
 
 export const fadeInRight = {
-  hidden: { 
-    opacity: 0, 
+  hidden: {
+    opacity: 0,
     x: 60,
     transition: { duration: 0.5 }
   },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     x: 0,
-    transition: { 
+    transition: {
       duration: 0.8,
       ease: "easeOut"
     }
@@ -69,15 +69,15 @@ export const fadeInRight = {
 };
 
 export const scaleIn = {
-  hidden: { 
-    opacity: 0, 
+  hidden: {
+    opacity: 0,
     scale: 0.8,
     transition: { duration: 0.5 }
   },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     scale: 1,
-    transition: { 
+    transition: {
       duration: 0.8,
       ease: "easeOut"
     }
@@ -96,15 +96,15 @@ export const staggerContainer = {
 };
 
 export const slideInFromTop = {
-  hidden: { 
-    opacity: 0, 
+  hidden: {
+    opacity: 0,
     y: -60,
     transition: { duration: 0.5 }
   },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { 
+    transition: {
       duration: 0.8,
       ease: "easeOut"
     }
@@ -112,15 +112,15 @@ export const slideInFromTop = {
 };
 
 export const slideInFromBottom = {
-  hidden: { 
-    opacity: 0, 
+  hidden: {
+    opacity: 0,
     y: 60,
     transition: { duration: 0.5 }
   },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { 
+    transition: {
       duration: 0.8,
       ease: "easeOut"
     }
@@ -128,17 +128,17 @@ export const slideInFromBottom = {
 };
 
 export const rotateIn = {
-  hidden: { 
-    opacity: 0, 
+  hidden: {
+    opacity: 0,
     rotate: -180,
     scale: 0.5,
     transition: { duration: 0.5 }
   },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     rotate: 0,
     scale: 1,
-    transition: { 
+    transition: {
       duration: 1,
       ease: "easeOut"
     }
@@ -146,15 +146,15 @@ export const rotateIn = {
 };
 
 export const bounceIn = {
-  hidden: { 
-    opacity: 0, 
+  hidden: {
+    opacity: 0,
     scale: 0.3,
     transition: { duration: 0.5 }
   },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     scale: 1,
-    transition: { 
+    transition: {
       duration: 0.8,
       type: "spring",
       damping: 10,
@@ -165,16 +165,16 @@ export const bounceIn = {
 
 // Hover animations
 export const cardHover = {
-  rest: { 
-    scale: 1, 
+  rest: {
+    scale: 1,
     y: 0,
     transition: { duration: 0.3, ease: "easeOut" }
   },
-  hover: { 
-    scale: 1.05, 
+  hover: {
+    scale: 1.05,
     y: -10,
-    transition: { 
-      duration: 0.3, 
+    transition: {
+      duration: 0.3,
       ease: "easeOut",
       type: "spring",
       stiffness: 300
@@ -183,32 +183,32 @@ export const cardHover = {
 };
 
 export const buttonHover = {
-  rest: { 
+  rest: {
     scale: 1,
     transition: { duration: 0.2 }
   },
-  hover: { 
+  hover: {
     scale: 1.1,
-    transition: { 
+    transition: {
       duration: 0.2,
       type: "spring",
       stiffness: 400
     }
   },
-  tap: { 
+  tap: {
     scale: 0.95,
     transition: { duration: 0.1 }
   }
 };
 
 export const scaleHover = {
-  rest: { 
+  rest: {
     scale: 1,
     transition: { duration: 0.3 }
   },
-  hover: { 
+  hover: {
     scale: 1.05,
-    transition: { 
+    transition: {
       duration: 0.3,
       type: "spring",
       stiffness: 300
@@ -217,13 +217,13 @@ export const scaleHover = {
 };
 
 export const iconSpin = {
-  rest: { 
+  rest: {
     rotate: 0,
     transition: { duration: 0.5 }
   },
-  hover: { 
+  hover: {
     rotate: 360,
-    transition: { 
+    transition: {
       duration: 0.8,
       ease: "easeInOut"
     }
@@ -266,7 +266,7 @@ export const typewriterAnimation = {
 };
 
 export const letterAnimation = {
-  hidden: { 
+  hidden: {
     opacity: 0,
     y: 50
   },
@@ -281,23 +281,23 @@ export const letterAnimation = {
 
 // Page transition animations
 export const pageTransition = {
-  hidden: { 
+  hidden: {
     opacity: 0,
     x: -200,
     transition: { duration: 0.5 }
   },
-  visible: { 
+  visible: {
     opacity: 1,
     x: 0,
-    transition: { 
+    transition: {
       duration: 0.8,
       ease: "easeOut"
     }
   },
-  exit: { 
+  exit: {
     opacity: 0,
     x: 200,
-    transition: { 
+    transition: {
       duration: 0.5,
       ease: "easeIn"
     }
@@ -307,7 +307,7 @@ export const pageTransition = {
 // Performance optimized animations for mobile
 export const reduceMotionVariants = {
   hidden: { opacity: 0 },
-  visible: { 
+  visible: {
     opacity: 1,
     transition: { duration: 0.3 }
   }

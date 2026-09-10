@@ -14,7 +14,7 @@ const Softwares = () => {
   const [error, setError] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [categories, setCategories] = useState([]);
-  
+
   // Admin state
   const [user, setUser] = useState(null);
   const [showSoftwareForm, setShowSoftwareForm] = useState(false);
@@ -22,12 +22,12 @@ const Softwares = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [softwareToDelete, setSoftwareToDelete] = useState(null);
   const [adminStats, setAdminStats] = useState(null);
-  
+
   useEffect(() => {
     fetchData();
     checkUserAuth();
   }, []);
-  
+
   const fetchData = async ({ silent = false } = {}) => {
     try {
       if (!silent) setLoading(true);
@@ -35,11 +35,11 @@ const Softwares = () => {
         apiService.request("/api/software"),
         apiService.request("/api/software/categories")
       ]);
-      
+
       if (softwareResponse.status === "success") {
         setSoftware(softwareResponse.data.software);
       }
-      
+
       if (categoriesResponse.status === "success") {
         setCategories(categoriesResponse.data.categories);
       }
@@ -50,7 +50,7 @@ const Softwares = () => {
       if (!silent) setLoading(false);
     }
   };
-  
+
   const checkUserAuth = async () => {
     try {
       const currentUser = await apiService.getCurrentUser();
@@ -62,7 +62,7 @@ const Softwares = () => {
       console.error("Error checking auth:", error);
     }
   };
-  
+
   const fetchAdminStats = async () => {
     try {
       const response = await apiService.request("/api/software/admin/stats");
@@ -73,31 +73,31 @@ const Softwares = () => {
       console.error("Error fetching admin stats:", error);
     }
   };
-  
+
   const handleAddSoftware = () => {
     setEditingSoftware(null);
     setShowSoftwareForm(true);
   };
-  
+
   const handleEditSoftware = (item) => {
     setEditingSoftware(item);
     setShowSoftwareForm(true);
   };
-  
+
   const handleDeleteClick = (item) => {
     setSoftwareToDelete(item);
     setShowDeleteDialog(true);
   };
-  
+
   const handleDeleteConfirm = async () => {
     if (!softwareToDelete) return;
-    
+
     try {
       const response = await apiService.request(
         `/api/software/${softwareToDelete._id}`,
         { method: "DELETE" }
       );
-      
+
       if (response.status === "success") {
         showAlert.success("Removed!", "That software has been deleted.");
         setSoftware((prev) => {
@@ -116,7 +116,7 @@ const Softwares = () => {
       setSoftwareToDelete(null);
     }
   };
-  
+
   const handleFormSuccess = (savedSoftware) => {
     if (savedSoftware?._id) {
       setSoftware((prev) => {
@@ -134,7 +134,7 @@ const Softwares = () => {
     setShowSoftwareForm(false);
     setEditingSoftware(null);
   };
-  
+
   const trackSoftwareClick = async (itemId) => {
     try {
       await apiService.request(`/api/software/${itemId}/click`, { method: "POST" });
@@ -147,11 +147,11 @@ const Softwares = () => {
       console.error("Error tracking click:", error);
     }
   };
-  
+
   const filteredSoftware = selectedCategory === "all"
     ? software
     : software.filter(item => item.category === selectedCategory);
-  
+
   const getStatusBadge = (status) => {
     const badges = {
       active: { text: "Active", class: "status-active" },
@@ -161,7 +161,7 @@ const Softwares = () => {
     };
     return badges[status] || badges.active;
   };
-  
+
   if (loading) {
     return (
       <section id="software" className="software">
@@ -188,7 +188,7 @@ const Softwares = () => {
       </section>
     );
   }
-  
+
   return (
     <section id="software" className="software">
       <div className="container">
@@ -199,7 +199,7 @@ const Softwares = () => {
             Browse web tools, downloadable apps, demos, and business-ready applications from SAPTech Uganda.
           </p>
         </div>
-        
+
         {/* Admin Stats */}
         {user?.role === "admin" && adminStats && (
           <div className="admin-stats">
@@ -221,7 +221,7 @@ const Softwares = () => {
             </div>
           </div>
         )}
-        
+
         {/* Admin Controls */}
         {user?.role === "admin" && (
           <div className="admin-controls">
@@ -230,7 +230,7 @@ const Softwares = () => {
             </button>
           </div>
         )}
-        
+
         {/* Category Filter */}
         {categories.length > 0 && (
           <div className="category-filter">
@@ -251,7 +251,7 @@ const Softwares = () => {
             ))}
           </div>
         )}
-        
+
         {/* Software Grid */}
         {filteredSoftware.length === 0 ? (
           <div className="no-software">
@@ -277,27 +277,27 @@ const Softwares = () => {
                       loading="lazy"
                     />
                   )}
-                  
+
                   {/* Status Badge */}
                   <span className={`status-badge ${getStatusBadge(item.status).class}`}>
                     {getStatusBadge(item.status).text}
                   </span>
                 </div>
-                
+
                 {/* Content */}
                 <div className="software-content">
                   <h3 className="software-name">{item.name}</h3>
-                  
+
                   {item.category && (
                     <span className="software-category">
                       <i className="fas fa-tag"></i> {item.category}
                     </span>
                   )}
-                  
+
                   {item.description && (
                     <p className="software-description">{item.description}</p>
                   )}
-                  
+
                   {/* Technologies */}
                   {item.technologies && item.technologies.length > 0 && (
                     <div className="software-technologies">
@@ -306,7 +306,7 @@ const Softwares = () => {
                       ))}
                     </div>
                   )}
-                  
+
                   {/* Features */}
                   {item.features && item.features.length > 0 && (
                     <ul className="software-features">
@@ -317,7 +317,7 @@ const Softwares = () => {
                       ))}
                     </ul>
                   )}
-                  
+
                   {/* Actions */}
                   <div className="software-actions">
                     {/* Platform-specific launch buttons */}
@@ -330,27 +330,27 @@ const Softwares = () => {
                           className="platform-btn btn-web"
                           onClick={() => trackSoftwareClick(item._id)}
                         >
-                          🌐 Web
+                           Web
                         </a>
                       )}
                       {item.links?.playstore && (
                         <a href={item.links.playstore} target="_blank" rel="noopener noreferrer" className="platform-btn btn-playstore">
-                          📱 Play Store
+                           Play Store
                         </a>
                       )}
                       {item.links?.appstore && (
                         <a href={item.links.appstore} target="_blank" rel="noopener noreferrer" className="platform-btn btn-appstore">
-                          🍎 App Store
+                           App Store
                         </a>
                       )}
                       {item.links?.github && (
                         <a href={item.links.github} target="_blank" rel="noopener noreferrer" className="platform-btn btn-github">
-                          🐙 GitHub
+                           GitHub
                         </a>
                       )}
                       {item.links?.other && (
                         <a href={item.links.other} target="_blank" rel="noopener noreferrer" className="platform-btn btn-other">
-                          🔗 Other
+                           Other
                         </a>
                       )}
                       {item.status === "coming-soon" && (
@@ -383,7 +383,7 @@ const Softwares = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Stats (admin only) */}
                   {user?.role === "admin" && (
                     <div className="software-stats">
@@ -397,7 +397,7 @@ const Softwares = () => {
           </div>
         )}
       </div>
-      
+
       {/* Software Form Modal */}
       {showSoftwareForm && (
         <SoftwareForm
@@ -410,7 +410,7 @@ const Softwares = () => {
           onSuccess={handleFormSuccess}
         />
       )}
-      
+
       {/* Delete Confirmation Dialog */}
       {showDeleteDialog && (
         <ConfirmDialog

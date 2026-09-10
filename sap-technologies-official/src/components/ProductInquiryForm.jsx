@@ -78,11 +78,11 @@ const ProductInquiryForm = ({ product, onClose, onSubmit }) => {
         productId: product._id,
         ...formData
       });
-      
+
       console.log("Order form - onSubmit result:", result);
-      
+
       setSuccess(true);
-      
+
       // Auto close after 3 seconds
       setTimeout(() => {
         onClose();

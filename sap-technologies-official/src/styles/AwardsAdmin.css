@@ -43,7 +43,7 @@
 }
 
 .sub-tab.active {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: #3b82f6;
   border-color: #1d4ed8;
   color: white;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
@@ -58,7 +58,7 @@
 }
 
 .stat-card {
-  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 25px;
@@ -77,7 +77,7 @@
 
 .stat-icon {
   font-size: 40px;
-  background: linear-gradient(135deg, #f0f9ff, #dbeafe);
+  background: #f0f9ff;
   border-radius: 50%;
   width: 70px;
   height: 70px;
@@ -160,7 +160,7 @@
 
 .create-btn {
   padding: 12px 24px;
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: #10b981;
   color: white;
   border: none;
   border-radius: 8px;
@@ -171,7 +171,7 @@
 }
 
 .create-btn:hover {
-  background: linear-gradient(135deg, #059669, #047857);
+  background: #059669;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
@@ -207,7 +207,7 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 25px;
-  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  background: #f8fafc;
   border-bottom: 1px solid #e2e8f0;
 }
 
@@ -291,28 +291,28 @@
 }
 
 .status-pending {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  background: #fbbf24;
   color: white;
 }
 
 .status-approved {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: #10b981;
   color: white;
 }
 
 .status-rejected {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: #ef4444;
   color: white;
 }
 
 .status-winner {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  background: #fbbf24;
   color: white;
   border: 2px solid #f59e0b;
 }
 
 .status-finalist {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: #8b5cf6;
   color: white;
 }
 
@@ -429,12 +429,12 @@
 }
 
 .approve-btn {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: #10b981;
   color: white;
 }
 
 .approve-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #059669, #047857);
+  background: #059669;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
@@ -445,12 +445,12 @@
 }
 
 .reject-btn {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: #ef4444;
   color: white;
 }
 
 .reject-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  background: #dc2626;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
@@ -461,12 +461,12 @@
 }
 
 .winner-btn {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  background: #fbbf24;
   color: white;
 }
 
 .winner-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: #f59e0b;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
 }
@@ -477,12 +477,12 @@
 }
 
 .finalist-btn {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: #8b5cf6;
   color: white;
 }
 
 .finalist-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  background: #7c3aed;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
 }
@@ -493,12 +493,12 @@
 }
 
 .reset-btn {
-  background: linear-gradient(135deg, #6b7280, #4b5563);
+  background: #6b7280;
   color: white;
 }
 
 .reset-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #4b5563, #374151);
+  background: #4b5563;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
 }
@@ -509,12 +509,12 @@
 }
 
 .nomination-actions .certificate-btn {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: #f59e0b;
   color: white;
 }
 
 .nomination-actions .certificate-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #d97706, #b45309);
+  background: #d97706;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
 }
@@ -525,12 +525,12 @@
 }
 
 .nomination-actions .download-btn {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: #10b981;
   color: white;
 }
 
 .nomination-actions .download-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #059669, #047857);
+  background: #059669;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
@@ -541,12 +541,12 @@
 }
 
 .nomination-actions .delete-btn {
-  background: linear-gradient(135deg, #f87171, #ef4444);
+  background: #f87171;
   color: white;
 }
 
 .nomination-actions .delete-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: #ef4444;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(248, 113, 113, 0.4);
 }
@@ -594,7 +594,7 @@
 
 .pagination button {
   padding: 10px 20px;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: #3b82f6;
   color: white;
   border: none;
   border-radius: 8px;
@@ -604,7 +604,7 @@
 }
 
 .pagination button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  background: #1d4ed8;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
@@ -742,7 +742,7 @@
 }
 
 .create-btn {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: #10b981;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -756,7 +756,7 @@
 .create-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
-  background: linear-gradient(135deg, #059669, #047857);
+  background: #059669;
 }
 
 .categories-grid {
@@ -801,7 +801,7 @@
   justify-content: center;
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #fef3c7, #fbbf24);
+  background: #fef3c7;
   border-radius: 12px;
   flex-shrink: 0;
 }
@@ -871,12 +871,12 @@
 }
 
 .category-actions .edit-btn {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: #f59e0b;
   color: white;
 }
 
 .category-actions .edit-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #d97706, #b45309);
+  background: #d97706;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(217, 119, 6, 0.3);
 }
@@ -887,12 +887,12 @@
 }
 
 .category-actions .delete-btn {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: #ef4444;
   color: white;
 }
 
 .category-actions .delete-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  background: #dc2626;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
 }
@@ -1050,13 +1050,13 @@
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: #3b82f6;
   color: white;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 .submit-btn:hover {
-  background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+  background: #1d4ed8;
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
 }
@@ -1240,7 +1240,7 @@
 .nominee-info-summary {
   text-align: center;
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   border-radius: 12px;
   color: white;
   margin-bottom: 25px;
@@ -1280,7 +1280,7 @@
   justify-content: center;
   width: 200px;
   height: 200px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e2e8f0 100%);
+  background: #f5f7fa;
   border-radius: 12px;
   border: 2px dashed #cbd5e0;
 }
@@ -1299,7 +1299,7 @@
 .upload-label {
   display: inline-block;
   padding: 12px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
   border-radius: 10px;
   cursor: pointer;
@@ -1342,7 +1342,7 @@
 }
 
 .save-btn {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #10b981;
   color: white;
 }
 
@@ -1367,12 +1367,12 @@
 }
 
 .edit-btn {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  background: #8b5cf6;
   color: white;
 }
 
 .edit-btn:hover {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  background: #7c3aed;
   transform: translateY(-2px);
 }
 
@@ -1407,11 +1407,11 @@
 }
 
 [data-theme="dark"] .nominee-info-summary {
-  background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%);
+  background: #5b21b6;
 }
 
 [data-theme="dark"] .no-photo-placeholder {
-  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+  background: #1f2937;
   border-color: var(--border-color);
 }
 
@@ -1420,7 +1420,7 @@
 }
 
 [data-theme="dark"] .upload-label {
-  background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%);
+  background: #7c3aed;
 }
 
 [data-theme="dark"] .file-selected {

@@ -74,7 +74,7 @@ const Products = () => {
     // Cache of all products; never overwritten between category switches
     const allProductsRef = useRef([]);
     const productSearchInputRef = useRef(null);
-    
+
     const WHATSAPP_NUMBER = "+256706564628";
 
     const handleAddToCart = (product) => {
@@ -107,7 +107,7 @@ const Products = () => {
                     setSelectedCategory(defaultCategory);
                     setProducts(applyFilters(productList, defaultCategory, ""));
                 }
-                
+
                 if (categoriesResponse.status === "success") {
                     setCategories(categoryList);
                 }
@@ -307,7 +307,7 @@ const Products = () => {
                 {/* Admin Info Panel - Displayed at Top for Admins */}
                 {isAdmin && (
                     <div className="admin-info-panel" style={{
-                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        background: "#667eea",
                         color: "white",
                         padding: "20px",
                         borderRadius: "12px",
@@ -319,7 +319,7 @@ const Products = () => {
                                 <h3 style={{ margin: "0 0 10px 0", fontSize: "1.5rem" }}>Admin Mode Active</h3>
                                 <p style={{ margin: 0, opacity: 0.9 }}>Welcome back, {user.name}! You have full control over products.</p>
                             </div>
-                            <button 
+                            <button
                                 className="add-product-btn admin-btn"
                                 onClick={() => {
                                     setEditingProduct(null);
@@ -342,7 +342,7 @@ const Products = () => {
                                 + Add Product
                             </button>
                         </div>
-                        
+
                         {/* Admin Statistics */}
                         {adminStats && !loadingStats && (
                             <div style={{
@@ -395,7 +395,7 @@ const Products = () => {
                 {/* User Info Badge - For logged-in non-admin users */}
                 {user && !isAdmin && (
                     <div style={{
-                        background: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+                        background: "#a8edea",
                         color: "#333",
                         padding: "15px 20px",
                         borderRadius: "10px",
@@ -493,11 +493,11 @@ const Products = () => {
                                 const imageUrl = getImageUrl(product.image);
                                 if (imageUrl) productImages.push(imageUrl);
                             }
-                            
+
                             if (productImages.length === 0) {
                                 productImages.push(PLACEHOLDERS.product);
                             }
-                            
+
                             return (
                             <div key={product._id} className="product-card">
                                 <div className="product-image">
@@ -530,7 +530,7 @@ const Products = () => {
                                     <div className="product-category">{product.category}</div>
                                     <h3 className="product-name">{product.name}</h3>
                                     <p className="product-description">{product.shortDescription}</p>
-                                    
+
                                     {/* Technical Specs Preview */}
                                     {product.technicalSpecs && product.technicalSpecs.length > 0 && (
                                         <div className="tech-specs-preview">
@@ -563,11 +563,11 @@ const Products = () => {
                                                 if (!product.price || product.price.type === "contact-for-price") {
                                                     return "Contact for Price";
                                                 }
-                                                
+
                                                 const amount = product.price.amount;
                                                 const currency = product.price.currency;
                                                 const type = product.price.type;
-                                                
+
                                                 let formattedPrice = "";
                                                 if (amount && currency) {
                                                     const formattedAmount = parseFloat(amount).toLocaleString('en-US', {
@@ -576,11 +576,11 @@ const Products = () => {
                                                     });
                                                     formattedPrice = `${currency} ${formattedAmount}`;
                                                 }
-                                                
+
                                                 if (type === "negotiable") {
                                                     return formattedPrice ? `${formattedPrice} (Negotiable)` : "Negotiable";
                                                 }
-                                                
+
                                                 return formattedPrice || "Contact for Price";
                                             })()}
                                         </div>
@@ -641,7 +641,7 @@ const Products = () => {
                 {/* Call to Action */}
                 <div className="products-cta">
                     <p>Need a custom solution? We'd love to help!</p>
-                    <button 
+                    <button
                         className="new-cta-btn"
                         onClick={() => {
                             const contactSection = document.getElementById("contact");
@@ -666,7 +666,7 @@ const Products = () => {
 
             {/* Product Form Modal (Admin) */}
             {showProductForm && (
-                <ProductForm 
+                <ProductForm
                     isOpen={showProductForm}
                     product={editingProduct}
                     onClose={() => {

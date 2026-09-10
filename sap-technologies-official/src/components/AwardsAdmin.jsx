@@ -8,8 +8,8 @@ import "../styles/AwardsAdmin.css";
 import "../styles/IconLibrary.css";
 
 const AwardsAdmin = () => {
-  console.log("🏆 AwardsAdmin component is rendering!");
-  
+  console.log(" AwardsAdmin component is rendering!");
+
   const [activeSubTab, setActiveSubTab] = useState("nominations");
   const [nominations, setNominations] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -70,16 +70,16 @@ const AwardsAdmin = () => {
 
   const loadCategories = async () => {
     try {
-      console.log("🏆 Loading award categories...");
+      console.log(" Loading award categories...");
       const response = await apiService.getAwardsCategories();
-      console.log("✅ Categories response:", response);
-      
+      console.log(" Categories response:", response);
+
       // Backend returns: { status: "success", data: { categories: [...] } }
       const categoriesData = response.data?.categories || [];
       setCategories(categoriesData);
-      console.log("📝 Categories loaded:", categoriesData.length, "categories");
+      console.log(" Categories loaded:", categoriesData.length, "categories");
     } catch (error) {
-      console.error("❌ Error loading categories:", error);
+      console.error(" Error loading categories:", error);
       setCategories([]);
     }
   };
@@ -100,16 +100,16 @@ const AwardsAdmin = () => {
   };
 
   const loadAwardsStats = async () => {
-    console.log("📊 Loading awards statistics...");
+    console.log(" Loading awards statistics...");
     setLoading(prev => ({ ...prev, stats: true }));
     try {
       const response = await apiService.getAwardsStats();
-      console.log("✅ Stats response:", response);
-      
+      console.log(" Stats response:", response);
+
       // Backend returns: { status: "success", data: { generalStats, categoryStats, topNominations } }
       const statsData = response.data || {};
-      console.log("📝 Stats data:", statsData);
-      
+      console.log(" Stats data:", statsData);
+
       // Ensure we have default values
       setStats({
         generalStats: statsData.generalStats || {
@@ -124,9 +124,9 @@ const AwardsAdmin = () => {
         topNominations: Array.isArray(statsData.topNominations) ? statsData.topNominations : []
       });
     } catch (error) {
-      console.error("❌ Error loading stats:", error);
-      console.error("❌ Error details:", error.response?.data || error.message);
-      
+      console.error(" Error loading stats:", error);
+      console.error(" Error details:", error.response?.data || error.message);
+
       // Set empty stats to prevent undefined errors
       setStats({
         generalStats: {
@@ -140,7 +140,7 @@ const AwardsAdmin = () => {
         categoryStats: [],
         topNominations: []
       });
-      
+
       // Show error to user
       await Swal.fire({
         title: 'Hmm, something went wrong',
@@ -155,13 +155,13 @@ const AwardsAdmin = () => {
   };
 
   const handleUpdateStatus = async (nominationId, status, adminNotes = "") => {
-    console.log("📝 Updating nomination status:", nominationId, "to", status);
-    
+    console.log(" Updating nomination status:", nominationId, "to", status);
+
     setLoading(prev => ({ ...prev, updating: true }));
     try {
       const response = await apiService.updateNominationStatus(nominationId, status, adminNotes);
-      console.log("✅ Status updated successfully:", response);
-      
+      console.log(" Status updated successfully:", response);
+
       // Show success message
       await Swal.fire({
         title: 'Status updated!',
@@ -171,13 +171,13 @@ const AwardsAdmin = () => {
         showConfirmButton: false,
         timerProgressBar: true
       });
-      
+
       await loadNominations(); // Reload the list
       await loadAwardsStats(); // Update stats
     } catch (error) {
-      console.error("❌ Error updating status:", error);
+      console.error(" Error updating status:", error);
       console.error("Error details:", error.response?.data);
-      
+
       await Swal.fire({
         title: "Couldn't update status",
         text: error.response?.data?.message || error.message || "Something went wrong updating the nomination status.",
@@ -191,8 +191,8 @@ const AwardsAdmin = () => {
   };
 
   const handleGenerateCertificate = async (nominationId, nomineeName, status) => {
-    console.log("📜 Generating certificate for:", nominationId, nomineeName, status);
-    
+    console.log(" Generating certificate for:", nominationId, nomineeName, status);
+
     // Check if eligible for certificate
     if (!['winner', 'finalist', 'approved'].includes(status)) {
       await Swal.fire({
@@ -210,7 +210,7 @@ const AwardsAdmin = () => {
       const response = await apiService.request(`/api/certificates/generate/${nominationId}`, {
         method: 'POST'
       });
-      
+
       if (response) {
         await Swal.fire({
           title: 'Certificate Generated!',
@@ -229,13 +229,13 @@ const AwardsAdmin = () => {
         }).then((result) => {
           if (result.isConfirmed) {
             // Download the certificate - check if downloadUrl is already a full URL
-            const downloadUrl = response.downloadUrl.startsWith('http') 
-              ? response.downloadUrl 
+            const downloadUrl = response.downloadUrl.startsWith('http')
+              ? response.downloadUrl
               : `${apiService.baseURL}${response.downloadUrl}`;
             window.open(downloadUrl, '_blank');
           }
         });
-        
+
         // Reload nominations to show certificate status
         loadNominations();
       }
@@ -254,18 +254,18 @@ const AwardsAdmin = () => {
   };
 
   const handleDeleteNomination = async (nominationId, nomineeName) => {
-    console.log("🗑️ Attempting to delete nomination:", nominationId, nomineeName);
-    
+    console.log(" Attempting to delete nomination:", nominationId, nomineeName);
+
     try {
       // Close any existing Swal dialogs first
       if (Swal.isVisible()) {
-        console.log("⚠️ Closing existing Swal dialog");
+        console.log(" Closing existing Swal dialog");
         Swal.close();
       }
-      
+
       // Small delay to ensure any previous dialog is closed
       await new Promise(resolve => setTimeout(resolve, 50));
-      
+
       const result = await Swal.fire({
         title: 'Just checking...',
         html: `Are you sure you want to delete the nomination for <strong>"${nomineeName}"</strong>?<br><br>This can't be undone.`,        icon: 'warning',
@@ -281,28 +281,28 @@ const AwardsAdmin = () => {
         backdrop: true,
         heightAuto: false
       });
-      
+
       console.log("Delete confirmation result:", result);
-      
+
       if (!result.isConfirmed) {
-        console.log("❌ Delete cancelled by user");
+        console.log(" Delete cancelled by user");
         return;
       }
-      
-      console.log("✅ User confirmed deletion - proceeding...");
+
+      console.log(" User confirmed deletion - proceeding...");
     } catch (swalError) {
-      console.error("❌ Error showing Swal dialog:", swalError);
+      console.error(" Error showing Swal dialog:", swalError);
       return;
     }
 
     setLoading(prev => ({ ...prev, deleting: true }));
     try {
       const response = await apiService.deleteNomination(nominationId);
-      console.log("✅ Nomination deleted successfully:", response);
-      
+      console.log(" Nomination deleted successfully:", response);
+
       // Instantly remove from UI
       setNominations(prev => prev.filter(nom => nom._id !== nominationId));
-      
+
       await Swal.fire({
         title: 'Removed!',
         text: `Nomination for "${nomineeName}" has been deleted.`,
@@ -311,15 +311,15 @@ const AwardsAdmin = () => {
         showConfirmButton: false,
         timerProgressBar: true
       });
-      
+
   // Clear API cache and reload in background to ensure data consistency
   try { apiService.clearCache(); } catch (e) { /* ignore */ }
   await loadNominations();
   await loadAwardsStats();
     } catch (error) {
-      console.error("❌ Error deleting nomination:", error);
+      console.error(" Error deleting nomination:", error);
       console.error("Error details:", error.response?.data);
-      
+
       await Swal.fire({
         title: "Couldn't delete nomination",
         text: error.response?.data?.message || error.message || "Something went wrong deleting this nomination.",
@@ -359,7 +359,7 @@ const AwardsAdmin = () => {
       setLoading(prev => ({ ...prev, updating: true }));
 
       const formData = new FormData();
-      
+
       // Add all existing nomination data
       formData.append("nomineeName", editingPhotoNomination.nomineeName);
       formData.append("nomineeTitle", editingPhotoNomination.nomineeTitle || "");
@@ -373,14 +373,14 @@ const AwardsAdmin = () => {
       formData.append("nominatorEmail", editingPhotoNomination.nominatorEmail);
       formData.append("nominatorPhone", editingPhotoNomination.nominatorPhone || "");
       formData.append("nominatorOrganization", editingPhotoNomination.nominatorOrganization || "");
-      
+
       // Add new photo if selected
       if (newPhoto) {
         formData.append("nomineePhoto", newPhoto);
       }
 
       const response = await apiService.updateNomination(editingPhotoNomination._id, formData);
-      
+
       await Swal.fire({
         title: 'Photo updated!',
         text: `Nominee photo has been updated successfully`,
@@ -396,8 +396,8 @@ const AwardsAdmin = () => {
       setPhotoPreview(null);
       await loadNominations(); // Reload the list
     } catch (error) {
-      console.error("❌ Error updating photo:", error);
-      
+      console.error(" Error updating photo:", error);
+
       await Swal.fire({
         title: "Couldn't update photo",
         text: error.response?.data?.message || error.message || "Something went wrong updating the photo.",
@@ -413,25 +413,25 @@ const AwardsAdmin = () => {
   // Category Management Functions
   const handleCreateCategory = async (categoryData) => {
     try {
-      console.log("🔥 Creating category with data:", categoryData);
+      console.log(" Creating category with data:", categoryData);
       setLoading(prev => ({ ...prev, categories: true }));
-      
+
       const response = await apiService.createAwardsCategory(categoryData);
-      console.log("✅ Category created successfully:", response);
-      
+      console.log(" Category created successfully:", response);
+
       await showAlert.success(
-        "Category created! 🎉",
+        "Category created! ",
         `"${categoryData.name}" has been added successfully.`,
         { timer: 3000, showConfirmButton: false }
       );
-      
+
       setShowCategoryForm(false);
       setEditingCategory(null);
       loadCategories(); // Reload categories
     } catch (error) {
-      console.error("❌ Error creating category:", error);
+      console.error(" Error creating category:", error);
       console.error("Error details:", error.response?.data || error.message);
-      
+
       await showAlert.error(
         "Couldn't create category",
         error.response?.data?.message || error.message || "Something went wrong creating the category. Please try again.",
@@ -443,32 +443,32 @@ const AwardsAdmin = () => {
   };
 
   const handleEditCategory = (category) => {
-    console.log("🖊️ Editing category:", category);
+    console.log(" Editing category:", category);
     setEditingCategory(category);
     setShowCategoryForm(true);
   };
 
   const handleUpdateCategory = async (categoryId, categoryData) => {
     try {
-      console.log("📝 Updating category ID:", categoryId, "with data:", categoryData);
+      console.log(" Updating category ID:", categoryId, "with data:", categoryData);
       setLoading(prev => ({ ...prev, categories: true }));
-      
+
       const response = await apiService.updateAwardsCategory(categoryId, categoryData);
-      console.log("✅ Category updated successfully:", response);
-      
+      console.log(" Category updated successfully:", response);
+
       await showAlert.success(
-        "Category updated! ✅",
+        "Category updated! ",
         `"${categoryData.name}" has been updated successfully.`,
         { timer: 3000, showConfirmButton: false }
       );
-      
+
       setShowCategoryForm(false);
       setEditingCategory(null);
       await loadCategories(); // Reload categories
     } catch (error) {
-      console.error("❌ Error updating category:", error);
+      console.error(" Error updating category:", error);
       console.error("Error response:", error.response);
-      
+
       await showAlert.error(
         "Couldn't update category",
         error.response?.data?.message || error.message || "Something went wrong updating the category. Please try again.",
@@ -480,23 +480,23 @@ const AwardsAdmin = () => {
   };
 
   const handleDeleteCategory = async (categoryId, categoryName) => {
-    console.log("🗑️ Attempting to delete category:", categoryId, categoryName);
-    console.log("🔍 Swal object:", Swal);
-    console.log("🔍 Swal.fire:", typeof Swal.fire);
-    
+    console.log(" Attempting to delete category:", categoryId, categoryName);
+    console.log(" Swal object:", Swal);
+    console.log(" Swal.fire:", typeof Swal.fire);
+
     try {
       // Use Swal directly to avoid any config conflicts
       console.log("⏳ About to show Swal dialog...");
-      
+
       // Close any existing Swal dialogs first
       if (Swal.isVisible()) {
-        console.log("⚠️ Closing existing Swal dialog");
+        console.log(" Closing existing Swal dialog");
         Swal.close();
       }
-      
+
       // Small delay to ensure any previous dialog is closed
       await new Promise(resolve => setTimeout(resolve, 50));
-      
+
       const result = await Swal.fire({
         title: 'Just checking...',
         html: `Are you sure you want to delete <strong>"${categoryName}"</strong>?<br><br>This can't be undone and may affect existing nominations.`,        icon: 'warning',
@@ -516,37 +516,37 @@ const AwardsAdmin = () => {
           popup: 'swal-popup-awards'
         }
       });
-      
-      console.log("✅ Swal dialog returned");
-      console.log("📋 Full result object:", JSON.stringify(result, null, 2));
-      console.log("🔍 Result keys:", Object.keys(result));
+
+      console.log(" Swal dialog returned");
+      console.log(" Full result object:", JSON.stringify(result, null, 2));
+      console.log(" Result keys:", Object.keys(result));
       console.log("Is confirmed:", result.isConfirmed);
       console.log("Is dismissed:", result.isDismissed);
       console.log("Is denied:", result.isDenied);
       console.log("Dismiss reason:", result.dismiss);
       console.log("Value:", result.value);
-      
+
       if (!result.isConfirmed) {
-        console.log("❌ Delete cancelled by user");
+        console.log(" Delete cancelled by user");
         return;
       }
-      
-      console.log("✅ User confirmed deletion - proceeding...");
+
+      console.log(" User confirmed deletion - proceeding...");
     } catch (swalError) {
-      console.error("❌ Error showing Swal dialog:", swalError);
+      console.error(" Error showing Swal dialog:", swalError);
       return;
     }
 
     try {
-      console.log("🔥 Proceeding with delete for category ID:", categoryId);
+      console.log(" Proceeding with delete for category ID:", categoryId);
       setLoading(prev => ({ ...prev, deleting: true }));
-      
+
       const response = await apiService.deleteAwardsCategory(categoryId);
-      console.log("✅ Category deleted successfully:", response);
-      
+      console.log(" Category deleted successfully:", response);
+
       // Instantly remove from UI
       setCategories(prev => prev.filter(cat => cat._id !== categoryId));
-      
+
       // Show success message
       await Swal.fire({
         title: 'Removed!',
@@ -556,14 +556,14 @@ const AwardsAdmin = () => {
         showConfirmButton: false,
         timerProgressBar: true
       });
-      
+
       // Reload in background to ensure data consistency
       await loadCategories();
       await loadNominations();
     } catch (error) {
-      console.error("❌ Error deleting category:", error);
+      console.error(" Error deleting category:", error);
       console.error("Error details:", error.response?.data);
-      
+
       // Show error message
       await Swal.fire({
         title: "Couldn't delete category",
@@ -597,9 +597,9 @@ const AwardsAdmin = () => {
   };
 
   const renderStatsOverview = () => {
-    console.log("📊 Rendering stats with data:", stats);
+    console.log(" Rendering stats with data:", stats);
     const generalStats = stats?.generalStats || {};
-    
+
     return (
       <div className="awards-stats-grid">
         <div className="stat-card">
@@ -720,11 +720,11 @@ const AwardsAdmin = () => {
           onChange={(e) => handleFilterChange("search", e.target.value)}
           className="search-input"
         />
-        <button 
+        <button
           className="create-btn"
           onClick={() => setShowCreateForm(true)}
         >
-          ➕ Create Nomination
+           Create Nomination
         </button>
       </div>
     </div>
@@ -742,7 +742,7 @@ const AwardsAdmin = () => {
         <div className="nominee-info">
           <div style={{ position: 'relative', width: 80, height: 80 }}>
             {nomination.nomineePhoto && (
-              <img 
+              <img
                 src={getImageUrl(nomination.nomineePhoto)}
                 alt={nomination.nomineeName}
                 className="nominee-photo"
@@ -770,7 +770,7 @@ const AwardsAdmin = () => {
           <span className={`status-badge ${getStatusBadgeClass(nomination.status)}`}>
             {nomination.status.toUpperCase()}
           </span>
-          <span className="vote-count">🗳️ {nomination.votes} votes</span>
+          <span className="vote-count"> {nomination.votes} votes</span>
           <span className="category-name">
             {nomination.category?.icon} {nomination.category?.name}
           </span>
@@ -782,7 +782,7 @@ const AwardsAdmin = () => {
           <h4>Nomination Reason:</h4>
           <p>{nomination.nominationReason}</p>
         </div>
-        
+
         {nomination.achievements && (
           <div className="achievements">
             <h4>Achievements:</h4>
@@ -828,21 +828,21 @@ const AwardsAdmin = () => {
               onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("✅ Approve clicked for:", nomination.nomineeName);
+                console.log(" Approve clicked for:", nomination.nomineeName);
                 await new Promise(resolve => setTimeout(resolve, 100));
                 await handleUpdateStatus(nomination._id, "approved");
               }}
               disabled={loading.updating}
             >
-              ✅ Approve
+               Approve
             </button>
             <button
               className="action-btn reject-btn"
               onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("❌ Reject clicked for:", nomination.nomineeName);
-                
+                console.log(" Reject clicked for:", nomination.nomineeName);
+
                 // Use Swal for admin notes input
                 const { value: adminNotes } = await Swal.fire({
                   title: 'Reject Nomination',
@@ -858,18 +858,18 @@ const AwardsAdmin = () => {
                     return null;
                   }
                 });
-                
+
                 if (adminNotes !== undefined) {
                   await handleUpdateStatus(nomination._id, "rejected", adminNotes || "");
                 }
               }}
               disabled={loading.updating}
             >
-              ❌ Reject
+               Reject
             </button>
           </>
         )}
-        
+
         {nomination.status === "approved" && (
           <>
             <button
@@ -877,26 +877,26 @@ const AwardsAdmin = () => {
               onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("🏆 Mark as Winner clicked for:", nomination.nomineeName);
+                console.log(" Mark as Winner clicked for:", nomination.nomineeName);
                 await new Promise(resolve => setTimeout(resolve, 100));
                 await handleUpdateStatus(nomination._id, "winner");
               }}
               disabled={loading.updating}
             >
-              🏆 Mark as Winner
+               Mark as Winner
             </button>
             <button
               className="action-btn finalist-btn"
               onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("🥈 Mark as Finalist clicked for:", nomination.nomineeName);
+                console.log(" Mark as Finalist clicked for:", nomination.nomineeName);
                 await new Promise(resolve => setTimeout(resolve, 100));
                 await handleUpdateStatus(nomination._id, "finalist");
               }}
               disabled={loading.updating}
             >
-              🥈 Mark as Finalist
+               Mark as Finalist
             </button>
           </>
         )}
@@ -907,13 +907,13 @@ const AwardsAdmin = () => {
             onClick={async (e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log("🔄 Reset to Pending clicked for:", nomination.nomineeName);
+              console.log(" Reset to Pending clicked for:", nomination.nomineeName);
               await new Promise(resolve => setTimeout(resolve, 100));
               await handleUpdateStatus(nomination._id, "pending");
             }}
             disabled={loading.updating}
           >
-            🔄 Reset to Pending
+             Reset to Pending
           </button>
         )}
 
@@ -922,13 +922,13 @@ const AwardsAdmin = () => {
           onClick={async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log("✏️ Edit Photo clicked for:", nomination.nomineeName);
+            console.log(" Edit Photo clicked for:", nomination.nomineeName);
             await new Promise(resolve => setTimeout(resolve, 100));
             handleEditNominationPhoto(nomination);
           }}
           disabled={loading.updating}
         >
-          📸 Edit Photo
+           Edit Photo
         </button>
 
         {['winner', 'finalist', 'approved'].includes(nomination.status) && (
@@ -937,14 +937,14 @@ const AwardsAdmin = () => {
             onClick={async (e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log("📜 Generate Certificate clicked for:", nomination.nomineeName);
+              console.log(" Generate Certificate clicked for:", nomination.nomineeName);
               await new Promise(resolve => setTimeout(resolve, 100));
               await handleGenerateCertificate(nomination._id, nomination.nomineeName, nomination.status);
             }}
             disabled={loading.updating}
             title={nomination.certificateFile ? "Certificate already generated - Click to regenerate" : "Generate certificate"}
           >
-            {nomination.certificateFile ? '📜 Regenerate' : '📜 Generate'} Certificate
+            {nomination.certificateFile ? ' Regenerate' : ' Generate'} Certificate
           </button>
         )}
 
@@ -970,13 +970,13 @@ const AwardsAdmin = () => {
           onClick={async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log("🗑️ Delete clicked for:", nomination.nomineeName);
+            console.log(" Delete clicked for:", nomination.nomineeName);
             await new Promise(resolve => setTimeout(resolve, 100));
             await handleDeleteNomination(nomination._id, nomination.nomineeName);
           }}
           disabled={loading.deleting}
         >
-          {loading.deleting ? '⏳' : '🗑️'} Delete
+          {loading.deleting ? '⏳' : 'Delete'} Delete
         </button>
       </div>
     </motion.div>
@@ -991,7 +991,7 @@ const AwardsAdmin = () => {
         Previous
       </button>
       <span>
-        Page {filters.page} of {pagination.totalPages} 
+        Page {filters.page} of {pagination.totalPages}
         ({pagination.totalItems} total)
       </span>
       <button
@@ -1006,25 +1006,25 @@ const AwardsAdmin = () => {
   return (
     <div className="awards-admin">
       <div className="admin-section-header">
-        <h2>🏆 SAPTech Awards 2026 Management</h2>
+        <h2> SAPTech Awards 2026 Management</h2>
         <div className="sub-tabs">
           <button
             className={`sub-tab ${activeSubTab === "nominations" ? "active" : ""}`}
             onClick={() => setActiveSubTab("nominations")}
           >
-            📝 Nominations
+             Nominations
           </button>
           <button
             className={`sub-tab ${activeSubTab === "categories" ? "active" : ""}`}
             onClick={() => setActiveSubTab("categories")}
           >
-            🏷️ Categories
+             Categories
           </button>
           <button
             className={`sub-tab ${activeSubTab === "stats" ? "active" : ""}`}
             onClick={() => setActiveSubTab("stats")}
           >
-            📊 Statistics
+             Statistics
           </button>
         </div>
       </div>
@@ -1032,7 +1032,7 @@ const AwardsAdmin = () => {
       {activeSubTab === "nominations" && (
         <div className="nominations-section">
           {renderFilters()}
-          
+
           {loading.nominations ? (
             <div className="loading-state">Loading nominations...</div>
           ) : (
@@ -1069,15 +1069,15 @@ const AwardsAdmin = () => {
       {activeSubTab === "categories" && (
         <div className="categories-section">
           <div className="section-header">
-            <h3>🏷️ Award Categories Management</h3>
-            <button 
+            <h3> Award Categories Management</h3>
+            <button
               className="create-btn"
               onClick={() => {
                 setEditingCategory(null);
                 setShowCategoryForm(true);
               }}
             >
-              ➕ Create New Category
+               Create New Category
             </button>
           </div>
 
@@ -1086,27 +1086,27 @@ const AwardsAdmin = () => {
           ) : (
             <div className="categories-grid">
               {categories.map((category) => (
-                <motion.div 
-                  key={category._id} 
+                <motion.div
+                  key={category._id}
                   className="category-card"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
                 >
                   <div className="category-header">
-                    <div className="category-icon">{category.icon || '🏆'}</div>
+                    <div className="category-icon">{category.icon || '+'}</div>
                     <div className="category-info">
                       <h4>{category.name}</h4>
                       <p className="category-description">{category.description}</p>
                     </div>
                   </div>
-                  
+
                   <div className="category-stats">
                     <span className="nomination-count">
-                      📝 {category.totalNominations || category.nominationCount || 0} nominations
+                       {category.totalNominations || category.nominationCount || 0} nominations
                     </span>
                     <span className="approved-count">
-                      ✅ {category.approvedNominations || category.approvedCount || 0} approved
+                       {category.approvedNominations || category.approvedCount || 0} approved
                     </span>
                   </div>
 
@@ -1116,44 +1116,44 @@ const AwardsAdmin = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log("✏️ Edit clicked for category:", category.name);
+                        console.log(" Edit clicked for category:", category.name);
                         handleEditCategory(category);
                       }}
                       title="Edit Category"
                       disabled={loading.categories || loading.deleting}
                     >
-                      ✏️ Edit
+                       Edit
                     </button>
                     <button
                       className="delete-btn action-btn"
                       onClick={async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log("🗑️ Delete clicked for category:", category.name);
-                        
+                        console.log(" Delete clicked for category:", category.name);
+
                         // Add small delay to ensure click event completes
                         await new Promise(resolve => setTimeout(resolve, 100));
-                        
+
                         await handleDeleteCategory(category._id, category.name);
                       }}
                       title="Delete Category"
                       disabled={loading.categories || loading.deleting}
                     >
-                      {loading.deleting ? '⏳' : '🗑️'} Delete
+                      {loading.deleting ? '⏳' : 'Delete'} Delete
                     </button>
                   </div>
 
                   <div className="category-status">
                     <span className={`status-badge ${category.isActive ? 'active' : 'inactive'}`}>
-                      {category.isActive ? '✅ Active' : '❌ Inactive'}
+                      {category.isActive ? ' Active' : ' Inactive'}
                     </span>
                   </div>
                 </motion.div>
               ))}
-              
+
               {categories.length === 0 && (
                 <div className="empty-state">
-                  <p>🏷️ No award categories found</p>
+                  <p> No award categories found</p>
                   <p>Create your first category to start organizing awards!</p>
                 </div>
               )}
@@ -1167,30 +1167,30 @@ const AwardsAdmin = () => {
         <div className="modal-overlay" onClick={() => setShowCategoryForm(false)}>
           <div className="modal-content category-form" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{editingCategory ? '✏️ Edit Category' : '➕ Create New Category'}</h3>
-              <button 
+              <h3>{editingCategory ? ' Edit Category' : ' Create New Category'}</h3>
+              <button
                 className="close-btn"
                 onClick={() => {
                   setShowCategoryForm(false);
                   setEditingCategory(null);
                 }}
               >
-                ❌
+                Close
               </button>
             </div>
 
-            <form 
+            <form
               onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
                 const categoryData = {
                   name: formData.get('name'),
                   description: formData.get('description'),
-                  icon: formData.get('icon') || '🏆',
+                  icon: formData.get('icon') || '+',
                   isActive: formData.get('isActive') === 'on' // Convert checkbox to boolean
                 };
 
-                console.log("📝 Form data being submitted:", categoryData);
+                console.log(" Form data being submitted:", categoryData);
 
                 if (editingCategory) {
                   handleUpdateCategory(editingCategory._id, categoryData);
@@ -1227,8 +1227,8 @@ const AwardsAdmin = () => {
                   type="text"
                   name="icon"
                   required
-                  defaultValue={editingCategory?.icon || '🏆'}
-                  placeholder="🏆"
+                  defaultValue={editingCategory?.icon || '+'}
+                  placeholder="+"
                   maxLength="2"
                 />
               </div>
@@ -1246,17 +1246,17 @@ const AwardsAdmin = () => {
 
               <div className="form-actions">
                 <button type="submit" className="submit-btn" disabled={loading.categories}>
-                  {loading.categories ? '⏳ Saving...' : (editingCategory ? '💾 Update' : '➕ Create')}
+                  {loading.categories ? '⏳ Saving...' : (editingCategory ? ' Update' : ' Create')}
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="cancel-btn"
                   onClick={() => {
                     setShowCategoryForm(false);
                     setEditingCategory(null);
                   }}
                 >
-                  ❌ Cancel
+                   Cancel
                 </button>
               </div>
             </form>
@@ -1269,33 +1269,33 @@ const AwardsAdmin = () => {
         <div className="modal-overlay" onClick={() => setShowCreateForm(false)}>
           <div className="modal-content nomination-form" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>➕ Create New Nomination</h3>
-              <button 
+              <h3> Create New Nomination</h3>
+              <button
                 className="close-btn"
                 onClick={() => setShowCreateForm(false)}
               >
-                ✕
+                Close
               </button>
             </div>
-            
-            <form 
+
+            <form
               onSubmit={async (e) => {
                 e.preventDefault();
                 setLoading(prev => ({ ...prev, nominations: true }));
-                
+
                 try {
                   const formData = new FormData(e.target);
-                  
+
                   // Auto-fill nominator info with admin defaults
                   formData.append('nominatorName', 'SAPTech Uganda Admin');
                   formData.append('nominatorEmail', 'admin@saptechug.com');
                   formData.append('nominatorOrganization', 'SAPTech Uganda');
-                  
+
                   const response = await apiService.createAdminNomination(formData);
-                  
+
                   if (response.status === "success") {
                     await showAlert.success(
-                      "Nomination created! 🎉",
+                      "Nomination created! ",
                       "The nomination has been successfully added."
                     );
                     setShowCreateForm(false);
@@ -1316,39 +1316,39 @@ const AwardsAdmin = () => {
             >
               {/* Nominee Information - Simplified */}
               <div className="form-section">
-                <h4>👤 Nominee Details</h4>
-                
+                <h4> Nominee Details</h4>
+
                 <div className="form-row">
                   <div className="form-group">
                     <label>Nominee Name *</label>
-                    <input 
-                      type="text" 
-                      name="nomineeName" 
+                    <input
+                      type="text"
+                      name="nomineeName"
                       required
                       placeholder="Full name"
                     />
                   </div>
-                  
+
                   <div className="form-group">
                     <label>Title/Position (Optional)</label>
-                    <input 
-                      type="text" 
-                      name="nomineeTitle" 
+                    <input
+                      type="text"
+                      name="nomineeTitle"
                       placeholder="Job title"
                     />
                   </div>
                 </div>
-                
+
                 <div className="form-row">
                   <div className="form-group">
                     <label>Company (Optional)</label>
-                    <input 
-                      type="text" 
-                      name="nomineeCompany" 
+                    <input
+                      type="text"
+                      name="nomineeCompany"
                       placeholder="Company name"
                     />
                   </div>
-                  
+
                   <div className="form-group">
                     <label>Category *</label>
                     <select name="category" required>
@@ -1365,42 +1365,42 @@ const AwardsAdmin = () => {
                     </select>
                     {(!categories || categories.length === 0) && (
                       <small style={{ color: '#f59e0b', fontSize: '12px' }}>
-                        ⚠️ {categories ? `No categories found (${categories.length})` : 'Loading categories...'}
+                         {categories ? `No categories found (${categories.length})` : 'Loading categories...'}
                       </small>
                     )}
                   </div>
                 </div>
-                
+
                 <div className="form-group">
                   <label>Photo *</label>
-                  <input 
-                    type="file" 
-                    name="nomineePhoto" 
+                  <input
+                    type="file"
+                    name="nomineePhoto"
                     required
                     accept="image/*"
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Reason for Nomination (Optional)</label>
-                  <textarea 
-                    name="nominationReason" 
+                  <textarea
+                    name="nominationReason"
                     rows="3"
                     placeholder="Brief reason why they deserve this award (optional)..."
                   />
                 </div>
               </div>
-              
+
               <div className="form-actions">
                 <button type="submit" className="submit-btn" disabled={loading.nominations}>
-                  {loading.nominations ? '⏳ Creating...' : '➕ Create Nomination'}
+                  {loading.nominations ? '⏳ Creating...' : ' Create Nomination'}
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="cancel-btn"
                   onClick={() => setShowCreateForm(false)}
                 >
-                  ❌ Cancel
+                   Cancel
                 </button>
               </div>
             </form>
@@ -1413,15 +1413,15 @@ const AwardsAdmin = () => {
         <div className="modal-overlay" onClick={() => setShowPhotoEditModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>📸 Edit Nominee Photo</h3>
-              <button 
-                className="close-modal-btn" 
+              <h3> Edit Nominee Photo</h3>
+              <button
+                className="close-modal-btn"
                 onClick={() => setShowPhotoEditModal(false)}
               >
-                ✖
+                Close
               </button>
             </div>
-            
+
             <div className="photo-edit-content">
               <div className="nominee-info-summary">
                 <h4>{editingPhotoNomination.nomineeName}</h4>
@@ -1431,9 +1431,9 @@ const AwardsAdmin = () => {
 
               <div className="photo-preview-section">
                 {photoPreview ? (
-                  <img 
-                    src={photoPreview} 
-                    alt="Preview" 
+                  <img
+                    src={photoPreview}
+                    alt="Preview"
                     className="photo-preview-large"
                     onError={(e) => {
                       e.target.src = PLACEHOLDERS.avatar;
@@ -1441,40 +1441,40 @@ const AwardsAdmin = () => {
                   />
                 ) : (
                   <div className="no-photo-placeholder">
-                    <p>👤 No photo available</p>
+                    <p> No photo available</p>
                   </div>
                 )}
               </div>
 
               <div className="photo-upload-section">
                 <label className="upload-label">
-                  📁 Choose New Photo
-                  <input 
-                    type="file" 
+                   Choose New Photo
+                  <input
+                    type="file"
                     accept="image/*"
                     onChange={handlePhotoChange}
                     style={{ display: 'none' }}
                   />
                 </label>
                 {newPhoto && (
-                  <p className="file-selected">✅ Selected: {newPhoto.name}</p>
+                  <p className="file-selected"> Selected: {newPhoto.name}</p>
                 )}
               </div>
 
               <div className="modal-actions">
-                <button 
+                <button
                   className="save-btn"
                   onClick={handleSavePhoto}
                   disabled={loading.updating || !newPhoto}
                 >
-                  {loading.updating ? '⏳ Saving...' : '💾 Save Photo'}
+                  {loading.updating ? '⏳ Saving...' : ' Save Photo'}
                 </button>
-                <button 
+                <button
                   className="cancel-btn"
                   onClick={() => setShowPhotoEditModal(false)}
                   disabled={loading.updating}
                 >
-                  ❌ Cancel
+                   Cancel
                 </button>
               </div>
             </div>
