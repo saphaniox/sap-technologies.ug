@@ -428,7 +428,7 @@ function App() {
 
   useEffect(() => {
     const hashSectionId = location.hash
-      + decodeURIComponent(location.hash.replace("#", ""))
+      ? decodeURIComponent(location.hash.replace("#", ""))
       : "";
     const routeSectionId = getSectionIdFromPath(location.pathname);
     const targetSectionId = hashSectionId || routeSectionId;

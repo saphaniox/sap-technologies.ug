@@ -187,7 +187,7 @@ const ForgotPassword = ({ isOpen, onClose }) => {
           <h2>{step === 1 ? "Forgot Password?" : "Reset Password"}</h2>
           <p>
             {step === 1
-              Close "Enter your email to receive a verification code"
+              ? "Enter your email to receive a verification code"
               : "Enter the code sent to your email and your new password"}
           </p>
         </div>
