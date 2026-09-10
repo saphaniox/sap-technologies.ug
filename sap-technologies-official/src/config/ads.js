@@ -1,6 +1,6 @@
 const env = import.meta.env;
-const DEFAULT_MONETAG_DOMAIN = "3nbf4.com";
-const DEFAULT_MONETAG_ZONE_ID = "11767468";
+const DEFAULT_MONETAG_SCRIPT_URL = "https://quge5.com/88/tag.min.js";
+const DEFAULT_MONETAG_ZONE_ID = "278602";
 
 const clean = (value) => String(value || "").trim();
 
@@ -41,7 +41,7 @@ export const AD_PROVIDER = normalizeProvider(env.VITE_AD_PROVIDER || env.VITE_AD
 
 export const AD_SCRIPT_URL = normalizeUrl(
   env.VITE_AD_SCRIPT_URL ||
-    (AD_PROVIDER === "monetag" ? env.VITE_MONETAG_SCRIPT_URL : "") ||
+    (AD_PROVIDER === "monetag" ? env.VITE_MONETAG_SCRIPT_URL || DEFAULT_MONETAG_SCRIPT_URL : "") ||
     (AD_PROVIDER === "adsterra" ? env.VITE_ADSTERRA_SCRIPT_URL : "")
 );
 
@@ -53,6 +53,7 @@ export const AD_ZONE_ID = clean(
 );
 
 export const AD_SDK_NAME = clean(env.VITE_AD_SDK_NAME || env.VITE_MONETAG_SDK_NAME);
+export const AD_CFASYNC = clean(env.VITE_AD_CFASYNC || env.VITE_MONETAG_CFASYNC || "false");
 export const AD_DIRECT_LINK_URL = normalizeUrl(
   env.VITE_AD_DIRECT_LINK_URL ||
     env.VITE_MONETAG_DIRECT_LINK_URL ||

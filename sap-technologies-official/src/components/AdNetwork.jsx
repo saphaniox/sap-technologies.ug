@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import {
   AD_AUTO_ENABLED,
+  AD_CFASYNC,
   AD_DIRECT_LINK_URL,
   AD_NETWORK_ENABLED,
   AD_PLACEMENTS,
@@ -49,6 +50,10 @@ const appendScript = ({ id, src, zoneId, sdkName, parent = document.head }) => {
     script.dataset.sdk = sdkName;
   }
 
+  if (AD_CFASYNC) {
+    script.dataset.cfasync = AD_CFASYNC;
+  }
+
   parent.appendChild(script);
   loadedScripts.add(id);
 };
@@ -66,6 +71,10 @@ const buildAdFrameHtml = (placement) => {
 
   if (AD_SDK_NAME) {
     scriptAttributes.push(`data-sdk="${escapeHtmlAttribute(AD_SDK_NAME)}"`);
+  }
+
+  if (AD_CFASYNC) {
+    scriptAttributes.push(`data-cfasync="${escapeHtmlAttribute(AD_CFASYNC)}"`);
   }
 
   const adOptions =
