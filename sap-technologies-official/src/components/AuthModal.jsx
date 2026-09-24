@@ -17,7 +17,7 @@ const AuthModal = ({ isOpen, mode, onClose, onAuthSuccess, onModeSwitch }) => {
   const isLogin = mode === "login";
   const title = isLogin ? "Welcome back" : "Create your account";
   const subtitle = isLogin
-    ? "Sign in to manage orders, applications, admin tools, and SAPTech services."
+    ? "Sign in to manage orders, applications and all SAPTech services."
     : "Join SAPTech Uganda and keep your requests, applications, and updates in one secure place.";
 
   const handleChange = (event) => {
