@@ -8,6 +8,7 @@
     "build": "vite build",
     "vercel-build": "npm run build && node scripts/prepare-vercel-output.mjs",
     "install:client": "npm ci",
+    "indexnow": "node scripts/submit-indexnow.mjs",
     "postbuild": "node scripts/prerender-static-routes.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
