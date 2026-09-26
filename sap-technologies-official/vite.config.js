@@ -17,18 +17,26 @@ export default defineConfig(({ mode, command }) => {
   const disabled = toBoolean(env.VITE_AD_DISABLED || env.VITE_ADS_DISABLED);
   const enabledInDev = toBoolean(env.VITE_AD_ENABLE_IN_DEV || env.VITE_ADS_ENABLE_IN_DEV);
   const autoEnabled = toBoolean(env.VITE_AD_AUTO || env.VITE_AD_AUTO_ADS || "true");
+  const monetagMultiTagEnabled = toBoolean(env.VITE_MONETAG_MULTITAG_ENABLED);
+  const monetagInPagePushEnabled = toBoolean(env.VITE_MONETAG_IN_PAGE_PUSH_ENABLED || "true");
   const adsEnabled = provider !== "none" && provider !== "off" && provider !== "disabled" &&
     !disabled && autoEnabled && (command === "build" || enabledInDev);
   const adScriptUrl = clean(
-    env.VITE_AD_SCRIPT_URL ||
-      (provider === "monetag" ? env.VITE_MONETAG_SCRIPT_URL || "https://quge5.com/88/tag.min.js" : "") ||
-      (provider === "adsterra" ? env.VITE_ADSTERRA_SCRIPT_URL : "")
+    provider === "monetag"
+      ? monetagMultiTagEnabled
+        ? env.VITE_AD_SCRIPT_URL || env.VITE_MONETAG_SCRIPT_URL || "https://quge5.com/88/tag.min.js"
+        : monetagInPagePushEnabled
+          ? env.VITE_MONETAG_IN_PAGE_PUSH_SCRIPT_URL || "https://b3mny.com/tag.min.js?z=11767558"
+          : ""
+      : env.VITE_AD_SCRIPT_URL || (provider === "adsterra" ? env.VITE_ADSTERRA_SCRIPT_URL : "")
   );
   const adZoneId = clean(
-    env.VITE_AD_ZONE_ID ||
-      env.VITE_MONETAG_ZONE_ID ||
-      env.VITE_ADSTERRA_ZONE_ID ||
-      (provider === "monetag" ? "278602" : "")
+    provider === "monetag" && !monetagMultiTagEnabled
+      ? ""
+      : env.VITE_AD_ZONE_ID ||
+        env.VITE_MONETAG_ZONE_ID ||
+        env.VITE_ADSTERRA_ZONE_ID ||
+        (provider === "monetag" ? "278602" : "")
   );
   const adSdkName = clean(env.VITE_AD_SDK_NAME || env.VITE_MONETAG_SDK_NAME);
   const adCfasync = clean(env.VITE_AD_CFASYNC || env.VITE_MONETAG_CFASYNC || "false");
