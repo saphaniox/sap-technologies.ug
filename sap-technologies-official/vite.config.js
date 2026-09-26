@@ -28,7 +28,7 @@ export default defineConfig(({ mode, command }) => {
     env.VITE_AD_ZONE_ID ||
       env.VITE_MONETAG_ZONE_ID ||
       env.VITE_ADSTERRA_ZONE_ID ||
-      (provider === "monetag" ? "278602" : "")
+      (provider === "monetag" ? "11767557" : "")
   );
   const adSdkName = clean(env.VITE_AD_SDK_NAME || env.VITE_MONETAG_SDK_NAME);
   const adCfasync = clean(env.VITE_AD_CFASYNC || env.VITE_MONETAG_CFASYNC || "false");

@@ -1,6 +1,6 @@
 const env = import.meta.env;
 const DEFAULT_MONETAG_SCRIPT_URL = "https://quge5.com/88/tag.min.js";
-const DEFAULT_MONETAG_ZONE_ID = "278602";
+const DEFAULT_MONETAG_ZONE_ID = "11767557";
 
 const clean = (value) => String(value || "").trim();
 
