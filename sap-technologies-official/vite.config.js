@@ -18,16 +18,23 @@ export default defineConfig(({ mode, command }) => {
   const enabledInDev = toBoolean(env.VITE_AD_ENABLE_IN_DEV || env.VITE_ADS_ENABLE_IN_DEV);
   const autoEnabled = toBoolean(env.VITE_AD_AUTO || env.VITE_AD_AUTO_ADS || "true");
   const monetagMultiTagEnabled = toBoolean(env.VITE_MONETAG_MULTITAG_ENABLED);
-  const monetagInPagePushEnabled = toBoolean(env.VITE_MONETAG_IN_PAGE_PUSH_ENABLED);
+  const monetagInPagePushEnabled = toBoolean(env.VITE_MONETAG_IN_PAGE_PUSH_ENABLED || "true");
+  const monetagVignetteEnabled = toBoolean(env.VITE_MONETAG_VIGNETTE_ENABLED || "true");
+  const monetagSafeFormatScripts = [
+    monetagInPagePushEnabled
+      ? env.VITE_MONETAG_IN_PAGE_PUSH_SCRIPT_URL || "https://b3mny.com/tag.min.js?z=11767558"
+      : "",
+    monetagVignetteEnabled
+      ? env.VITE_MONETAG_VIGNETTE_SCRIPT_URL || "https://ekhay.com/vignette.min.js?z=11767559"
+      : ""
+  ].map(clean).filter(Boolean);
   const adsEnabled = provider !== "none" && provider !== "off" && provider !== "disabled" &&
     !disabled && autoEnabled && (command === "build" || enabledInDev);
   const adScriptUrl = clean(
     provider === "monetag"
       ? monetagMultiTagEnabled
         ? env.VITE_AD_SCRIPT_URL || env.VITE_MONETAG_SCRIPT_URL || "https://quge5.com/88/tag.min.js"
-        : monetagInPagePushEnabled
-          ? env.VITE_MONETAG_IN_PAGE_PUSH_SCRIPT_URL || "https://b3mny.com/tag.min.js?z=11767558"
-          : ""
+        : ""
       : env.VITE_AD_SCRIPT_URL || (provider === "adsterra" ? env.VITE_ADSTERRA_SCRIPT_URL : "")
   );
   const adZoneId = clean(
@@ -43,17 +50,21 @@ export default defineConfig(({ mode, command }) => {
   const adHeadScript = {
     name: "ad-network-head-script",
     transformIndexHtml(html) {
-      if (!adsEnabled || !adScriptUrl) return html;
+      const safeMonetagFormats = provider === "monetag" && !monetagMultiTagEnabled;
+      const scriptUrls = safeMonetagFormats
+        ? monetagSafeFormatScripts
+        : adScriptUrl ? [adScriptUrl] : [];
+      if (!adsEnabled || !scriptUrls.length) return html;
 
-      const attributes = [
-        `src="${escapeHtmlAttribute(adScriptUrl)}"`,
-        "async"
-      ];
-      if (adZoneId) attributes.push(`data-zone="${escapeHtmlAttribute(adZoneId)}"`);
-      if (adSdkName) attributes.push(`data-sdk="${escapeHtmlAttribute(adSdkName)}"`);
-      if (adCfasync) attributes.push(`data-cfasync="${escapeHtmlAttribute(adCfasync)}"`);
+      const scripts = scriptUrls.map((src) => {
+        const attributes = [`src="${escapeHtmlAttribute(src)}"`, "async"];
+        if (adZoneId) attributes.push(`data-zone="${escapeHtmlAttribute(adZoneId)}"`);
+        if (adSdkName) attributes.push(`data-sdk="${escapeHtmlAttribute(adSdkName)}"`);
+        if (adCfasync) attributes.push(`data-cfasync="${escapeHtmlAttribute(adCfasync)}"`);
+        return `<script ${attributes.join(" ")}></script>`;
+      }).join("\n    ");
 
-      return html.replace("<head>", `<head>\n    <script ${attributes.join(" ")}></script>`);
+      return html.replace("<head>", `<head>\n    ${scripts}`);
     }
   };
 
