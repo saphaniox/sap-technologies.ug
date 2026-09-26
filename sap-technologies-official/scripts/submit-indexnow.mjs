@@ -18,6 +18,14 @@ const extractLocations = (xml) => [...xml.matchAll(/<loc>([\s\S]*?)<\/loc>/gi)]
   .map((match) => decodeXml(match[1].trim()))
   .filter(Boolean);
 
+const normalizeSiteUrl = (value) => {
+  const url = new URL(value);
+  if (url.origin !== SITE_URL) {
+    throw new Error(`Refusing to submit a URL outside ${SITE_URL}: ${value}`);
+  }
+  return url.pathname === "/" && !url.search && !url.hash ? SITE_URL : url.href;
+};
+
 const responseOrThrow = async (response, label) => {
   if (response.ok) return response;
   const body = await response.text();
@@ -25,7 +33,7 @@ const responseOrThrow = async (response, label) => {
 };
 
 const staticSitemap = await readFile(new URL("../public/sitemap.xml", import.meta.url), "utf8");
-const staticUrls = extractLocations(staticSitemap);
+const staticUrls = extractLocations(staticSitemap).map(normalizeSiteUrl);
 const jobsResponse = await responseOrThrow(await fetch(JOBS_API_URL), "Jobs API");
 const jobsPayload = await jobsResponse.json();
 const jobs = jobsPayload?.data;
@@ -38,13 +46,6 @@ const jobUrls = jobs
   .filter((job) => job?._id && job.isActive !== false)
   .map((job) => `${SITE_URL}/careers/${encodeURIComponent(job._id)}`);
 const urls = [...new Set([...staticUrls, ...jobUrls])];
-
-for (const value of urls) {
-  const url = new URL(value);
-  if (url.origin !== SITE_URL) {
-    throw new Error(`Refusing to submit a URL outside ${SITE_URL}: ${value}`);
-  }
-}
 
 if (dryRun) {
   console.log(`Dry run: ${urls.length} URLs are ready for IndexNow.`);
@@ -60,7 +61,9 @@ if ((await keyResponse.text()).trim() !== key) {
 }
 
 const publishedSitemapResponse = await responseOrThrow(await fetch(`${SITE_URL}/sitemap.xml`), "Published sitemap");
-const publishedUrls = new Set(extractLocations(await publishedSitemapResponse.text()));
+const publishedUrls = new Set(
+  extractLocations(await publishedSitemapResponse.text()).map(normalizeSiteUrl)
+);
 const missingUrls = urls.filter((value) => !publishedUrls.has(value));
 if (missingUrls.length) {
   throw new Error(`The published sitemap is missing ${missingUrls.length} URLs. Deploy the latest sitemap before submitting.`);
