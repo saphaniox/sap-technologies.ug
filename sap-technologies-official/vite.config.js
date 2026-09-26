@@ -1,11 +1,58 @@
-import { defineConfig } from "vite"
+import { defineConfig, loadEnv } from "vite"
 import react from "@vitejs/plugin-react"
 import { VitePWA } from "vite-plugin-pwa"
 
+const clean = (value) => String(value || "").trim();
+const toBoolean = (value) => ["1", "true", "yes", "on"].includes(clean(value).toLowerCase());
+const escapeHtmlAttribute = (value) => clean(value)
+  .replaceAll("&", "&amp;")
+  .replaceAll('"', "&quot;")
+  .replaceAll("<", "&lt;")
+  .replaceAll(">", "&gt;");
+
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode, command }) => {
+  const env = loadEnv(mode, ".", "");
+  const provider = clean(env.VITE_AD_PROVIDER || env.VITE_AD_NETWORK || "monetag").toLowerCase();
+  const disabled = toBoolean(env.VITE_AD_DISABLED || env.VITE_ADS_DISABLED);
+  const enabledInDev = toBoolean(env.VITE_AD_ENABLE_IN_DEV || env.VITE_ADS_ENABLE_IN_DEV);
+  const autoEnabled = toBoolean(env.VITE_AD_AUTO || env.VITE_AD_AUTO_ADS || "true");
+  const adsEnabled = provider !== "none" && provider !== "off" && provider !== "disabled" &&
+    !disabled && autoEnabled && (command === "build" || enabledInDev);
+  const adScriptUrl = clean(
+    env.VITE_AD_SCRIPT_URL ||
+      (provider === "monetag" ? env.VITE_MONETAG_SCRIPT_URL || "https://quge5.com/88/tag.min.js" : "") ||
+      (provider === "adsterra" ? env.VITE_ADSTERRA_SCRIPT_URL : "")
+  );
+  const adZoneId = clean(
+    env.VITE_AD_ZONE_ID ||
+      env.VITE_MONETAG_ZONE_ID ||
+      env.VITE_ADSTERRA_ZONE_ID ||
+      (provider === "monetag" ? "278602" : "")
+  );
+  const adSdkName = clean(env.VITE_AD_SDK_NAME || env.VITE_MONETAG_SDK_NAME);
+  const adCfasync = clean(env.VITE_AD_CFASYNC || env.VITE_MONETAG_CFASYNC || "false");
+  const adHeadScript = {
+    name: "ad-network-head-script",
+    transformIndexHtml(html) {
+      if (!adsEnabled || !adScriptUrl) return html;
+
+      const attributes = [
+        `src="${escapeHtmlAttribute(adScriptUrl)}"`,
+        "async"
+      ];
+      if (adZoneId) attributes.push(`data-zone="${escapeHtmlAttribute(adZoneId)}"`);
+      if (adSdkName) attributes.push(`data-sdk="${escapeHtmlAttribute(adSdkName)}"`);
+      if (adCfasync) attributes.push(`data-cfasync="${escapeHtmlAttribute(adCfasync)}"`);
+
+      return html.replace("<head>", `<head>\n    <script ${attributes.join(" ")}></script>`);
+    }
+  };
+
+  return {
   plugins: [
     react(),
+    adHeadScript,
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: false,
@@ -117,4 +164,5 @@ export default defineConfig({
       }
     }
   }
-})
+  };
+});

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import {
-  AD_AUTO_ENABLED,
   AD_CFASYNC,
   AD_DIRECT_LINK_URL,
   AD_NETWORK_ENABLED,
@@ -11,13 +10,9 @@ import {
   AD_ROUTE_TRIGGER_FUNCTION,
   AD_SERVICE_WORKER_ENABLED,
   AD_SERVICE_WORKER_URL,
-  AD_SCRIPT_URL,
-  AD_SDK_NAME,
-  AD_ZONE_ID
+  AD_SDK_NAME
 } from "../config/ads";
 import "../styles/Ads.css";
-
-const loadedScripts = new Set();
 
 const providerNames = {
   adsterra: "Adsterra",
@@ -32,31 +27,6 @@ const escapeHtmlAttribute = (value) =>
     .replaceAll(">", "&gt;");
 
 const safeScriptJson = (value) => JSON.stringify(value).replaceAll("</script", "<\\/script");
-
-const appendScript = ({ id, src, zoneId, sdkName, parent = document.head }) => {
-  if (!src || document.getElementById(id)) return;
-
-  const script = document.createElement("script");
-  script.id = id;
-  script.async = true;
-  script.src = src;
-
-  if (zoneId) {
-    script.dataset.zone = zoneId;
-    script.dataset.key = zoneId;
-  }
-
-  if (sdkName) {
-    script.dataset.sdk = sdkName;
-  }
-
-  if (AD_CFASYNC) {
-    script.dataset.cfasync = AD_CFASYNC;
-  }
-
-  parent.appendChild(script);
-  loadedScripts.add(id);
-};
 
 const buildAdFrameHtml = (placement) => {
   const scriptAttributes = [
@@ -119,17 +89,6 @@ const AdNetwork = () => {
 
     navigator.serviceWorker.register(AD_SERVICE_WORKER_URL).catch((error) => {
       console.warn(`${providerNames[AD_PROVIDER] || "Ad"} service worker could not be registered:`, error);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!AD_AUTO_ENABLED || !AD_SCRIPT_URL || typeof document === "undefined") return;
-
-    appendScript({
-      id: `saptech-${AD_PROVIDER}-ads-script`,
-      src: AD_SCRIPT_URL,
-      zoneId: AD_ZONE_ID,
-      sdkName: AD_SDK_NAME
     });
   }, []);
 
