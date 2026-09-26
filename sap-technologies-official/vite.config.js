@@ -19,7 +19,7 @@ export default defineConfig(({ mode, command }) => {
   const autoEnabled = toBoolean(env.VITE_AD_AUTO || env.VITE_AD_AUTO_ADS || "true");
   const monetagMultiTagEnabled = toBoolean(env.VITE_MONETAG_MULTITAG_ENABLED);
   const monetagInPagePushEnabled = toBoolean(env.VITE_MONETAG_IN_PAGE_PUSH_ENABLED || "true");
-  const monetagVignetteEnabled = toBoolean(env.VITE_MONETAG_VIGNETTE_ENABLED || "true");
+  const monetagVignetteEnabled = toBoolean(env.VITE_MONETAG_VIGNETTE_ENABLED);
   const monetagSafeFormatScripts = [
     monetagInPagePushEnabled
       ? env.VITE_MONETAG_IN_PAGE_PUSH_SCRIPT_URL || "https://b3mny.com/tag.min.js?z=11767558"
