@@ -28,6 +28,8 @@ const HOME_SECTION_PATHS = new Set([
   "/testimonials",
   "/contact"
 ]);
+const normalizePathname = (pathname) => pathname.replace(/\/+$/, "") || "/";
+const isHomeSectionPath = (pathname) => HOME_SECTION_PATHS.has(normalizePathname(pathname));
 
 const escapeHtmlAttribute = (value) =>
   String(value)
@@ -87,6 +89,7 @@ const buildAdFrameHtml = (placement) => {
 
 const AdNetwork = () => {
   const location = useLocation();
+  const pageAdScriptLoadedRef = useRef(false);
 
   useEffect(() => {
     if (!AD_SERVICE_WORKER_URL || typeof window === "undefined" || !("serviceWorker" in navigator)) return;
@@ -106,11 +109,52 @@ const AdNetwork = () => {
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (isHomeSectionPath(location.pathname)) {
+      if (pageAdScriptLoadedRef.current) window.location.reload();
+      return;
+    }
+
+    if (!AD_NETWORK_ENABLED) return;
+
+    const configElement = document.querySelector('meta[name="saptech-page-ad-config"]');
+    if (!configElement?.content) return;
+
+    try {
+      const config = JSON.parse(configElement.content);
+      const scripts = Array.isArray(config.scripts) ? config.scripts : [];
+      scripts.forEach((scriptConfig, index) => {
+        if (!scriptConfig?.src) return;
+
+        const selector = `script[data-saptech-page-ad="${index}"]`;
+        if (document.querySelector(selector)) {
+          pageAdScriptLoadedRef.current = true;
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.src = scriptConfig.src;
+        script.async = true;
+        script.dataset.saptechPageAd = String(index);
+        if (scriptConfig.zoneId) script.dataset.zone = scriptConfig.zoneId;
+        if (scriptConfig.sdkName) script.dataset.sdk = scriptConfig.sdkName;
+        if (scriptConfig.cfasync) script.dataset.cfasync = scriptConfig.cfasync;
+        script.addEventListener("error", () => script.remove(), { once: true });
+        document.head.appendChild(script);
+        pageAdScriptLoadedRef.current = true;
+      });
+    } catch (error) {
+      console.warn("Page ad configuration could not be read:", error);
+    }
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
     if (
       !AD_NETWORK_ENABLED ||
       !AD_ROUTE_TRIGGER_FUNCTION ||
       typeof window === "undefined" ||
-      HOME_SECTION_PATHS.has(location.pathname)
+      isHomeSectionPath(location.pathname)
     ) return undefined;
 
     const timer = window.setTimeout(() => {

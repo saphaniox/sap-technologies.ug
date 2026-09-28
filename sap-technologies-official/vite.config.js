@@ -43,8 +43,8 @@ export default defineConfig(({ mode, command }) => {
   );
   const adSdkName = clean(env.VITE_AD_SDK_NAME || env.VITE_MONETAG_SDK_NAME);
   const adCfasync = clean(env.VITE_AD_CFASYNC || env.VITE_MONETAG_CFASYNC || "false");
-  const adHeadScript = {
-    name: "ad-network-head-script",
+  const adPageScriptConfig = {
+    name: "route-gated-ad-script-config",
     transformIndexHtml(html) {
       const safeMonetagFormats = provider === "monetag" && !monetagMultiTagEnabled;
       const scriptUrls = safeMonetagFormats
@@ -52,22 +52,35 @@ export default defineConfig(({ mode, command }) => {
         : adScriptUrl ? [adScriptUrl] : [];
       if (!adsEnabled || !scriptUrls.length) return html;
 
-      const scripts = scriptUrls.map((src) => {
-        const attributes = [`src="${escapeHtmlAttribute(src)}"`, "async"];
-        if (adZoneId) attributes.push(`data-zone="${escapeHtmlAttribute(adZoneId)}"`);
-        if (adSdkName) attributes.push(`data-sdk="${escapeHtmlAttribute(adSdkName)}"`);
-        if (adCfasync) attributes.push(`data-cfasync="${escapeHtmlAttribute(adCfasync)}"`);
-        return `<script ${attributes.join(" ")}></script>`;
-      }).join("\n    ");
+      const pageAdConfig = JSON.stringify({
+        homeSectionPaths: [
+          "/",
+          "/about",
+          "/services",
+          "/portfolio",
+          "/products",
+          "/partners",
+          "/companies",
+          "/testimonials",
+          "/contact"
+        ],
+        scripts: scriptUrls.map((src) => ({
+          src,
+          zoneId: adZoneId,
+          sdkName: adSdkName,
+          cfasync: adCfasync
+        }))
+      }).replaceAll("<", "\\u003c");
+      const configTag = `<meta name="saptech-page-ad-config" content="${escapeHtmlAttribute(pageAdConfig)}">`;
 
-      return html.replace("<head>", `<head>\n    ${scripts}`);
+      return html.replace("<head>", `<head>\n    ${configTag}`);
     }
   };
 
   return {
   plugins: [
     react(),
-    adHeadScript,
+    adPageScriptConfig,
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: false,
