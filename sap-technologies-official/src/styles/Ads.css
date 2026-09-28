@@ -56,6 +56,12 @@
   background: transparent;
 }
 
+[data-theme="dark"] .ad-placement,
+[data-theme="dark"] .ad-placement-inner,
+[data-theme="dark"] .ad-placement-frame {
+  background-color: #0b1120;
+}
+
 .ad-placement-link {
   align-items: center;
   background: #0f766e;

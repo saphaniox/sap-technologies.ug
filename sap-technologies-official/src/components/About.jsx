@@ -5,7 +5,6 @@
  * Uses Framer Motion for smooth animations and engaging user experience.
  */
 import React from "react";
-import { Link } from "react-router-dom";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { fadeInUp, fadeInLeft, fadeInRight, staggerContainer, scaleHover } from "../utils/animations";
@@ -256,12 +255,6 @@ const About = () => {
           </motion.div>
         </motion.div>
 
-        <div className="about-team-cta">
-          <p>Get to know the people who bring our work to life.</p>
-          <Link to="/team" className="about-team-link">
-            Meet the team <span aria-hidden="true">-&gt;</span>
-          </Link>
-        </div>
       </div>
     </section>
   );

@@ -406,6 +406,31 @@
   background: var(--primary-color-dark);
 }
 
+.portfolio .tech-stack .tech-tag {
+  background: #155e63;
+  color: #ffffff;
+  border-color: #155e63;
+  text-shadow: none;
+}
+
+.portfolio .tech-stack .tech-tag:hover {
+  background: #104c50;
+  border-color: #104c50;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .portfolio .tech-stack .tech-tag {
+  background: #a7f3d0;
+  border-color: #a7f3d0;
+  color: #10352f;
+}
+
+[data-theme="dark"] .portfolio .tech-stack .tech-tag:hover {
+  background: #c3f7df;
+  border-color: #c3f7df;
+  color: #10352f;
+}
+
 /* Responsive Design */
 @media (max-width: 576px) {
   .portfolio {

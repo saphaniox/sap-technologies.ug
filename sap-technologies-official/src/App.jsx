@@ -564,7 +564,6 @@ function App() {
 
       <main>
         <Hero />
-        <AdPlacement placement="homeTop" />
         <Slider />
         <About />
         <Suspense fallback={null}>

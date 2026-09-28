@@ -532,36 +532,6 @@
   margin: 0;
 }
 
-.about-team-cta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: var(--space-12);
-  padding-top: var(--space-6);
-  border-top: 1px solid var(--border-color);
-}
-
-.about-team-cta p {
-  margin: 0;
-  color: var(--text-color-secondary);
-}
-
-.about-team-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--primary-color);
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
-.about-team-link:focus-visible {
-  outline: 3px solid var(--primary-color-light);
-  outline-offset: 4px;
-}
-
 /* Legacy team section styles */
 .team-section {
   margin-top: var(--space-24);
