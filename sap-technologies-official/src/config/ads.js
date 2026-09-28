@@ -76,6 +76,7 @@ const placementDefaults = {
   homeTop: { width: 970, height: 90 },
   homeMiddle: { width: 728, height: 90 },
   marketplace: { width: 728, height: 90 },
+  productInline: { width: 970, height: 90 },
   pageTop: { width: 970, height: 90 },
   pageBottom: { width: 728, height: 90 },
   software: { width: 728, height: 90 },
@@ -123,14 +124,12 @@ export const AD_PLACEMENTS = Object.fromEntries(
 const hasConfiguredPlacement = Object.values(AD_PLACEMENTS).some(
   (placement) => placement.scriptUrl || placement.directLinkUrl
 );
-const hasMonetagServiceWorker = AD_PROVIDER === "monetag" && Boolean(AD_SERVICE_WORKER_URL);
 
 export const AD_NETWORK_ENABLED =
   AD_PROVIDER !== "none" &&
   !disabled &&
   (env.PROD || enabledInDev) &&
-  Boolean(AD_SCRIPT_URL || AD_DIRECT_LINK_URL || hasConfiguredPlacement || hasMonetagServiceWorker);
+  Boolean(AD_SCRIPT_URL || AD_DIRECT_LINK_URL || hasConfiguredPlacement);
 
 export const AD_AUTO_ENABLED =
   AD_NETWORK_ENABLED && toBoolean(env.VITE_AD_AUTO || env.VITE_AD_AUTO_ADS, true);
-export const AD_SERVICE_WORKER_ENABLED = AD_NETWORK_ENABLED && hasMonetagServiceWorker;

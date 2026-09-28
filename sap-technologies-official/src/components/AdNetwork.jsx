@@ -8,7 +8,6 @@ import {
   AD_PROVIDER,
   AD_ROUTE_TRIGGER_DELAY,
   AD_ROUTE_TRIGGER_FUNCTION,
-  AD_SERVICE_WORKER_ENABLED,
   AD_SERVICE_WORKER_URL,
   AD_SDK_NAME
 } from "../config/ads";
@@ -18,6 +17,17 @@ const providerNames = {
   adsterra: "Adsterra",
   monetag: "Monetag"
 };
+const HOME_SECTION_PATHS = new Set([
+  "/",
+  "/about",
+  "/services",
+  "/portfolio",
+  "/products",
+  "/partners",
+  "/companies",
+  "/testimonials",
+  "/contact"
+]);
 
 const escapeHtmlAttribute = (value) =>
   String(value)
@@ -79,21 +89,29 @@ const AdNetwork = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (
-      !AD_SERVICE_WORKER_ENABLED ||
-      typeof navigator === "undefined" ||
-      !("serviceWorker" in navigator)
-    ) {
-      return;
-    }
+    if (!AD_SERVICE_WORKER_URL || typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
-    navigator.serviceWorker.register(AD_SERVICE_WORKER_URL).catch((error) => {
-      console.warn(`${providerNames[AD_PROVIDER] || "Ad"} service worker could not be registered:`, error);
+    const adWorkerUrl = new URL(AD_SERVICE_WORKER_URL, window.location.origin);
+    navigator.serviceWorker.getRegistrations().then((registrations) =>
+      Promise.all(registrations.filter((registration) =>
+        [registration.active, registration.waiting, registration.installing].some((worker) => {
+          if (!worker) return false;
+          const workerUrl = new URL(worker.scriptURL);
+          return workerUrl.origin === adWorkerUrl.origin && workerUrl.pathname === adWorkerUrl.pathname;
+        })
+      ).map((registration) => registration.unregister()))
+    ).catch((error) => {
+      console.warn(`${providerNames[AD_PROVIDER] || "Ad"} service worker could not be removed:`, error);
     });
   }, []);
 
   useEffect(() => {
-    if (!AD_NETWORK_ENABLED || !AD_ROUTE_TRIGGER_FUNCTION || typeof window === "undefined") return undefined;
+    if (
+      !AD_NETWORK_ENABLED ||
+      !AD_ROUTE_TRIGGER_FUNCTION ||
+      typeof window === "undefined" ||
+      HOME_SECTION_PATHS.has(location.pathname)
+    ) return undefined;
 
     const timer = window.setTimeout(() => {
       const trigger = window[AD_ROUTE_TRIGGER_FUNCTION];

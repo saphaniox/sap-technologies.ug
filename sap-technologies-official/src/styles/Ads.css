@@ -24,6 +24,10 @@
   margin-bottom: 18px;
 }
 
+.ad-placement--product-inline {
+  grid-column: 1 / -1;
+}
+
 .ad-placement--home-middle,
 .ad-placement--contextual {
   margin-top: 18px;

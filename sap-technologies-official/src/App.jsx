@@ -601,7 +601,13 @@ function App() {
         <AdNetwork />
         <Suspense fallback={null}>
         <Routes>
-          <Route path="/verify/:certificateId" element={<CertificateVerify />} />
+          <Route path="/verify/:certificateId" element={
+            <>
+              <AdPlacement placement="pageTop" />
+              <CertificateVerify />
+              <AdPlacement placement="pageBottom" />
+            </>
+          } />
           <Route path="/software" element={renderPublicPage(<SoftwarePage />, { topPlacement: "software" })} />
           <Route path="/iot" element={renderPublicPage(<IoTPage />, { topPlacement: "iot" })} />
           <Route path="/careers" element={renderPublicPage(
@@ -672,6 +678,7 @@ function App() {
           )} />
           <Route path="/privacy-policy" element={
             <>
+              <AdPlacement placement="pageTop" />
               <SEO
                 title="Privacy Policy | SAPTech Uganda"
                 description="Read the SAPTech Uganda privacy policy, including how we handle contact information, cookies, analytics, advertising partners, and user data."
@@ -685,10 +692,12 @@ function App() {
                 onNavigate={handleSiteNavigation}
                 onTermsOfServiceOpen={() => navigate("/terms-of-service")}
               />
+              <AdPlacement placement="pageBottom" />
             </>
           } />
           <Route path="/terms-of-service" element={
             <>
+              <AdPlacement placement="pageTop" />
               <SEO
                 title="Terms of Service | SAPTech Uganda"
                 description="Read SAPTech Uganda terms of service for website use, technology services, software projects, engineering work, payments, intellectual property, and support."
@@ -702,6 +711,7 @@ function App() {
                 onNavigate={handleSiteNavigation}
                 onPrivacyPolicyOpen={() => navigate("/privacy-policy")}
               />
+              <AdPlacement placement="pageBottom" />
             </>
           } />
           <Route path="/jobs/:jobId" element={<JobShareRedirect />} />

@@ -5,6 +5,7 @@ import ProductInquiryForm from "./ProductInquiryForm";
 import ProductForm from "./ProductForm";
 import ConfirmDialog from "./ConfirmDialog";
 import ImageSlider from "./ImageSlider";
+import { AdPlacement } from "./AdNetwork";
 import { LoadingOverlay, showAlert } from "../utils/alerts.jsx";
 import { getImageUrl, PLACEHOLDERS } from "../utils/imageUrl";
 import "../styles/Products.css";
@@ -482,7 +483,7 @@ const Products = () => {
                             )}
                         </div>
                     ) : (
-                        products.map((product) => {
+                        products.map((product, index) => {
                             const productImages = [];
                             if (product.images && Array.isArray(product.images) && product.images.length > 0) {
                                 product.images.forEach(img => {
@@ -499,7 +500,8 @@ const Products = () => {
                             }
 
                             return (
-                            <div key={product._id} className="product-card">
+                            <React.Fragment key={product._id}>
+                            <div className="product-card">
                                 <div className="product-image">
                                     <ImageSlider images={productImages} alt={product.name} />
                                     {product.isFeatured && (
@@ -633,6 +635,10 @@ const Products = () => {
                                     )}
                                 </div>
                             </div>
+                            {(index + 1) % 5 === 0 && (
+                                <AdPlacement placement="productInline" />
+                            )}
+                            </React.Fragment>
                         );
                         })
                     )}
