@@ -88,13 +88,15 @@ const readPlacement = (placement, defaults) => {
   const providerKey = AD_PROVIDER.toUpperCase();
   const scriptUrl = normalizeUrl(
     env[`VITE_AD_SLOT_${key}_SCRIPT_URL`] ||
-      env[`VITE_${providerKey}_${key}_SCRIPT_URL`]
+      env[`VITE_${providerKey}_${key}_SCRIPT_URL`] ||
+      AD_SCRIPT_URL
   );
   const zoneId = clean(
     env[`VITE_AD_SLOT_${key}_ID`] ||
       env[`VITE_AD_SLOT_${key}_KEY`] ||
       env[`VITE_${providerKey}_${key}_ID`] ||
-      env[`VITE_${providerKey}_${key}_KEY`]
+      env[`VITE_${providerKey}_${key}_KEY`] ||
+      AD_ZONE_ID
   );
   const directLinkUrl = normalizeUrl(env[`VITE_AD_SLOT_${key}_DIRECT_LINK_URL`]);
   const width = toPositiveInteger(env[`VITE_AD_SLOT_${key}_WIDTH`], defaults.width);
