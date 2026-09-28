@@ -577,14 +577,12 @@ function App() {
   );
 
   const renderPublicPage = (children, adOptions = {}) => {
-    const topPlacement = adOptions.topPlacement || "pageTop";
     const bottomPlacement = adOptions.bottomPlacement || "pageBottom";
 
     return (
     <>
       {renderHeader()}
       <main className="route-page-shell">
-        <AdPlacement placement={topPlacement} />
         {children}
         <AdPlacement placement={bottomPlacement} />
       </main>
@@ -603,13 +601,12 @@ function App() {
         <Routes>
           <Route path="/verify/:certificateId" element={
             <>
-              <AdPlacement placement="pageTop" />
               <CertificateVerify />
               <AdPlacement placement="pageBottom" />
             </>
           } />
-          <Route path="/software" element={renderPublicPage(<SoftwarePage />, { topPlacement: "software" })} />
-          <Route path="/iot" element={renderPublicPage(<IoTPage />, { topPlacement: "iot" })} />
+          <Route path="/software" element={renderPublicPage(<SoftwarePage />)} />
+          <Route path="/iot" element={renderPublicPage(<IoTPage />)} />
           <Route path="/careers" element={renderPublicPage(
             <>
               <SEO
@@ -678,7 +675,6 @@ function App() {
           )} />
           <Route path="/privacy-policy" element={
             <>
-              <AdPlacement placement="pageTop" />
               <SEO
                 title="Privacy Policy | SAPTech Uganda"
                 description="Read the SAPTech Uganda privacy policy, including how we handle contact information, cookies, analytics, advertising partners, and user data."
@@ -697,7 +693,6 @@ function App() {
           } />
           <Route path="/terms-of-service" element={
             <>
-              <AdPlacement placement="pageTop" />
               <SEO
                 title="Terms of Service | SAPTech Uganda"
                 description="Read SAPTech Uganda terms of service for website use, technology services, software projects, engineering work, payments, intellectual property, and support."

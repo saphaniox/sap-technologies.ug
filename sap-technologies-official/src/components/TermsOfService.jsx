@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import BackToTop from "./BackToTop";
+import { AdPlacement } from "./AdNetwork";
 import "../styles/LegalPages.css";
 
 const LEGAL_FOOTER_LINKS = [
@@ -54,6 +55,8 @@ const TermsOfService = ({ onClose, onNavigate, onPrivacyPolicyOpen }) => {
               please do not use this service.
             </p>
           </section>
+
+          <AdPlacement placement="pageTop" />
 
           <section>
             <h2>2. Services Overview</h2>

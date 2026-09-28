@@ -4,6 +4,7 @@ import ConfirmDialog from "./ConfirmDialog";
 import apiService from "../services/api";
 import { getImageUrl, getOptimizedVideoUrl } from "../utils/imageUrl";
 import { showAlert } from "../utils/alerts.jsx";
+import { AdPlacement } from "./AdNetwork";
 import "../styles/Gallery.css";
 
 const CATEGORIES = [
@@ -233,6 +234,8 @@ const Gallery = () => {
             </p>
           </article>
         </div>
+
+        <AdPlacement placement="pageTop" />
 
         <div className="gallery-filters">
           {CATEGORIES.map((cat) => (

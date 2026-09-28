@@ -4,6 +4,7 @@ import JobForm from "../components/JobForm";
 import JobApplicationForm from "../components/JobApplicationForm";
 import ConfirmDialog from "../components/ConfirmDialog";
 import SEO from "../components/SEO";
+import { AdPlacement } from "../components/AdNetwork";
 import apiService from "../services/api";
 import { showAlert } from "../utils/alerts.jsx";
 import { getImageUrl } from "../utils/imageUrl";
@@ -320,6 +321,8 @@ const Careers = () => {
             </p>
           </article>
         </div>
+
+        <AdPlacement placement="pageTop" />
 
         {jobs.length === 0 ? (
           <div className="empty-state">

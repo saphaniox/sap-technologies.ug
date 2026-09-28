@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from '../utils/helmet.jsx';
+import { AdPlacement } from '../components/AdNetwork';
 import apiService from '../services/api';
 import '../styles/CertificateVerify.css';
 
@@ -238,6 +239,8 @@ const CertificateVerify = () => {
                         </a>
                     </div>
                 </div>
+
+                <AdPlacement placement="pageTop" />
 
                 <div className="verification-footer">
                     <p className="footer-text">

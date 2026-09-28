@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import SEO from "../components/SEO";
 import Softwares from "../components/Softwares";
+import { AdPlacement } from "../components/AdNetwork";
 import "../styles/Software.css";
 
 const SoftwarePage = () => {
@@ -89,6 +90,8 @@ const SoftwarePage = () => {
             </div>
           </div>
         </section>
+
+        <AdPlacement placement="software" />
 
         {/* Main Software Component */}
         <Softwares />

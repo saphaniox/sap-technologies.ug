@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import SEO from "../components/SEO";
 import IoTProjects from "../components/IoTProjects";
+import { AdPlacement } from "../components/AdNetwork";
 import "../styles/IoT.css";
 
 const IoTPage = () => {
@@ -82,6 +83,8 @@ const IoTPage = () => {
             </div>
           </div>
         </section>
+
+        <AdPlacement placement="iot" />
 
         {/* Main IoT Projects Component */}
         <IoTProjects />

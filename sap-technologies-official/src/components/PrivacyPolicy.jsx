@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import BackToTop from "./BackToTop";
+import { AdPlacement } from "./AdNetwork";
 import "../styles/LegalPages.css";
 
 const LEGAL_FOOTER_LINKS = [
@@ -67,6 +68,8 @@ const PrivacyPolicy = ({ onClose, onNavigate, onTermsOfServiceOpen }) => {
               <li><strong>Usage Data:</strong> Pages visited, time spent on site, interaction patterns</li>
             </ul>
           </section>
+
+          <AdPlacement placement="pageTop" />
 
           <section>
             <h2>2. How We Use Your Information</h2>

@@ -1,3 +1,4 @@
+import { AdPlacement } from "./AdNetwork";
 import React from "react";
 import { Link } from "react-router-dom";
 import "../styles/Insights.css";
@@ -82,6 +83,8 @@ const Insights = () => (
         <Link to="/contact" className="secondary">Talk to SAPTech Uganda</Link>
       </div>
     </div>
+
+    <AdPlacement placement="pageTop" />
 
     <div className="insights-grid" aria-label="Technology guidance articles">
       {insightGuides.map((guide) => (

@@ -7,6 +7,7 @@ import Footer from "./Footer";
 import PrivacyPolicy from "./PrivacyPolicy";
 import TermsOfService from "./TermsOfService";
 import BackToTop from "./BackToTop";
+import { AdPlacement } from "./AdNetwork";
 import { Icon } from "./IconLibrary";
 import "../styles/Awards.css";
 import "../styles/IconLibrary.css";
@@ -665,6 +666,8 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
           )}
         </div>
       </section>
+
+      <AdPlacement placement="pageTop" />
 
       {/* Top Nominations */}
       {getTopNominations().length > 0 && (
