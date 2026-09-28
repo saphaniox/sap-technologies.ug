@@ -11,6 +11,7 @@ const FOOTER_LINK_GROUPS = [
     links: [
       { id: "home", label: "Home" },
       { id: "about", label: "About" },
+      { route: "/team", label: "Our Team" },
       { id: "partners", label: "Partners" },
       { id: "companies", label: "Platforms" },
       { route: "/careers", label: "Careers" },
@@ -180,9 +181,11 @@ const Footer = ({ onNavigate }) => {
             <a href="https://wa.me/256706564628" target="_blank" rel="noopener noreferrer" title="WhatsApp">WhatsApp</a>
             <a href="mailto:info@saptechug.com" title="Email">Email</a>
           </div>
-
-          <Newsletter />
         </div>
+
+          <div className="footer-newsletter">
+            <Newsletter />
+          </div>
       </div>
 
       <div className="footer-bottom">

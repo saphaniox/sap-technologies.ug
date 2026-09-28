@@ -101,22 +101,28 @@ class NewsletterController {
     // Unsubscribe from newsletter
     async unsubscribe(req, res, next) {
         try {
-            const { email } = req.body;
-
+            const email = emailService.verifyNewsletterUnsubscribeToken(req.body?.token || req.query?.token);
             if (!email) {
-                return next(new AppError("Email is required", 400));
+                return next(new AppError("This newsletter unsubscribe link is invalid.", 400));
             }
 
-            const subscriber = await Newsletter.findOne({ email, isActive: true });
+            const subscriber = await Newsletter.findOne({ email });
             if (!subscriber) {
-                return next(new AppError("Email not found in our subscription list", 404));
+                return res.status(200).json({
+                    status: "success",
+                    message: "If this address was subscribed, it has been unsubscribed."
+                });
             }
 
-            subscriber.isActive = false;
-            subscriber.unsubscribedAt = new Date();
-            await subscriber.save();
+            const wasActive = subscriber.isActive;
+            if (wasActive) {
+                subscriber.isActive = false;
+                subscriber.unsubscribedAt = new Date();
+                await subscriber.save();
+            }
 
-            if (emailService?.sendNewsletterUnsubscribeConfirmation) {
+            const isOneClickRequest = req.body?.["List-Unsubscribe"] === "One-Click";
+            if (wasActive && !isOneClickRequest && emailService?.sendNewsletterUnsubscribeConfirmation) {
                 setImmediate(() => {
                     emailService.sendNewsletterUnsubscribeConfirmation({
                         email: subscriber.email,
@@ -129,7 +135,7 @@ class NewsletterController {
 
             res.status(200).json({
                 status: "success",
-                message: "You have been unsubscribed from our newsletter"
+                message: "You have been unsubscribed from SAPTech Uganda newsletter updates."
             });
         } catch (error) {
             next(error);

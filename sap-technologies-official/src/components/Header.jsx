@@ -77,6 +77,7 @@ const hasSearchResults = (results) => Boolean(
 const NAV_ITEMS = [
   { id: "home", label: "Home" },
   { id: "about", label: "About" },
+  { id: "team", label: "Our Team", route: "/team" },
   { id: "services", label: "Services" },
   { id: "portfolio", label: "Projects" },
   { id: "software", label: "Software Apps", route: "/software" },

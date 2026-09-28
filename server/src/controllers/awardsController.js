@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs").promises;
 const emailService = require("../services/emailService");
 const certificateService = require("../services/certificateService");
+const queueCertificateEmail = require("../utils/queueCertificateEmail");
 const { useCloudinary } = require("../config/fileUpload");
 const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
@@ -825,20 +826,24 @@ class AwardsController {
                             nomineePhoto: nomination.nomineePhoto
                         };
 
-                        let certificatePath;
+                        let certificateResult;
                         if (status === 'winner') {
-                            certificatePath = await certificateService.generateWinnerCertificate(certificateData);
+                            certificateResult = await certificateService.generateWinnerCertificate(certificateData);
                         } else if (status === 'finalist') {
-                            certificatePath = await certificateService.generateFinalistCertificate(certificateData);
+                            certificateResult = await certificateService.generateFinalistCertificate(certificateData);
                         } else {
-                            certificatePath = await certificateService.generateParticipationCertificate(certificateData);
+                            certificateResult = await certificateService.generateParticipationCertificate(certificateData);
                         }
 
                         // Save certificate info to nomination
-                        const filename = certificatePath.split('\\').pop();
+                        const filename = path.basename(certificateResult.filepath);
                         nomination.certificateFile = filename;
+                        nomination.certificateUrl = certificateResult.url;
+                        nomination.certificateCloudinaryId = certificateResult.cloudinaryId;
                         nomination.certificateGeneratedAt = new Date();
                         await nomination.save();
+
+                        queueCertificateEmail(nomination, certificateResult, certificateData);
 
                         console.log(`✅ Certificate auto-generated: ${filename}`);
                     } catch (certError) {

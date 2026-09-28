@@ -101,6 +101,13 @@ const routes = [
     image: "/images/logo.png"
   },
   {
+    path: "/team",
+    title: "Our Team | SAPTech Uganda",
+    description: "Meet the people behind SAPTech Uganda. Our team brings together software development, engineering, automation, and creative design to build practical technology with people in mind.",
+    keywords: `${coreKeywords}, SAPTech Uganda team, technology team Kampala, software developers Uganda, engineering and design team`,
+    image: "/images/me.jpg"
+  },
+  {
     path: "/partners",
     title: "Partners | SAPTech Uganda",
     description: "Meet SAPTech Uganda partners and collaborators supporting technology, engineering, software, IoT, electronics, education, and digital business growth in Uganda.",

@@ -696,6 +696,14 @@ class ApiService {
     });
   }
 
+  async unsubscribeNewsletter(token) {
+    return this.request("/api/newsletter/unsubscribe", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+      useCache: false
+    });
+  }
+
   // Health check
   async healthCheck() {
     return this.request("/api/health");

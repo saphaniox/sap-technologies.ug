@@ -8,7 +8,7 @@ const router = express.Router();
 
 // Public routes
 router.post("/subscribe", optionalAuthMiddleware, newsletterLimiter, validateNewsletter, newsletterController.subscribe);
-router.post("/unsubscribe", newsletterLimiter, validateNewsletter, newsletterController.unsubscribe);
+router.post("/unsubscribe", newsletterLimiter, newsletterController.unsubscribe);
 
 // Admin routes (protected)
 router.get("/subscribers", authMiddleware, adminMiddleware, newsletterController.getAllSubscribers);

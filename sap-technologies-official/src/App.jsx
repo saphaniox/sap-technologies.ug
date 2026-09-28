@@ -29,6 +29,8 @@ const Contact = lazy(() => import("./components/Contact"));
 const Footer = lazy(() => import("./components/Footer"));
 const Testimonials = lazy(() => import("./components/Testimonials"));
 const Insights = lazy(() => import("./components/Insights"));
+const TeamPage = lazy(() => import("./pages/TeamPage"));
+const NewsletterUnsubscribePage = lazy(() => import("./pages/NewsletterUnsubscribePage"));
 import { microAnimationStyles } from "./utils/microAnimations.jsx";
 import { useVisitorTracking } from "./hooks/useVisitorTracking";
 import "./styles/App.css";
@@ -151,6 +153,13 @@ const SECONDARY_PAGE_SEO = {
     description: "Explore open career opportunities at SAPTech Uganda and apply to join a team building websites, software, IoT systems, engineering solutions, and digital tools.",
     keywords: `${CORE_SEARCH_TERMS}, SAPTech Uganda careers, technology jobs Uganda, software jobs Kampala, engineering jobs Uganda`,
     path: "/careers"
+  },
+  team: {
+    title: "Our Team | SAPTech Uganda",
+    description: "Meet the people behind SAPTech Uganda. Our team brings together software development, engineering, automation, and creative design to build practical technology with people in mind.",
+    keywords: `${CORE_SEARCH_TERMS}, SAPTech Uganda team, technology team Kampala, software developers Uganda, engineering and design team`,
+    path: "/team",
+    topics: ["Software development", "Engineering", "Automation", "Creative design"]
   },
   gallery: {
     title: "Gallery | SAPTech Uganda Projects, Services & Team",
@@ -633,6 +642,20 @@ function App() {
               <Careers />
             </>
           )} />
+          <Route path="/team" element={renderPublicPage(
+            <>
+              <SEO
+                title={SECONDARY_PAGE_SEO.team.title}
+                description={SECONDARY_PAGE_SEO.team.description}
+                keywords={SECONDARY_PAGE_SEO.team.keywords}
+                canonicalUrl={`${SITE_URL}${SECONDARY_PAGE_SEO.team.path}`}
+                url={`${SITE_URL}${SECONDARY_PAGE_SEO.team.path}`}
+                ogImage="/images/me.jpg"
+                structuredData={buildSectionStructuredData(SECONDARY_PAGE_SEO.team)}
+              />
+              <TeamPage />
+            </>
+          )} />
           <Route path="/gallery" element={renderPublicPage(
             <>
               <SEO
@@ -707,6 +730,18 @@ function App() {
                 onPrivacyPolicyOpen={() => navigate("/privacy-policy")}
               />
               <AdPlacement placement="pageBottom" />
+            </>
+          } />
+          <Route path="/unsubscribe" element={
+            <>
+              <SEO
+                title="Newsletter Preferences | SAPTech Uganda"
+                description="Manage SAPTech Uganda newsletter emails."
+                canonicalUrl={`${SITE_URL}/unsubscribe`}
+                url={`${SITE_URL}/unsubscribe`}
+                robots="noindex, nofollow"
+              />
+              <NewsletterUnsubscribePage />
             </>
           } />
           <Route path="/jobs/:jobId" element={<JobShareRedirect />} />

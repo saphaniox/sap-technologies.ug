@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const sharp = require('sharp');
 const certificateService = require('../services/certificateService');
+const queueCertificateEmail = require('../utils/queueCertificateEmail');
 const { Nomination, AwardCategory } = require('../models/Award');
 const { getUploadedFileUrl } = require('../utils/uploadedFileUrl');
 const { cloudinary } = require('../config/cloudinary');
@@ -107,6 +108,8 @@ exports.generateCertificate = async (req, res) => {
         nomination.certificateUrl = certificateResult.url;
         nomination.certificateCloudinaryId = certificateResult.cloudinaryId;
         await nomination.save();
+
+        queueCertificateEmail(nomination, certificateResult, certificateData);
 
         res.json({
             message: 'Certificate generated successfully',
@@ -247,6 +250,8 @@ exports.regenerateCertificate = async (req, res) => {
         nomination.certificateGeneratedAt = new Date();
         await nomination.save();
 
+        queueCertificateEmail(nomination, certificateResult, certificateData);
+
         res.json({
             message: 'Certificate regenerated successfully',
             certificateId: nomination.certificateId,
@@ -320,6 +325,8 @@ exports.bulkGenerateCertificates = async (req, res) => {
                 nomination.certificateCloudinaryId = certificateResult.cloudinaryId;
                 nomination.certificateGeneratedAt = new Date();
                 await nomination.save();
+
+                queueCertificateEmail(nomination, certificateResult, certificateData);
 
                 results.success.push({
                     nominationId: nomination._id,

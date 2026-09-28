@@ -5,37 +5,13 @@
  * Uses Framer Motion for smooth animations and engaging user experience.
  */
 import React from "react";
+import { Link } from "react-router-dom";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { fadeInUp, fadeInLeft, fadeInRight, staggerContainer, scaleHover } from "../utils/animations";
 import "../styles/About.css";
 
 const About = () => {
-  // Team member profiles with skills and bios
-  const teamMembers = [
-    {
-      name: "Saphan Muganza",
-      role: "Founder, CEO & Full-Stack Engineer",
-      image: "/images/me.jpg",
-      bio: "Full-stack engineer and entrepreneur with a passion for innovative technology solutions that transform African businesses.",
-      skills: ["Leadership", "Strategy", "Electrical", "Automation", "Full-Stack Engineering"]
-    },
-    {
-      name: "Samuel Nkunda",
-      role: "UI/UX & Frontend Developer",
-      image: "/images/me2.jpg",
-      bio: "Skilled developer specializing in modern web technologies and mobile applications with a focus on exceptional user experiences.",
-      skills: ["React", "Node.js", "Mobile Apps", "Electrical"]
-    },
-    {
-      name: "Roberto Delgado",
-      role: "Creative Designer",
-      image: "/images/me3.jpg",
-      bio: "Creative professional focused on delivering exceptional user experiences and visual design that elevates brand identities.",
-      skills: ["UI/UX", "Graphics", "Branding"]
-    }
-  ];
-
   // Company statistics to showcase our achievements and capabilities
   const stats = [
     { number: "80+", label: "Projects Completed" },
@@ -280,78 +256,12 @@ const About = () => {
           </motion.div>
         </motion.div>
 
-        {/* Team Section - Showcasing our talented team members */}
-        <motion.div 
-          className="team-section"
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-        >
-          <motion.h3 variants={fadeInUp}>Meet Our Team</motion.h3>
-          
-          <motion.div 
-            className="team-grid"
-            variants={staggerContainer}
-          >
-            {/* Map through team members and display their cards */}
-            {teamMembers.map((member, index) => (
-              <motion.div 
-                key={index}
-                className="team-member"
-                variants={fadeInUp}
-                whileHover={{ 
-                  y: -10,
-                  boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-                  transition: { duration: 0.3 }
-                }}
-              >
-                {/* Team member profile image with hover effect */}
-                <div className="member-image">
-                  <motion.img 
-                    src={member.image} 
-                    alt={member.name}
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </div>
-                
-                {/* Team member details and information */}
-                <div className="member-info">
-                  <h4>{member.name}</h4>
-                  <p className="member-role">{member.role}</p>
-                  
-                  {/* Professional bio section */}
-                  <div className="member-bio">
-                    <p>{member.bio}</p>
-                  </div>
-                  
-                  {/* Skills label */}
-                  <div className="member-skills-label">
-                    <span className="skills-title">Skills:</span>
-                  </div>
-                  
-                  {/* Display member skills as tags */}
-                  <motion.div 
-                    className="member-skills"
-                    initial={{ opacity: 1 }}
-                  >
-                    {member.skills.map((skill, skillIndex) => (
-                      <motion.span 
-                        key={skillIndex}
-                        className="skill-tag"
-                        whileHover={{ scale: 1.05 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        {skill}
-                      </motion.span>
-                    ))}
-                  </motion.div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </motion.div>
+        <div className="about-team-cta">
+          <p>Get to know the people who bring our work to life.</p>
+          <Link to="/team" className="about-team-link">
+            Meet the team <span aria-hidden="true">-&gt;</span>
+          </Link>
+        </div>
       </div>
     </section>
   );

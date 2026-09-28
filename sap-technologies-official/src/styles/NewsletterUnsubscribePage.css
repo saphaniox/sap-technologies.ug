@@ -1,0 +1,114 @@
+.newsletter-unsubscribe-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 2rem 1rem;
+  background: var(--bg-color, #ffffff);
+  color: var(--text-color, #18263b);
+}
+
+.newsletter-unsubscribe-panel {
+  width: min(100%, 520px);
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 8px;
+  background: var(--card-bg, #ffffff);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(15, 23, 42, 0.1));
+}
+
+.newsletter-unsubscribe-logo {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 1.5rem;
+  object-fit: contain;
+}
+
+.newsletter-unsubscribe-eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--secondary-color, #087f5b);
+  font-size: 0.8rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.newsletter-unsubscribe-panel h1 {
+  margin: 0;
+  color: var(--text-color, #18263b);
+  font-size: clamp(1.8rem, 5vw, 2.3rem);
+  line-height: 1.2;
+}
+
+.newsletter-unsubscribe-copy {
+  margin: 1rem 0 1.5rem;
+  color: var(--text-color-secondary, #475569);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.newsletter-unsubscribe-message {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #f0b7b7;
+  border-radius: 5px;
+  background: #fff1f1;
+  color: #7f1d1d;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.newsletter-unsubscribe-button {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  border: 1px solid #155d46;
+  border-radius: 5px;
+  background: #155d46;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.newsletter-unsubscribe-button:hover {
+  background: #0e4f3c;
+}
+
+.newsletter-unsubscribe-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.newsletter-unsubscribe-button:focus-visible,
+.newsletter-unsubscribe-home:focus-visible {
+  outline: 3px solid var(--primary-color, #185adb);
+  outline-offset: 3px;
+}
+
+.newsletter-unsubscribe-home {
+  display: block;
+  width: fit-content;
+  margin-top: 1.1rem;
+  color: var(--primary-color, #185adb);
+  font-size: 0.9rem;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+[data-theme="dark"] .newsletter-unsubscribe-message {
+  border-color: #7f3b3b;
+  background: #3b2222;
+  color: #ffdede;
+}
+
+[data-theme="dark"] .newsletter-unsubscribe-button {
+  border-color: #83cfaa;
+  background: #83cfaa;
+  color: #14251e;
+}
+
+[data-theme="dark"] .newsletter-unsubscribe-button:hover {
+  background: #a0dfbd;
+}

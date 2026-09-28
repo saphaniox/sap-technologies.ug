@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { AsyncLocalStorage } = require("async_hooks");
 
@@ -7,7 +8,7 @@ const DEFAULT_MAILJET_API_URL = "https://api.mailjet.com/v3.1/send";
 const EMAIL_PROVIDER_SETTING_KEY = "email.providerMode";
 const EMAIL_PUBLIC_CONFIG_SETTING_KEY = "email.publicConfig";
 const EMAIL_PROVIDER_MODES = ["auto", "mailjet", "gmail"];
-const CURRENT_EMAIL_BRAND_TAGLINE = "Professional in Engineering And Technology solutions";
+const CURRENT_EMAIL_BRAND_TAGLINE = "Engineering and technology solutions for people and businesses.";
 const LEGACY_EMAIL_BRAND_TAGLINE_WORDS = ["technology", "that", "moves", "people", "and", "businesses", "forward"];
 const LEGACY_EMAIL_BRAND_TAGLINE = LEGACY_EMAIL_BRAND_TAGLINE_WORDS.join(" ");
 const LEGACY_EMAIL_BRAND_TAGLINES = new Set([
@@ -290,7 +291,6 @@ const normalizeText = (value, fallback = "Not provided") => {
 };
 
 const normalizeStatus = (status) => STATUS_LABELS[status] || normalizeText(status, "Updated");
-const WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/0029VaCnZ7N1SWt8esJuGa0Q";
 
 const JOB_APPLICATION_STATUS_CONTENT = {
   pending: {
@@ -930,16 +930,62 @@ class EmailService {
       .trim();
   }
 
+  createNewsletterUnsubscribeToken(email) {
+    const normalizedEmail = cleanString(email).toLowerCase();
+    const secret = process.env.EMAIL_UNSUBSCRIBE_SECRET || process.env.JWT_SECRET || process.env.SESSION_SECRET;
+    if (!normalizedEmail || !secret) {
+      throw new Error("A recipient email and signing secret are required for newsletter unsubscribe links.");
+    }
+
+    const payload = Buffer.from(normalizedEmail).toString("base64url");
+    const signature = crypto.createHmac("sha256", secret).update(payload).digest("base64url");
+    return `${payload}.${signature}`;
+  }
+
+  verifyNewsletterUnsubscribeToken(token) {
+    if (typeof token !== "string" || token.length > 2048) return null;
+
+    const [payload, encodedSignature, extra] = token.split(".");
+    const secret = process.env.EMAIL_UNSUBSCRIBE_SECRET || process.env.JWT_SECRET || process.env.SESSION_SECRET;
+    if (!payload || !encodedSignature || extra || !secret) return null;
+
+    const expectedSignature = crypto.createHmac("sha256", secret).update(payload).digest();
+    const suppliedSignature = Buffer.from(encodedSignature, "base64url");
+    if (
+      expectedSignature.length !== suppliedSignature.length ||
+      !crypto.timingSafeEqual(expectedSignature, suppliedSignature)
+    ) return null;
+
+    const email = Buffer.from(payload, "base64url").toString("utf8").trim().toLowerCase();
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
+  }
+
+  createNewsletterUnsubscribeLinks(email) {
+    const token = this.createNewsletterUnsubscribeToken(email);
+    const pageUrl = new URL("/unsubscribe", this.brand.websiteUrl);
+    pageUrl.searchParams.set("token", token);
+
+    let oneClickUrl = "";
+    const apiPublicUrl = cleanString(process.env.API_PUBLIC_URL);
+    if (apiPublicUrl) {
+      const endpoint = new URL("/api/newsletter/unsubscribe", apiPublicUrl);
+      endpoint.searchParams.set("token", token);
+      oneClickUrl = endpoint.toString();
+    }
+
+    return { pageUrl: pageUrl.toString(), oneClickUrl };
+  }
+
   buildRows(rows = []) {
     const visibleRows = rows.filter((row) => row && row.value !== undefined && row.value !== null && row.value !== "");
     if (!visibleRows.length) return "";
 
     return `
-      <table class="email-rows" role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+      <table class="email-rows" role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;table-layout:fixed;border-collapse:collapse;word-wrap:break-word;overflow-wrap:anywhere;">
         ${visibleRows.map(({ label, value }) => `
           <tr class="email-row">
-            <td class="email-row-label" style="padding:10px 0;border-bottom:1px solid #e5e7eb;color:#64748b;font-size:13px;width:38%;vertical-align:top;">${escapeHtml(label)}</td>
-            <td class="email-row-value" style="padding:10px 0;border-bottom:1px solid #e5e7eb;color:#0f172a;font-size:14px;font-weight:600;vertical-align:top;">${escapeHtml(value)}</td>
+            <td class="email-row-label" style="padding:10px 0;border-bottom:1px solid #e5e7eb;color:#64748b;font-size:13px;width:38%;vertical-align:top;word-wrap:break-word;overflow-wrap:anywhere;word-break:break-word;">${escapeHtml(label)}</td>
+            <td class="email-row-value" style="padding:10px 0;border-bottom:1px solid #e5e7eb;color:#0f172a;font-size:14px;font-weight:600;vertical-align:top;word-wrap:break-word;overflow-wrap:anywhere;word-break:break-word;">${escapeHtml(value)}</td>
           </tr>
         `).join("")}
       </table>
@@ -949,10 +995,10 @@ class EmailService {
   buildSection(section = {}, color) {
     const rows = this.buildRows(section.rows || []);
     const text = section.text
-      ? `<p class="email-section-text" style="margin:0;color:#334155;font-size:15px;line-height:1.7;white-space:pre-wrap;">${escapeHtml(section.text)}</p>`
+      ? `<p class="email-section-text" style="margin:0;color:#334155;font-size:15px;line-height:1.7;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:anywhere;word-break:break-word;">${escapeHtml(section.text)}</p>`
       : "";
     const list = Array.isArray(section.list) && section.list.length
-      ? `<ul class="email-list" style="margin:0;padding-left:20px;color:#334155;font-size:15px;line-height:1.8;">${section.list.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
+      ? `<ul class="email-list" style="margin:0;padding-left:20px;color:#334155;font-size:15px;line-height:1.8;word-wrap:break-word;overflow-wrap:anywhere;word-break:break-word;">${section.list.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
       : "";
 
     return `
@@ -982,6 +1028,7 @@ class EmailService {
     sections = [],
     cta,
     footerNote,
+    unsubscribeUrl,
     tone = "default",
     category,
     brandName,
@@ -998,18 +1045,9 @@ class EmailService {
     const logo = this.brand.logoUrl
       ? `<img class="email-logo" src="${escapeHtml(this.brand.logoUrl)}" alt="${escapeHtml(companyName)} logo" width="104" style="display:block;width:104px;max-width:104px;height:auto;border:0;margin:0 auto 14px;background:#ffffff;border-radius:14px;padding:8px;">`
       : "";
-    const socialChannelButtons = `
-      <table class="email-social" role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:16px auto 0;border-collapse:separate;">
-        <tr>
-          <td class="email-cta-wrap" style="padding:2px 6px 8px 0;text-align:center;">
-            <a class="email-button" href="${escapeHtml(WHATSAPP_CHANNEL_URL)}" style="display:inline-block;background:linear-gradient(135deg,#0f766e 0%,#10b981 50%,#14b8a6 100%);color:#ffffff;text-decoration:none;font-weight:700;font-size:13px;padding:12px 18px;border-radius:10px;min-width:180px;text-align:center;">Follow us on WhatsApp</a>
-          </td>
-          <td class="email-cta-wrap" style="padding:2px 0 8px 6px;text-align:center;">
-            <a class="email-button" href="${escapeHtml(WHATSAPP_CHANNEL_URL)}" style="display:inline-block;background:linear-gradient(135deg,#1d4ed8 0%,#2563eb 48%,#3b82f6 100%);color:#ffffff;text-decoration:none;font-weight:700;font-size:13px;padding:12px 18px;border-radius:10px;min-width:210px;text-align:center;">Follow our WhatsApp Channel</a>
-          </td>
-        </tr>
-      </table>
-    `;
+    const standardClosing = templateTone === "admin"
+      ? "This is an internal notification for the SAPTech Uganda team."
+      : "Questions? Reply to this email and our team will be happy to help.";
     return `<!doctype html>
 <html lang="en">
 <head>
@@ -1018,10 +1056,13 @@ class EmailService {
   <meta name="x-apple-disable-message-reformatting">
   <title>${escapeHtml(title)}</title>
   <style>
-    body, table, td, p, a, li { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    body, table, td, p, a, li, h1, h3 { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; word-wrap: break-word; overflow-wrap: anywhere; }
     table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
     img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
-    .email-button { display: inline-block; }
+    .email-page { width: 100%; table-layout: fixed; }
+    .email-card { width: 100%; max-width: 680px; table-layout: fixed; }
+    .email-title, .email-copy, .email-section-title, .email-footer a { word-wrap: break-word; overflow-wrap: anywhere; word-break: break-word; }
+    .email-button { display: inline-block; max-width: 100%; white-space: normal; word-wrap: break-word; overflow-wrap: anywhere; word-break: break-word; }
     @media only screen and (max-width: 520px) {
       .email-page { padding: 12px 6px !important; }
       .email-card { width: 100% !important; max-width: 100% !important; border-radius: 12px !important; }
@@ -1036,7 +1077,7 @@ class EmailService {
       .email-section-wrap { padding: 0 18px 18px !important; }
       .email-section-body { padding: 16px !important; }
       .email-section-title { font-size: 15px !important; margin-bottom: 10px !important; }
-      .email-row-label, .email-row-value { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+      .email-row-label, .email-row-value { display: block !important; width: 100% !important; box-sizing: border-box !important; word-wrap: break-word !important; overflow-wrap: anywhere !important; word-break: break-word !important; }
       .email-row-label { padding: 10px 0 2px !important; border-bottom: 0 !important; font-size: 12px !important; }
       .email-row-value { padding: 0 0 10px !important; font-size: 14px !important; }
       .email-cta-wrap { padding: 2px 18px 24px !important; }
@@ -1060,7 +1101,7 @@ class EmailService {
       <td align="center">
         <table class="email-card" role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:680px;background:#ffffff;border:1px solid ${color.border || "#e2e8f0"};border-radius:14px;overflow:hidden;box-shadow:0 18px 45px rgba(15,23,42,0.08);">
           <tr>
-            <td class="email-header" style="background:${color.headerFrom};background-image:linear-gradient(135deg,${color.headerFrom} 0%,${color.headerTo || color.accent} 100%);padding:28px 32px;text-align:center;">
+            <td class="email-header" style="background:${color.headerFrom};padding:28px 32px;text-align:center;">
               ${logo}
               <p class="email-kicker" style="margin:0 0 6px;color:${color.headerAccent};font-size:13px;letter-spacing:.08em;text-transform:uppercase;">${escapeHtml(companyName)}</p>
               <p class="email-tagline" style="margin:0 0 14px;color:${color.headerMuted};font-size:12px;line-height:1.5;">${escapeHtml(this.brand.tagline)}</p>
@@ -1082,21 +1123,21 @@ class EmailService {
           </tr>` : ""}
           ${skipStandardClosing ? "" : `<tr>
             <td class="email-closing" style="padding:0 32px 28px;">
-              <p class="email-copy" style="margin:0;color:#334155;font-size:14px;line-height:1.7;">Need help or want to add something? Simply reply to this email and a member of our team will assist you.</p>
+              <p class="email-copy" style="margin:0;color:#334155;font-size:14px;line-height:1.7;">${escapeHtml(standardClosing)}</p>
               <p class="email-copy" style="margin:14px 0 0;color:#0f172a;font-size:14px;line-height:1.6;">Warm regards,<br><strong>The ${escapeHtml(companyName)} team</strong></p>
             </td>
           </tr>`}
           <tr>
-            <td class="email-footer" style="background:#f8fafc;border-top:1px solid ${color.border || "#e2e8f0"};padding:22px 32px;text-align:center;">
+            <td class="email-footer" style="background:#f8fafc;border-top:1px solid ${color.border || "#e2e8f0"};padding:22px 32px;text-align:center;word-wrap:break-word;overflow-wrap:anywhere;">
               <p style="margin:0 0 8px;color:#0f172a;font-size:14px;font-weight:700;">${escapeHtml(this.brand.legalName)}</p>
               <p style="margin:0;color:#64748b;font-size:13px;line-height:1.7;">
                 ${escapeHtml(this.brand.address)}<br>
                 ${escapeHtml(this.brand.phone)} | <a href="mailto:${escapeHtml(this.replyToEmail)}" style="color:${color.accent};text-decoration:none;">${escapeHtml(this.replyToEmail)}</a><br>
                 <a href="${escapeHtml(this.brand.websiteUrl)}" style="color:${color.accent};text-decoration:none;">${escapeHtml(this.brand.websiteUrl)}</a>
               </p>
-              ${socialChannelButtons}
+              ${unsubscribeUrl ? `<p class="email-unsubscribe" style="margin:14px 0 0;color:#475569;font-size:12px;line-height:1.6;">You are receiving these updates because you subscribed to the SAPTech Uganda newsletter. <a href="${escapeHtml(unsubscribeUrl)}" style="color:${color.accent};text-decoration:underline;">Unsubscribe</a></p>` : ""}
               ${footerNote ? `<p style="margin:14px 0 0;color:#64748b;font-size:12px;line-height:1.6;">${escapeHtml(footerNote)}</p>` : ""}
-              <p style="margin:10px 0 0;color:#94a3b8;font-size:11px;line-height:1.6;">&copy; ${new Date().getFullYear()} ${escapeHtml(this.brand.legalName)}. Please do not share security codes or sensitive account information by email.</p>
+              <p style="margin:10px 0 0;color:#64748b;font-size:11px;line-height:1.6;">&copy; ${new Date().getFullYear()} ${escapeHtml(this.brand.legalName)}. All rights reserved.</p>
             </td>
           </tr>
         </table>
@@ -1460,21 +1501,26 @@ class EmailService {
   }
 
   async sendNewsletterWelcome(subscriberData) {
+    const unsubscribeLinks = this.createNewsletterUnsubscribeLinks(subscriberData.email);
     return this.deliver({
       to: subscriberData.email,
       subject: "Welcome to SAPTech Uganda updates",
       category: "newsletter",
+      headers: unsubscribeLinks.oneClickUrl ? {
+        "List-Unsubscribe": `<${unsubscribeLinks.oneClickUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"
+      } : {},
       html: () => this.buildEmail({
         title: "Welcome to SAPTech Updates",
         preheader: "You are now subscribed to SAPTech Uganda updates.",
         greeting: "Welcome",
-        intro: "Thank you for subscribing. You will receive selected updates about technology services, products, events, awards, and opportunities from SAPTech Uganda.",
+        intro: "Thanks for subscribing. We will send occasional updates about useful technology, our services and products, and opportunities from the SAPTech Uganda team.",
         sections: [
           { title: "Subscription details", rows: [{ label: "Email", value: subscriberData.email }, { label: "Subscribed", value: this.formatDate() }] },
           { title: "What to expect", list: ["Product and service updates.", "Event and awards announcements.", "Career and partnership opportunities.", "Useful technology insights from our team."] }
         ],
         cta: { label: "Visit SAPTech Uganda", href: this.brand.websiteUrl },
-        footerNote: "You can unsubscribe from newsletter communications from the website."
+        unsubscribeUrl: unsubscribeLinks.pageUrl
       })
     });
   }
@@ -1888,13 +1934,13 @@ class EmailService {
   async sendCartInquiryConfirmation({ customerEmail, customerName, items }) {
     return this.deliver({
       to: customerEmail,
-      subject: "We received your product enquiry",
+      subject: "We received your product inquiry",
       category: "cart_inquiry_confirmation",
       html: () => this.buildEmail({
-        title: "Product Enquiry Received",
-        preheader: "Your product enquiry was received.",
+        title: "Product Inquiry Received",
+        preheader: "Your product inquiry was received.",
         greeting: `Hello ${normalizeText(customerName, "there")}`,
-        intro: "Thank you for sending your product enquiry. We have received your selected items and will contact you with availability, pricing, and next steps.",
+        intro: "Thank you for sending your product inquiry. We have received your selected items and will contact you with availability, pricing, and next steps.",
         sections: [
           { title: "Requested products", text: this.formatCartItems(items) },
           { title: "Next steps", list: ["Our team will review your selected products.", "We will confirm availability and any installation requirements.", "We will contact you using your provided email or phone number."] }
@@ -2301,7 +2347,10 @@ class EmailService {
 
   async sendCertificateEmail(certificateData) {
     const recipientEmail = certificateData.recipientEmail || certificateData.email || certificateData.nominatorEmail;
-    const recipientName = certificateData.recipientName || certificateData.nomineeName || certificateData.name || "Recipient";
+    const recipientName = certificateData.recipientName || certificateData.nominatorName || certificateData.name || "there";
+    const nomineeName = certificateData.nomineeName || recipientName;
+    const awardYear = cleanString(certificateData.awardYear, "2025");
+    const awardsName = this.brand.awardsName.replace(/\b20\d{2}\b/, awardYear);
     const certificateFile = certificateData.certificateFile || certificateData.filename;
     const certificatePath = certificateData.certificatePath
       || (certificateFile ? path.join(__dirname, "../../uploads/certificates", certificateFile) : "");
@@ -2317,33 +2366,36 @@ class EmailService {
 
     return this.deliver({
       to: recipientEmail,
-      fromName: this.brand.awardsName,
-      subject: `Your ${this.brand.awardsName} certificate`,
+      fromName: awardsName,
+      subject: `Your ${awardsName} certificate for ${nomineeName}`,
       category: "certificate",
       attachments,
       html: () => this.buildEmail({
-        brandName: this.brand.awardsName,
+        brandName: awardsName,
         tone: "awards",
         title: "Certificate Ready",
-        preheader: "Your SAPTech Awards 2026 certificate is ready.",
-        greeting: `Dear ${normalizeText(recipientName, "recipient")}`,
-        intro: "Congratulations. Your official SAPTech Awards 2026 certificate has been prepared.",
+        preheader: `The ${awardYear} certificate for ${nomineeName} is ready.`,
+        greeting: `Hello ${normalizeText(recipientName, "there")}`,
+        intro: `The certificate for ${nomineeName} is attached to this email. You can forward it to the recipient or keep it with your nomination records.`,
         sections: [
           {
             title: "Certificate details",
             rows: [
-              { label: "Recipient", value: recipientName },
+              { label: "Award recipient", value: nomineeName },
+              { label: "Sent to", value: recipientEmail },
               { label: "Category", value: certificateData.categoryName },
               { label: "Certificate ID", value: certificateData.certificateId },
               { label: "Recognition", value: normalizeStatus(certificateData.status) },
-              { label: "Award year", value: "2026" }
+              { label: "Award year", value: awardYear },
+              { label: "Attachment", value: attachments.length ? "PDF certificate attached" : "Certificate file was not available to attach" }
             ]
           },
           { title: "How to use it", list: ["Keep the certificate for your professional records.", "Share it on LinkedIn or your portfolio.", "Contact our team if any details need correction."] }
         ],
         cta: certificateData.certificateUrl
           ? { label: "Open certificate", href: certificateData.certificateUrl }
-          : { label: "Verify certificate", href: `${this.brand.websiteUrl}/verify/${certificateData.certificateId || ""}` }
+          : { label: "Verify certificate", href: `${this.brand.websiteUrl}/verify/${certificateData.certificateId || ""}` },
+        footerNote: "This certificate was prepared for the award recipient named above."
       })
     });
   }

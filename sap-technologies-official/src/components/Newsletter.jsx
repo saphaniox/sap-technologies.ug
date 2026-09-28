@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import apiService from "../services/api";
 import "../styles/Newsletter.css";
 
@@ -48,74 +48,43 @@ const Newsletter = () => {
 
   return (
     <div className="newsletter">
-      {/* Newsletter Header with Icon */}
-      <div className="newsletter-header">
-        <div className="newsletter-icon">
-          +
+      <div className="newsletter-copy">
+        <p className="newsletter-eyebrow">From SAPTech Uganda</p>
+        <div className="newsletter-header">
+          <h4 id="footer-newsletter-title">Useful technology updates, occasionally.</h4>
+          <p>Practical ideas and company news, sent only when we have something worth sharing.</p>
         </div>
-        <h4>Join Our Newsletter</h4>
-        <p>Get exclusive insights, updates, and premium content delivered straight to your inbox</p>
+        <p className="newsletter-trust">No spam. Unsubscribe whenever you like.</p>
       </div>
 
-      {/* Newsletter Benefits */}
-      <div className="newsletter-benefits">
-        <div className="benefit-item">
-          <span className="benefit-icon"></span>
-          <span>Latest Tech Updates</span>
-        </div>
-        <div className="benefit-item">
-          <span className="benefit-icon"></span>
-          <span>Exclusive Insights</span>
-        </div>
-
-      </div>
-
-      <form onSubmit={handleSubmit} className="newsletter-form">
+      <form onSubmit={handleSubmit} className="newsletter-form" aria-labelledby="footer-newsletter-title">
         <div className="newsletter-input-group">
-          <div className="input-wrapper">
-            <span className="input-icon"></span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="saphaniox@example.com"
-              className="newsletter-input"
-              disabled={loading}
-              required
-            />
-          </div>
+          <label className="newsletter-sr-only" htmlFor="footer-newsletter-email">Email address</label>
+          <input
+            id="footer-newsletter-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Your email address"
+            className="newsletter-input"
+            autoComplete="email"
+            disabled={loading}
+            required
+          />
           <button
             type="submit"
             className="newsletter-button"
             disabled={loading}
           >
-            <span className="button-icon">
-              {loading ? "⏳" : "+"}
-            </span>
-            <span className="button-text">
-              {loading ? "Subscribing..." : "Subscribe Now"}
-            </span>
+            {loading ? "Subscribing..." : "Subscribe"}
           </button>
         </div>
+        {message && (
+          <p className={`newsletter-message ${messageType}`} role={messageType === "error" ? "alert" : "status"}>
+            {message}
+          </p>
+        )}
       </form>
-
-      {/* Trust Indicators */}
-      <div className="newsletter-trust">
-        <div className="trust-item">
-          <span className="trust-icon"></span>
-          <span>100% Secure</span>
-        </div>
-
-      </div>
-
-      {message && (
-        <div className={`newsletter-message ${messageType}`}>
-          <span className="message-icon">
-            {messageType === "success" ? "?" : "?"}
-          </span>
-          <span className="message-text">{message}</span>
-        </div>
-      )}
     </div>
   );
 };
