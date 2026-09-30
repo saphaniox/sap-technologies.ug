@@ -17,19 +17,6 @@ const providerNames = {
   adsterra: "Adsterra",
   monetag: "Monetag"
 };
-const HOME_SECTION_PATHS = new Set([
-  "/",
-  "/about",
-  "/services",
-  "/portfolio",
-  "/products",
-  "/partners",
-  "/companies",
-  "/testimonials",
-  "/contact"
-]);
-const normalizePathname = (pathname) => pathname.replace(/\/+$/, "") || "/";
-const isHomeSectionPath = (pathname) => HOME_SECTION_PATHS.has(normalizePathname(pathname));
 
 const escapeHtmlAttribute = (value) =>
   String(value)
@@ -89,7 +76,6 @@ const buildAdFrameHtml = (placement) => {
 
 const AdNetwork = () => {
   const location = useLocation();
-  const pageAdScriptLoadedRef = useRef(false);
 
   useEffect(() => {
     if (!AD_SERVICE_WORKER_URL || typeof window === "undefined" || !("serviceWorker" in navigator)) return;
@@ -111,11 +97,6 @@ const AdNetwork = () => {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    if (isHomeSectionPath(location.pathname)) {
-      if (pageAdScriptLoadedRef.current) window.location.reload();
-      return;
-    }
-
     if (!AD_NETWORK_ENABLED) return;
 
     const configElement = document.querySelector('meta[name="saptech-page-ad-config"]');
@@ -129,7 +110,6 @@ const AdNetwork = () => {
 
         const selector = `script[data-saptech-page-ad="${index}"]`;
         if (document.querySelector(selector)) {
-          pageAdScriptLoadedRef.current = true;
           return;
         }
 
@@ -142,7 +122,6 @@ const AdNetwork = () => {
         if (scriptConfig.cfasync) script.dataset.cfasync = scriptConfig.cfasync;
         script.addEventListener("error", () => script.remove(), { once: true });
         document.head.appendChild(script);
-        pageAdScriptLoadedRef.current = true;
       });
     } catch (error) {
       console.warn("Page ad configuration could not be read:", error);
@@ -153,8 +132,7 @@ const AdNetwork = () => {
     if (
       !AD_NETWORK_ENABLED ||
       !AD_ROUTE_TRIGGER_FUNCTION ||
-      typeof window === "undefined" ||
-      isHomeSectionPath(location.pathname)
+      typeof window === "undefined"
     ) return undefined;
 
     const timer = window.setTimeout(() => {
@@ -217,7 +195,7 @@ export const AdPlacement = ({ placement = "pageTop", className = "" }) => {
     return () => {
       container.textContent = "";
     };
-  }, [adPlacement?.signature, directLinkUrl]);
+  }, [adPlacement, directLinkUrl]);
 
   if (!AD_NETWORK_ENABLED || !adPlacement || (!adPlacement.scriptUrl && !directLinkUrl)) {
     return null;
