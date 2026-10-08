@@ -71,14 +71,6 @@ export const AD_SERVICE_WORKER_URL = clean(
 
 const disabled = toBoolean(env.VITE_AD_DISABLED || env.VITE_ADS_DISABLED, false);
 const enabledInDev = toBoolean(env.VITE_AD_ENABLE_IN_DEV || env.VITE_ADS_ENABLE_IN_DEV, false);
-// A slot can override the network script and zone, but the configured network
-// zone is also a valid placement fallback.  Keeping this enabled by default
-// means the page and product slots render when only the global Monetag settings
-// are configured (the standard production setup).
-const useGlobalScriptForPlacements = toBoolean(
-  env.VITE_AD_USE_GLOBAL_SCRIPT_FOR_PLACEMENTS,
-  true
-);
 
 const placementDefaults = {
   homeTop: { width: 970, height: 90 },
@@ -97,14 +89,14 @@ const readPlacement = (placement, defaults) => {
   const scriptUrl = normalizeUrl(
     env[`VITE_AD_SLOT_${key}_SCRIPT_URL`] ||
       env[`VITE_${providerKey}_${key}_SCRIPT_URL`] ||
-      (useGlobalScriptForPlacements ? AD_SCRIPT_URL : "")
+      (AD_PROVIDER === "monetag" ? "" : AD_SCRIPT_URL)
   );
   const zoneId = clean(
     env[`VITE_AD_SLOT_${key}_ID`] ||
       env[`VITE_AD_SLOT_${key}_KEY`] ||
       env[`VITE_${providerKey}_${key}_ID`] ||
       env[`VITE_${providerKey}_${key}_KEY`] ||
-      (useGlobalScriptForPlacements ? AD_ZONE_ID : "")
+      (AD_PROVIDER === "monetag" ? "" : AD_ZONE_ID)
   );
   const directLinkUrl = normalizeUrl(env[`VITE_AD_SLOT_${key}_DIRECT_LINK_URL`]);
   const width = toPositiveInteger(env[`VITE_AD_SLOT_${key}_WIDTH`], defaults.width);

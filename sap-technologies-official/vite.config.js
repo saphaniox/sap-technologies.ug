@@ -18,12 +18,24 @@ export default defineConfig(({ mode, command }) => {
   const enabledInDev = toBoolean(env.VITE_AD_ENABLE_IN_DEV || env.VITE_ADS_ENABLE_IN_DEV);
   const autoEnabled = toBoolean(env.VITE_AD_AUTO || env.VITE_AD_AUTO_ADS || "true");
   const monetagMultiTagEnabled = toBoolean(env.VITE_MONETAG_MULTITAG_ENABLED);
+  const monetagInPagePushEnabled = toBoolean(env.VITE_MONETAG_IN_PAGE_PUSH_ENABLED);
   const monetagVignetteEnabled = toBoolean(env.VITE_MONETAG_VIGNETTE_ENABLED || "true");
   const monetagSafeFormatScripts = [
+    monetagInPagePushEnabled && clean(env.VITE_MONETAG_IN_PAGE_PUSH_SCRIPT_URL)
+      ? {
+          src: clean(env.VITE_MONETAG_IN_PAGE_PUSH_SCRIPT_URL),
+          zoneId: clean(env.VITE_MONETAG_IN_PAGE_PUSH_ZONE_ID)
+        }
+      : null,
     monetagVignetteEnabled
-      ? env.VITE_MONETAG_VIGNETTE_SCRIPT_URL || "https://ekhay.com/vignette.min.js?z=11767559"
-      : ""
-  ].map(clean).filter(Boolean);
+      ? {
+          src: clean(
+            env.VITE_MONETAG_VIGNETTE_SCRIPT_URL || "https://ekhay.com/vignette.min.js?z=11767559"
+          ),
+          zoneId: ""
+        }
+      : null
+  ].filter(Boolean);
   const adsEnabled = provider !== "none" && provider !== "off" && provider !== "disabled" &&
     !disabled && autoEnabled && (command === "build" || enabledInDev);
   const adScriptUrl = clean(
@@ -47,10 +59,10 @@ export default defineConfig(({ mode, command }) => {
     name: "route-gated-ad-script-config",
     transformIndexHtml(html) {
       const safeMonetagFormats = provider === "monetag" && !monetagMultiTagEnabled;
-      const scriptUrls = safeMonetagFormats
+      const scripts = safeMonetagFormats
         ? monetagSafeFormatScripts
-        : adScriptUrl ? [adScriptUrl] : [];
-      if (!adsEnabled || !scriptUrls.length) return html;
+        : adScriptUrl ? [{ src: adScriptUrl, zoneId: adZoneId }] : [];
+      if (!adsEnabled || !scripts.length) return html;
 
       const pageAdConfig = JSON.stringify({
         homeSectionPaths: [
@@ -64,9 +76,9 @@ export default defineConfig(({ mode, command }) => {
           "/testimonials",
           "/contact"
         ],
-        scripts: scriptUrls.map((src) => ({
-          src,
-          zoneId: adZoneId,
+        scripts: scripts.map((script) => ({
+          src: script.src,
+          zoneId: script.zoneId,
           sdkName: adSdkName,
           cfasync: adCfasync
         }))
