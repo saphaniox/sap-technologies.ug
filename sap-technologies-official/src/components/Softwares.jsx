@@ -196,7 +196,7 @@ const Softwares = () => {
           <span className="section-eyebrow">Digital tools</span>
           <h2 className="section-title">Business software we build</h2>
           <p className="section-description">
-            Browse web tools, downloadable apps, demos, and business-ready applications from SAPTech Uganda.
+            Browse web tools, downloadable apps, demos, and business-ready applications from Saptech Uganda.
           </p>
         </div>
 

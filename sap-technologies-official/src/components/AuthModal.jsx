@@ -17,8 +17,8 @@ const AuthModal = ({ isOpen, mode, onClose, onAuthSuccess, onModeSwitch }) => {
   const isLogin = mode === "login";
   const title = isLogin ? "Welcome back" : "Create your account";
   const subtitle = isLogin
-    ? "Sign in to manage orders, applications and all SAPTech services."
-    : "Join SAPTech Uganda and keep your requests, applications, and updates in one secure place.";
+    ? "Sign in to manage orders, applications and all Saptech services."
+    : "Join Saptech Uganda and keep your requests, applications, and updates in one secure place.";
 
   const handleChange = (event) => {
     setFormData((current) => ({
@@ -60,7 +60,7 @@ const AuthModal = ({ isOpen, mode, onClose, onAuthSuccess, onModeSwitch }) => {
       }
 
       await showAlert.success(
-        isLogin ? "You're in!" : "Welcome to SAPTech!",
+        isLogin ? "You're in!" : "Welcome to Saptech!",
         isLogin
           ? "Great to have you back. Taking you to your account now."
           : "Your account is ready. Taking you to your account now.",
@@ -109,12 +109,12 @@ const AuthModal = ({ isOpen, mode, onClose, onAuthSuccess, onModeSwitch }) => {
 
         <aside className="auth-brand-panel">
           <div className="auth-logo-wrap">
-            <img src="/images/logo.png" alt="SAPTech Uganda logo" />
+            <img src="/images/logo.png" alt="Saptech Uganda logo" />
           </div>
-          <span className="auth-badge">Secure SAPTech access</span>
+          <span className="auth-badge">Secure Saptech access</span>
           <h1>{isLogin ? "Continue your digital journey." : "Start with a trusted tech partner."}</h1>
           <p>
-            Access your SAPTech Uganda account, track submitted requests, and keep communication with our team organized.
+            Access your Saptech Uganda account, track submitted requests, and keep communication with our team organized.
           </p>
 
           <div className="auth-benefits">
@@ -241,7 +241,7 @@ const AuthModal = ({ isOpen, mode, onClose, onAuthSuccess, onModeSwitch }) => {
             )}
 
             <div className="auth-switch-copy">
-              <span>{isLogin ? "New to SAPTech Uganda?" : "Already have an account?"}</span>
+              <span>{isLogin ? "New to Saptech Uganda?" : "Already have an account?"}</span>
               <button type="button" onClick={() => handleModeSwitch(isLogin ? "signup" : "login")}>
                 {isLogin ? "Create account" : "Sign in"}
               </button>

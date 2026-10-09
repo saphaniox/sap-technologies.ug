@@ -29,7 +29,7 @@ const Newsletter = () => {
 
     try {
       const response = await apiService.subscribeNewsletter(email);
-      setMessage(response.message || "You're subscribed! Welcome to the SAPTech community ");
+      setMessage(response.message || "You're subscribed! Welcome to the Saptech community ");
       setMessageType("success");
       setEmail(""); // Clear form
     } catch (error) {
@@ -49,7 +49,7 @@ const Newsletter = () => {
   return (
     <div className="newsletter">
       <div className="newsletter-copy">
-        <p className="newsletter-eyebrow">From SAPTech Uganda</p>
+        <p className="newsletter-eyebrow">From Saptech Uganda</p>
         <div className="newsletter-header">
           <h4 id="footer-newsletter-title">Useful technology updates, occasionally.</h4>
           <p>Practical ideas and company news, sent only when we have something worth sharing.</p>

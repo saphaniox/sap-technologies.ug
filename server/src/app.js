@@ -39,7 +39,7 @@ app.options(/.*/, cors(corsConfig));
 
 // Initialize database connection once. The same active cluster client is reused
 // for sessions so primary/secondary startup failover stays consistent.
-console.log("🚀 Initializing SAPTech Uganda Server...");
+console.log("🚀 Initializing Saptech Uganda Server...");
 const databaseReady = connectDB()
     .then((conn) => {
         console.log("✅ Database connected");
@@ -407,9 +407,9 @@ app.use("/api", (req, res, next) => {
 app.get("/api", (req, res) => {
     res.status(200).json({
         status: "success",
-        message: "SAPTech Uganda API is running",
+        message: "Saptech Uganda API is running",
         version: "2.0.0-secure",
-        documentation: "Contact SAPTech Uganda for API access."
+        documentation: "Contact Saptech Uganda for API access."
     });
 });
 
@@ -436,7 +436,7 @@ if (process.env.NODE_ENV === 'production') {
         app.get('/', (req, res) => {
             res.json({
                 status: "success",
-                message: "SAPTech Uganda API is running"
+                message: "Saptech Uganda API is running"
             });
         });
         
@@ -447,7 +447,7 @@ if (process.env.NODE_ENV === 'production') {
     app.get('/', (req, res) => {
         res.json({
             status: "success",
-            message: "SAPTech Uganda API is running"
+            message: "Saptech Uganda API is running"
         });
     });
 }
@@ -501,7 +501,7 @@ const server = app.listen(PORT, () => {
     });
     
     console.log(`
-🚀 SAPTech Uganda Secure Server Started!
+🚀 Saptech Uganda Secure Server Started!
 
 📍 Server running on: http://localhost:${PORT}
 🌍 Environment: ${process.env.NODE_ENV || "development"}

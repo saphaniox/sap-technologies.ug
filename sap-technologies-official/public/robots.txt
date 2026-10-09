@@ -1,4 +1,4 @@
-# robots.txt for SAPTech Uganda
+# robots.txt for Saptech Uganda
 # https://saptechug.com
 
 User-agent: *

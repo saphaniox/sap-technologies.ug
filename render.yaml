@@ -20,7 +20,7 @@ services:
       - key: API_PUBLIC_URL
         value: https://sap-technologies-ug.onrender.com
       - key: EMAIL_FROM_NAME
-        value: SAPTech Uganda
+        value: Saptech Uganda
       - key: EMAIL_FROM_ADDRESS
         value: info@saptechug.com
       - key: EMAIL_REPLY_TO
@@ -32,13 +32,13 @@ services:
       - key: COMPANY_EMAIL
         value: info@saptechug.com
       - key: COMPANY_LEGAL_NAME
-        value: SAPTech Uganda
+        value: Saptech Uganda
       - key: COMPANY_PHONE
         value: +256706564628
       - key: COMPANY_ADDRESS
         value: Ndejje, Kampala, Uganda
       - key: AWARDS_BRAND_NAME
-        value: SAPTech Awards 2026
+        value: Saptech Awards 2026
       - key: EMAIL_PROVIDER_MODE
         value: auto
       - key: ALLOWED_ORIGINS

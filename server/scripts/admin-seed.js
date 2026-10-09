@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const { User } = require("../src/models");
 
 const DEFAULT_EMAIL = "admin@sap-technologies.com";
-const DEFAULT_NAME = "SAPTech Uganda Admin";
+const DEFAULT_NAME = "Saptech Uganda Admin";
 
 function getArgValue(flagName) {
   const arg = process.argv.find((item) => item.startsWith(`${flagName}=`));

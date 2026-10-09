@@ -9,9 +9,9 @@ const SoftwarePage = () => {
   const navigate = useNavigate();
   // SEO data for better search engine visibility
   const seoData = {
-    title: "Software Apps & Business Systems | SAPTech Uganda",
-    description: "Explore SAPTech Uganda software apps, custom web applications, business management systems, ecommerce tools, school systems, inventory systems, dashboards, and digital business platforms.",
-    keywords: "SAPTech Uganda software, software apps Uganda, custom software Uganda, web applications Uganda, business management software, school management system Uganda, inventory management system, ecommerce platform, restaurant ordering system, learning management system, digital tools Kampala",
+    title: "Software Apps & Business Systems | Saptech Uganda",
+    description: "Explore Saptech Uganda software apps, custom web applications, business management systems, ecommerce tools, school systems, inventory systems, dashboards, and digital business platforms.",
+    keywords: "Saptech Uganda software, software apps Uganda, custom software Uganda, web applications Uganda, business management software, school management system Uganda, inventory management system, ecommerce platform, restaurant ordering system, learning management system, digital tools Kampala",
     ogType: "website",
     ogImage: "/images/software.jpg",
     canonicalUrl: "/software",
@@ -30,10 +30,10 @@ const SoftwarePage = () => {
     },
     "provider": {
       "@type": "Organization",
-      "name": "SAPTech Uganda",
+      "name": "Saptech Uganda",
       "url": "https://saptechug.com"
     },
-    "description": "Collection of innovative software applications, downloadable tools, and web systems developed by SAPTech Uganda for enhanced productivity and business efficiency."
+    "description": "Collection of innovative software applications, downloadable tools, and web systems developed by Saptech Uganda for enhanced productivity and business efficiency."
   };
 
   return (
@@ -74,7 +74,7 @@ const SoftwarePage = () => {
           <div className="container">
             <h2 id="software-search-title">Software solutions for real business workflows</h2>
             <p>
-              SAPTech Uganda builds reliable digital systems for companies, schools, shops,
+              Saptech Uganda builds reliable digital systems for companies, schools, shops,
               restaurants, startups, and organizations. We design browser-based tools and offline installed apps for sales, records, orders, stock,
               learning, reporting, bookings, and team workflows.
             </p>

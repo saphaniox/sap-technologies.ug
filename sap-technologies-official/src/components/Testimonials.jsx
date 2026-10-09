@@ -9,7 +9,7 @@ const testimonials = [
     name: "Joshua Wangoola",
     company: "Digital Enterprises, Kampala",
     rating: 5,
-    text: "SAPTech Uganda built our business management system from scratch. The quality exceeded our expectations and their support team is always available. I really love them and i highly recommend everyone to work with them.",
+    text: "Saptech Uganda built our business management system from scratch. The quality exceeded our expectations and their support team is always available. I really love them and i highly recommend everyone to work with them.",
     avatar: "JW",
     image: "/images/testimonial-jk.jpg"
   },
@@ -33,7 +33,7 @@ const testimonials = [
     name: "Faridah Nantongo",
     company: "Nantongo Retail Group, Kampala",
     rating: 5,
-    text: "From branding to software development, SAPTech Uganda handled everything seamlessly. They truly understand what all businesses need.",
+    text: "From branding to software development, Saptech Uganda handled everything seamlessly. They truly understand what all businesses need.",
     avatar: "FN",
     image: "/images/testimonial-fn.jpg"
   }

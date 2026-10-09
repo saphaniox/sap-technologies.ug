@@ -44,7 +44,7 @@ const About = () => {
           >
             <h3><strong>Empowering Uganda, Inspiring Africa By </strong>Transforming your imaginations to real life</h3>
             <p>
-                At SAPTech Uganda, we believe technology is the catalyst for progress and transformation. Founded in the heart of Kampala, we are more than just a tech company - we are visionaries, innovators and partners in your success. Our multidisciplinary team blends creativity, engineering excellence and deep industry expertise to deliver world-class solutions in web design, branding, electrical engineering, electronic circuits and custom software.
+                At Saptech Uganda, we believe technology is the catalyst for progress and transformation. Founded in the heart of Kampala, we are more than just a tech company - we are visionaries, innovators and partners in your success. Our multidisciplinary team blends creativity, engineering excellence and deep industry expertise to deliver world-class solutions in web design, branding, electrical engineering, electronic circuits and custom software.
             </p>
                         <p>
               Our team of experienced professionals combines creativity with technical 
@@ -53,7 +53,7 @@ const About = () => {
               and improve lives.
             </p>
             <p>
-                We are driven by a passion to empower businesses, entrepreneurs and communities across Uganda and beyond. Every project is an opportunity to inspire, to solve real-world challenges and to elevate our clients to new heights. With a relentless commitment to quality, integrity and innovation, SAPTech Uganda is shaping the digital future of Africa - one idea, one solution, one success story at a time.
+                We are driven by a passion to empower businesses, entrepreneurs and communities across Uganda and beyond. Every project is an opportunity to inspire, to solve real-world challenges and to elevate our clients to new heights. With a relentless commitment to quality, integrity and innovation, Saptech Uganda is shaping the digital future of Africa - one idea, one solution, one success story at a time.
             </p>
             <p>
               <em>lets build the future together.</em>

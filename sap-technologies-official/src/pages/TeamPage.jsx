@@ -49,7 +49,7 @@ const TeamPage = () => (
     <div className="team-page__inner">
       <section className="team-page__intro" aria-labelledby="team-page-title">
         <div className="team-page__intro-copy">
-          <p className="team-page__eyebrow">The people behind SAPTech</p>
+          <p className="team-page__eyebrow">The people behind Saptech</p>
           <h1 id="team-page-title">Good technology starts with understanding people.</h1>
           <p className="team-page__lead">
             We are a multidisciplinary team in Uganda bringing software, engineering,

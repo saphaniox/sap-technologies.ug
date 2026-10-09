@@ -73,7 +73,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
   useEffect(() => {
     loadCategories();
 
-    // Countdown timer - SAPTech Awards 2026 deadline: December 25, 2026, 23:59:59
+    // Countdown timer - Saptech Awards 2026 deadline: December 25, 2026, 23:59:59
     const deadline = new Date("2026-12-25T23:59:59").getTime();
 
     const timer = setInterval(() => {
@@ -363,7 +363,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
             ← Back to Home
           </button>
           <h1 className="awards-header-title">
-            SAPTech Awards 2026
+            Saptech Awards 2026
           </h1>
           <div className="header-spacer"></div>
         </div>
@@ -384,14 +384,14 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
             <div className="awards-logo animated fadeInDown">
               <img
                 src="/images/logo.png"
-                alt="SAPTech Awards 2026 Logo"
+                alt="Saptech Awards 2026 Logo"
                 className="awards-logo-image"
               />
             </div>
 
             <div className="hero-badge animated fadeInDown delay-1">
               <span className="badge-icon"></span>
-              <span className="badge-text">SAPTech Awards 2026</span>
+              <span className="badge-text">Saptech Awards 2026</span>
             </div>
 
             <h1 className="awards-hero-title animated fadeInUp">
@@ -488,7 +488,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
 
             {/* Social Sharing */}
             <div className="social-sharing animated fadeInUp delay-5">
-              <p className="sharing-text">Share SAPTech Awards 2026:</p>
+              <p className="sharing-text">Share Saptech Awards 2026:</p>
               <div className="social-buttons">
                 <a
                   href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}

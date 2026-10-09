@@ -1006,7 +1006,7 @@ const AwardsAdmin = () => {
   return (
     <div className="awards-admin">
       <div className="admin-section-header">
-        <h2> SAPTech Awards 2026 Management</h2>
+        <h2> Saptech Awards 2026 Management</h2>
         <div className="sub-tabs">
           <button
             className={`sub-tab ${activeSubTab === "nominations" ? "active" : ""}`}
@@ -1287,9 +1287,9 @@ const AwardsAdmin = () => {
                   const formData = new FormData(e.target);
 
                   // Auto-fill nominator info with admin defaults
-                  formData.append('nominatorName', 'SAPTech Uganda Admin');
+                  formData.append('nominatorName', 'Saptech Uganda Admin');
                   formData.append('nominatorEmail', 'admin@saptechug.com');
-                  formData.append('nominatorOrganization', 'SAPTech Uganda');
+                  formData.append('nominatorOrganization', 'Saptech Uganda');
 
                   const response = await apiService.createAdminNomination(formData);
 

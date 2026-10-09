@@ -5,7 +5,7 @@ const path = require("node:path");
 
 process.env.NODE_ENV = "production";
 process.env.CLIENT_URL = "https://saptechug.com";
-process.env.EMAIL_FROM_NAME = "SAPTech Uganda";
+process.env.EMAIL_FROM_NAME = "Saptech Uganda";
 process.env.EMAIL_FROM_ADDRESS = "info@saptechug.com";
 process.env.EMAIL_REPLY_TO = "support@saptechug.com";
 process.env.MAILJET_API_KEY = "test-mailjet-key";
@@ -52,7 +52,7 @@ async function run() {
       cta: { label: "View details", href: "https://saptechug.com/account" }
     });
 
-    assert.match(html, /SAPTech Uganda logo/);
+    assert.match(html, /Saptech Uganda logo/);
     assert.match(html, /Hello Sarah,/);
     assert.match(html, /Warm regards/);
     assert.match(html, /Engineering and technology solutions for people and businesses\./);
@@ -126,7 +126,7 @@ async function run() {
 
       const certificateMessage = mailjetPayload.Messages[0];
       assert.equal(certificateMessage.To[0].Email, "nominator@example.com");
-      assert.match(certificateMessage.Subject, /SAPTech Awards 2025 certificate for Award Recipient/);
+      assert.match(certificateMessage.Subject, /Saptech Awards 2025 certificate for Award Recipient/);
       assert.equal(certificateMessage.Attachments[0].Filename, "winner-certificate.pdf");
       assert.equal(certificateMessage.Attachments[0].Base64Content, Buffer.from("fake-pdf-content").toString("base64"));
       assert.match(certificateMessage.HTMLPart, /Award recipient/);

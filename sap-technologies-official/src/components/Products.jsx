@@ -714,7 +714,7 @@ const ProductBuyingGuide = () => (
             <h3>Custom builds and support</h3>
             <p>
                 Some teams need ready-made tools, while others need a custom device, dashboard, integration, or
-                installed system. SAPTech Uganda can advise on setup, training, hosting, maintenance, and safe
+                installed system. Saptech Uganda can advise on setup, training, hosting, maintenance, and safe
                 upgrades so the solution keeps working after delivery.
             </p>
         </article>

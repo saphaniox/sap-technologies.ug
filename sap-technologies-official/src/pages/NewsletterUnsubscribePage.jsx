@@ -28,15 +28,15 @@ const NewsletterUnsubscribePage = () => {
   return (
     <main className="newsletter-unsubscribe-page">
       <section className="newsletter-unsubscribe-panel" aria-labelledby="newsletter-unsubscribe-title">
-        <img src="/images/logo.png" alt="SAPTech Uganda" className="newsletter-unsubscribe-logo" />
+        <img src="/images/logo.png" alt="Saptech Uganda" className="newsletter-unsubscribe-logo" />
         <p className="newsletter-unsubscribe-eyebrow">Newsletter preferences</p>
         <h1 id="newsletter-unsubscribe-title">
           {isComplete ? "You are unsubscribed." : "Manage your email updates."}
         </h1>
         <p className="newsletter-unsubscribe-copy">
           {isComplete
-            ? "You will no longer receive SAPTech Uganda newsletter updates. This does not affect account, order, or application messages."
-            : "Confirm below to stop receiving occasional news and updates from SAPTech Uganda. This will not affect account, order, or application messages."}
+            ? "You will no longer receive Saptech Uganda newsletter updates. This does not affect account, order, or application messages."
+            : "Confirm below to stop receiving occasional news and updates from Saptech Uganda. This will not affect account, order, or application messages."}
         </p>
 
         {!isComplete && !token && (
@@ -57,7 +57,7 @@ const NewsletterUnsubscribePage = () => {
           </button>
         )}
 
-        <Link to="/" className="newsletter-unsubscribe-home">Return to SAPTech Uganda</Link>
+        <Link to="/" className="newsletter-unsubscribe-home">Return to Saptech Uganda</Link>
       </section>
     </main>
   );

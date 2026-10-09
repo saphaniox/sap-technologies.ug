@@ -203,7 +203,7 @@ const buildJobDescriptionHtml = (job) => {
     .map(stripHtml)
     .filter(Boolean);
 
-  const content = sections.length ? sections : ["Apply to join SAPTech Uganda."];
+  const content = sections.length ? sections : ["Apply to join Saptech Uganda."];
   return content.map((section) => `<p>${escapeHtml(section)}</p>`).join("");
 };
 
@@ -220,7 +220,7 @@ const buildJobStructuredData = (job, req) => {
     description: buildJobDescriptionHtml(job),
     identifier: {
       "@type": "PropertyValue",
-      name: "SAPTech Uganda",
+      name: "Saptech Uganda",
       value: jobId
     },
     datePosted: toIsoString(job.createdAt) || toIsoString(job.updatedAt) || new Date().toISOString(),
@@ -228,7 +228,7 @@ const buildJobStructuredData = (job, req) => {
     employmentType: normalizeEmploymentType(job.employmentType),
     hiringOrganization: {
       "@type": "Organization",
-      name: "SAPTech Uganda",
+      name: "Saptech Uganda",
       sameAs: clientUrl,
       logo: `${clientUrl}/images/logo.png`
     },
@@ -258,7 +258,7 @@ const buildJobStructuredData = (job, req) => {
 const buildJobShareDescription = (job) => {
   const parts = [job.employmentType, job.department, job.location].filter(Boolean);
   const prefix = parts.length ? `${parts.join(" - ")}. ` : "";
-  return truncateText(`${prefix}${job.description || "Apply to join SAPTech Uganda."}`);
+  return truncateText(`${prefix}${job.description || "Apply to join Saptech Uganda."}`);
 };
 
 const escapeXml = (value = "") => String(value || "")
@@ -269,19 +269,19 @@ const escapeXml = (value = "") => String(value || "")
   .replace(/'/g, "&apos;");
 
 const STATIC_SITEMAP_ROUTES = [
-  { path: "/", changefreq: "weekly", priority: "1.0", image: "/images/logo.png", imageTitle: "SAPTech Uganda logo" },
-  { path: "/about", changefreq: "monthly", priority: "0.8", image: "/images/me.jpg", imageTitle: "SAPTech Uganda engineering and technology team" },
+  { path: "/", changefreq: "weekly", priority: "1.0", image: "/images/logo.png", imageTitle: "Saptech Uganda logo" },
+  { path: "/about", changefreq: "monthly", priority: "0.8", image: "/images/me.jpg", imageTitle: "Saptech Uganda engineering and technology team" },
   { path: "/services", changefreq: "weekly", priority: "0.9", image: "/images/WEB-DESIGN.jpg", imageTitle: "Website design services for local and international clients" },
-  { path: "/portfolio", changefreq: "weekly", priority: "0.8", image: "/images/ecommerce-platform.jpg", imageTitle: "Ecommerce platform project by SAPTech Uganda" },
-  { path: "/products", changefreq: "weekly", priority: "0.8", image: "/images/sap-business-management.png", imageTitle: "SAPTech Uganda technology products and IoT devices" },
-  { path: "/software", changefreq: "weekly", priority: "0.85", image: "/images/software.jpg", imageTitle: "SAPTech Uganda software apps and business systems" },
+  { path: "/portfolio", changefreq: "weekly", priority: "0.8", image: "/images/ecommerce-platform.jpg", imageTitle: "Ecommerce platform project by Saptech Uganda" },
+  { path: "/products", changefreq: "weekly", priority: "0.8", image: "/images/sap-business-management.png", imageTitle: "Saptech Uganda technology products and IoT devices" },
+  { path: "/software", changefreq: "weekly", priority: "0.85", image: "/images/software.jpg", imageTitle: "Saptech Uganda software apps and business systems" },
   { path: "/iot", changefreq: "weekly", priority: "0.85", image: "/images/ioT.jpg", imageTitle: "IoT projects and smart systems for clients worldwide" },
-  { path: "/gallery", changefreq: "weekly", priority: "0.7", image: "/images/banner2.jpg", imageTitle: "SAPTech Uganda project and service gallery" },
-  { path: "/awards", changefreq: "weekly", priority: "0.75", image: "/images/logo.png", imageTitle: "SAPTech Awards 2026 by SAPTech Uganda" },
-  { path: "/careers", changefreq: "weekly", priority: "0.7", image: "/images/logo.png", imageTitle: "SAPTech Uganda careers and job opportunities" },
+  { path: "/gallery", changefreq: "weekly", priority: "0.7", image: "/images/banner2.jpg", imageTitle: "Saptech Uganda project and service gallery" },
+  { path: "/awards", changefreq: "weekly", priority: "0.75", image: "/images/logo.png", imageTitle: "Saptech Awards 2026 by Saptech Uganda" },
+  { path: "/careers", changefreq: "weekly", priority: "0.7", image: "/images/logo.png", imageTitle: "Saptech Uganda careers and job opportunities" },
   { path: "/partners", changefreq: "monthly", priority: "0.6" },
   { path: "/companies", changefreq: "monthly", priority: "0.6" },
-  { path: "/testimonials", changefreq: "monthly", priority: "0.6", image: "/images/testimonial-jk.jpg", imageTitle: "SAPTech Uganda client testimonial" },
+  { path: "/testimonials", changefreq: "monthly", priority: "0.6", image: "/images/testimonial-jk.jpg", imageTitle: "Saptech Uganda client testimonial" },
   { path: "/contact", changefreq: "monthly", priority: "0.75" },
   { path: "/privacy-policy", changefreq: "yearly", priority: "0.4" },
   { path: "/terms-of-service", changefreq: "yearly", priority: "0.4" }
@@ -294,7 +294,7 @@ const renderSitemapUrl = ({ loc, lastmod, changefreq, priority, image, imageTitl
     <priority>${escapeXml(priority)}</priority>${image ? `
     <image:image>
       <image:loc>${escapeXml(image)}</image:loc>
-      <image:title>${escapeXml(imageTitle || "SAPTech Uganda")}</image:title>
+      <image:title>${escapeXml(imageTitle || "Saptech Uganda")}</image:title>
     </image:image>` : ""}
   </url>`;
 
@@ -306,12 +306,12 @@ const sendShareNotFound = (res) => res.status(404)
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, follow">
-  <title>Job Not Found | SAPTech Uganda</title>
+  <title>Job Not Found | Saptech Uganda</title>
 </head>
 <body>
   <main style="font-family:Arial,sans-serif;max-width:640px;margin:60px auto;padding:0 20px;line-height:1.6;">
     <h1>Job Not Found</h1>
-    <p>This job is no longer available. View current SAPTech Uganda opportunities instead.</p>
+    <p>This job is no longer available. View current Saptech Uganda opportunities instead.</p>
     <p><a href="${escapeHtml(`${getClientUrl()}/careers`)}">Open careers page</a></p>
   </main>
 </body>
@@ -418,14 +418,14 @@ const getJobSharePage = async (req, res) => {
     const jobUrl = `${clientUrl}/careers/${jobId}`;
     const appUrl = jobUrl;
     const posterUrl = getJobPosterUrl(job, req);
-    const title = `${job.title} | Careers at SAPTech Uganda`;
+    const title = `${job.title} | Careers at Saptech Uganda`;
     const description = buildJobShareDescription(job);
     const keywords = [
       job.title,
       job.department,
       job.location,
       job.employmentType,
-      "SAPTech Uganda careers",
+      "Saptech Uganda careers",
       "technology jobs Uganda"
     ].filter(Boolean).join(", ");
     const structuredData = buildJobStructuredData(job, req);
@@ -446,7 +446,7 @@ const getJobSharePage = async (req, res) => {
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <link rel="canonical" href="${escapeHtml(jobUrl)}">
   <meta property="og:type" content="article">
-  <meta property="og:site_name" content="SAPTech Uganda">
+  <meta property="og:site_name" content="Saptech Uganda">
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${escapeHtml(jobUrl)}">
@@ -463,7 +463,7 @@ const getJobSharePage = async (req, res) => {
 <body>
   <main style="font-family:Arial,sans-serif;max-width:760px;margin:48px auto;padding:0 20px;line-height:1.65;color:#0f172a;">
     <img src="${escapeHtml(posterUrl)}" alt="${escapeHtml(job.posterAlt || `${job.title} job poster`)}" style="width:100%;max-height:520px;object-fit:contain;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
-    <p style="margin:24px 0 8px;color:#047857;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">SAPTech Uganda Careers</p>
+    <p style="margin:24px 0 8px;color:#047857;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Saptech Uganda Careers</p>
     <h1 style="margin:0 0 12px;font-size:clamp(2rem,5vw,3rem);line-height:1.1;">${escapeHtml(job.title)}</h1>
     <p style="margin:0 0 18px;color:#475569;">${escapeHtml([job.employmentType, job.department, job.location].filter(Boolean).join(" - "))}</p>
     <p>${escapeHtml(description)}</p>
@@ -1004,7 +1004,7 @@ const sendJobApplicationEmail = async (req, res) => {
 
     const subject = normalizeSingleLine(
       req.body.subject,
-      `Message from SAPTech Uganda about your ${application.job?.title || "application"}`
+      `Message from Saptech Uganda about your ${application.job?.title || "application"}`
     );
     const message = normalizeText(req.body.message);
 

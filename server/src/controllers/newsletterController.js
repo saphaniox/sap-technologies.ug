@@ -135,7 +135,7 @@ class NewsletterController {
 
             res.status(200).json({
                 status: "success",
-                message: "You have been unsubscribed from SAPTech Uganda newsletter updates."
+                message: "You have been unsubscribed from Saptech Uganda newsletter updates."
             });
         } catch (error) {
             next(error);

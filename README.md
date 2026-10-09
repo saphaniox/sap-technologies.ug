@@ -118,4 +118,4 @@ Configure these secret environment variables in Coolify and Render:
 
 Keep API keys, secret keys, Gmail app passwords, database, JWT and session secrets in Coolify and Render env. Use the admin dashboard for safe email settings such as provider mode, from/reply/notification emails, logo URL, tagline, phone and address.
 
-All messages use the shared SAPTech Uganda template, including the hosted logo, responsive branding, human-readable content, plain-text alternatives, reply-to information, and security guidance.
+All messages use the shared Saptech Uganda template, including the hosted logo, responsive branding, human-readable content, plain-text alternatives, reply-to information, and security guidance.

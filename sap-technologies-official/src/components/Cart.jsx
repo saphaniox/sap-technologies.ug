@@ -95,7 +95,7 @@ const Cart = () => {
       .join("\n");
 
     const text = [
-      "Hello SAPTech Uganda! I'd like to send an order request for the following products:",
+      "Hello Saptech Uganda! I'd like to send an order request for the following products:",
       "",
       itemLines,
       "",
@@ -123,7 +123,7 @@ const Cart = () => {
     const subject = encodeURIComponent(`Product Order from ${form.customerName}`);
     const body = encodeURIComponent(
       [
-        `Hello SAPTech Uganda,`,
+        `Hello Saptech Uganda,`,
         ``,
         `I would like to order the following products:`,
         ``,

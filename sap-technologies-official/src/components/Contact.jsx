@@ -1,7 +1,7 @@
 /**
  * Contact Component
  *
- * Provides a polished contact form for users to reach out to SAPTech Uganda.
+ * Provides a polished contact form for users to reach out to Saptech Uganda.
  */
 import React, { useState } from "react";
 import { motion } from "framer-motion";
@@ -110,7 +110,7 @@ const Contact = () => {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            <span className="contact-panel-label">SAPTech Uganda</span>
+            <span className="contact-panel-label">Saptech Uganda</span>
             <h3>Let&apos;s talk about your next build.</h3>
             <p>
               Send the details and our team will respond with a clear next step for your

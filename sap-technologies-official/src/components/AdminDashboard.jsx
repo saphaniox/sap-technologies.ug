@@ -171,12 +171,12 @@ const buildApplicantEmailDraft = (application = {}) => {
     subject: `Update regarding your ${jobTitle} application`,
     message: `Hello ${firstName},
 
-Thank you for your interest in SAPTech Uganda and for the time you invested in your application.
+Thank you for your interest in Saptech Uganda and for the time you invested in your application.
 
 I wanted to personally follow up regarding your application for ${jobTitle}.
 
 Warm regards,
-SAPTech Uganda Recruitment Team`
+Saptech Uganda Recruitment Team`
   };
 };
 
@@ -208,9 +208,9 @@ const getStatusClass = (value) => {
 const DEFAULT_EMAIL_CONFIG_FORM = {
   providerMode: "auto",
   brand: {
-    name: "SAPTech Uganda",
-    legalName: "SAPTech Uganda",
-    awardsName: "SAPTech Awards 2026",
+    name: "Saptech Uganda",
+    legalName: "Saptech Uganda",
+    awardsName: "Saptech Awards 2026",
     websiteUrl: "https://saptechug.com",
     logoUrl: "https://saptechug.com/images/logo.png",
     tagline: CURRENT_EMAIL_BRAND_TAGLINE,
@@ -220,7 +220,7 @@ const DEFAULT_EMAIL_CONFIG_FORM = {
     careersEmail: "careers@saptechug.com"
   },
   sender: {
-    fromName: "SAPTech Uganda",
+    fromName: "Saptech Uganda",
     fromEmail: "info@saptechug.com",
     replyTo: "info@saptechug.com",
     notifyEmail: "info@saptechug.com"
@@ -1942,7 +1942,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
             <div>
               <span className="section-eyebrow">Direct message</span>
               <h4>Send a custom email</h4>
-              <p>Enter any recipient and send a branded SAPTech Uganda email.</p>
+              <p>Enter any recipient and send a branded Saptech Uganda email.</p>
             </div>
             <span className="custom-email-badge">Admin only</span>
           </div>
@@ -2382,7 +2382,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
       <div className="admin-modal">
         <div className="admin-content">
           <div className="admin-header">
-            <h2>Admin Dashboard - SAPTech Uganda</h2>
+            <h2>Admin Dashboard - Saptech Uganda</h2>
             <button className="close-btn" onClick={onClose}>&times;</button>
           </div>
           <div className="loading">Loading admin dashboard...</div>
@@ -2396,7 +2396,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
       <div className="admin-modal">
         <div className="admin-content">
           <div className="admin-header">
-            <h2>Admin Dashboard - SAPTech Uganda</h2>
+            <h2>Admin Dashboard - Saptech Uganda</h2>
             <button className="close-btn" onClick={onClose}>&times;</button>
           </div>
           <div className="error-message">{error}</div>
@@ -2414,7 +2414,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
             <span></span>
             <span></span>
           </button>
-          <h2>Admin-Dashboard - SAPTech Uganda</h2>
+          <h2>Admin-Dashboard - Saptech Uganda</h2>
           <div className="admin-user-info">
             <span>Welcome, {user?.name}</span>
             <span className="admin-badge">ADMIN</span>
@@ -2515,7 +2515,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
               <button className={`nav-btn ${activeTab === "awards" ? "active" : ""}`}
                 onClick={() => { setActiveTab("awards"); setSidebarOpen(false); }}>
                 <span className="nav-icon" aria-hidden="true">{"\uD83C\uDFC6"}</span>
-                <span>SAPTech Awards 2026</span>
+                <span>Saptech Awards 2026</span>
               </button>
               <button className={`nav-btn ${activeTab === "analytics" ? "active" : ""}`}
                 onClick={() => { setActiveTab("analytics"); setSidebarOpen(false); }}>
@@ -4696,7 +4696,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                   <h3>Certificate Signature</h3>
                   <p className="section-description">
                     Upload a signature image that will appear on all generated certificates.
-                    The signature will be displayed above "SAPTech Awards 2026 Committee" text.
+                    The signature will be displayed above "Saptech Awards 2026 Committee" text.
                   </p>
 
                   {currentSignature && (
@@ -4786,7 +4786,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                     <div className="loading-state">Loading certificates...</div>
                   ) : allCertificates.length === 0 ? (
                     <div className="empty-state">
-                      <p>No certificates found. Generate certificates from the SAPTech Awards 2026 tab.</p>
+                      <p>No certificates found. Generate certificates from the Saptech Awards 2026 tab.</p>
                     </div>
                   ) : (
                     <>
@@ -4974,7 +4974,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
               <div>
                 <span className="section-eyebrow">Applicant communication</span>
                 <h3>Send an email to {emailingJobApplication.fullName}</h3>
-                <p>Compose a clear, professional message. It will be delivered from SAPTech Uganda using your active email provider.</p>
+                <p>Compose a clear, professional message. It will be delivered from Saptech Uganda using your active email provider.</p>
               </div>
               <button
                 type="button"

@@ -32,7 +32,7 @@ const getJobPosterUrl = (job) => getImageUrl(job?.poster) || `${SITE_URL}${DEFAU
 const buildJobDescription = (job) => {
   const details = [job?.employmentType, job?.department, job?.location].filter(Boolean).join(" - ");
   const intro = details ? `${details}. ` : "";
-  return truncateText(`${intro}${job?.description || "Apply to join SAPTech Uganda."}`);
+  return truncateText(`${intro}${job?.description || "Apply to join Saptech Uganda."}`);
 };
 
 const normalizeEmploymentType = (value = "Full-time") => {
@@ -50,7 +50,7 @@ const buildJobStructuredData = (job) => ({
   description: stripText(job.description),
   identifier: {
     "@type": "PropertyValue",
-    name: "SAPTech Uganda",
+    name: "Saptech Uganda",
     value: job._id
   },
   datePosted: job.createdAt || undefined,
@@ -58,7 +58,7 @@ const buildJobStructuredData = (job) => ({
   employmentType: normalizeEmploymentType(job.employmentType),
   hiringOrganization: {
     "@type": "Organization",
-    name: "SAPTech Uganda",
+    name: "Saptech Uganda",
     sameAs: SITE_URL,
     logo: `${SITE_URL}/images/logo.png`
   },
@@ -208,7 +208,7 @@ const Careers = () => {
 
   const handleShareJob = async (job) => {
     const url = getJobShareUrl(job);
-    const title = `${job.title} | SAPTech Uganda Careers`;
+    const title = `${job.title} | Saptech Uganda Careers`;
     const text = buildJobDescription(job);
 
     try {
@@ -259,14 +259,14 @@ const Careers = () => {
     <>
     {selectedJob && (
       <SEO
-        title={`${selectedJob.title} | Careers at SAPTech Uganda`}
+        title={`${selectedJob.title} | Careers at Saptech Uganda`}
         description={buildJobDescription(selectedJob)}
         keywords={[
           selectedJob.title,
           selectedJob.department,
           selectedJob.location,
           selectedJob.employmentType,
-          "SAPTech Uganda careers",
+          "Saptech Uganda careers",
           "technology jobs Uganda",
           "software jobs Kampala"
         ].filter(Boolean).join(", ")}
@@ -298,7 +298,7 @@ const Careers = () => {
           )}
         </div>
 
-        <div className="careers-info-grid" aria-label="Career areas at SAPTech Uganda">
+        <div className="careers-info-grid" aria-label="Career areas at Saptech Uganda">
           <article>
             <h3>Engineering & IoT</h3>
             <p>

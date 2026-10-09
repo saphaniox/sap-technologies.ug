@@ -328,7 +328,7 @@ class EnvironmentConfig {
                 }
             },
             from: {
-                name: process.env.EMAIL_FROM_NAME || 'SAPTech Uganda',
+                name: process.env.EMAIL_FROM_NAME || 'Saptech Uganda',
                 address: process.env.EMAIL_FROM_ADDRESS || process.env.MAILJET_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || process.env.GMAIL_USER
             },
             replyTo: process.env.EMAIL_REPLY_TO || process.env.COMPANY_EMAIL || 'info@saptechug.com',

@@ -47,7 +47,7 @@ const createWatermarkLayer = async (targetWidth, targetHeight) => {
  * @param {number} options.maxWidth - Maximum width in pixels
  * @param {number} options.maxHeight - Maximum height in pixels
  * @param {boolean} options.convertToWebP - Convert to WebP format
- * @param {boolean} options.watermark - Add the SAPTech logo to uploaded content photos
+ * @param {boolean} options.watermark - Add the Saptech logo to uploaded content photos
  */
 const compressImage = (options = {}) => {
   const {

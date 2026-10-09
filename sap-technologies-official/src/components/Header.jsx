@@ -84,7 +84,7 @@ const NAV_ITEMS = [
   { id: "iot", label: "IoT Projects", route: "/iot" },
   { id: "insights", label: "Insights", route: "/insights" },
   { id: "gallery", label: "Gallery", route: "/gallery" },
-  { id: "awards", label: "SAPTech Awards 2026", route: "/awards" },
+  { id: "awards", label: "Saptech Awards 2026", route: "/awards" },
   { id: "careers", label: "Careers", route: "/careers" },
   { id: "products", label: "Products" },
   { id: "partners", label: "Partners" },
@@ -445,7 +445,7 @@ const Header = ({ isAuthenticated, userName, userRole, userProfilePic, onAuthMod
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
           >
-            SAPTech Uganda
+            Saptech Uganda
           </Motion.span>
         </Motion.div>
 
@@ -643,9 +643,9 @@ const Header = ({ isAuthenticated, userName, userRole, userProfilePic, onAuthMod
               >
                 <div className="nav-sidebar-header">
                   <div className="nav-sidebar-brand">
-                    <img src="/images/logo.png" alt="SAPTech Uganda" />
+                    <img src="/images/logo.png" alt="Saptech Uganda" />
                     <div>
-                      <strong>SAPTech Uganda</strong>
+                      <strong>Saptech Uganda</strong>
                     </div>
                   </div>
                   <button type="button" className="nav-sidebar-close" onClick={closeMenu} aria-label="Close menu">x</button>

@@ -50,7 +50,7 @@ const PrivacyPolicy = ({ onClose, onNavigate, onTermsOfServiceOpen }) => {
           <section>
             <h2>1. Information We Collect</h2>
             <p>
-              At SAPTech Uganda, we collect information you provide directly to us, such as when you:
+              At Saptech Uganda, we collect information you provide directly to us, such as when you:
             </p>
             <ul>
               <li>Fill out contact forms or request quotes</li>

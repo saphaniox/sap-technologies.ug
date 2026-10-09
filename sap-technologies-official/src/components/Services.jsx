@@ -507,7 +507,7 @@ const Services = () => {
               </p>
             </div>
 
-            <div className="services-keyword-strip" aria-label="Popular SAPTech Uganda services">
+            <div className="services-keyword-strip" aria-label="Popular Saptech Uganda services">
               {popularServiceSearches.map((service) => (
                 <span key={service}>{service}</span>
               ))}

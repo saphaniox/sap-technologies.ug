@@ -207,8 +207,8 @@ class CertificateService {
             const logoHeight = await this.drawLogo(pdfDoc, page, width, height);
             const headerYOffset = logoHeight > 0 ? logoHeight + 15 : 0;
 
-            // Header - SAPTech Awards 2026 logo/text
-            const awardsTitle = 'SAPTech Awards';
+            // Header - Saptech Awards 2026 logo/text
+            const awardsTitle = 'Saptech Awards';
             const awardsTitleSize = 40;
             const awardsTitleWidth = timesRomanBold.widthOfTextAtSize(awardsTitle, awardsTitleSize);
             page.drawText(awardsTitle, {
@@ -315,7 +315,7 @@ class CertificateService {
             });
 
             // Website and Powered by text (below recognition)
-            page.drawText('Powered by SAPTech Uganda', {
+            page.drawText('Powered by Saptech Uganda', {
                 x: width / 2 - 105,
                 y: height - 435 - headerYOffset,
                 size: 9,
@@ -412,7 +412,7 @@ class CertificateService {
                 });
             }
 
-            page.drawText('SAPTech Awards 2026 Committee', {
+            page.drawText('Saptech Awards 2026 Committee', {
                 x: width - 250,
                 y: 125,
                 size: 10,
@@ -543,8 +543,8 @@ class CertificateService {
             const logoHeight = await this.drawLogo(pdfDoc, page, width, height);
             const headerYOffset = logoHeight > 0 ? logoHeight + 15 : 0;
 
-            // Header - SAPTech Awards 2026 logo/text
-            const awardsTitle = 'SAPTech Awards';
+            // Header - Saptech Awards 2026 logo/text
+            const awardsTitle = 'Saptech Awards';
             const awardsTitleSize = 40;
             const awardsTitleWidth = timesRomanBold.widthOfTextAtSize(awardsTitle, awardsTitleSize);
             page.drawText(awardsTitle, {
@@ -651,7 +651,7 @@ class CertificateService {
             });
 
             // Website and Powered by text (below recognition)
-            page.drawText('Powered by SAPTech Uganda', {
+            page.drawText('Powered by Saptech Uganda', {
                 x: width / 2 - 105,
                 y: height - 435 - headerYOffset,
                 size: 9,
@@ -756,7 +756,7 @@ class CertificateService {
                 });
             }
 
-            page.drawText('SAPTech Awards 2026 Committee', {
+            page.drawText('Saptech Awards 2026 Committee', {
                 x: width - 250,
                 y: 125,
                 size: 10,
@@ -861,8 +861,8 @@ class CertificateService {
             const logoHeight = await this.drawLogo(pdfDoc, page, width, height);
             const headerYOffset = logoHeight > 0 ? logoHeight + 15 : 0;
 
-            // Header - SAPTech Awards 2026 logo/text
-            const awardsTitle = 'SAPTech Awards';
+            // Header - Saptech Awards 2026 logo/text
+            const awardsTitle = 'Saptech Awards';
             const awardsTitleSize = 40;
             const awardsTitleWidth = timesRomanBold.widthOfTextAtSize(awardsTitle, awardsTitleSize);
             page.drawText(awardsTitle, {
@@ -939,7 +939,7 @@ class CertificateService {
             });
 
             // Award text
-            const awardText = 'SAPTech Awards 2026';
+            const awardText = 'Saptech Awards 2026';
             const awardTextSize = 17;
             const awardTextWidth = timesRomanBold.widthOfTextAtSize(awardText, awardTextSize);
             page.drawText(awardText, {
@@ -972,7 +972,7 @@ class CertificateService {
             });
 
             // Website and Powered by text (below recognition)
-            page.drawText('Powered by SAPTech Uganda', {
+            page.drawText('Powered by Saptech Uganda', {
                 x: width / 2 - 105,
                 y: height - 435 - headerYOffset,
                 size: 9,
@@ -1077,7 +1077,7 @@ class CertificateService {
                 });
             }
 
-            page.drawText('SAPTech Awards 2026 Committee', {
+            page.drawText('Saptech Awards 2026 Committee', {
                 x: width - 250,
                 y: 125,
                 size: 10,

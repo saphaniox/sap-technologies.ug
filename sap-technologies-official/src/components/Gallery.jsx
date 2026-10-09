@@ -211,7 +211,7 @@ const Gallery = () => {
           )}
         </div>
 
-        <div className="gallery-story-grid" aria-label="What SAPTech Uganda documents in the gallery">
+        <div className="gallery-story-grid" aria-label="What Saptech Uganda documents in the gallery">
           <article>
             <h3>Project Builds</h3>
             <p>
@@ -230,7 +230,7 @@ const Gallery = () => {
             <h3>Team & Events</h3>
             <p>
               Moments from workshops, training, office work, community events, partnerships,
-              and the people behind SAPTech Uganda's engineering and technology projects.
+              and the people behind Saptech Uganda's engineering and technology projects.
             </p>
           </article>
         </div>

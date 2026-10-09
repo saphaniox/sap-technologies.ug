@@ -71,7 +71,7 @@ const qualitySignals = [
 const Insights = () => (
   <section className="insights-page">
     <div className="insights-hero">
-      <span className="insights-eyebrow">SAPTech Uganda insights</span>
+      <span className="insights-eyebrow">Saptech Uganda insights</span>
       <h1>Practical engineering and technology guidance for growing teams</h1>
       <p>
         We publish these notes to help business owners, schools, shops, startups, and organizations make better
@@ -80,7 +80,7 @@ const Insights = () => (
       </p>
       <div className="insights-actions">
         <Link to="/services">Explore our services</Link>
-        <Link to="/contact" className="secondary">Talk to SAPTech Uganda</Link>
+        <Link to="/contact" className="secondary">Talk to Saptech Uganda</Link>
       </div>
     </div>
 
@@ -109,7 +109,7 @@ const Insights = () => (
         <h2>How we keep our pages useful</h2>
         <p>
           A useful website should give visitors enough context to decide whether to trust the business. These are
-          the standards we maintain across SAPTech Uganda so real people can understand what we offer, how we work,
+          the standards we maintain across Saptech Uganda so real people can understand what we offer, how we work,
           and how to contact us before starting a project.
         </p>
       </div>

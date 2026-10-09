@@ -99,8 +99,8 @@ export default defineConfig(({ mode, command }) => {
       filename: "pwa-sw.js",
       includeAssets: ["ads.txt", "robots.txt", "images/logo.png", "favicon-16x16.png", "favicon-32x32.png", "favicon-48x48.png", "apple-touch-icon.png", "mstile-150x150.png", "pwa-192.png", "pwa-512.png", "maskable-192.png", "maskable-512.png"],
       manifest: {
-        name: "SAPTech Uganda",
-        short_name: "SAPTech",
+        name: "Saptech Uganda",
+        short_name: "Saptech",
         description: "Professional in Engineering & Technology solutions",
         theme_color: "#1a237e",
         background_color: "#0f172a",

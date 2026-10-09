@@ -114,7 +114,7 @@ const Hero = () => {
           className="welcome-badge"
           whileHover={{ scale: 1.1 }}
         >
-          <span> Welcome to SAPTech Uganda</span>
+          <span> Welcome to Saptech Uganda</span>
         </motion.div>
 
         <motion.h1 className="hero-title">

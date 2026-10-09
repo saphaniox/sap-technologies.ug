@@ -9,9 +9,9 @@ const IoTPage = () => {
   const navigate = useNavigate();
   // SEO data for better search engine visibility
   const seoData = {
-    title: "IoT Projects, Automation & Smart Systems | SAPTech Uganda",
-    description: "Explore SAPTech Uganda IoT projects, smart home systems, security systems, farm monitoring, industrial automation, Arduino, Raspberry Pi, ESP32, sensors, and connected devices.",
-    keywords: "IoT projects Uganda, Internet of Things Uganda, SAPTech Uganda IoT, IoT services Uganda, smart home systems Uganda, security systems Uganda, automation projects Uganda, Arduino projects Uganda, Raspberry Pi projects Uganda, ESP32 projects Uganda, embedded systems Uganda, sensor networks Uganda, smart farming Uganda, industrial IoT, connected devices Africa",
+    title: "IoT Projects, Automation & Smart Systems | Saptech Uganda",
+    description: "Explore Saptech Uganda IoT projects, smart home systems, security systems, farm monitoring, industrial automation, Arduino, Raspberry Pi, ESP32, sensors, and connected devices.",
+    keywords: "IoT projects Uganda, Internet of Things Uganda, Saptech Uganda IoT, IoT services Uganda, smart home systems Uganda, security systems Uganda, automation projects Uganda, Arduino projects Uganda, Raspberry Pi projects Uganda, ESP32 projects Uganda, embedded systems Uganda, sensor networks Uganda, smart farming Uganda, industrial IoT, connected devices Africa",
     ogType: "website",
     ogImage: "/images/ioT.jpg",
     canonicalUrl: "/iot",
@@ -21,10 +21,10 @@ const IoTPage = () => {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": "IoT Projects",
-    "description": "Practical Internet of Things projects and embedded systems developed by SAPTech Uganda",
+    "description": "Practical Internet of Things projects and embedded systems developed by Saptech Uganda",
     "provider": {
       "@type": "Organization",
-      "name": "SAPTech Uganda",
+      "name": "Saptech Uganda",
       "url": "https://saptechug.com"
     },
     "about": {
@@ -66,7 +66,7 @@ const IoTPage = () => {
           <div className="container">
             <h2 id="iot-search-title">Connected systems we build</h2>
             <p>
-              SAPTech Uganda develops sensor-based systems for monitoring, automation, and
+              Saptech Uganda develops sensor-based systems for monitoring, automation, and
               control in real environments. We combine embedded hardware, dashboards, alerts,
               and connectivity so homes, farms, schools, workshops, and businesses can track
               what matters and respond faster.
