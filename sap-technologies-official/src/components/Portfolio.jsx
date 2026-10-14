@@ -391,7 +391,7 @@ const Portfolio = () => {
           </div>
         )}
 
-        <h2>Our Featured Projects</h2>
+        <h2>Our Projects</h2>
         <div className="portfolio-intro">
           <p className="intro-main">
             We are highly motivated and detail-oriented full-stack developers specializing in designing,
