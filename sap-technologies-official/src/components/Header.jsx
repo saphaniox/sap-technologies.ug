@@ -84,7 +84,7 @@ const NAV_ITEMS = [
   { id: "iot", label: "IoT Projects", route: "/iot" },
   { id: "insights", label: "Insights", route: "/insights" },
   { id: "gallery", label: "Gallery", route: "/gallery" },
-  { id: "awards", label: "Saptech Awards 2026", route: "/awards" },
+  { id: "awards", label: "SAPTECH Awards 2026", route: "/awards" },
   { id: "careers", label: "Careers", route: "/careers" },
   { id: "products", label: "Products" },
   { id: "partners", label: "Partners" },

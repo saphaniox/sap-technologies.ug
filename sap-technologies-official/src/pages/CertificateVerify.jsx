@@ -79,11 +79,11 @@ const CertificateVerify = () => {
     // Meta tags for social media and Google previews
     const metaTitle = certificate
         ? `Certificate Verification - ${certificate.recipientName}`
-        : 'Certificate Verification - Saptech Uganda';
+        : 'Certificate Verification - SAPTECH UGANDA';
 
     const metaDescription = certificate
         ? `${certificate.recipientName} - ${getTypeLabel(certificate.type)} Certificate for ${certificate.categoryName} (${certificate.awardYear})`
-        : 'Verify Saptech Uganda certificate authenticity';
+        : 'Verify SAPTECH UGANDA certificate authenticity';
 
     const metaUrl = `https://saptechug.com/verify/${certificateId}`;
 
@@ -91,7 +91,7 @@ const CertificateVerify = () => {
         return (
             <div className="certificate-verify-container">
                 <Helmet>
-                    <title>Verifying Certificate... - Saptech Uganda</title>
+                    <title>Verifying Certificate... - SAPTECH UGANDA</title>
                     <meta name="description" content="Verifying certificate authenticity" />
                 </Helmet>
                 <div className="verify-loading">
@@ -106,7 +106,7 @@ const CertificateVerify = () => {
         return (
             <div className="certificate-verify-container">
                 <Helmet>
-                    <title>Certificate Not Found - Saptech Uganda</title>
+                    <title>Certificate Not Found - SAPTECH UGANDA</title>
                     <meta name="description" content="Certificate verification could not be completed" />
                     <meta property="og:title" content="Certificate Not Found" />
                     <meta property="og:description" content="This certificate could not be verified" />
@@ -152,7 +152,7 @@ const CertificateVerify = () => {
                 <meta property="og:url" content={metaUrl} />
                 <meta property="og:title" content={metaTitle} />
                 <meta property="og:description" content={metaDescription} />
-                <meta property="og:site_name" content="Saptech Uganda" />
+                <meta property="og:site_name" content="SAPTECH UGANDA" />
 
                 {/* Twitter */}
                 <meta name="twitter:card" content="summary_large_image" />
@@ -244,7 +244,7 @@ const CertificateVerify = () => {
 
                 <div className="verification-footer">
                     <p className="footer-text">
-                        This certificate was issued by <strong>Saptech Uganda</strong> and has been verified as authentic.
+                        This certificate was issued by <strong>SAPTECH UGANDA</strong> and has been verified as authentic.
                     </p>
                     <p className="footer-security">
                          Secured and verified through blockchain-backed authentication

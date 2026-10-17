@@ -275,7 +275,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
       const normalizedFormData = {
         ...formData,
         title: projectTitle,
-        description: formData.description.trim() || "A connected technology project from Saptech Uganda.",
+        description: formData.description.trim() || "A connected technology project from SAPTECH UGANDA.",
         category: formData.category.trim() || "General",
         status: formData.status || "completed",
         order: formData.order || 0

@@ -41,7 +41,7 @@ const getPhotoFromEvent = (event) => {
 
   return {
     src,
-    alt: image.alt || "Saptech photo"
+    alt: image.alt || "SAPTECH photo"
   };
 };
 

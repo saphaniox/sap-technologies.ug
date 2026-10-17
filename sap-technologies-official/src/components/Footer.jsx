@@ -33,7 +33,7 @@ const FOOTER_LINK_GROUPS = [
   {
     title: "Community",
     links: [
-      { route: "/awards", label: "Saptech Awards 2026" },
+      { route: "/awards", label: "SAPTECH Awards 2026" },
       { id: "testimonials", label: "Testimonials" },
       { route: "/privacy-policy", label: "Privacy Policy" },
       { route: "/terms-of-service", label: "Terms of Service" }
@@ -102,8 +102,8 @@ const Footer = ({ onNavigate }) => {
     <footer className="footer">
       <div className="footer-content">
         <div className="footer-brand">
-          <img src="/images/logo.png" alt="Saptech Uganda" className="footer-logo" />
-          <span>Saptech Uganda</span>
+          <img src="/images/logo.png" alt="SAPTECH UGANDA" className="footer-logo" />
+          <span>SAPTECH UGANDA</span>
           <p className="footer-brand-description">
             Engineering, software, IoT, products, and digital transformation for teams in Uganda and beyond.
           </p>
@@ -190,7 +190,7 @@ const Footer = ({ onNavigate }) => {
 
       <div className="footer-bottom">
         <div className="footer-legal">
-          <p>&copy; 2026 Saptech Uganda-Africa. All rights reserved.</p>
+          <p>&copy; 2026 SAPTECH UGANDA-Africa. All rights reserved.</p>
           <div className="legal-links">
             <a
               href="/privacy-policy"
@@ -222,7 +222,7 @@ const Footer = ({ onNavigate }) => {
             rel="noopener noreferrer"
             className="credits-link"
           >
-            Saptech Uganda
+            SAPTECH UGANDA
           </a>
         </p>
       </div>
