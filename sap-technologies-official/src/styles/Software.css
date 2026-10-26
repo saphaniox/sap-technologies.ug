@@ -404,6 +404,19 @@
   transition: transform 0.3s ease;
 }
 
+.software .software-logo-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.software .software-logo-link:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: -5px;
+}
+
 .software .software-card:hover .software-image img {
   transform: scale(1.05);
 }

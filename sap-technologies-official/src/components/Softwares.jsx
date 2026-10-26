@@ -162,6 +162,31 @@ const Softwares = () => {
     return badges[status] || badges.active;
   };
 
+  const getLogoDestination = (item) => {
+    const website = String(item.links?.web || item.url || "").trim();
+    const playStore = String(item.links?.playstore || "").trim();
+    const appStore = String(item.links?.appstore || "").trim();
+    const isAndroid = typeof navigator !== "undefined" && /android/i.test(navigator.userAgent || "");
+
+    if (isAndroid && playStore) {
+      return { href: playStore, label: `Get ${item.name} on Google Play` };
+    }
+
+    if (website) {
+      return { href: website, label: `Open ${item.name} website` };
+    }
+
+    if (appStore) {
+      return { href: appStore, label: `Get ${item.name} on the App Store` };
+    }
+
+    if (playStore) {
+      return { href: playStore, label: `Get ${item.name} on Google Play` };
+    }
+
+    return null;
+  };
+
   if (loading) {
     return (
       <section id="software" className="software">
@@ -260,7 +285,14 @@ const Softwares = () => {
           </div>
         ) : (
           <div className="software-grid">
-            {filteredSoftware.map((item) => (
+            {filteredSoftware.map((item) => {
+              const isLaunchable = item.status !== "inactive" && item.status !== "coming-soon";
+              const logoDestination = isLaunchable ? getLogoDestination(item) : null;
+              const trackLogoLink = () => {
+                if (logoDestination) void trackSoftwareClick(item._id);
+              };
+
+              return (
               <div key={item._id} className="software-card">
                 {/* Image */}
                 <div className="software-image">
@@ -269,7 +301,23 @@ const Softwares = () => {
                       images={item.images.map(img => getImageUrl(typeof img === 'string' ? img : img.url))}
                       alt={item.name}
                       className="software-slider"
+                      imageHref={logoDestination?.href}
+                      imageLinkLabel={logoDestination?.label}
+                      onImageLinkClick={trackLogoLink}
                     />
+                  ) : logoDestination ? (
+                    <a
+                      className="software-logo-link"
+                      href={logoDestination.href}
+                      aria-label={logoDestination.label}
+                      onClick={trackLogoLink}
+                    >
+                      <img
+                        src={getImageUrl(item.primaryImage || item.image) || PLACEHOLDERS.software}
+                        alt={item.name}
+                        loading="lazy"
+                      />
+                    </a>
                   ) : (
                     <img
                       src={getImageUrl(item.primaryImage || item.image) || PLACEHOLDERS.software}
@@ -393,7 +441,8 @@ const Softwares = () => {
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

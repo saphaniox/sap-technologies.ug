@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import "../styles/ImageSlider.css";
 
-const ImageSlider = ({ images, alt = "Image" }) => {
+const ImageSlider = ({
+  images,
+  alt = "Image",
+  imageHref = "",
+  imageLinkLabel = "",
+  onImageLinkClick
+}) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Handle empty or invalid images
@@ -33,11 +39,36 @@ const ImageSlider = ({ images, alt = "Image" }) => {
     setCurrentIndex(index);
   };
 
+  const renderLinkedImage = (image, imageAlt, className = "") => {
+    const imageElement = (
+      <img
+        src={image}
+        alt={imageAlt}
+        className={className}
+        loading="lazy"
+        decoding="async"
+      />
+    );
+
+    if (!imageHref) return imageElement;
+
+    return (
+      <a
+        className="slider-image-link"
+        href={imageHref}
+        aria-label={imageLinkLabel || `Open ${alt}`}
+        onClick={onImageLinkClick}
+      >
+        {imageElement}
+      </a>
+    );
+  };
+
   // If only one image, show it without controls
   if (validImages.length === 1) {
     return (
       <div className="image-slider single-image">
-        <img src={validImages[0]} alt={alt} loading="lazy" decoding="async" />
+        {renderLinkedImage(validImages[0], alt)}
       </div>
     );
   }
@@ -46,13 +77,11 @@ const ImageSlider = ({ images, alt = "Image" }) => {
     <div className="image-slider">
       {/* Main Image Display */}
       <div className="slider-image-container">
-        <img
-          src={validImages[currentIndex]}
-          alt={`${alt} - ${currentIndex + 1}`}
-          className="slider-image"
-          loading="lazy"
-          decoding="async"
-        />
+        {renderLinkedImage(
+          validImages[currentIndex],
+          `${alt} - ${currentIndex + 1}`,
+          "slider-image"
+        )}
 
         {/* Navigation Arrows */}
         <button
