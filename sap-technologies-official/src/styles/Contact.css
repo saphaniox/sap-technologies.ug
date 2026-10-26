@@ -120,6 +120,29 @@
   letter-spacing: 0;
 }
 
+.contact-legal-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0 0 var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid #f0d28b;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.contact-legal-identity span {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.contact-legal-identity strong {
+  color: #ffffff;
+  font-size: var(--text-base);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
 .contact-info h3 {
   max-width: 420px;
   margin: 0;

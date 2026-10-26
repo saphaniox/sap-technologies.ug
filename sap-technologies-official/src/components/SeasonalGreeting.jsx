@@ -149,14 +149,14 @@ const SeasonalGreeting = () => {
                 </>
               </div>
 
-              {/* From SAPTECH UGANDA */}
+              {/* From SAPTech Uganda */}
               <motion.div
                 className="seasonal-from"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1, duration: 0.8 }}
               >
-                <p>- From all of us at <strong>SAPTECH UGANDA</strong></p>
+                <p>- From all of us at <strong>SAPTech Uganda</strong></p>
               </motion.div>
             </div>
           </div>

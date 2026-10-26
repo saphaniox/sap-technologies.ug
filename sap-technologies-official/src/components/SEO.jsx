@@ -9,9 +9,9 @@ const toAbsoluteUrl = (value) => {
 };
 
 const SEO = ({
-  title = "SAPTECH UGANDA | Web Design, Software, IoT & Engineering",
-  description = "SAPTECH UGANDA offers engineering and technology services for clients in Uganda and worldwide, including web design, software development, IoT systems, electrical designs, graphics, cloud, cybersecurity, and digital transformation.",
-  keywords = "SAPTECH UGANDA, engineering and technology solutions, web design Uganda, software development Uganda, IoT projects Uganda, electrical engineering Uganda",
+  title = "SAPTech Uganda | Web Design, Software, IoT & Engineering",
+  description = "SAPTech Uganda offers engineering and technology services for clients in Uganda and worldwide, including web design, software development, IoT systems, electrical designs, graphics, cloud, cybersecurity, and digital transformation.",
+  keywords = "SAPTech Uganda, engineering and technology solutions, web design Uganda, software development Uganda, IoT projects Uganda, electrical engineering Uganda",
   ogImage = "/images/logo.png",
   url,
   ogType = "website",

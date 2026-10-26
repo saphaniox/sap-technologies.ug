@@ -445,7 +445,7 @@ const Header = ({ isAuthenticated, userName, userRole, userProfilePic, onAuthMod
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
           >
-            SAPTECH UGANDA
+            SAPTech Uganda
           </Motion.span>
         </Motion.div>
 
@@ -643,9 +643,9 @@ const Header = ({ isAuthenticated, userName, userRole, userProfilePic, onAuthMod
               >
                 <div className="nav-sidebar-header">
                   <div className="nav-sidebar-brand">
-                    <img src="/images/logo.png" alt="SAPTECH UGANDA" />
+                    <img src="/images/logo.png" alt="SAPTech Uganda" />
                     <div>
-                      <strong>SAPTECH UGANDA</strong>
+                      <strong>SAPTech Uganda</strong>
                     </div>
                   </div>
                   <button type="button" className="nav-sidebar-close" onClick={closeMenu} aria-label="Close menu">x</button>

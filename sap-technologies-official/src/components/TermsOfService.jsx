@@ -48,9 +48,17 @@ const TermsOfService = ({ onClose, onNavigate, onPrivacyPolicyOpen }) => {
           <p className="last-updated">Last updated: April 5, 2026</p>
 
           <section>
-            <h2>1. Acceptance of Terms at SAPTECH UGANDA</h2>
+            <h2>Legal Business Identity</h2>
             <p>
-              By accessing and using SAPTECH UGANDA's website and services, you accept and agree to be bound
+              The legal business name for this website and its services is <strong>SAPTECH UGANDA</strong>,
+              operating from Ndejje, Kampala, Uganda.
+            </p>
+          </section>
+
+          <section>
+            <h2>1. Acceptance of Terms at SAPTech Uganda</h2>
+            <p>
+              By accessing and using SAPTech Uganda's website and services, you accept and agree to be bound
               by the terms and provision of this agreement. If you do not agree to abide by the above,
               please do not use this service.
             </p>
@@ -61,7 +69,7 @@ const TermsOfService = ({ onClose, onNavigate, onPrivacyPolicyOpen }) => {
           <section>
             <h2>2. Services Overview</h2>
             <p>
-              SAPTECH UGANDA provides comprehensive technology solutions including:
+              SAPTech Uganda provides comprehensive technology solutions including:
             </p>
             <ul>
               <li>Web Development and Design</li>
@@ -117,7 +125,7 @@ const TermsOfService = ({ onClose, onNavigate, onPrivacyPolicyOpen }) => {
               excluding third-party components and our proprietary methodologies.
             </p>
 
-            <h3>5.2 SAPTECH UGANDA Rights</h3>
+            <h3>5.2 SAPTech Uganda Rights</h3>
             <p>
               We retain rights to our methodologies, frameworks, and general knowledge. We may use
               project experiences for case studies (with anonymization when requested).
@@ -142,7 +150,7 @@ const TermsOfService = ({ onClose, onNavigate, onPrivacyPolicyOpen }) => {
           <section>
             <h2>7. Limitation of Liability</h2>
             <p>
-              SAPTECH UGANDA's liability is limited to the amount paid for the specific service.
+              SAPTech Uganda's liability is limited to the amount paid for the specific service.
               We are not liable for indirect, incidental, or consequential damages, including
               but not limited to loss of profits, data, or business opportunities.
             </p>

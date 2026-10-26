@@ -18,7 +18,7 @@ const AuthModal = ({ isOpen, mode, onClose, onAuthSuccess, onModeSwitch }) => {
   const title = isLogin ? "Welcome back" : "Create your account";
   const subtitle = isLogin
     ? "Sign in to manage orders, applications and all SAPTECH services."
-    : "Join SAPTECH UGANDA and keep your requests, applications, and updates in one secure place.";
+    : "Join SAPTech Uganda and keep your requests, applications, and updates in one secure place.";
 
   const handleChange = (event) => {
     setFormData((current) => ({
@@ -109,12 +109,12 @@ const AuthModal = ({ isOpen, mode, onClose, onAuthSuccess, onModeSwitch }) => {
 
         <aside className="auth-brand-panel">
           <div className="auth-logo-wrap">
-            <img src="/images/logo.png" alt="SAPTECH UGANDA logo" />
+            <img src="/images/logo.png" alt="SAPTech Uganda logo" />
           </div>
           <span className="auth-badge">Secure SAPTECH access</span>
           <h1>{isLogin ? "Continue your digital journey." : "Start with a trusted tech partner."}</h1>
           <p>
-            Access your SAPTECH UGANDA account, track submitted requests, and keep communication with our team organized.
+            Access your SAPTech Uganda account, track submitted requests, and keep communication with our team organized.
           </p>
 
           <div className="auth-benefits">
@@ -241,7 +241,7 @@ const AuthModal = ({ isOpen, mode, onClose, onAuthSuccess, onModeSwitch }) => {
             )}
 
             <div className="auth-switch-copy">
-              <span>{isLogin ? "New to SAPTECH UGANDA?" : "Already have an account?"}</span>
+              <span>{isLogin ? "New to SAPTech Uganda?" : "Already have an account?"}</span>
               <button type="button" onClick={() => handleModeSwitch(isLogin ? "signup" : "login")}>
                 {isLogin ? "Create account" : "Sign in"}
               </button>

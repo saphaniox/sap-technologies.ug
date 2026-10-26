@@ -102,11 +102,21 @@ const Footer = ({ onNavigate }) => {
     <footer className="footer">
       <div className="footer-content">
         <div className="footer-brand">
-          <img src="/images/logo.png" alt="SAPTECH UGANDA" className="footer-logo" />
-          <span>SAPTECH UGANDA</span>
+          <img src="/images/logo.png" alt="SAPTech Uganda" className="footer-logo" />
+          <span>SAPTech Uganda</span>
           <p className="footer-brand-description">
             Engineering, software, IoT, products, and digital transformation for teams in Uganda and beyond.
           </p>
+          <dl className="footer-business-identity" aria-label="Legal business identity">
+            <div>
+              <dt>Registered business name</dt>
+              <dd>SAPTECH UGANDA</dd>
+            </div>
+            <div>
+              <dt>Business location</dt>
+              <dd>Ndejje, Kampala, Uganda</dd>
+            </div>
+          </dl>
           <div className="footer-meta">
             <span>Ndejje, Kampala, Uganda</span>
             <span>Global delivery</span>
@@ -190,7 +200,7 @@ const Footer = ({ onNavigate }) => {
 
       <div className="footer-bottom">
         <div className="footer-legal">
-          <p>&copy; 2026 SAPTECH UGANDA-Africa. All rights reserved.</p>
+          <p>&copy; 2026 SAPTECH UGANDA. All rights reserved.</p>
           <div className="legal-links">
             <a
               href="/privacy-policy"
@@ -222,7 +232,7 @@ const Footer = ({ onNavigate }) => {
             rel="noopener noreferrer"
             className="credits-link"
           >
-            SAPTECH UGANDA
+            SAPTech Uganda
           </a>
         </p>
       </div>

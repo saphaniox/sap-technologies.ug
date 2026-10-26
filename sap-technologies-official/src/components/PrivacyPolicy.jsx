@@ -48,9 +48,17 @@ const PrivacyPolicy = ({ onClose, onNavigate, onTermsOfServiceOpen }) => {
           <p className="last-updated">Last updated: April 5, 2026</p>
 
           <section>
+            <h2>Legal Business Identity</h2>
+            <p>
+              The legal business name for this website and its services is <strong>SAPTECH UGANDA</strong>,
+              operating from Ndejje, Kampala, Uganda.
+            </p>
+          </section>
+
+          <section>
             <h2>1. Information We Collect</h2>
             <p>
-              At SAPTECH UGANDA, we collect information you provide directly to us, such as when you:
+              At SAPTech Uganda, we collect information you provide directly to us, such as when you:
             </p>
             <ul>
               <li>Fill out contact forms or request quotes</li>

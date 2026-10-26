@@ -3,7 +3,7 @@ import "../styles/WhatsAppButton.css";
 
 const WHATSAPP_NUMBER = "256706564628";
 const WHATSAPP_MESSAGE = encodeURIComponent(
-  "Hello SAPTECH UGANDA! I'd like to inquire about your services."
+  "Hello SAPTech Uganda! I'd like to inquire about your services."
 );
 
 const WhatsAppButton = () => {

@@ -182,7 +182,7 @@ function AnimatedText({ text, position = [0, 0, 0] }) {
 }
 
 // Main 3D Scene component
-function Scene3D({ showText = false, text = "SAPTECH UGANDA", enableControls = false }) {
+function Scene3D({ showText = false, text = "SAPTech Uganda", enableControls = false }) {
   return (
     <>
       <ambientLight intensity={0.3} />
@@ -229,7 +229,7 @@ function Canvas3D({
   className = "", 
   height = "100vh",
   showText = false,
-  text = "SAPTECH UGANDA",
+  text = "SAPTech Uganda",
   enableControls = false,
   alpha = true,
   ...props 

@@ -171,12 +171,12 @@ const buildApplicantEmailDraft = (application = {}) => {
     subject: `Update regarding your ${jobTitle} application`,
     message: `Hello ${firstName},
 
-Thank you for your interest in SAPTECH UGANDA and for the time you invested in your application.
+Thank you for your interest in SAPTech Uganda and for the time you invested in your application.
 
 I wanted to personally follow up regarding your application for ${jobTitle}.
 
 Warm regards,
-SAPTECH UGANDA Recruitment Team`
+SAPTech Uganda Recruitment Team`
   };
 };
 
@@ -208,7 +208,7 @@ const getStatusClass = (value) => {
 const DEFAULT_EMAIL_CONFIG_FORM = {
   providerMode: "auto",
   brand: {
-    name: "SAPTECH UGANDA",
+    name: "SAPTech Uganda",
     legalName: "SAPTECH UGANDA",
     awardsName: "SAPTECH Awards 2026",
     websiteUrl: "https://saptechug.com",
@@ -220,7 +220,7 @@ const DEFAULT_EMAIL_CONFIG_FORM = {
     careersEmail: "careers@saptechug.com"
   },
   sender: {
-    fromName: "SAPTECH UGANDA",
+    fromName: "SAPTech Uganda",
     fromEmail: "info@saptechug.com",
     replyTo: "info@saptechug.com",
     notifyEmail: "info@saptechug.com"
@@ -1942,7 +1942,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
             <div>
               <span className="section-eyebrow">Direct message</span>
               <h4>Send a custom email</h4>
-              <p>Enter any recipient and send a branded SAPTECH UGANDA email.</p>
+              <p>Enter any recipient and send a branded SAPTech Uganda email.</p>
             </div>
             <span className="custom-email-badge">Admin only</span>
           </div>
@@ -2382,7 +2382,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
       <div className="admin-modal">
         <div className="admin-content">
           <div className="admin-header">
-            <h2>Admin Dashboard - SAPTECH UGANDA</h2>
+            <h2>Admin Dashboard - SAPTech Uganda</h2>
             <button className="close-btn" onClick={onClose}>&times;</button>
           </div>
           <div className="loading">Loading admin dashboard...</div>
@@ -2396,7 +2396,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
       <div className="admin-modal">
         <div className="admin-content">
           <div className="admin-header">
-            <h2>Admin Dashboard - SAPTECH UGANDA</h2>
+            <h2>Admin Dashboard - SAPTech Uganda</h2>
             <button className="close-btn" onClick={onClose}>&times;</button>
           </div>
           <div className="error-message">{error}</div>
@@ -2414,7 +2414,7 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
             <span></span>
             <span></span>
           </button>
-          <h2>Admin-Dashboard - SAPTECH UGANDA</h2>
+          <h2>Admin-Dashboard - SAPTech Uganda</h2>
           <div className="admin-user-info">
             <span>Welcome, {user?.name}</span>
             <span className="admin-badge">ADMIN</span>
@@ -4974,7 +4974,7 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
               <div>
                 <span className="section-eyebrow">Applicant communication</span>
                 <h3>Send an email to {emailingJobApplication.fullName}</h3>
-                <p>Compose a clear, professional message. It will be delivered from SAPTECH UGANDA using your active email provider.</p>
+                <p>Compose a clear, professional message. It will be delivered from SAPTech Uganda using your active email provider.</p>
               </div>
               <button
                 type="button"
