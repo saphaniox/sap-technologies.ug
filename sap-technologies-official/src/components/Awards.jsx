@@ -372,10 +372,9 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
 
       {/* Hero Section - Inspirational */}
       <section className="awards-hero-section">
-        <div className="awards-hero-background">
-          <div className="hero-logo-background"></div>
-          <div className="hero-gradient-overlay"></div>
-          <div className="hero-particles"></div>
+          <div className="awards-hero-background">
+            <div className="hero-logo-background"></div>
+            <div className="hero-particles"></div>
         </div>
 
         <div className="container awards-hero-container">
@@ -395,10 +394,10 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
             </div>
 
             <h1 className="awards-hero-title animated fadeInUp">
-              <span className="title-line title-line-1">TECH AWARDS</span>
+              <span className="title-line title-line-1">SAPTECH AWARDS</span>
               <span className="title-line title-line-2">2026</span>
               <span className="title-line title-line-3">
-                <span className="gradient-text">Engineering</span> & <span className="gradient-text">Technology Excellence</span>
+                <span className="award-accent-text">Engineering</span> & <span className="award-accent-text">Technology Excellence</span>
               </span>
             </h1>
 
@@ -502,7 +501,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
                   </svg>
                 </a>
                 <a
-                  href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=Check%20out%20TECH%20AWARDS%202026!`}
+                  href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=Check%20out%20SAPTECH%20AWARDS%202026!`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="social-btn twitter"
@@ -524,7 +523,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
                   </svg>
                 </a>
                 <a
-                  href={`https://wa.me/?text=Check%20out%20TECH%20AWARDS%202026!%20${encodeURIComponent(window.location.href)}`}
+                  href={`https://wa.me/?text=Check%20out%20SAPTECH%20AWARDS%202026!%20${encodeURIComponent(window.location.href)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="social-btn whatsapp"
@@ -535,7 +534,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
                   </svg>
                 </a>
                 <a
-                  href={`https://www.tiktok.com/share?url=${encodeURIComponent(window.location.href)}&title=Check%20out%20TECH%20AWARDS%202026!`}
+                  href={`https://www.tiktok.com/share?url=${encodeURIComponent(window.location.href)}&title=Check%20out%20SAPTECH%20AWARDS%202026!`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="social-btn tiktok"
@@ -601,10 +600,13 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
               className="categories-grid"
               >
               {categories.map((category, index) => (
-                <div
+                <button
                   key={category._id}
+                  type="button"
                   className={`category-card ${selectedCategory === category._id ? 'active' : ''}`}
                   onClick={() => setSelectedCategory(selectedCategory === category._id ? "" : category._id)}
+                  aria-pressed={selectedCategory === category._id}
+                  aria-label={`Filter nominations by ${category.name}`}
                 >
                   {/* Countdown Timer - Top Right Corner */}
                   <div className="category-countdown-badge">
@@ -660,7 +662,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
                       </span>
                     )}
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -717,12 +719,14 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="search-input"
+                aria-label="Search nominations"
               />
 
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="sort-select"
+                aria-label="Sort nominations"
               >
                 <option value="votes">Most Voted</option>
                 <option value="createdAt">Most Recent</option>
@@ -734,6 +738,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
                   value={filterCountry}
                   onChange={(e) => setFilterCountry(e.target.value)}
                   className="filter-select"
+                  aria-label="Filter nominations by country"
                 >
                   <option value="">All Countries</option>
                   {uniqueCountries.map(country => (
@@ -907,6 +912,7 @@ const NominationCard = ({ nomination, onVote }) => {
 
             {!showVoteForm ? (
               <button
+                type="button"
                 className="vote-btn"
                 onClick={() => setShowVoteForm(true)}
               >
@@ -920,6 +926,7 @@ const NominationCard = ({ nomination, onVote }) => {
                   value={voterEmail}
                   onChange={(e) => setVoterEmail(e.target.value)}
                   required
+                  aria-label="Your email address"
                 />
                 <button type="submit">Submit Vote</button>
                 <button type="button" onClick={() => setShowVoteForm(false)}>Cancel</button>
@@ -937,14 +944,24 @@ const NominationModal = ({ categories, nominationForm, onChange, onSubmit, onClo
   const isSelf = nominationForm.isSelfNomination;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content nomination-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} role="presentation">
+      <div
+        className="modal-content nomination-modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="nomination-modal-title"
+      >
         <div className="modal-header">
-          <h2> Submit Nomination</h2>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <div>
+            <p className="form-eyebrow">SAPTECH AWARDS 2026</p>
+            <h2 id="nomination-modal-title">Submit a nomination</h2>
+          </div>
+          <button className="modal-close" type="button" onClick={onClose} aria-label="Close nomination form">×</button>
         </div>
 
         <form onSubmit={onSubmit} className="nomination-form">
+          <p className="form-intro">Fields marked with an asterisk (*) are required. Each submission is reviewed before it is published.</p>
           {/* Nomination Type Selector */}
           <div className="nomination-type-selector">
             <label className={!isSelf ? 'active' : ''}>
@@ -1230,6 +1247,7 @@ const NominationModal = ({ categories, nominationForm, onChange, onSubmit, onClo
                 onChange={onChange}
                 accept="image/*"
                 required
+                className="photo-upload-input"
               />
               <small>Upload a professional photo {isSelf ? 'of yourself' : 'of the nominee'} (max 5MB)</small>
             </div>

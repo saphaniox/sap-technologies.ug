@@ -118,7 +118,6 @@ const Footer = ({ onNavigate }) => {
             </div>
           </dl>
           <div className="footer-meta">
-            <span>Ndejje, Kampala, Uganda</span>
             <span>Global delivery</span>
           </div>
         </div>
