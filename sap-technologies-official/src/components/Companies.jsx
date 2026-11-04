@@ -11,7 +11,7 @@ const Companies = () => {
     },
     {
       title: "QuiTech - Learn and Progress",
-      image: "/images/quitech-live.ico",
+      image: "/images/quitech.png",
       description: "Practice knowledge across learning paths, test your progress, and earn certificates with QuiTech.",
       url: "https://quitech.online"
     },
