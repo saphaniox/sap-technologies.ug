@@ -283,6 +283,9 @@
 
 [data-theme="dark"] .contact-icon {
     background: var(--primary-color);
+    color: #ffffff;
+    opacity: 1;
+    isolation: isolate;
 }
 
 [data-theme="dark"] .contact-form {
