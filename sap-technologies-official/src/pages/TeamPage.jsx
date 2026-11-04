@@ -27,21 +27,21 @@ const teamMembers = [
   {
     name: "Jonathan M",
     role: "Electrical, Automation & Controls Engineer",
-    image: "/images/logo-watermark.png",
+    image: "/images/jonathan-m.jpg",
     bio: "I specialize in electrical engineering and industrial automation, with practical expertise across PLC and SCADA systems, instrumentation, and control engineering.",
     focus: ["Electrical engineering", "PLC automation", "SCADA systems", "Instrumentation & controls"]
   },
   {
     name: "Yusufu W. Sane",
     role: "Electrical, Automation & Controls Engineer",
-    image: "/images/logo-watermark.png",
+    image: "/images/yusufu-w-sane.jpg",
     bio: "I work across electrical systems, automation, and industrial control, bringing instrumentation, PLC, and SCADA expertise to safe and reliable engineering solutions.",
     focus: ["Electrical engineering", "Automation", "PLC & SCADA", "Instrumentation & controls"]
   },
   {
     name: "Stacy M",
     role: "Marketing Manager",
-    image: "/images/logo-watermark.png",
+    image: "/images/stacy-m.jpg",
     bio: "I lead marketing strategy and brand communication, helping SAPTECH connect with customers through clear messaging, purposeful campaigns, and strong market relationships.",
     focus: ["Marketing strategy", "Brand communication", "Digital campaigns", "Customer engagement"]
   }
