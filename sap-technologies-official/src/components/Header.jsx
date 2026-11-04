@@ -88,7 +88,7 @@ const NAV_ITEMS = [
   { id: "careers", label: "Careers", route: "/careers" },
   { id: "products", label: "Products" },
   { id: "partners", label: "Partners" },
-  { id: "companies", label: "Companies" },
+  { id: "companies", label: "Our Platforms" },
   { id: "testimonials", label: "Testimonials" },
   { id: "contact", label: "Contacts" }
 ];

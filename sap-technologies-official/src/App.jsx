@@ -119,7 +119,7 @@ const SECTION_SEO = {
   },
   companies: {
     path: "/companies",
-    title: "Platforms & Companies | SAPTech Uganda",
+    title: "Our Platforms | SAPTech Uganda",
     description: "Explore SAPTech Uganda platforms, connected companies, and technology initiatives across software, engineering, IoT, products, education, and digital services.",
     keywords: `${CORE_SEARCH_TERMS}, SAPTech Uganda platforms, SAPTECH companies, Uganda technology platforms, digital platforms Uganda`,
     topics: ["Technology platforms", "Digital services", "Software initiatives", "Engineering initiatives"]
