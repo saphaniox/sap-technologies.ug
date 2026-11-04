@@ -109,7 +109,7 @@ const Footer = ({ onNavigate }) => {
           </p>
           <dl className="footer-business-identity" aria-label="Legal business identity">
             <div>
-              <dt>Registered business name</dt>
+              <dt>Registered name</dt>
               <dd>SAPTECH UGANDA</dd>
             </div>
             <div>

@@ -10,6 +10,59 @@ const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 
+const DEFAULT_AWARD_CATEGORIES = [
+    ["Technology Innovation of the Year", "Recognises a breakthrough technology innovation with significant impact."],
+    ["Software Developer of the Year", "Honours an outstanding software developer delivering exceptional solutions."],
+    ["Digital Transformation Excellence Award", "Recognises excellence in transforming organisations through digital solutions."],
+    ["FinTech Innovation Award", "Honours innovation that advances financial services and inclusion."],
+    ["HealthTech Innovation Award", "Recognises technology improving healthcare delivery and outcomes."],
+    ["EdTech Innovation Award", "Honours innovative solutions improving education and learning."],
+    ["AgriTech Innovation Award", "Recognises technology strengthening agriculture and food systems."],
+    ["Artificial Intelligence Excellence Award", "Celebrates outstanding and responsible applications of artificial intelligence."],
+    ["Cybersecurity Excellence Award", "Honours excellence in protecting digital systems, people, and data."],
+    ["Data Science Excellence Award", "Recognises outstanding use of data to generate insight and impact."],
+    ["Cloud Computing Excellence Award", "Celebrates excellence in cloud architecture, service, and innovation."],
+    ["Mobile Application of the Year", "Honours an exceptional mobile application and its user impact."],
+    ["Web Platform of the Year", "Recognises an outstanding and impactful web platform."],
+    ["Emerging Technology Company of the Year", "Celebrates a high-potential technology company shaping the future."],
+    ["IT Service Provider of the Year", "Honours exceptional technology services and customer delivery."],
+    ["Engineering Excellence Award", "Recognises exceptional achievement in engineering practice and delivery."],
+    ["Electrical Engineer of the Year", "Honours outstanding leadership and achievement in electrical engineering."],
+    ["Mechanical Engineer of the Year", "Recognises exceptional accomplishment in mechanical engineering."],
+    ["Civil Engineer of the Year", "Honours outstanding achievement in civil engineering and infrastructure."],
+    ["Telecommunications Engineer of the Year", "Celebrates excellence in telecommunications engineering and networks."],
+    ["Renewable Energy Project of the Year", "Recognises a project advancing reliable and sustainable energy."],
+    ["Smart Infrastructure Award", "Honours intelligent infrastructure improving communities and services."],
+    ["Industrial Automation Award", "Recognises outstanding automation solutions improving industry."],
+    ["IoT Solutions Award", "Celebrates impactful Internet of Things solutions."],
+    ["Engineering Project of the Year", "Honours an exemplary engineering project delivered with measurable impact."],
+    ["Business Leader of the Year", "Recognises exceptional leadership, integrity, and organisational impact."],
+    ["Startup of the Year", "Celebrates an innovative startup demonstrating strong growth and impact."],
+    ["Entrepreneur of the Year", "Honours an entrepreneur creating lasting business and social value."],
+    ["Company of the Year", "Recognises an organisation demonstrating overall excellence and performance."],
+    ["SME Technology Excellence Award", "Celebrates outstanding technology achievement by a small or medium enterprise."],
+    ["Corporate Innovator of the Year", "Honours an organisation delivering outstanding corporate innovation."],
+    ["CEO of the Year", "Recognises exceptional chief executive leadership and performance."],
+    ["Most Promising Young Entrepreneur", "Celebrates emerging entrepreneurial talent with strong potential."],
+    ["Export Excellence Award", "Honours outstanding achievement in expanding products or services internationally."],
+    ["Investment and Growth Award", "Recognises exceptional investment, expansion, and sustainable business growth."],
+    ["Outstanding Researcher of the Year", "Honours impactful and influential research."],
+    ["Academic Excellence Award", "Recognises exceptional contribution to education, scholarship, or academic leadership."],
+    ["Science Innovation Award", "Celebrates innovative scientific discovery and its practical application."],
+    ["Student Innovator of the Year", "Honours a student creating an innovative and impactful solution."],
+    ["University Innovation Project of the Year", "Recognises an outstanding university-led innovation project."],
+    ["Technology Research Project of the Year", "Celebrates impactful research advancing technology."],
+    ["Best Industry-Academia Partnership", "Honours a partnership delivering measurable innovation between industry and academia."],
+    ["Community Impact Award", "Recognises initiatives creating lasting positive change in communities."],
+    ["Social Enterprise of the Year", "Celebrates an organisation combining commercial success with social impact."],
+    ["NGO Innovation Award", "Honours innovative and effective work by a non-governmental organisation."],
+    ["Women Empowerment Award", "Recognises outstanding efforts advancing opportunities and leadership for women."],
+    ["Youth Development Award", "Celebrates meaningful programmes and initiatives empowering young people."],
+    ["Rural Development Impact Award", "Honours initiatives improving opportunity and quality of life in rural communities."],
+    ["Education Excellence Award", "Recognises exceptional contribution to education and learning outcomes."],
+    ["Environmental Sustainability Award", "Honours leadership in protecting the environment and advancing sustainability."]
+].map(([name, description]) => ({ name, description, icon: "🏆", isActive: true }));
+
 // Helper function to get correct file URL (Cloudinary or local)
 const getFileUrl = (file, folder = 'awards') => {
   return getUploadedFileUrl(file, folder);
@@ -35,7 +88,23 @@ class AwardsController {
                     cached: true
                 });
             }
-            
+
+            const defaultCategoryNames = DEFAULT_AWARD_CATEGORIES.map((category) => category.name);
+            const defaultCategoryCount = await AwardCategory.countDocuments({
+                name: { $in: defaultCategoryNames }
+            });
+            if (defaultCategoryCount < DEFAULT_AWARD_CATEGORIES.length) {
+                await AwardCategory.bulkWrite(
+                    DEFAULT_AWARD_CATEGORIES.map((category) => ({
+                        updateOne: {
+                            filter: { name: category.name },
+                            update: { $setOnInsert: category },
+                            upsert: true
+                        }
+                    }))
+                );
+            }
+
             const categories = await AwardCategory.find({ isActive: true })
                 .sort({ name: 1 });
             

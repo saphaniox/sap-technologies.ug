@@ -26,17 +26,17 @@ const teamMembers = [
   },
   {
     name: "Jonathan M",
-    role: "Electrical, Automation & Controls Engineer",
+    role: "Automation, PLC & Instrumentation Engineer",
     image: "/images/jonathan-m.jpg",
-    bio: "I specialize in electrical engineering and industrial automation, with practical expertise across PLC and SCADA systems, instrumentation, and control engineering.",
-    focus: ["Electrical engineering", "PLC automation", "SCADA systems", "Instrumentation & controls"]
+    bio: "I design and maintain automated control solutions for industrial systems, translating process requirements into reliable PLC logic, instrumentation layouts, and field commissioning.",
+    focus: ["PLC programming", "Process instrumentation", "Control panels", "System commissioning"]
   },
   {
     name: "Yusufu W. Sane",
-    role: "Electrical, Automation & Controls Engineer",
+    role: "Chief Engineer - Electrical, Automation & Controls",
     image: "/images/yusufu-w-sane.jpg",
-    bio: "I work across electrical systems, automation, and industrial control, bringing instrumentation, PLC, and SCADA expertise to safe and reliable engineering solutions.",
-    focus: ["Electrical engineering", "Automation", "PLC & SCADA", "Instrumentation & controls"]
+    bio: "I provide technical leadership across SAPTECH's electrical, automation, and control engineering work, overseeing system design, standards, safety, project delivery, and multidisciplinary teams.",
+    focus: ["Engineering leadership", "Technical standards", "Electrical systems", "Automation project delivery"]
   },
   {
     name: "Stacy M",

@@ -112,7 +112,7 @@ const Contact = () => {
           >
             <span className="contact-panel-label">SAPTech Uganda</span>
             <div className="contact-legal-identity" aria-label="Legal business identity">
-              <span>Registered business name</span>
+              <span>Registered name</span>
               <strong>SAPTECH UGANDA</strong>
             </div>
             <h3>Let&apos;s talk about your next build.</h3>

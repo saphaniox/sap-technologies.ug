@@ -388,23 +388,18 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
               />
             </div>
 
-            <div className="hero-badge animated fadeInDown delay-1">
-              <span className="badge-icon"></span>
-              <span className="badge-text">Welcome to SAPTECH Awards 2026</span>
-            </div>
-
             <h1 className="awards-hero-title animated fadeInUp">
               <span className="title-line title-line-1">SAPTECH AWARDS</span>
               <span className="title-line title-line-2">2026</span>
               <span className="title-line title-line-3">
-                <span className="award-accent-text">Engineering</span> & <span className="award-accent-text">Technology Excellence</span>
+                <span className="award-accent-text">Technology, Innovation</span> &amp; <span className="award-accent-text">Leadership for a Better Future</span>
               </span>
             </h1>
 
             <p className="awards-hero-subtitle animated fadeInUp delay-1">
-              Recognizing outstanding contributions to technology advancement, innovation,
-              and engineering excellence in Uganda and across the international community.
-              Join us in honoring the minds that shape our digital future.
+              Celebrating exceptional individuals and organisations advancing technology,
+              innovation, and leadership across Uganda and the international community.
+              Join us in honouring those creating meaningful impact and shaping a better future.
             </p>
 
             {/* Hero Stats */}
