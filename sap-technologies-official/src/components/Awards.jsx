@@ -388,6 +388,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
               />
             </div>
 
+            <p className="awards-welcome animated fadeInDown delay-1">Welcome to SAPTECH Awards 2026</p>
             <div className="hero-badge animated fadeInDown delay-1">
               <span className="badge-icon"></span>
               <span className="badge-text">SAPTECH Awards 2026</span>

@@ -4782,6 +4782,16 @@
   display: none;
 }
 
+.awards-standalone-page .awards-welcome {
+  margin: 0 0 10px;
+  color: #f5bc40;
+  font-size: clamp(0.78rem, 2vw, 0.92rem);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
 .awards-standalone-page .badge-icon {
   animation: none;
   filter: none;
