@@ -393,13 +393,6 @@ const Portfolio = () => {
 
         <h2>Our Projects</h2>
         <div className="portfolio-intro">
-          <p className="intro-main">
-            We are highly motivated and detail-oriented full-stack developers specializing in designing,
-            developing, and deploying scalable web applications and software solutions. Based in Ndejje, Kampala, Uganda,
-            our passionate team is committed to delivering high-quality code that meets the highest standards
-            of performance and excellence.
-          </p>
-
           <div className="tech-stacks">
             <div className="tech-category">
               <h4>Frontend Technologies</h4>
