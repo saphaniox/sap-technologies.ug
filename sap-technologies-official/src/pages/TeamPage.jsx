@@ -37,6 +37,13 @@ const teamMembers = [
     image: "/images/logo-watermark.png",
     bio: "I work across electrical systems, automation, and industrial control, bringing instrumentation, PLC, and SCADA expertise to safe and reliable engineering solutions.",
     focus: ["Electrical engineering", "Automation", "PLC & SCADA", "Instrumentation & controls"]
+  },
+  {
+    name: "Stacy M",
+    role: "Marketing Manager",
+    image: "/images/logo-watermark.png",
+    bio: "I lead marketing strategy and brand communication, helping SAPTECH connect with customers through clear messaging, purposeful campaigns, and strong market relationships.",
+    focus: ["Marketing strategy", "Brand communication", "Digital campaigns", "Customer engagement"]
   }
 ];
 
