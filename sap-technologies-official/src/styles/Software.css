@@ -493,6 +493,24 @@
   flex: 1;
 }
 
+.software .software-read-more {
+  align-self: flex-start;
+  background: transparent;
+  border: 0;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-top: 4px;
+  padding: 4px 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.software .software-read-more:hover {
+  color: var(--primary-hover, var(--primary-color));
+}
+
 /* Technologies */
 .software .software-technologies {
   display: flex;

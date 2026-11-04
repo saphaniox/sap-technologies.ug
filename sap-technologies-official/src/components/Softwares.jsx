@@ -14,6 +14,7 @@ const Softwares = () => {
   const [error, setError] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [categories, setCategories] = useState([]);
+  const [expandedSoftware, setExpandedSoftware] = useState(null);
 
   // Admin state
   const [user, setUser] = useState(null);
@@ -342,12 +343,21 @@ const Softwares = () => {
                     </span>
                   )}
 
-                  {item.description && (
+                  <button
+                    type="button"
+                    className="software-read-more"
+                    aria-expanded={expandedSoftware === item._id}
+                    onClick={() => setExpandedSoftware((current) => current === item._id ? null : item._id)}
+                  >
+                    {expandedSoftware === item._id ? "Read less" : "Read more"}
+                  </button>
+
+                  {expandedSoftware === item._id && item.description && (
                     <p className="software-description">{item.description}</p>
                   )}
 
                   {/* Technologies */}
-                  {item.technologies && item.technologies.length > 0 && (
+                  {expandedSoftware === item._id && item.technologies && item.technologies.length > 0 && (
                     <div className="software-technologies">
                       {item.technologies.map((tech, index) => (
                         <span key={index} className="tech-badge">{tech}</span>
@@ -356,7 +366,7 @@ const Softwares = () => {
                   )}
 
                   {/* Features */}
-                  {item.features && item.features.length > 0 && (
+                  {expandedSoftware === item._id && item.features && item.features.length > 0 && (
                     <ul className="software-features">
                       {item.features.slice(0, 3).map((feature, index) => (
                         <li key={index}>
