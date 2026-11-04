@@ -31,14 +31,6 @@ class ErrorBoundary extends React.Component {
     }
   }
 
-  handleRetry = () => {
-    this.setState({
-      hasError: false,
-      error: null,
-      errorInfo: null
-    });
-  };
-
   render() {
     if (this.state.hasError) {
       // Fallback UI
@@ -52,12 +44,6 @@ class ErrorBoundary extends React.Component {
             </p>
 
             <div className="error-actions">
-              <button
-                className="btn-primary"
-                onClick={this.handleRetry}
-              >
-                Try Again
-              </button>
               <button
                 className="btn-secondary"
                 onClick={() => window.location.reload()}

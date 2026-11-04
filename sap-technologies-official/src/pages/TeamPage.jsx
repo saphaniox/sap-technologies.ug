@@ -23,6 +23,20 @@ const teamMembers = [
     image: "/images/me3.jpg",
     bio: "I help businesses communicate clearly through thoughtful visual identity and digital design. I care about making each brand feel consistent and recognizably its own.",
     focus: ["UI/UX design", "Graphic design", "Brand identity"]
+  },
+  {
+    name: "Jonathan M",
+    role: "Electrical, Automation & Controls Engineer",
+    image: "/images/logo-watermark.png",
+    bio: "I specialize in electrical engineering and industrial automation, with practical expertise across PLC and SCADA systems, instrumentation, and control engineering.",
+    focus: ["Electrical engineering", "PLC automation", "SCADA systems", "Instrumentation & controls"]
+  },
+  {
+    name: "Yusufu W. Sane",
+    role: "Electrical, Automation & Controls Engineer",
+    image: "/images/logo-watermark.png",
+    bio: "I work across electrical systems, automation, and industrial control, bringing instrumentation, PLC, and SCADA expertise to safe and reliable engineering solutions.",
+    focus: ["Electrical engineering", "Automation", "PLC & SCADA", "Instrumentation & controls"]
   }
 ];
 

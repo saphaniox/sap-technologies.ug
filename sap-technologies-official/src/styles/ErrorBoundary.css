@@ -230,3 +230,50 @@
     font-size: 1rem;
   }
 }
+
+html[data-theme="dark"] .error-boundary {
+  background: #0b1728;
+}
+
+html[data-theme="dark"] .error-container {
+  background: #17283d;
+  border: 1px solid #3c5674;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme="dark"] .error-container h2 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .error-container p {
+  color: #b9cae0;
+}
+
+html[data-theme="dark"] .error-actions .btn-secondary {
+  background: #1d354f;
+  border-color: #5dade2;
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .error-actions .btn-secondary:hover {
+  background: #254863;
+  border-color: #7dc4f5;
+}
+
+html[data-theme="dark"] .error-details {
+  background: #0f1e31;
+}
+
+html[data-theme="dark"] .error-details summary {
+  background: #1d354f;
+  border-bottom-color: #3c5674;
+  color: #e7eef8;
+}
+
+html[data-theme="dark"] .error-details summary:hover {
+  background: #254863;
+}
+
+html[data-theme="dark"] .error-stack h4 {
+  color: #e7eef8;
+}
