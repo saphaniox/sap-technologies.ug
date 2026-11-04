@@ -4,14 +4,14 @@ import "../styles/Companies.css";
 const Companies = () => {
   const platforms = [
     {
-      title: "DateZone International Dating",
+      title: "Datezone - International Dating",
       image: "/images/datezone-live.png",
       description: "Meet people, create meaningful connections, and chat safely on DateZone International Dating.",
       url: "https://datezoneug.com"
     },
     {
       title: "QuiTech - Learn and Progress",
-      image: "/images/quitech-live.png",
+      image: "/images/quitech-live.ico",
       description: "Practice knowledge across learning paths, test your progress, and earn certificates with QuiTech.",
       url: "https://quitech.online"
     },
