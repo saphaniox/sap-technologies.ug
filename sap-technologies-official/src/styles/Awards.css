@@ -5800,6 +5800,74 @@
   color: #b9cae0;
 }
 
+/* Keep every nomination and award surface readable in dark mode. */
+[data-theme="dark"] .awards-standalone-page .nomination-form,
+[data-theme="dark"] .awards-standalone-page .form-intro,
+[data-theme="dark"] .awards-standalone-page .nomination-type-selector,
+[data-theme="dark"] .awards-standalone-page .nomination-type-selector label,
+[data-theme="dark"] .awards-standalone-page .category-card-small,
+[data-theme="dark"] .awards-standalone-page .nomination-form .btn-secondary,
+[data-theme="dark"] .awards-standalone-page .form-group input[type="file"],
+[data-theme="dark"] .awards-standalone-page .form-group input[type="file"]::file-selector-button {
+  background-color: #17283d;
+  color: #e7eef8;
+  border-color: #3c5674;
+}
+
+[data-theme="dark"] .awards-standalone-page .nomination-type-selector label {
+  box-shadow: none;
+}
+
+[data-theme="dark"] .awards-standalone-page .nomination-type-selector label.active,
+[data-theme="dark"] .awards-standalone-page .category-option input[type="radio"]:checked + .category-card-small {
+  background-color: #15345b;
+  border-color: #5dade2;
+}
+
+[data-theme="dark"] .awards-standalone-page .form-intro {
+  color: #c8d7e9;
+  border-left-color: #5dade2;
+}
+
+[data-theme="dark"] .awards-standalone-page .form-section {
+  border-bottom-color: #3c5674;
+}
+
+[data-theme="dark"] .awards-standalone-page .empty-state,
+[data-theme="dark"] .awards-standalone-page .vote-form button[type="button"],
+[data-theme="dark"] .awards-standalone-page .btn-pagination {
+  background-color: #17283d;
+  border-color: #3c5674;
+  color: #e7eef8;
+}
+
+[data-theme="dark"] .awards-standalone-page .btn-pagination:not(:disabled):hover,
+[data-theme="dark"] .awards-standalone-page .btn-pagination:not(:disabled):focus-visible {
+  background-color: #15345b;
+  border-color: #5dade2;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .awards-standalone-page .form-group input::placeholder,
+[data-theme="dark"] .awards-standalone-page .form-group textarea::placeholder {
+  color: #91a8c2;
+  opacity: 1;
+}
+
+[data-theme="dark"] .awards-standalone-page .form-group input:hover,
+[data-theme="dark"] .awards-standalone-page .form-group textarea:hover,
+[data-theme="dark"] .awards-standalone-page .form-group select:hover,
+[data-theme="dark"] .awards-standalone-page .nomination-form .btn-secondary:hover,
+[data-theme="dark"] .awards-standalone-page .nomination-form .btn-secondary:focus-visible {
+  background-color: #1d354f;
+  border-color: #5dade2;
+}
+
+[data-theme="dark"] .awards-standalone-page .form-group option {
+  background-color: #17283d;
+  color: #e7eef8;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .awards-standalone-page *,
   .awards-standalone-page *::before,
