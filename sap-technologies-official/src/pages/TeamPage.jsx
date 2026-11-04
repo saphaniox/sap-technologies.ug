@@ -4,21 +4,21 @@ import "../styles/TeamPage.css";
 
 const teamMembers = [
   {
-    name: "Saphan Muganza",
+    name: "Saphan M",
     role: "Founder, CEO & Full-Stack Engineer",
     image: "/images/me.jpg",
     bio: "I enjoy turning a rough idea into something people can use. My work spans software, electrical engineering, and automation, while I lead how we plan and deliver each project.",
     focus: ["Product direction", "Full-stack engineering", "Electrical systems", "Automation"]
   },
   {
-    name: "Samuel Nkunda",
+    name: "Brian N",
     role: "UI/UX & Frontend Developer",
     image: "/images/me2.jpg",
     bio: "I focus on the part people use every day: the interface. I build web and mobile experiences that feel clear, responsive, and easy to navigate.",
     focus: ["User experience", "Frontend development", "React", "Mobile applications"]
   },
   {
-    name: "Roberto Delgado",
+    name: "Roberto D",
     role: "Creative Designer",
     image: "/images/me3.jpg",
     bio: "I help businesses communicate clearly through thoughtful visual identity and digital design. I care about making each brand feel consistent and recognizably its own.",
