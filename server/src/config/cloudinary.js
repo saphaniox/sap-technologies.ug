@@ -100,26 +100,24 @@ const getOptimizedUrl = (publicId, transformations = {}) => {
 };
 
 
-// Helper: Check if Cloudinary is configured
-const isCloudinaryConfigured = () => {
-    // Check environment variables
-    const hasEnvVars = !!(
-        process.env.CLOUDINARY_CLOUD_NAME &&
-        process.env.CLOUDINARY_API_KEY &&
-        process.env.CLOUDINARY_API_SECRET
-    );
+const isCloudinaryConfigured = () => Boolean(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
+);
 
-    if (!hasEnvVars) {
-        console.error('❌ Cloudinary environment variables are missing!');
-        if (process.env.NODE_ENV === 'production') {
-            console.error('⛔ Cloudinary is required in production. Server may not function correctly!');
-        }
-        console.warn('⚠️ Falling back to local storage');
-        return false;
+const useCloudinaryForUploads = () => {
+    const provider = (process.env.FILE_STORAGE_PROVIDER || "").trim().toLowerCase();
+    if (provider && !["cloudinary", "local"].includes(provider)) {
+        throw new Error('FILE_STORAGE_PROVIDER must be "cloudinary" or "local"');
     }
 
-    // Cloudinary is already configured at module load time above
-    return true;
+    if (provider === "local") return false;
+    if (provider === "cloudinary" && !isCloudinaryConfigured()) {
+        throw new Error("FILE_STORAGE_PROVIDER is cloudinary but Cloudinary credentials are missing");
+    }
+
+    return isCloudinaryConfigured();
 };
 
 const getWatermarkUrl = () => {
@@ -170,10 +168,11 @@ const videoTransformation = (width = 1280) => ([{
 
 const cloudinaryStorageClient = cloudinaryLib;
 const cloudinaryUploadTimeout = Number(process.env.CLOUDINARY_UPLOAD_TIMEOUT_MS) || 120000;
+const cloudinaryUploadsEnabled = useCloudinaryForUploads();
 
 // Storage configs for different folders (used by multer)
 const storageConfigs = {
-    profilePics: isCloudinaryConfigured()
+    profilePics: cloudinaryUploadsEnabled
         ? new CloudinaryStorage({
             cloudinary: cloudinaryStorageClient,
             params: {
@@ -184,7 +183,7 @@ const storageConfigs = {
             },
         })
         : null,
-    services: isCloudinaryConfigured()
+    services: cloudinaryUploadsEnabled
         ? new CloudinaryStorage({
             cloudinary: cloudinaryStorageClient,
             params: {
@@ -195,7 +194,7 @@ const storageConfigs = {
             },
         })
         : null,
-    projects: isCloudinaryConfigured()
+    projects: cloudinaryUploadsEnabled
         ? new CloudinaryStorage({
             cloudinary: cloudinaryStorageClient,
             params: {
@@ -206,7 +205,7 @@ const storageConfigs = {
             },
         })
         : null,
-    products: isCloudinaryConfigured()
+    products: cloudinaryUploadsEnabled
         ? new CloudinaryStorage({
             cloudinary: cloudinaryStorageClient,
             params: {
@@ -217,7 +216,7 @@ const storageConfigs = {
             },
         })
         : null,
-    signatures: isCloudinaryConfigured()
+    signatures: cloudinaryUploadsEnabled
         ? new CloudinaryStorage({
             cloudinary: cloudinaryStorageClient,
             params: {
@@ -228,7 +227,7 @@ const storageConfigs = {
             },
         })
         : null,
-    partners: isCloudinaryConfigured()
+    partners: cloudinaryUploadsEnabled
         ? new CloudinaryStorage({
             cloudinary: cloudinaryStorageClient,
             params: {
@@ -239,7 +238,7 @@ const storageConfigs = {
             },
         })
         : null,
-    awards: isCloudinaryConfigured()
+    awards: cloudinaryUploadsEnabled
         ? new CloudinaryStorage({
             cloudinary: cloudinaryStorageClient,
             params: {
@@ -250,7 +249,7 @@ const storageConfigs = {
             },
         })
         : null,
-    jobs: isCloudinaryConfigured()
+    jobs: cloudinaryUploadsEnabled
         ? new CloudinaryStorage({
             cloudinary: cloudinaryStorageClient,
             params: {
@@ -261,7 +260,7 @@ const storageConfigs = {
             },
         })
         : null,
-    jobApplications: isCloudinaryConfigured()
+    jobApplications: cloudinaryUploadsEnabled
         ? new CloudinaryStorage({
             cloudinary: cloudinaryStorageClient,
             params: {
@@ -271,7 +270,7 @@ const storageConfigs = {
             },
         })
         : null,
-    gallery: isCloudinaryConfigured()
+    gallery: cloudinaryUploadsEnabled
         ? new CloudinaryStorage({
             cloudinary: cloudinaryStorageClient,
             params: (req, file, cb) => {
@@ -295,7 +294,7 @@ const storageConfigs = {
             }
         })
         : null,
-    software: isCloudinaryConfigured()
+    software: cloudinaryUploadsEnabled
         ? new CloudinaryStorage({
             cloudinary: cloudinaryStorageClient,
             params: {
@@ -306,7 +305,7 @@ const storageConfigs = {
             },
         })
         : null,
-    iot: isCloudinaryConfigured()
+    iot: cloudinaryUploadsEnabled
         ? new CloudinaryStorage({
             cloudinary: cloudinaryStorageClient,
             params: (req, file, cb) => {
@@ -339,6 +338,7 @@ module.exports = {
     cloudinary,
     cloudinaryLib,
     isCloudinaryConfigured,
+    useCloudinaryForUploads,
     storageConfigs,
     deleteFromCloudinary,
     extractPublicId,

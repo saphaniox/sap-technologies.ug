@@ -59,6 +59,7 @@ check-*.js
 seed-*.js
 verify-*.js
 migrate-*.js
+!scripts/migrate-cloudinary-media-to-local.js
 fix-*.js
 update-*.js
 assign-*.js

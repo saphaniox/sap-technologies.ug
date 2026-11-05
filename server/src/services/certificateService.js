@@ -4,7 +4,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { Certificate } = require('../models');
 const cloudinary = require('cloudinary').v2;
-const { isCloudinaryConfigured } = require('../config/cloudinary');
+const { useCloudinaryForUploads } = require('../config/cloudinary');
 
 class CertificateService {
     ensureCertificatesDirectory() {
@@ -23,7 +23,7 @@ class CertificateService {
     constructor() {
         this.certificatesDir = path.join(__dirname, '../../uploads/certificates');
         this.signaturesDir = path.join(__dirname, '../../uploads/signatures');
-        this.useCloudinary = isCloudinaryConfigured();
+        this.useCloudinary = useCloudinaryForUploads();
         this.ensureCertificatesDirectory();
         this.ensureSignaturesDirectory();
     }

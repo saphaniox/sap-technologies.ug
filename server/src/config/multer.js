@@ -1,7 +1,7 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const { isCloudinaryConfigured, storageConfigs } = require("./cloudinary");
+const { useCloudinaryForUploads, storageConfigs } = require("./cloudinary");
 
 // Ensure upload directory exists (fallback for local storage)
 const uploadDir = path.join(__dirname, "../../uploads/profile-pics");
@@ -10,7 +10,7 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // Check if Cloudinary is configured
-const useCloudinary = isCloudinaryConfigured();
+const useCloudinary = useCloudinaryForUploads();
 
 // Configure LOCAL storage (fallback)
 const localStorage = multer.diskStorage({

@@ -1,7 +1,7 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const { isCloudinaryConfigured, storageConfigs } = require("./cloudinary");
+const { useCloudinaryForUploads, storageConfigs } = require("./cloudinary");
 
 // Ensure awards upload directory exists (fallback for local storage)
 const uploadsDir = path.join(__dirname, "../../uploads/awards");
@@ -10,7 +10,7 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Check if Cloudinary is configured
-const useCloudinary = isCloudinaryConfigured();
+const useCloudinary = useCloudinaryForUploads();
 
 // Configure LOCAL storage for awards photos (fallback)
 const localStorage = multer.diskStorage({

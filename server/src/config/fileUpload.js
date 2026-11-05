@@ -1,7 +1,7 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const { isCloudinaryConfigured, storageConfigs } = require("./cloudinary");
+const { useCloudinaryForUploads, storageConfigs } = require("./cloudinary");
 
 // Ensure upload directories exist (fallback for local storage)
 const createUploadDir = (dirPath) => {
@@ -39,7 +39,7 @@ createUploadDir(jobsDir);
 createUploadDir(jobApplicationsDir);
 
 // Check if Cloudinary is configured
-const useCloudinary = isCloudinaryConfigured();
+const useCloudinary = useCloudinaryForUploads();
 
 // Configure storage for different upload types (LOCAL STORAGE FALLBACK)
 const createLocalStorage = (uploadPath) => {
@@ -216,7 +216,7 @@ const iotUpload = multer({
 if (useCloudinary) {
   console.log('✅ File uploads configured with Cloudinary (cloud storage)');
 } else {
-  console.log('⚠️  File uploads using local storage (not recommended for production)');
+  console.log(`✅ File uploads configured with local storage at ${baseUploadDir}`);
 }
 
 module.exports = {
@@ -237,4 +237,3 @@ module.exports = {
   upload: profileUpload,
   useCloudinary // Export for use in controllers
 };
-
