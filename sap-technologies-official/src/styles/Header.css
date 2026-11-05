@@ -1310,9 +1310,11 @@
   box-shadow: 0 4px 15px rgba(236, 240, 241, 0.2) !important;
 }
 
-[data-theme="light"] .header .logo > span {
+html[data-theme="light"] .header .nav .logo > span {
   color: #12315b !important;
-  -webkit-text-fill-color: #12315b;
+  -webkit-text-fill-color: #12315b !important;
+  opacity: 1 !important;
+  font-weight: 800 !important;
   text-shadow: none !important;
 }
 

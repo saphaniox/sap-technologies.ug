@@ -67,10 +67,11 @@ const swalConfig = {
   width: '350px'
 };
 
-// Configuration for short notifications. The old API name is kept, but these
-// now render in the center for clearer visibility.
+// Configuration for short notifications.
 const toastConfig = {
   ...baseConfig,
+  position: 'bottom-end',
+  toast: true,
   timer: 5000,
   timerProgressBar: true,
   showConfirmButton: false,
@@ -261,15 +262,16 @@ export const showAlert = {
     });
   },
 
-  // Short notification, shown centered for clear visibility
+  // Short notification, shown at the bottom of the viewport
   toast: (message, type = 'success', options = {}) => {
     const finalOptions = {
       ...toastConfig,
       ...options,
-      ...CENTERED_ALERT_OPTIONS
+      position: 'bottom-end',
+      toast: true
     };
 
-    return Swal.fire({
+    return originalSwalFire({
       icon: type,
       title: message,
       ...finalOptions

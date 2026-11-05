@@ -3,6 +3,7 @@ const path = require("path");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { AsyncLocalStorage } = require("async_hooks");
+const getAwardsYear = require("../utils/awardsYear");
 
 const DEFAULT_MAILJET_API_URL = "https://api.mailjet.com/v3.1/send";
 const EMAIL_PROVIDER_SETTING_KEY = "email.providerMode";
@@ -523,7 +524,7 @@ class EmailService {
       providerMode: normalizeProviderMode(firstEnv("EMAIL_PROVIDER_MODE", "EMAIL_PROVIDER", "MAIL_PROVIDER", "MAILER_PROVIDER")),
       brand: {
         name: process.env.EMAIL_FROM_NAME || process.env.BRAND_NAME || "Saptech Uganda",
-        awardsName: process.env.AWARDS_BRAND_NAME || "Saptech Awards 2026",
+        awardsName: process.env.AWARDS_BRAND_NAME || `Saptech Awards ${getAwardsYear()}`,
         legalName: process.env.COMPANY_LEGAL_NAME || "Saptech Uganda",
         websiteUrl,
         logoUrl: process.env.EMAIL_LOGO_URL || `${websiteUrl.replace(/\/$/, "")}/images/logo.png`,
@@ -644,7 +645,7 @@ class EmailService {
     const websiteUrl = cleanString(config.brand?.websiteUrl, "https://saptechug.com");
     this.brand = {
       name: cleanString(config.brand?.name, "Saptech Uganda"),
-      awardsName: cleanString(config.brand?.awardsName, "Saptech Awards 2026"),
+      awardsName: cleanString(config.brand?.awardsName, `Saptech Awards ${getAwardsYear()}`),
       legalName: cleanString(config.brand?.legalName, "Saptech Uganda"),
       websiteUrl,
       logoUrl: cleanString(config.brand?.logoUrl, `${websiteUrl.replace(/\/$/, "")}/images/logo.png`),
@@ -2043,18 +2044,19 @@ class EmailService {
   }
 
   async sendNominationSubmittedUser(nominationData) {
+    const awardsName = this.brand.awardsName;
     return this.deliver({
       to: nominationData.nominatorEmail,
-      fromName: this.brand.awardsName,
-      subject: "Your Saptech Awards 2026 nomination was received",
+      fromName: awardsName,
+      subject: `Your ${awardsName} nomination was received`,
       category: "awards_nomination_confirmation",
       html: () => this.buildEmail({
-        brandName: this.brand.awardsName,
+        brandName: awardsName,
         tone: "awards",
         title: "Nomination Received",
-        preheader: "Your Saptech Awards 2026 nomination has been received.",
+        preheader: `Your ${awardsName} nomination has been received.`,
         greeting: `Hello ${normalizeText(nominationData.nominatorName, "there")}`,
-        intro: "Thank you for submitting a nomination for Saptech Awards 2026. The awards team will review it before publication or further consideration.",
+        intro: `Thank you for submitting a nomination for ${awardsName}. The awards team will review it before publication or further consideration.`,
         sections: [
           {
             title: "Nomination summary",
@@ -2073,17 +2075,18 @@ class EmailService {
   }
 
   async sendNominationSubmittedAdmin(nominationData) {
+    const awardsName = this.brand.awardsName;
     return this.deliver({
       to: this.notifyEmail,
       replyTo: nominationData.nominatorEmail,
-      fromName: this.brand.awardsName,
-      subject: `New Saptech Awards 2026 nomination: ${normalizeText(nominationData.nomineeName, "Nominee")}`,
+      fromName: awardsName,
+      subject: `New ${awardsName} nomination: ${normalizeText(nominationData.nomineeName, "Nominee")}`,
       category: "awards_nomination_admin",
       html: () => this.buildEmail({
-        brandName: this.brand.awardsName,
+        brandName: awardsName,
         tone: "awards",
         title: "New Awards Nomination",
-        preheader: "A new Saptech Awards 2026 nomination was submitted.",
+        preheader: `A new ${awardsName} nomination was submitted.`,
         intro: "A new nomination needs review in the awards admin dashboard.",
         sections: [
           {
@@ -2103,22 +2106,23 @@ class EmailService {
   }
 
   async sendNominationStatusUpdate(nominationData) {
+    const awardsName = this.brand.awardsName;
     const certificateHref = nominationData.certificateFile
       ? `${this.brand.websiteUrl}/awards`
       : undefined;
 
     return this.deliver({
       to: nominationData.nominatorEmail,
-      fromName: this.brand.awardsName,
-      subject: `Saptech Awards 2026 nomination update: ${normalizeStatus(nominationData.status)}`,
+      fromName: awardsName,
+      subject: `${awardsName} nomination update: ${normalizeStatus(nominationData.status)}`,
       category: "awards_status",
       html: () => this.buildEmail({
-        brandName: this.brand.awardsName,
+        brandName: awardsName,
         tone: nominationData.status === "rejected" ? "warning" : "awards",
         title: "Nomination Status Update",
-        preheader: "Your Saptech Awards 2026 nomination status has changed.",
+        preheader: `Your ${awardsName} nomination status has changed.`,
         greeting: `Hello ${normalizeText(nominationData.nominatorName, "there")}`,
-        intro: "There is an update on your Saptech Awards 2026 nomination.",
+        intro: `There is an update on your ${awardsName} nomination.`,
         sections: [
           {
             title: "Status details",
@@ -2138,18 +2142,19 @@ class EmailService {
   }
 
   async sendNominationDeletedNotification(nominationData) {
+    const awardsName = this.brand.awardsName;
     return this.deliver({
       to: nominationData.nominatorEmail,
-      fromName: this.brand.awardsName,
-      subject: "Saptech Awards 2026 nomination update",
+      fromName: awardsName,
+      subject: `${awardsName} nomination update`,
       category: "awards_deleted",
       html: () => this.buildEmail({
-        brandName: this.brand.awardsName,
+        brandName: awardsName,
         tone: "warning",
         title: "Nomination Removed",
-        preheader: "A Saptech Awards 2026 nomination was removed.",
+        preheader: `A ${awardsName} nomination was removed.`,
         greeting: `Hello ${normalizeText(nominationData.nominatorName, "there")}`,
-        intro: "We are writing to inform you that a nomination you submitted has been removed from Saptech Awards 2026 records.",
+        intro: `We are writing to inform you that a nomination you submitted has been removed from ${awardsName} records.`,
         sections: [
           {
             title: "Nomination details",
@@ -2349,7 +2354,7 @@ class EmailService {
     const recipientEmail = certificateData.recipientEmail || certificateData.email || certificateData.nominatorEmail;
     const recipientName = certificateData.recipientName || certificateData.nominatorName || certificateData.name || "there";
     const nomineeName = certificateData.nomineeName || recipientName;
-    const awardYear = cleanString(certificateData.awardYear, "2025");
+    const awardYear = cleanString(certificateData.awardYear, getAwardsYear(this.brand.awardsName));
     const awardsName = this.brand.awardsName.replace(/\b20\d{2}\b/, awardYear);
     const certificateFile = certificateData.certificateFile || certificateData.filename;
     const certificatePath = certificateData.certificatePath
@@ -2376,7 +2381,9 @@ class EmailService {
         title: "Certificate Ready",
         preheader: `The ${awardYear} certificate for ${nomineeName} is ready.`,
         greeting: `Hello ${normalizeText(recipientName, "there")}`,
-        intro: `The certificate for ${nomineeName} is attached to this email. You can forward it to the recipient or keep it with your nomination records.`,
+        intro: attachments.length
+          ? `The certificate for ${nomineeName} is attached to this email. You can forward it to the recipient or keep it with your nomination records.`
+          : `The certificate for ${nomineeName} could not be attached. Please contact the awards team for help accessing it.`,
         sections: [
           {
             title: "Certificate details",

@@ -15,14 +15,19 @@ process.env.EMAIL_UNSUBSCRIBE_SECRET = "test-newsletter-unsubscribe-secret";
 process.env.API_PUBLIC_URL = "https://api.saptechug.com";
 process.env.GMAIL_USER = "fallback@gmail.com";
 process.env.GMAIL_PASS = "test-app-password";
+process.env.AWARDS_YEAR = "2026";
+process.env.AWARDS_BRAND_NAME = "Saptech Awards 2026";
 
 const { EmailService } = require("../src/services/emailService");
 const emailService = require("../src/services/emailService");
 const { Newsletter } = require("../src/models");
 const newsletterController = require("../src/controllers/newsletterController");
 const queueCertificateEmail = require("../src/utils/queueCertificateEmail");
+const getAwardsYear = require("../src/utils/awardsYear");
 
 async function run() {
+  assert.equal(getAwardsYear(), "2026");
+
   const service = new EmailService();
   let mailjetPayload;
   let smtpCalls = 0;
@@ -106,6 +111,57 @@ async function run() {
     assert.match(newsletterMessage.HTMLPart, /href="https:\/\/saptechug\.com\/unsubscribe\?token=/);
     assert.match(newsletterMessage.HTMLPart, />Unsubscribe<\/a>/);
     assert.match(newsletterMessage.TextPart, /Unsubscribe \(https:\/\/saptechug\.com\/unsubscribe\?token=/);
+
+    const nominationData = {
+      nominatorName: "Sarah Nominator",
+      nominatorEmail: "sarah@example.com",
+      nomineeName: "Alex Nominee",
+      categoryName: "Technology Innovation"
+    };
+
+    await service.sendNominationSubmittedUser(nominationData);
+    let awardsMessage = mailjetPayload.Messages[0];
+    assert.equal(awardsMessage.To[0].Email, "sarah@example.com");
+    assert.match(awardsMessage.Subject, /Saptech Awards 2026 nomination was received/);
+    assert.match(awardsMessage.HTMLPart, /Nomination Received/);
+    assert.match(awardsMessage.HTMLPart, /Technology Innovation/);
+
+    await service.sendNominationSubmittedAdmin(nominationData);
+    awardsMessage = mailjetPayload.Messages[0];
+    assert.equal(awardsMessage.To[0].Email, "support@saptechug.com");
+    assert.match(awardsMessage.Subject, /New Saptech Awards 2026 nomination/);
+    assert.match(awardsMessage.HTMLPart, /Nominator email/);
+
+    await service.sendNominationStatusUpdate({
+      ...nominationData,
+      status: "approved",
+      adminNotes: "Ready for voting."
+    });
+    awardsMessage = mailjetPayload.Messages[0];
+    assert.match(awardsMessage.Subject, /Saptech Awards 2026 nomination update: Approved/);
+    assert.match(awardsMessage.HTMLPart, /Ready for voting\./);
+
+    await service.sendNominationDeletedNotification({
+      ...nominationData,
+      adminNotes: "Duplicate submission."
+    });
+    awardsMessage = mailjetPayload.Messages[0];
+    assert.match(awardsMessage.Subject, /Saptech Awards 2026 nomination update/);
+    assert.match(awardsMessage.HTMLPart, /Duplicate submission\./);
+
+    await service.sendCertificateEmail({
+      recipientEmail: "sarah@example.com",
+      recipientName: "Sarah Nominator",
+      nomineeName: "Alex Nominee",
+      categoryName: "Technology Innovation",
+      certificateId: "SAP-2026-123",
+      status: "winner"
+    });
+    awardsMessage = mailjetPayload.Messages[0];
+    assert.match(awardsMessage.Subject, /Saptech Awards 2026 certificate/);
+    assert.match(awardsMessage.HTMLPart, /Award year[\s\S]*?2026/);
+    assert.match(awardsMessage.HTMLPart, /could not be attached/);
+    assert.doesNotMatch(awardsMessage.HTMLPart, /is attached to this email/);
 
     const certificateDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "saptech-certificate-email-"));
     const certificatePath = path.join(certificateDirectory, "winner-certificate.pdf");

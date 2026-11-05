@@ -158,6 +158,71 @@ const AdNetwork = () => {
   }, [location.pathname, location.search]);
 
   useEffect(() => {
+    if (!AD_NETWORK_ENABLED || AD_PROVIDER !== "monetag" || typeof document === "undefined") {
+      return undefined;
+    }
+
+    const positionPushNotification = (element) => {
+      if (!(element instanceof HTMLIFrameElement) || element.hasAttribute("src")) return;
+
+      const style = element.style;
+      if (
+        style.position !== "fixed" ||
+        style.zIndex !== "2147483647" ||
+        style.maxWidth !== "420px"
+      ) return;
+
+      const bottomPosition = "calc(12px + env(safe-area-inset-bottom, 0px))";
+      const bottomStyles = {
+        top: "auto",
+        right: "12px",
+        bottom: bottomPosition,
+        left: "auto",
+        width: "min(420px, calc(100vw - 24px))",
+        maxWidth: "calc(100vw - 24px)"
+      };
+
+      Object.entries(bottomStyles).forEach(([property, value]) => {
+        if (
+          style.getPropertyValue(property) !== value ||
+          style.getPropertyPriority(property) !== "important"
+        ) {
+          style.setProperty(property, value, "important");
+        }
+      });
+    };
+
+    const positionPushNotifications = (root) => {
+      if (root instanceof HTMLIFrameElement) {
+        positionPushNotification(root);
+      }
+
+      root.querySelectorAll?.("iframe").forEach(positionPushNotification);
+    };
+
+    positionPushNotifications(document.documentElement);
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "attributes") {
+          positionPushNotification(mutation.target);
+        } else {
+          mutation.addedNodes.forEach(positionPushNotifications);
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["style"],
+      childList: true,
+      subtree: true
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     if (
       !AD_NETWORK_ENABLED ||
       !AD_ROUTE_TRIGGER_FUNCTION ||

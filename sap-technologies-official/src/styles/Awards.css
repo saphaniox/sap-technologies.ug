@@ -3520,7 +3520,8 @@
   .success-toast {
     right: 10px;
     left: 10px;
-    top: 80px;
+    top: auto;
+    bottom: 20px;
   }
   
   .category-card::after {
@@ -4448,7 +4449,8 @@
 
 .success-toast {
   position: fixed;
-  top: 100px;
+  top: auto;
+  bottom: 24px;
   right: 20px;
   z-index: 10000;
   background: #10b981;
@@ -5096,12 +5098,13 @@
   font-size: 0.94rem;
 }
 
-[data-theme="light"] .awards-standalone-page .category-icon {
-  background: #eaf2ff;
+html[data-theme="light"] .awards-standalone-page .category-card .category-icon {
+  background: #eaf2ff !important;
+  border: 1px solid #cfe0fb;
   box-shadow: 0 5px 14px rgba(37, 99, 235, 0.12);
 }
 
-[data-theme="light"] .awards-standalone-page .category-icon .award-icon {
+[data-theme="light"] .awards-standalone-page .category-card .category-icon .award-icon {
   color: #1d4ed8 !important;
   filter: none;
 }
@@ -5132,12 +5135,13 @@
   height: 30px;
   margin: 0;
   border-radius: 50%;
-  background: #dbeafe;
+  background: #dbeafe !important;
   box-shadow: none;
 }
 
 [data-theme="light"] .awards-standalone-page .nominations-count .award-icon {
-  color: #1e40af;
+  color: #1e40af !important;
+  filter: none;
 }
 
 .awards-standalone-page .nominations-section .section-header {

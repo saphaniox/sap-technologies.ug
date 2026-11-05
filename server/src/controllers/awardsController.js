@@ -9,6 +9,7 @@ const { useCloudinary } = require("../config/fileUpload");
 const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
+const getAwardsYear = require("../utils/awardsYear");
 
 const DEFAULT_AWARD_CATEGORIES = [
     ["Technology Innovation of the Year", "Recognises a breakthrough technology innovation with significant impact."],
@@ -889,7 +890,7 @@ class AwardsController {
                         const certificateData = {
                             nomineeName: nomination.nomineeName,
                             categoryName: nomination.category.name,
-                            awardYear: '2025',
+                            awardYear: getAwardsYear(),
                             issueDate: new Date(),
                             certificateId: nomination.certificateId,
                             nomineePhoto: nomination.nomineePhoto

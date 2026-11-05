@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const getAwardsYear = require('../utils/awardsYear');
 
 const certificateSchema = new mongoose.Schema({
   certificateId: {
@@ -28,7 +29,7 @@ const certificateSchema = new mongoose.Schema({
   },
   awardYear: {
     type: String,
-    default: '2025'
+    default: getAwardsYear
   },
   issueDate: {
     type: Date,

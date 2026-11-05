@@ -5,6 +5,7 @@ const path = require('path');
 const { Certificate } = require('../models');
 const cloudinary = require('cloudinary').v2;
 const { useCloudinaryForUploads } = require('../config/cloudinary');
+const getAwardsYear = require('../utils/awardsYear');
 
 class CertificateService {
     ensureCertificatesDirectory() {
@@ -156,7 +157,7 @@ class CertificateService {
         const {
             nomineeName,
             categoryName,
-            awardYear = '2025',
+            awardYear = getAwardsYear(),
             issueDate = new Date(),
             certificateId,
             nomineePhoto
@@ -207,7 +208,7 @@ class CertificateService {
             const logoHeight = await this.drawLogo(pdfDoc, page, width, height);
             const headerYOffset = logoHeight > 0 ? logoHeight + 15 : 0;
 
-            // Header - Saptech Awards 2026 logo/text
+            // Header - awards brand and year
             const awardsTitle = 'Saptech Awards';
             const awardsTitleSize = 40;
             const awardsTitleWidth = timesRomanBold.widthOfTextAtSize(awardsTitle, awardsTitleSize);
@@ -219,10 +220,10 @@ class CertificateService {
                 color: rgb(0.96, 0.62, 0.07), // Gold
             });
 
-            const awardsYear = '2026';
+            const awardsYearText = String(awardYear);
             const awardsYearSize = 28;
-            const awardsYearWidth = helveticaBold.widthOfTextAtSize(awardsYear, awardsYearSize);
-            page.drawText(awardsYear, {
+            const awardsYearWidth = helveticaBold.widthOfTextAtSize(awardsYearText, awardsYearSize);
+            page.drawText(awardsYearText, {
                 x: width / 2 - awardsYearWidth / 2,
                 y: height - 135 - headerYOffset,
                 size: awardsYearSize,
@@ -412,7 +413,7 @@ class CertificateService {
                 });
             }
 
-            page.drawText('Saptech Awards 2026 Committee', {
+            page.drawText(`Saptech Awards ${awardsYearText} Committee`, {
                 x: width - 250,
                 y: 125,
                 size: 10,
@@ -492,7 +493,7 @@ class CertificateService {
         const {
             nomineeName,
             categoryName,
-            awardYear = '2025',
+            awardYear = getAwardsYear(),
             issueDate = new Date(),
             certificateId,
             nomineePhoto
@@ -543,7 +544,7 @@ class CertificateService {
             const logoHeight = await this.drawLogo(pdfDoc, page, width, height);
             const headerYOffset = logoHeight > 0 ? logoHeight + 15 : 0;
 
-            // Header - Saptech Awards 2026 logo/text
+            // Header - awards brand and year
             const awardsTitle = 'Saptech Awards';
             const awardsTitleSize = 40;
             const awardsTitleWidth = timesRomanBold.widthOfTextAtSize(awardsTitle, awardsTitleSize);
@@ -555,10 +556,10 @@ class CertificateService {
                 color: rgb(0.75, 0.75, 0.75), // Silver
             });
 
-            const awardsYear = '2026';
+            const awardsYearText = String(awardYear);
             const awardsYearSize = 28;
-            const awardsYearWidth = helveticaBold.widthOfTextAtSize(awardsYear, awardsYearSize);
-            page.drawText(awardsYear, {
+            const awardsYearWidth = helveticaBold.widthOfTextAtSize(awardsYearText, awardsYearSize);
+            page.drawText(awardsYearText, {
                 x: width / 2 - awardsYearWidth / 2,
                 y: height - 135 - headerYOffset,
                 size: awardsYearSize,
@@ -756,7 +757,7 @@ class CertificateService {
                 });
             }
 
-            page.drawText('Saptech Awards 2026 Committee', {
+            page.drawText(`Saptech Awards ${awardsYearText} Committee`, {
                 x: width - 250,
                 y: 125,
                 size: 10,
@@ -810,7 +811,7 @@ class CertificateService {
         const {
             nomineeName,
             categoryName,
-            awardYear = '2025',
+            awardYear = getAwardsYear(),
             issueDate = new Date(),
             certificateId,
             nomineePhoto
@@ -861,7 +862,7 @@ class CertificateService {
             const logoHeight = await this.drawLogo(pdfDoc, page, width, height);
             const headerYOffset = logoHeight > 0 ? logoHeight + 15 : 0;
 
-            // Header - Saptech Awards 2026 logo/text
+            // Header - awards brand and year
             const awardsTitle = 'Saptech Awards';
             const awardsTitleSize = 40;
             const awardsTitleWidth = timesRomanBold.widthOfTextAtSize(awardsTitle, awardsTitleSize);
@@ -873,10 +874,10 @@ class CertificateService {
                 color: rgb(0.8, 0.5, 0.2), // Bronze
             });
 
-            const awardsYear = '2026';
+            const awardsYearText = String(awardYear);
             const awardsYearSize = 28;
-            const awardsYearWidth = helveticaBold.widthOfTextAtSize(awardsYear, awardsYearSize);
-            page.drawText(awardsYear, {
+            const awardsYearWidth = helveticaBold.widthOfTextAtSize(awardsYearText, awardsYearSize);
+            page.drawText(awardsYearText, {
                 x: width / 2 - awardsYearWidth / 2,
                 y: height - 135 - headerYOffset,
                 size: awardsYearSize,
@@ -939,7 +940,7 @@ class CertificateService {
             });
 
             // Award text
-            const awardText = 'Saptech Awards 2026';
+            const awardText = `Saptech Awards ${awardsYearText}`;
             const awardTextSize = 17;
             const awardTextWidth = timesRomanBold.widthOfTextAtSize(awardText, awardTextSize);
             page.drawText(awardText, {
@@ -1077,7 +1078,7 @@ class CertificateService {
                 });
             }
 
-            page.drawText('Saptech Awards 2026 Committee', {
+            page.drawText(`Saptech Awards ${awardsYearText} Committee`, {
                 x: width - 250,
                 y: 125,
                 size: 10,
