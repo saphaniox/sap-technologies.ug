@@ -262,6 +262,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads"), {
         res.set({
             "X-Content-Type-Options": "nosniff",
             "Cache-Control": "public, max-age=31536000", // 1 year cache for uploaded images
+            "Cross-Origin-Resource-Policy": "cross-origin",
             "Access-Control-Allow-Credentials": "true",
             "Access-Control-Allow-Methods": "GET, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type"
