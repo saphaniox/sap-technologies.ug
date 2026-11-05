@@ -173,12 +173,28 @@ const main = async () => {
 
         for (const { name, type } of collections) {
             const collection = database.collection(name);
+            const estimatedDocuments = await collection.estimatedDocumentCount();
             const cursor = collection.find({});
             let collectionUpdated = 0;
+            let scannedDocuments = 0;
+
+            console.log(
+                `Scanning ${name}: approximately ${estimatedDocuments} documents` +
+                `${dryRun ? "" : " for Cloudinary media"}...`
+            );
 
             for await (const document of cursor) {
+                scannedDocuments += 1;
                 const urls = [...collectCloudinaryUrls(document)];
-                if (urls.length === 0) continue;
+                if (urls.length === 0) {
+                    if (scannedDocuments % 1000 === 0) {
+                        console.log(
+                            `Progress ${name}: scanned ${scannedDocuments}/${estimatedDocuments}; ` +
+                            `${collectionUpdated} document(s) updated.`
+                        );
+                    }
+                    continue;
+                }
 
                 if (type !== "collection") {
                     throw new Error(
@@ -192,7 +208,8 @@ const main = async () => {
                 if (dryRun) continue;
 
                 const replacements = new Map();
-                for (const url of urls) {
+                for (const [urlIndex, url] of urls.entries()) {
+                    console.log(`Downloading media ${urlIndex + 1}/${urls.length} in ${name}...`);
                     replacements.set(url, await downloadMedia(url));
                 }
 
@@ -203,9 +220,19 @@ const main = async () => {
                 }
                 documentsUpdated += 1;
                 collectionUpdated += 1;
+
+                if (scannedDocuments % 100 === 0) {
+                    console.log(
+                        `Progress ${name}: scanned ${scannedDocuments}/${estimatedDocuments}; ` +
+                        `${collectionUpdated} document(s) updated.`
+                    );
+                }
             }
 
-            console.log(`${name}: ${collectionUpdated} document(s) updated.`);
+            console.log(
+                `${name}: scanned ${scannedDocuments} document(s); ` +
+                `${collectionUpdated} document(s) updated.`
+            );
         }
 
         console.log(
