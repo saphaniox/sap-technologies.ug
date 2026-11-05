@@ -60,6 +60,10 @@
   text-transform: uppercase;
 }
 
+.ad-placement--pending .ad-placement-label {
+  visibility: hidden;
+}
+
 .ad-placement-frame {
   display: block;
   width: min(100%, var(--ad-placement-width, 970px));

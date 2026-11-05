@@ -27,6 +27,29 @@ const escapeHtmlAttribute = (value) =>
 
 const safeScriptJson = (value) => JSON.stringify(value).replaceAll("</script", "<\\/script");
 
+const adReadinessMonitor = `<script>
+(() => {
+  const reportWhenFilled = () => {
+    const hasCreative = [...document.body.querySelectorAll("iframe, img, video, object, embed")]
+      .some((element) => {
+        const bounds = element.getBoundingClientRect();
+        return bounds.width >= 50 && bounds.height >= 20;
+      });
+
+    if (hasCreative) {
+      parent.postMessage({ type: "saptech-ad-filled" }, location.origin);
+    }
+  };
+
+  new MutationObserver(reportWhenFilled).observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true
+  });
+  document.addEventListener("load", reportWhenFilled, true);
+})();
+</script>`;
+
 const buildAdFrameHtml = (placement) => {
   const scriptAttributes = [
     `src="${escapeHtmlAttribute(placement.scriptUrl)}"`,
@@ -68,8 +91,9 @@ const buildAdFrameHtml = (placement) => {
     </style>
   </head>
   <body>
+    ${adReadinessMonitor}
     ${adOptions}
-    <script ${scriptAttributes.join(" ")}></script>
+    <script ${scriptAttributes.join(" ")} onerror="parent.postMessage({ type: 'saptech-ad-error' }, location.origin)"></script>
   </body>
 </html>`;
 };
@@ -184,7 +208,25 @@ export const AdPlacement = ({ placement = "pageTop", className = "" }) => {
       iframe.sandbox =
         "allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms";
       iframe.srcdoc = buildAdFrameHtml(adPlacement);
+      const handleAdMessage = (event) => {
+        if (event.source !== iframe.contentWindow || event.origin !== window.location.origin) return;
+
+        if (event.data?.type === "saptech-ad-filled") {
+          setIsReady(true);
+          window.removeEventListener("message", handleAdMessage);
+        } else if (event.data?.type === "saptech-ad-error") {
+          console.warn(`${providerNames[AD_PROVIDER] || "Ad"} placement script failed to load.`);
+          window.removeEventListener("message", handleAdMessage);
+        }
+      };
+
+      window.addEventListener("message", handleAdMessage);
       container.appendChild(iframe);
+
+      return () => {
+        window.removeEventListener("message", handleAdMessage);
+        container.textContent = "";
+      };
     }
 
     if (!adPlacement.scriptUrl && directLinkUrl) {
@@ -197,7 +239,7 @@ export const AdPlacement = ({ placement = "pageTop", className = "" }) => {
       container.appendChild(link);
     }
 
-    setIsReady(true);
+    if (!adPlacement.scriptUrl && directLinkUrl) setIsReady(true);
 
     return () => {
       container.textContent = "";
@@ -216,6 +258,7 @@ export const AdPlacement = ({ placement = "pageTop", className = "" }) => {
   const placementClassName = [
     "ad-placement",
     isReady ? "ad-placement--ready" : "",
+    !isReady ? "ad-placement--pending" : "",
     `ad-placement--${placement.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`,
     className
   ].filter(Boolean).join(" ");
