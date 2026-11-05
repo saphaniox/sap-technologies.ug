@@ -105,8 +105,13 @@ const AdNetwork = () => {
     try {
       const config = JSON.parse(configElement.content);
       const scripts = Array.isArray(config.scripts) ? config.scripts : [];
+      const currentPath = location.pathname.replace(/\/+$/, "") || "/";
       scripts.forEach((scriptConfig, index) => {
         if (!scriptConfig?.src) return;
+        if (
+          Array.isArray(scriptConfig.paths) &&
+          !scriptConfig.paths.includes(currentPath)
+        ) return;
 
         const selector = `script[data-saptech-page-ad="${index}"]`;
         if (document.querySelector(selector)) {
@@ -121,7 +126,7 @@ const AdNetwork = () => {
         if (scriptConfig.sdkName) script.dataset.sdk = scriptConfig.sdkName;
         if (scriptConfig.cfasync) script.dataset.cfasync = scriptConfig.cfasync;
         script.addEventListener("error", () => script.remove(), { once: true });
-        document.head.appendChild(script);
+        (document.body || document.documentElement).appendChild(script);
       });
     } catch (error) {
       console.warn("Page ad configuration could not be read:", error);
@@ -162,8 +167,9 @@ export const AdPlacement = ({ placement = "pageTop", className = "" }) => {
     const container = containerRef.current;
     setIsReady(false);
 
-    if (!AD_NETWORK_ENABLED || AD_PROVIDER === "monetag" || !adPlacement || !container) return undefined;
+    if (!AD_NETWORK_ENABLED || !adPlacement || !container) return undefined;
     if (!adPlacement.scriptUrl && !directLinkUrl) return undefined;
+    if (AD_PROVIDER === "monetag" && (!adPlacement.scriptUrl || !adPlacement.zoneId)) return undefined;
 
     container.textContent = "";
 
@@ -200,9 +206,9 @@ export const AdPlacement = ({ placement = "pageTop", className = "" }) => {
 
   if (
     !AD_NETWORK_ENABLED ||
-    AD_PROVIDER === "monetag" ||
     !adPlacement ||
-    (!adPlacement.scriptUrl && !directLinkUrl)
+    (!adPlacement.scriptUrl && !directLinkUrl) ||
+    (AD_PROVIDER === "monetag" && (!adPlacement.scriptUrl || !adPlacement.zoneId))
   ) {
     return null;
   }
@@ -216,6 +222,7 @@ export const AdPlacement = ({ placement = "pageTop", className = "" }) => {
 
   return (
     <aside className={placementClassName} aria-label="Sponsored">
+      <span className="ad-placement-label">Advertisement</span>
       <div
         ref={containerRef}
         className="ad-placement-inner"

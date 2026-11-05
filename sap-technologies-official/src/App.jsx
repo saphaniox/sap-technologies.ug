@@ -565,16 +565,16 @@ function App() {
       <main>
         <Hero />
         <Slider />
-        <About />
         <Suspense fallback={null}>
           <Services />
+          <About />
           <AdPlacement placement="homeMiddle" />
           <Portfolio />
-          <Partners />
-          <Companies />
           <Products />
           <AdPlacement placement="marketplace" />
+          <Companies />
           <Testimonials />
+          <Partners />
           <Contact />
         </Suspense>
       </main>

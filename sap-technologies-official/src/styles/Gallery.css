@@ -52,6 +52,20 @@
   font-size: 0.95rem;
 }
 
+html[data-theme="dark"] .gallery-section .gallery-story-grid article {
+  background: linear-gradient(145deg, #172235, #111b2b);
+  border-color: #2b3a50;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+}
+
+html[data-theme="dark"] .gallery-section .gallery-story-grid h3 {
+  color: #f1f5f9;
+}
+
+html[data-theme="dark"] .gallery-section .gallery-story-grid p {
+  color: #b8c5d6;
+}
+
 .add-gallery-btn {
   background: #667eea;
   color: white;

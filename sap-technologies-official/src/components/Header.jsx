@@ -76,21 +76,21 @@ const hasSearchResults = (results) => Boolean(
 
 const NAV_ITEMS = [
   { id: "home", label: "Home" },
-  { id: "about", label: "About" },
-  { id: "team", label: "Our Team", route: "/team" },
   { id: "services", label: "Services" },
   { id: "portfolio", label: "Projects" },
+  { id: "products", label: "Products" },
+  { id: "companies", label: "Our Platforms" },
+  { id: "about", label: "About" },
+  { id: "testimonials", label: "Testimonials" },
+  { id: "contact", label: "Contacts" },
+  { id: "team", label: "Our Team", route: "/team" },
   { id: "software", label: "Software Apps", route: "/software" },
   { id: "iot", label: "IoT Projects", route: "/iot" },
   { id: "insights", label: "Insights", route: "/insights" },
   { id: "gallery", label: "Gallery", route: "/gallery" },
   { id: "awards", label: "SAPTECH Awards 2026", route: "/awards" },
   { id: "careers", label: "Careers", route: "/careers" },
-  { id: "products", label: "Products" },
   { id: "partners", label: "Partners" },
-  { id: "companies", label: "Our Platforms" },
-  { id: "testimonials", label: "Testimonials" },
-  { id: "contact", label: "Contacts" }
 ];
 
 const Header = ({ isAuthenticated, userName, userRole, userProfilePic, onAuthModalOpen, onAccountOpen, onAdminOpen, onLogout, onNavigate, legalOpen = false }) => {

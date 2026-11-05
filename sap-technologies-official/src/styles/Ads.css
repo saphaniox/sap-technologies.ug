@@ -48,6 +48,18 @@
   min-height: min(var(--ad-placement-height, 90px), 120px);
 }
 
+.ad-placement-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .ad-placement-frame {
   display: block;
   width: min(100%, var(--ad-placement-width, 970px));
@@ -60,6 +72,10 @@
 [data-theme="dark"] .ad-placement-inner,
 [data-theme="dark"] .ad-placement-frame {
   background-color: #0b1120;
+}
+
+[data-theme="dark"] .ad-placement-label {
+  color: #94a3b8;
 }
 
 .ad-placement-link {
