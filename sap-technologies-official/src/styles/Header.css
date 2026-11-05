@@ -1310,6 +1310,12 @@
   box-shadow: 0 4px 15px rgba(236, 240, 241, 0.2) !important;
 }
 
+[data-theme="light"] .header .logo > span {
+  color: #12315b !important;
+  -webkit-text-fill-color: #12315b;
+  text-shadow: none !important;
+}
+
 /* Dark mode navigation links */
 [data-theme="dark"] .nav:not(.nav-admin) .nav-links a {
   color: #ecf0f1 !important;

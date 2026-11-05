@@ -604,6 +604,15 @@ const AwardsAdmin = () => {
       <div className="awards-stats-grid">
         <div className="stat-card">
           <div className="stat-icon-wrapper total">
+            <Icon name="medal" size={24} />
+          </div>
+          <div className="stat-info">
+            <h3>{categories.length}</h3>
+            <p>Total Categories</p>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon-wrapper total">
             <Icon name="chart" size={24} />
           </div>
           <div className="stat-info">

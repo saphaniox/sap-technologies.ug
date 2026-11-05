@@ -72,9 +72,9 @@
   background: transparent;
 }
 
-[data-theme="dark"] .ad-placement,
-[data-theme="dark"] .ad-placement-inner,
-[data-theme="dark"] .ad-placement-frame {
+[data-theme="dark"] .ad-placement--ready,
+[data-theme="dark"] .ad-placement--ready .ad-placement-inner,
+[data-theme="dark"] .ad-placement--ready .ad-placement-frame {
   background-color: #0b1120;
 }
 

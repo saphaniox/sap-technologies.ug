@@ -5096,6 +5096,16 @@
   font-size: 0.94rem;
 }
 
+[data-theme="light"] .awards-standalone-page .category-icon {
+  background: #eaf2ff;
+  box-shadow: 0 5px 14px rgba(37, 99, 235, 0.12);
+}
+
+[data-theme="light"] .awards-standalone-page .category-icon .award-icon {
+  color: #1d4ed8 !important;
+  filter: none;
+}
+
 .awards-standalone-page .category-stats {
   justify-content: flex-start;
   flex-wrap: wrap;
@@ -5103,6 +5113,31 @@
   margin-top: 12px;
   padding-top: 14px;
   border-top: 1px solid var(--awards-line);
+}
+
+[data-theme="light"] .awards-standalone-page .nominations-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 7px;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 999px;
+  color: #1e40af;
+  line-height: 1.25;
+}
+
+[data-theme="light"] .awards-standalone-page .nominations-count .stat-icon-wrapper {
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  border-radius: 50%;
+  background: #dbeafe;
+  box-shadow: none;
+}
+
+[data-theme="light"] .awards-standalone-page .nominations-count .award-icon {
+  color: #1e40af;
 }
 
 .awards-standalone-page .nominations-section .section-header {
@@ -5359,7 +5394,7 @@
 
 /* Nomination form */
 .awards-standalone-page .modal-overlay {
-  z-index: 1500;
+  z-index: 6000;
   padding: 16px;
   background: rgba(7, 24, 45, 0.78);
 }
