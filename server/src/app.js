@@ -119,6 +119,11 @@ app.use(detectSuspiciousActivity);
 
 // 10. Session configuration with MongoDB store
 const sessionConfig = environmentConfig.getSessionConfig();
+const mongoSessionAutoRemove = process.env.MONGODB_SESSION_AUTO_REMOVE || "disabled";
+if (!["disabled", "native"].includes(mongoSessionAutoRemove)) {
+    throw new Error('MONGODB_SESSION_AUTO_REMOVE must be "disabled" or "native"');
+}
+
 console.log('🔒 Session configuration:', {
     secure: sessionConfig.cookie.secure,
     sameSite: sessionConfig.cookie.sameSite,
@@ -133,10 +138,16 @@ if (process.env.NODE_ENV === 'production') {
         clientPromise: databaseReady.then((conn) => conn.connection.getClient()),
         collectionName: 'sessions',
         ttl: 30 * 24 * 60 * 60, // 30 days (1 month)
-        autoRemove: 'native',
+        autoRemove: mongoSessionAutoRemove,
         touchAfter: 3600 // Update session every hour
     });
-    console.log('✅ Using MongoDB session store (30-day sessions)');
+    console.log(`✅ Using MongoDB session store (30-day sessions; automatic TTL cleanup: ${mongoSessionAutoRemove})`);
+    if (mongoSessionAutoRemove === "disabled") {
+        console.warn(
+            "⚠️ MongoDB session TTL index creation is disabled for low-storage recovery. " +
+            "Restore Atlas write capacity, then set MONGODB_SESSION_AUTO_REMOVE=native."
+        );
+    }
 } else {
     // In development, use MongoDB store too for session persistence
     if (process.env.MONGODB_URI || process.env.MONGODB_SECONDARY_URI || process.env.MONGODB_LOCAL) {
