@@ -1,5 +1,8 @@
 require("dotenv").config();
 
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
 const mongoose = require("mongoose");
 const { isDeepStrictEqual } = require("node:util");
 
@@ -23,7 +26,47 @@ const COLLECTION_OPTION_KEYS = [
 const sourceUri = process.env.MONGODB_COPY_SOURCE_URI;
 const targetUri = process.env.MONGODB_COPY_TARGET_URI;
 const databaseName = process.env.MONGODB_COPY_DATABASE || process.env.MONGODB_DB_NAME || "sap-technologies";
+const targetCaBase64 = process.env.MONGODB_COPY_TARGET_TLS_CA_BASE64;
 const resume = process.argv.includes("--resume");
+
+const prepareTargetUri = (uri) => {
+    if (!uri) return { uri, temporaryDirectory: null };
+
+    const parsedUri = new URL(uri);
+    const configuredCaFile = parsedUri.searchParams.get("tlsCAFile");
+    if (!configuredCaFile || fs.existsSync(configuredCaFile)) {
+        return { uri, temporaryDirectory: null };
+    }
+
+    if (!targetCaBase64) {
+        parsedUri.searchParams.delete("tlsCAFile");
+        parsedUri.searchParams.set("tls", "true");
+        console.warn(
+            `Target CA file "${configuredCaFile}" is not present in this container. ` +
+            "Using the system trust store with TLS certificate validation enabled. " +
+            "If the MongoDB certificate is private/self-signed, set MONGODB_COPY_TARGET_TLS_CA_BASE64."
+        );
+        return { uri: parsedUri.toString(), temporaryDirectory: null };
+    }
+
+    const normalizedCa = targetCaBase64.replace(/\s+/g, "");
+    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(normalizedCa) || normalizedCa.length % 4 !== 0) {
+        throw new Error("MONGODB_COPY_TARGET_TLS_CA_BASE64 must contain a valid base64-encoded PEM certificate");
+    }
+
+    const caCertificate = Buffer.from(normalizedCa, "base64").toString("utf8");
+    if (!/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/.test(caCertificate)) {
+        throw new Error("MONGODB_COPY_TARGET_TLS_CA_BASE64 must decode to a PEM CA certificate");
+    }
+
+    const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "saptech-mongo-copy-"));
+    const temporaryCaFile = path.join(temporaryDirectory, "ca.pem");
+    fs.writeFileSync(temporaryCaFile, caCertificate, { encoding: "utf8", flag: "wx", mode: 0o600 });
+    parsedUri.searchParams.set("tlsCAFile", temporaryCaFile);
+    parsedUri.searchParams.set("tls", "true");
+
+    return { uri: parsedUri.toString(), temporaryDirectory };
+};
 
 const createClient = (uri, name) => {
     if (!uri) {
@@ -172,9 +215,12 @@ const main = async () => {
     }
 
     const sourceClient = createClient(sourceUri, "source");
-    const targetClient = createClient(targetUri, "target");
+    let targetTls;
+    let targetClient;
 
     try {
+        targetTls = prepareTargetUri(targetUri);
+        targetClient = createClient(targetTls.uri, "target");
         await Promise.all([sourceClient.connect(), targetClient.connect()]);
 
         const sourceDb = sourceClient.db(databaseName);
@@ -243,14 +289,24 @@ const main = async () => {
 
         console.log(`Database copy completed and verified for "${databaseName}".`);
     } finally {
-        await Promise.all([
-            sourceClient.close(),
-            targetClient.close()
-        ]);
+        try {
+            await Promise.all([
+                sourceClient.close(),
+                targetClient?.close()
+            ]);
+        } finally {
+            if (targetTls?.temporaryDirectory) {
+                fs.rmSync(targetTls.temporaryDirectory, { recursive: true, force: true });
+            }
+        }
     }
 };
 
-main().catch(error => {
-    console.error(`Database copy failed: ${error.message}`);
-    process.exitCode = 1;
-});
+if (require.main === module) {
+    main().catch(error => {
+        console.error(`Database copy failed: ${error.message}`);
+        process.exitCode = 1;
+    });
+}
+
+module.exports = { prepareTargetUri };
