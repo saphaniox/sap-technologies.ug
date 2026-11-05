@@ -112,6 +112,14 @@ const normalizeIoTData = (data, existingProject = null) => {
   return data;
 };
 
+const hideProjectViews = (project) => {
+  const projectData = project.toObject();
+  if (projectData.stats) {
+    delete projectData.stats.views;
+  }
+  return projectData;
+};
+
 // @desc    Get all IoT projects
 // @route   GET /api/iot
 // @access  Public
@@ -153,7 +161,7 @@ exports.getAllIoTProjects = async (req, res) => {
       status: "success",
       results: iotProjects.length,
       data: {
-        iotProjects
+        iotProjects: iotProjects.map(hideProjectViews)
       }
     });
   } catch (error) {
@@ -185,7 +193,7 @@ exports.getIoTProjectById = async (req, res) => {
     res.status(200).json({
       status: "success",
       data: {
-        iotProject
+        iotProject: hideProjectViews(iotProject)
       }
     });
   } catch (error) {

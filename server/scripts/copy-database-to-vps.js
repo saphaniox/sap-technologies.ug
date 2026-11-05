@@ -125,9 +125,12 @@ const copyCollection = async (sourceDb, targetDb, collectionInfo) => {
     const { name } = collectionInfo;
     const sourceCollection = sourceDb.collection(name);
     const targetCollection = targetDb.collection(name);
+    console.log(`Checking source count for ${name}...`);
     const sourceCount = await sourceCollection.countDocuments();
     let copied = 0;
     let lastId;
+
+    console.log(`Copying ${name}: ${sourceCount} source documents in batches of ${BATCH_SIZE}.`);
 
     while (true) {
         const filter = lastId === undefined ? {} : { _id: { $gt: lastId } };
@@ -138,6 +141,7 @@ const copyCollection = async (sourceDb, targetDb, collectionInfo) => {
             .toArray();
         if (batch.length === 0) break;
 
+        console.log(`Writing ${name} batch: ${copied + 1}-${copied + batch.length} of ${sourceCount}...`);
         if (resume) {
             await targetCollection.bulkWrite(batch.map(document => ({
                 replaceOne: {
@@ -152,8 +156,10 @@ const copyCollection = async (sourceDb, targetDb, collectionInfo) => {
 
         copied += batch.length;
         lastId = batch[batch.length - 1]._id;
+        console.log(`Progress ${name}: ${copied}/${sourceCount} documents copied.`);
     }
 
+    console.log(`Verifying ${name} indexes and document count...`);
     const indexCount = await copyIndexes(sourceCollection, targetCollection);
     const targetCount = await targetCollection.countDocuments();
 
