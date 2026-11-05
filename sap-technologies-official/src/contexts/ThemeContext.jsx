@@ -14,14 +14,14 @@ export const useTheme = () => {
 
 // Theme Provider component
 export const ThemeProvider = ({ children }) => {
-  // Initialize theme from localStorage or default to "light"
+  // Initialize theme from localStorage or default to dark.
   const [theme, setTheme] = useState(() => {
     try {
       const savedTheme = localStorage.getItem("sap-technologies-theme");
-      return savedTheme || "light";
+      return savedTheme || "dark";
     } catch (error) {
       console.warn("Failed to load theme from localStorage:", error);
-      return "light";
+      return "dark";
     }
   });
 
@@ -63,25 +63,6 @@ export const ThemeProvider = ({ children }) => {
       console.warn("Failed to apply theme:", error);
     }
   }, [theme]);
-
-  // Listen for system theme preference changes
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
-    const handleSystemThemeChange = (e) => {
-      // Only update if user hasn't set a preference
-      const savedTheme = localStorage.getItem("sap-technologies-theme");
-      if (!savedTheme) {
-        setTheme(e.matches ? "dark" : "light");
-      }
-    };
-
-    mediaQuery.addEventListener("change", handleSystemThemeChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleSystemThemeChange);
-    };
-  }, []);
 
   // Context value
   const value = {

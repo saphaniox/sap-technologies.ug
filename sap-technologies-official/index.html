@@ -2,6 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      try {
+        const savedTheme = localStorage.getItem("sap-technologies-theme");
+        document.documentElement.setAttribute(
+          "data-theme",
+          savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark"
+        );
+      } catch {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    </script>
     <!-- Brand icons for browser tabs, saved shortcuts, and installed app surfaces -->
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
