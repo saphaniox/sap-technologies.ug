@@ -126,31 +126,18 @@ const copyCollection = async (sourceDb, targetDb, collectionInfo) => {
     const sourceCollection = sourceDb.collection(name);
     const targetCollection = targetDb.collection(name);
     const sourceCount = await sourceCollection.countDocuments();
-    const cursor = sourceCollection.find({}, { batchSize: BATCH_SIZE, noCursorTimeout: true });
     let copied = 0;
-    let batch = [];
+    let lastId;
 
-    for await (const document of cursor) {
-        batch.push(document);
+    while (true) {
+        const filter = lastId === undefined ? {} : { _id: { $gt: lastId } };
+        const batch = await sourceCollection
+            .find(filter)
+            .sort({ _id: 1 })
+            .limit(BATCH_SIZE)
+            .toArray();
+        if (batch.length === 0) break;
 
-        if (batch.length >= BATCH_SIZE) {
-            if (resume) {
-                await targetCollection.bulkWrite(batch.map(document => ({
-                    replaceOne: {
-                        filter: { _id: document._id },
-                        replacement: document,
-                        upsert: true
-                    }
-                })), { ordered: true });
-            } else {
-                await targetCollection.insertMany(batch, { ordered: true });
-            }
-            copied += batch.length;
-            batch = [];
-        }
-    }
-
-    if (batch.length > 0) {
         if (resume) {
             await targetCollection.bulkWrite(batch.map(document => ({
                 replaceOne: {
@@ -162,7 +149,9 @@ const copyCollection = async (sourceDb, targetDb, collectionInfo) => {
         } else {
             await targetCollection.insertMany(batch, { ordered: true });
         }
+
         copied += batch.length;
+        lastId = batch[batch.length - 1]._id;
     }
 
     const indexCount = await copyIndexes(sourceCollection, targetCollection);
