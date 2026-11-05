@@ -28,9 +28,47 @@ main {
   background: var(--bg-color);
 }
 
+.route-loading,
+.home-section-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-secondary, #64748b);
+}
+
+.route-loading {
+  min-height: 55vh;
+  padding: 32px 16px;
+}
+
+.route-loading-full-page {
+  min-height: 100vh;
+}
+
+.home-section-loading {
+  min-height: 300px;
+  padding: var(--spacing-xxxl) 16px;
+}
+
+.route-loading .loading-spinner,
+.home-section-loading .loading-spinner {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  border-color: rgba(37, 99, 235, 0.18);
+  border-left-color: var(--primary-color, #2563eb);
+}
+
 @media (max-width: 700px) {
   .route-page-shell {
     padding-top: 0;
+  }
+
+  .home-section-loading {
+    min-height: 240px;
+    padding: var(--spacing-xl) 16px;
   }
 }
 

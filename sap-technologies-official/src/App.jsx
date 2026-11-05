@@ -39,6 +39,25 @@ import "./styles/theme-complete.css";
 
 const SITE_URL = "https://saptechug.com";
 
+const RouteLoading = ({ label = "Loading page", fullPage = false }) => (
+  <div
+    className={`route-loading${fullPage ? " route-loading-full-page" : ""}`}
+    role="status"
+    aria-live="polite"
+    aria-busy="true"
+  >
+    <span className="loading-spinner" aria-hidden="true" />
+    <span>{label}</span>
+  </div>
+);
+
+const HomeSectionLoading = ({ id, label }) => (
+  <section id={id} className="home-section-loading" role="status" aria-busy="true">
+    <span className="loading-spinner" aria-hidden="true" />
+    <span>Loading {label}...</span>
+  </section>
+);
+
 const CORE_SEARCH_TERMS = [
   "SAPTech Uganda",
   "technology company Uganda",
@@ -565,16 +584,28 @@ function App() {
       <main>
         <Hero />
         <Slider />
-        <Suspense fallback={null}>
+        <Suspense fallback={<HomeSectionLoading id="services" label="services" />}>
           <Services />
-          <About />
-          <AdPlacement placement="homeMiddle" />
+        </Suspense>
+        <About />
+        <AdPlacement placement="homeMiddle" />
+        <Suspense fallback={<HomeSectionLoading id="portfolio" label="projects" />}>
           <Portfolio />
+        </Suspense>
+        <Suspense fallback={<HomeSectionLoading id="products" label="products" />}>
           <Products />
-          <AdPlacement placement="marketplace" />
+        </Suspense>
+        <AdPlacement placement="marketplace" />
+        <Suspense fallback={<HomeSectionLoading id="companies" label="platforms" />}>
           <Companies />
+        </Suspense>
+        <Suspense fallback={<HomeSectionLoading id="testimonials" label="testimonials" />}>
           <Testimonials />
+        </Suspense>
+        <Suspense fallback={<HomeSectionLoading id="partners" label="partners" />}>
           <Partners />
+        </Suspense>
+        <Suspense fallback={<HomeSectionLoading id="contact" label="contact" />}>
           <Contact />
         </Suspense>
       </main>
@@ -591,7 +622,9 @@ function App() {
     <>
       {renderHeader()}
       <main className="route-page-shell">
-        {children}
+        <Suspense fallback={<RouteLoading label="Loading this page..." />}>
+          {children}
+        </Suspense>
         <AdPlacement placement={bottomPlacement} />
       </main>
       {renderFooter()}
@@ -605,7 +638,7 @@ function App() {
       <CartProvider>
       <div className="App">
         <AdNetwork />
-        <Suspense fallback={null}>
+        <Suspense fallback={<RouteLoading fullPage />}>
         <Routes>
           <Route path="/verify/:certificateId" element={
             <>
