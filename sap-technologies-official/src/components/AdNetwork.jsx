@@ -155,7 +155,8 @@ export const AdPlacement = ({ placement = "pageTop", className = "" }) => {
   const containerRef = useRef(null);
   const [isReady, setIsReady] = useState(false);
   const adPlacement = AD_PLACEMENTS[placement];
-  const directLinkUrl = adPlacement?.directLinkUrl || AD_DIRECT_LINK_URL;
+  const directLinkUrl =
+    adPlacement?.directLinkUrl || (AD_PROVIDER === "monetag" ? "" : AD_DIRECT_LINK_URL);
 
   useEffect(() => {
     const container = containerRef.current;

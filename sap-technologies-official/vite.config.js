@@ -17,7 +17,7 @@ export default defineConfig(({ mode, command }) => {
   const disabled = toBoolean(env.VITE_AD_DISABLED || env.VITE_ADS_DISABLED);
   const enabledInDev = toBoolean(env.VITE_AD_ENABLE_IN_DEV || env.VITE_ADS_ENABLE_IN_DEV);
   const autoEnabled = toBoolean(env.VITE_AD_AUTO || env.VITE_AD_AUTO_ADS || "true");
-  const monetagMultiTagEnabled = toBoolean(env.VITE_MONETAG_MULTITAG_ENABLED);
+  const monetagMultiTagEnabled = provider === "monetag";
   const monetagInPagePushEnabled = toBoolean(env.VITE_MONETAG_IN_PAGE_PUSH_ENABLED);
   const monetagVignetteEnabled = toBoolean(env.VITE_MONETAG_VIGNETTE_ENABLED || "true");
   const monetagSafeFormatScripts = [
