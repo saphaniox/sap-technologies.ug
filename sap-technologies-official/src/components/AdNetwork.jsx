@@ -162,7 +162,7 @@ export const AdPlacement = ({ placement = "pageTop", className = "" }) => {
     const container = containerRef.current;
     setIsReady(false);
 
-    if (!AD_NETWORK_ENABLED || !adPlacement || !container) return undefined;
+    if (!AD_NETWORK_ENABLED || AD_PROVIDER === "monetag" || !adPlacement || !container) return undefined;
     if (!adPlacement.scriptUrl && !directLinkUrl) return undefined;
 
     container.textContent = "";
@@ -198,7 +198,12 @@ export const AdPlacement = ({ placement = "pageTop", className = "" }) => {
     };
   }, [adPlacement, directLinkUrl]);
 
-  if (!AD_NETWORK_ENABLED || !adPlacement || (!adPlacement.scriptUrl && !directLinkUrl)) {
+  if (
+    !AD_NETWORK_ENABLED ||
+    AD_PROVIDER === "monetag" ||
+    !adPlacement ||
+    (!adPlacement.scriptUrl && !directLinkUrl)
+  ) {
     return null;
   }
 
