@@ -35,7 +35,7 @@ class AwardsController {
                     cached: true
                 });
             }
-
+            
             const categories = await AwardCategory.find({ isActive: true })
                 .sort({ name: 1 });
             
