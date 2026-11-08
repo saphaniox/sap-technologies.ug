@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { showAlert } from "../utils/alerts";
 import apiService from "../services/api";
@@ -18,7 +18,6 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
   const [nominations, setNominations] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [showNominationForm, setShowNominationForm] = useState(false);
-  const containerRef = useRef(null);
   const [loading, setLoading] = useState({
     categories: true,
     nominations: true,
@@ -95,18 +94,12 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
     return () => clearInterval(timer);
   }, []);
 
-  // Load nominations when filters change
-  useEffect(() => {
-    loadNominations();
-  }, [selectedCategory, searchTerm, sortBy, filterCountry, pagination.currentPage]);
-
   const loadCategories = async () => {
     try {
       const response = await apiService.get("/awards/categories");
       setCategories(response.data.categories);
     } catch (error) {
       console.error("Failed to load categories:", error);
-      // Only show error if it's not a network/timeout issue
       if (!error.message?.includes("Failed to fetch")) {
         showAlert.error("Couldn't load categories", "We had trouble fetching the award categories. Please refresh and try again.");
       }
@@ -115,7 +108,8 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
     }
   };
 
-  const loadNominations = async () => {
+  // Load nominations when filters change
+  const loadNominations = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, nominations: true }));
       const params = new URLSearchParams({
@@ -134,14 +128,17 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
       setPagination(response.data.pagination);
     } catch (error) {
       console.error("Failed to load nominations:", error);
-      // Only show error alert if it's not a network/timeout issue
       if (!error.message?.includes("Failed to fetch") && !error.message?.includes("NetworkError")) {
         showAlert.error("Couldn't load nominations", "We hit a snag loading the nominations. Please try again.");
       }
     } finally {
       setLoading(prev => ({ ...prev, nominations: false }));
     }
-  };
+  }, [filterCountry, pagination.currentPage, searchTerm, selectedCategory, sortBy]);
+
+  useEffect(() => {
+    loadNominations();
+  }, [loadNominations]);
 
   const handleNominationSubmit = async (e) => {
     e.preventDefault();
@@ -575,7 +572,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
             <div
               className="categories-grid"
               >
-              {categories.map((category, index) => (
+              {categories.map((category) => (
                 <button
                   key={category._id}
                   type="button"

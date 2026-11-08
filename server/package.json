@@ -9,8 +9,6 @@
     "build": "node --check src/app.js && node --check scripts/copy-database-to-vps.js && node --check scripts/migrate-cloudinary-media-to-local.js",
     "check:email": "node scripts/email-service-check.js",
     "postinstall": "echo 'Backend dependencies installed successfully'",
-    "cleanup-logs": "node cleanup-logs.js",
-    "keep-alive": "node scripts/keep-alive-server.js",
     "seed:admin": "node scripts/admin-seed.js",
     "db:copy-to-vps": "node scripts/copy-database-to-vps.js",
     "db:migrate-cloudinary-media": "node scripts/migrate-cloudinary-media-to-local.js",
@@ -18,10 +16,8 @@
     "db:migrate:test-to-sap:dry-run": "node scripts/database-name-migration.js --source=test --target=sap-technologies --dry-run",
     "db:mirror:sync": "node scripts/sync-database-mirror.js",
     "db:mirror:sync:exact": "node scripts/sync-database-mirror.js --prune",
-    "db:mirror:sync:prune": "node scripts/sync-database-mirror.js --prune",
     "db:mirror:sync:reverse": "node scripts/sync-database-mirror.js --reverse",
-    "db:mirror:sync:reverse:exact": "node scripts/sync-database-mirror.js --reverse --prune",
-    "db:mirror:sync:reverse:prune": "node scripts/sync-database-mirror.js --reverse --prune"
+    "db:mirror:sync:reverse:exact": "node scripts/sync-database-mirror.js --reverse --prune"
   },
   "keywords": [
     "express",
