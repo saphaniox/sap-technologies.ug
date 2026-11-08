@@ -124,7 +124,7 @@ class ApiService {
       if (typeof structuredClone === 'function') {
         return structuredClone(data);
       }
-    } catch (e) {
+    } catch {
       // structuredClone may not exist in all environments
     }
 
@@ -160,7 +160,7 @@ class ApiService {
   getStoredAuthToken() {
     try {
       return localStorage.getItem("sap_access_token") || "";
-    } catch (error) {
+    } catch {
       return "";
     }
   }
@@ -175,7 +175,7 @@ class ApiService {
       } else {
         localStorage.removeItem("sap_access_token");
       }
-    } catch (error) {
+    } catch {
       // localStorage can be unavailable in private contexts; cookies still work.
     }
   }
@@ -200,7 +200,7 @@ class ApiService {
         if (response.ok) {
           if (import.meta.env.DEV) console.log('Server is awake:', baseURL || 'local proxy');
         }
-      } catch (error) {
+      } catch {
         // Silently fail - this is just a wake-up call
         if (import.meta.env.DEV) console.log('Server wake-up initiated (may take 30-60 seconds on first load)', baseURL || 'local proxy');
       }
@@ -881,10 +881,6 @@ class ApiService {
     return this.getPublicProjectCategories();
   }
 
-  async getServiceCategories() {
-    return this.getPublicServiceCategories();
-  }
-
   // Partner methods
   async getPartners() {
     return this.request("/api/partners/public");
@@ -1237,7 +1233,7 @@ class ApiService {
     try {
       const user = await this.getCurrentUser();
       return user && user.role === "admin";
-    } catch (error) {
+    } catch {
       return false;
     }
   }
