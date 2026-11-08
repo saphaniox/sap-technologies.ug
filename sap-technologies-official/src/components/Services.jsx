@@ -89,8 +89,10 @@ const Services = () => {
     "Mobile app development",
     "IoT automation systems",
     "Smart home and security systems",
-    "Electrical engineering designs",
-    "Lithium battery power solutions",
+    "Residential electrical installations",
+    "Commercial electrical maintenance",
+    "Industrial electrical inspections",
+    "Electrical fault finding and repairs",
     "Graphics and logo design",
     "Cloud services and cybersecurity"
   ];
@@ -142,17 +144,34 @@ const Services = () => {
       title: "Electrical Engineering Designs",
       image: "/images/electrical.jpg",
       icon: "+",
-      description: "We provide professional electrical schematics, circuit designs, and engineering solutions for residential, commercial, and industrial projects. Our certified engineers ensure safety, efficiency, and compliance with Ugandan and international standards.",
+      description: "We provide electrical schematics, circuit layouts, and engineering support for residential, commercial, and industrial projects. Our work covers planning, system design, upgrades, and technical guidance to help properties and facilities operate safely and efficiently.",
       features: [
-        "Circuit Design",
-        "Electrical Schematics",
-        "Power System Analysis",
-        "Safety Compliance",
-        "AutoCAD Drawings"
+        "Residential, commercial, and industrial layouts",
+        "Circuit design and electrical schematics",
+        "Power system planning and analysis",
+        "Safety-focused design recommendations",
+        "AutoCAD and technical drawing support"
       ],
       technologies: ["AutoCAD Electrical", "MATLAB", "PLC Programming", "SCADA", "Proteus"],
       pricing: "Starting from $79",
       deliveryTime: "1-3 weeks"
+    },
+    {
+      id: "electrical-installation-maintenance",
+      title: "Electrical Installation & Maintenance",
+      image: "/images/electrical.jpg",
+      icon: "+",
+      description: "Electrical installation, inspection, and maintenance for homes, offices, shops, warehouses, and industrial facilities. We support new installations, upgrades, fault diagnosis, repairs, and preventive care to keep systems reliable, efficient, and safe across residential, commercial, and industrial environments.",
+      features: [
+        "Homes, offices, shops, warehouses, and factories",
+        "Wiring, lighting, sockets, and distribution boards",
+        "Inspection, testing, and safety checks",
+        "Fault finding, repairs, and corrective action",
+        "Preventive maintenance and system upgrades"
+      ],
+      technologies: ["Electrical testing", "Wiring and distribution", "Lighting systems", "Preventive maintenance"],
+      pricing: "Contact for assessment and pricing",
+      deliveryTime: "Scheduled to suit project scope"
     },
     {
       id: "software-solutions",
@@ -500,10 +519,10 @@ const Services = () => {
 
               {/* Introduction text */}
               <p className="services-intro">
-                Discover practical technology and engineering services for businesses, schools, startups,
-                shops, homes, and organizations in Uganda, across Africa, and worldwide. We help with
-                websites, software, IoT systems, automation, electrical designs, branding, cloud,
-                cybersecurity, and power solutions.
+                Discover practical technology and engineering services for homes, businesses, schools,
+                startups, shops, warehouses, and industrial sites across Uganda, Africa, and beyond. We help with
+                websites, software, IoT systems, automation, electrical designs, installation work, inspections,
+                maintenance, branding, cloud, cybersecurity, and power solutions.
               </p>
             </div>
 

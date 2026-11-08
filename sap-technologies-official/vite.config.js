@@ -18,27 +18,12 @@ export default defineConfig(({ mode, command }) => {
   const enabledInDev = toBoolean(env.VITE_AD_ENABLE_IN_DEV || env.VITE_ADS_ENABLE_IN_DEV);
   const autoEnabled = toBoolean(env.VITE_AD_AUTO || env.VITE_AD_AUTO_ADS || "true");
   const monetagMultiTagEnabled = toBoolean(env.VITE_MONETAG_MULTITAG_ENABLED);
-  const monetagInPagePushEnabled = toBoolean(env.VITE_MONETAG_IN_PAGE_PUSH_ENABLED || "true");
   const monetagVignetteEnabled = toBoolean(env.VITE_MONETAG_VIGNETTE_ENABLED || "true");
-  const monetagVignettePaths = ["/privacy-policy", "/terms-of-service"];
   const monetagSafeFormatScripts = [
-    monetagInPagePushEnabled &&
-    clean(env.VITE_MONETAG_IN_PAGE_PUSH_SCRIPT_URL || "https://nap5k.com/tag.min.js")
-      ? {
-          src: clean(env.VITE_MONETAG_IN_PAGE_PUSH_SCRIPT_URL || "https://nap5k.com/tag.min.js"),
-          zoneId: clean(env.VITE_MONETAG_IN_PAGE_PUSH_ZONE_ID || "11985736")
-        }
-      : null,
     monetagVignetteEnabled
-      ? {
-          src: clean(
-            env.VITE_MONETAG_VIGNETTE_SCRIPT_URL || "https://ekhay.com/vignette.min.js?z=11767559"
-          ),
-          zoneId: "",
-          paths: monetagVignettePaths
-        }
-      : null
-  ].filter(Boolean);
+      ? env.VITE_MONETAG_VIGNETTE_SCRIPT_URL || "https://ekhay.com/vignette.min.js?z=11767559"
+      : ""
+  ].map(clean).filter(Boolean);
   const adsEnabled = provider !== "none" && provider !== "off" && provider !== "disabled" &&
     !disabled && autoEnabled && (command === "build" || enabledInDev);
   const adScriptUrl = clean(
@@ -62,10 +47,10 @@ export default defineConfig(({ mode, command }) => {
     name: "route-gated-ad-script-config",
     transformIndexHtml(html) {
       const safeMonetagFormats = provider === "monetag" && !monetagMultiTagEnabled;
-      const scripts = safeMonetagFormats
+      const scriptUrls = safeMonetagFormats
         ? monetagSafeFormatScripts
-        : adScriptUrl ? [{ src: adScriptUrl, zoneId: adZoneId }] : [];
-      if (!adsEnabled || !scripts.length) return html;
+        : adScriptUrl ? [adScriptUrl] : [];
+      if (!adsEnabled || !scriptUrls.length) return html;
 
       const pageAdConfig = JSON.stringify({
         homeSectionPaths: [
@@ -79,10 +64,9 @@ export default defineConfig(({ mode, command }) => {
           "/testimonials",
           "/contact"
         ],
-        scripts: scripts.map((script) => ({
-          src: script.src,
-          zoneId: script.zoneId,
-          paths: script.paths,
+        scripts: scriptUrls.map((src) => ({
+          src,
+          zoneId: adZoneId,
           sdkName: adSdkName,
           cfasync: adCfasync
         }))
@@ -104,7 +88,7 @@ export default defineConfig(({ mode, command }) => {
       includeAssets: ["ads.txt", "robots.txt", "images/logo.png", "favicon-16x16.png", "favicon-32x32.png", "favicon-48x48.png", "apple-touch-icon.png", "mstile-150x150.png", "pwa-192.png", "pwa-512.png", "maskable-192.png", "maskable-512.png"],
       manifest: {
         name: "SAPTech Uganda",
-        short_name: "SAPTECH",
+        short_name: "SAPTech",
         description: "Professional in Engineering & Technology solutions",
         theme_color: "#1a237e",
         background_color: "#0f172a",

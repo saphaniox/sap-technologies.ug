@@ -39,25 +39,6 @@ import "./styles/theme-complete.css";
 
 const SITE_URL = "https://saptechug.com";
 
-const RouteLoading = ({ label = "Loading page", fullPage = false }) => (
-  <div
-    className={`route-loading${fullPage ? " route-loading-full-page" : ""}`}
-    role="status"
-    aria-live="polite"
-    aria-busy="true"
-  >
-    <span className="loading-spinner" aria-hidden="true" />
-    <span>{label}</span>
-  </div>
-);
-
-const HomeSectionLoading = ({ id, label }) => (
-  <section id={id} className="home-section-loading" role="status" aria-busy="true">
-    <span className="loading-spinner" aria-hidden="true" />
-    <span>Loading {label}...</span>
-  </section>
-);
-
 const CORE_SEARCH_TERMS = [
   "SAPTech Uganda",
   "technology company Uganda",
@@ -138,23 +119,23 @@ const SECTION_SEO = {
   },
   companies: {
     path: "/companies",
-    title: "Our Platforms | SAPTech Uganda",
+    title: "Platforms & Companies | SAPTech Uganda",
     description: "Explore SAPTech Uganda platforms, connected companies, and technology initiatives across software, engineering, IoT, products, education, and digital services.",
-    keywords: `${CORE_SEARCH_TERMS}, SAPTech Uganda platforms, SAPTECH companies, Uganda technology platforms, digital platforms Uganda`,
+    keywords: `${CORE_SEARCH_TERMS}, SAPTech Uganda platforms, SAPTech companies, Uganda technology platforms, digital platforms Uganda`,
     topics: ["Technology platforms", "Digital services", "Software initiatives", "Engineering initiatives"]
   },
   testimonials: {
     path: "/testimonials",
     title: "Testimonials | SAPTech Uganda",
     description: "Read client feedback and testimonials from people and organizations working with SAPTech Uganda on websites, software, engineering, IoT, products, and digital projects.",
-    keywords: `${CORE_SEARCH_TERMS}, SAPTech Uganda testimonials, SAPTECH reviews, technology company reviews Uganda, software company reviews Kampala`,
+    keywords: `${CORE_SEARCH_TERMS}, SAPTech Uganda testimonials, SAPTech reviews, technology company reviews Uganda, software company reviews Kampala`,
     topics: ["Client testimonials", "Technology reviews", "Software project feedback", "Engineering project feedback"]
   },
   contact: {
     path: "/contact",
     title: "Contact SAPTech Uganda",
     description: "Contact SAPTech Uganda in Ndejje, Kampala for web design, software development, mobile apps, IoT systems, electrical engineering, graphics, cloud, cybersecurity, power solutions, and digital transformation projects.",
-    keywords: `${CORE_SEARCH_TERMS}, contact SAPTech Uganda, SAPTECH Kampala, Ndejje Kampala technology, software developer Uganda contact, website designer Kampala contact, IoT engineer Uganda contact`,
+    keywords: `${CORE_SEARCH_TERMS}, contact SAPTech Uganda, SAPTech Kampala, Ndejje Kampala technology, software developer Uganda contact, website designer Kampala contact, IoT engineer Uganda contact`,
     topics: ["Contact SAPTech Uganda", "Software project inquiry", "Website project inquiry", "IoT project inquiry", "Engineering project inquiry"]
   }
 };
@@ -183,13 +164,13 @@ const SECONDARY_PAGE_SEO = {
   gallery: {
     title: "Gallery | SAPTech Uganda Projects, Services & Team",
     description: "View photos from SAPTech Uganda projects, services, events, team moments, office work, and technology activities across software, IoT, design, and engineering.",
-    keywords: `${CORE_SEARCH_TERMS}, SAPTech Uganda gallery, SAPTECH photos, technology projects Uganda, engineering project photos`,
+    keywords: `${CORE_SEARCH_TERMS}, SAPTech Uganda gallery, SAPTech photos, technology projects Uganda, engineering project photos`,
     path: "/gallery"
   },
   awards: {
-    title: "SAPTECH Awards 2026 | SAPTech Uganda",
-    description: "Explore SAPTECH Awards 2026 nominations, categories, votes, and technology excellence recognition from SAPTech Uganda.",
-    keywords: `${CORE_SEARCH_TERMS}, SAPTECH Awards 2026, SAPTech Uganda awards, technology awards Uganda, engineering awards Uganda`,
+    title: "SAPTech Awards 2026 | SAPTech Uganda",
+    description: "Explore SAPTech Awards 2026 nominations, categories, votes, and technology excellence recognition from SAPTech Uganda.",
+    keywords: `${CORE_SEARCH_TERMS}, SAPTech Awards 2026, SAPTech Uganda awards, technology awards Uganda, engineering awards Uganda`,
     path: "/awards"
   }
 };
@@ -584,28 +565,16 @@ function App() {
       <main>
         <Hero />
         <Slider />
-        <Suspense fallback={<HomeSectionLoading id="services" label="services" />}>
-          <Services />
-        </Suspense>
         <About />
-        <AdPlacement placement="homeMiddle" />
-        <Suspense fallback={<HomeSectionLoading id="portfolio" label="projects" />}>
+        <Suspense fallback={null}>
+          <Services />
+          <AdPlacement placement="homeMiddle" />
           <Portfolio />
-        </Suspense>
-        <Suspense fallback={<HomeSectionLoading id="products" label="products" />}>
-          <Products />
-        </Suspense>
-        <AdPlacement placement="marketplace" />
-        <Suspense fallback={<HomeSectionLoading id="companies" label="platforms" />}>
-          <Companies />
-        </Suspense>
-        <Suspense fallback={<HomeSectionLoading id="testimonials" label="testimonials" />}>
-          <Testimonials />
-        </Suspense>
-        <Suspense fallback={<HomeSectionLoading id="partners" label="partners" />}>
           <Partners />
-        </Suspense>
-        <Suspense fallback={<HomeSectionLoading id="contact" label="contact" />}>
+          <Companies />
+          <Products />
+          <AdPlacement placement="marketplace" />
+          <Testimonials />
           <Contact />
         </Suspense>
       </main>
@@ -622,9 +591,7 @@ function App() {
     <>
       {renderHeader()}
       <main className="route-page-shell">
-        <Suspense fallback={<RouteLoading label="Loading this page..." />}>
-          {children}
-        </Suspense>
+        {children}
         <AdPlacement placement={bottomPlacement} />
       </main>
       {renderFooter()}
@@ -638,7 +605,7 @@ function App() {
       <CartProvider>
       <div className="App">
         <AdNetwork />
-        <Suspense fallback={<RouteLoading fullPage />}>
+        <Suspense fallback={null}>
         <Routes>
           <Route path="/verify/:certificateId" element={
             <>
@@ -733,7 +700,7 @@ function App() {
               <SEO
                 title="Privacy Policy | SAPTech Uganda"
                 description="Read the SAPTech Uganda privacy policy, including how we handle contact information, cookies, analytics, advertising partners, and user data."
-                keywords="SAPTech Uganda privacy policy, SAPTECH cookies, SAPTECH advertising privacy, Uganda technology company privacy policy"
+                keywords="SAPTech Uganda privacy policy, SAPTech cookies, SAPTech advertising privacy, Uganda technology company privacy policy"
                 canonicalUrl={`${SITE_URL}/privacy-policy`}
                 url={`${SITE_URL}/privacy-policy`}
                 ogImage="/images/logo.png"
@@ -751,7 +718,7 @@ function App() {
               <SEO
                 title="Terms of Service | SAPTech Uganda"
                 description="Read SAPTech Uganda terms of service for website use, technology services, software projects, engineering work, payments, intellectual property, and support."
-                keywords="SAPTech Uganda terms of service, SAPTECH service terms, software project terms Uganda, technology services terms"
+                keywords="SAPTech Uganda terms of service, SAPTech service terms, software project terms Uganda, technology services terms"
                 canonicalUrl={`${SITE_URL}/terms-of-service`}
                 url={`${SITE_URL}/terms-of-service`}
                 ogImage="/images/logo.png"

@@ -1,6 +1,5 @@
 const path = require("path");
 const emailService = require("../services/emailService");
-const getAwardsYear = require("./awardsYear");
 
 const queueCertificateEmail = (nomination, certificateResult, certificateData = {}) => {
   const recipientEmail = nomination?.nominatorEmail;
@@ -28,7 +27,7 @@ const queueCertificateEmail = (nomination, certificateResult, certificateData = 
     certificatePath,
     certificateUrl: certificateResult.url || nomination.certificateUrl,
     status: nomination.status,
-    awardYear: certificateData.awardYear || getAwardsYear()
+    awardYear: certificateData.awardYear || String(new Date().getFullYear())
   };
 
   setImmediate(() => {

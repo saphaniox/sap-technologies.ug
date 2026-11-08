@@ -17,7 +17,7 @@ const AuthModal = ({ isOpen, mode, onClose, onAuthSuccess, onModeSwitch }) => {
   const isLogin = mode === "login";
   const title = isLogin ? "Welcome back" : "Create your account";
   const subtitle = isLogin
-    ? "Sign in to manage orders, applications and all SAPTECH services."
+    ? "Sign in to manage orders, applications and all SAPTech services."
     : "Join SAPTech Uganda and keep your requests, applications, and updates in one secure place.";
 
   const handleChange = (event) => {
@@ -60,7 +60,7 @@ const AuthModal = ({ isOpen, mode, onClose, onAuthSuccess, onModeSwitch }) => {
       }
 
       await showAlert.success(
-        isLogin ? "You're in!" : "Welcome to SAPTECH!",
+        isLogin ? "You're in!" : "Welcome to SAPTech!",
         isLogin
           ? "Great to have you back. Taking you to your account now."
           : "Your account is ready. Taking you to your account now.",
@@ -111,7 +111,7 @@ const AuthModal = ({ isOpen, mode, onClose, onAuthSuccess, onModeSwitch }) => {
           <div className="auth-logo-wrap">
             <img src="/images/logo.png" alt="SAPTech Uganda logo" />
           </div>
-          <span className="auth-badge">Secure SAPTECH access</span>
+          <span className="auth-badge">Secure SAPTech access</span>
           <h1>{isLogin ? "Continue your digital journey." : "Start with a trusted tech partner."}</h1>
           <p>
             Access your SAPTech Uganda account, track submitted requests, and keep communication with our team organized.

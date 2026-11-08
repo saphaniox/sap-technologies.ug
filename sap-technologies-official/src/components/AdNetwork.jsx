@@ -27,29 +27,6 @@ const escapeHtmlAttribute = (value) =>
 
 const safeScriptJson = (value) => JSON.stringify(value).replaceAll("</script", "<\\/script");
 
-const adReadinessMonitor = `<script>
-(() => {
-  const reportWhenFilled = () => {
-    const hasCreative = [...document.body.querySelectorAll("iframe, img, video, object, embed")]
-      .some((element) => {
-        const bounds = element.getBoundingClientRect();
-        return bounds.width >= 50 && bounds.height >= 20;
-      });
-
-    if (hasCreative) {
-      parent.postMessage({ type: "saptech-ad-filled" }, location.origin);
-    }
-  };
-
-  new MutationObserver(reportWhenFilled).observe(document.body, {
-    childList: true,
-    subtree: true,
-    attributes: true
-  });
-  document.addEventListener("load", reportWhenFilled, true);
-})();
-</script>`;
-
 const buildAdFrameHtml = (placement) => {
   const scriptAttributes = [
     `src="${escapeHtmlAttribute(placement.scriptUrl)}"`,
@@ -91,9 +68,8 @@ const buildAdFrameHtml = (placement) => {
     </style>
   </head>
   <body>
-    ${adReadinessMonitor}
     ${adOptions}
-    <script ${scriptAttributes.join(" ")} onerror="parent.postMessage({ type: 'saptech-ad-error' }, location.origin)"></script>
+    <script ${scriptAttributes.join(" ")}></script>
   </body>
 </html>`;
 };
@@ -129,13 +105,8 @@ const AdNetwork = () => {
     try {
       const config = JSON.parse(configElement.content);
       const scripts = Array.isArray(config.scripts) ? config.scripts : [];
-      const currentPath = location.pathname.replace(/\/+$/, "") || "/";
       scripts.forEach((scriptConfig, index) => {
         if (!scriptConfig?.src) return;
-        if (
-          Array.isArray(scriptConfig.paths) &&
-          !scriptConfig.paths.includes(currentPath)
-        ) return;
 
         const selector = `script[data-saptech-page-ad="${index}"]`;
         if (document.querySelector(selector)) {
@@ -150,77 +121,12 @@ const AdNetwork = () => {
         if (scriptConfig.sdkName) script.dataset.sdk = scriptConfig.sdkName;
         if (scriptConfig.cfasync) script.dataset.cfasync = scriptConfig.cfasync;
         script.addEventListener("error", () => script.remove(), { once: true });
-        (document.body || document.documentElement).appendChild(script);
+        document.head.appendChild(script);
       });
     } catch (error) {
       console.warn("Page ad configuration could not be read:", error);
     }
   }, [location.pathname, location.search]);
-
-  useEffect(() => {
-    if (!AD_NETWORK_ENABLED || AD_PROVIDER !== "monetag" || typeof document === "undefined") {
-      return undefined;
-    }
-
-    const positionPushNotification = (element) => {
-      if (!(element instanceof HTMLIFrameElement) || element.hasAttribute("src")) return;
-
-      const style = element.style;
-      if (
-        style.position !== "fixed" ||
-        style.zIndex !== "2147483647" ||
-        style.maxWidth !== "420px"
-      ) return;
-
-      const bottomPosition = "calc(12px + env(safe-area-inset-bottom, 0px))";
-      const bottomStyles = {
-        top: "auto",
-        right: "12px",
-        bottom: bottomPosition,
-        left: "auto",
-        width: "min(420px, calc(100vw - 24px))",
-        maxWidth: "calc(100vw - 24px)"
-      };
-
-      Object.entries(bottomStyles).forEach(([property, value]) => {
-        if (
-          style.getPropertyValue(property) !== value ||
-          style.getPropertyPriority(property) !== "important"
-        ) {
-          style.setProperty(property, value, "important");
-        }
-      });
-    };
-
-    const positionPushNotifications = (root) => {
-      if (root instanceof HTMLIFrameElement) {
-        positionPushNotification(root);
-      }
-
-      root.querySelectorAll?.("iframe").forEach(positionPushNotification);
-    };
-
-    positionPushNotifications(document.documentElement);
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === "attributes") {
-          positionPushNotification(mutation.target);
-        } else {
-          mutation.addedNodes.forEach(positionPushNotifications);
-        }
-      });
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["style"],
-      childList: true,
-      subtree: true
-    });
-
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     if (
@@ -249,8 +155,7 @@ export const AdPlacement = ({ placement = "pageTop", className = "" }) => {
   const containerRef = useRef(null);
   const [isReady, setIsReady] = useState(false);
   const adPlacement = AD_PLACEMENTS[placement];
-  const directLinkUrl =
-    adPlacement?.directLinkUrl || (AD_PROVIDER === "monetag" ? "" : AD_DIRECT_LINK_URL);
+  const directLinkUrl = adPlacement?.directLinkUrl || AD_DIRECT_LINK_URL;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -258,7 +163,6 @@ export const AdPlacement = ({ placement = "pageTop", className = "" }) => {
 
     if (!AD_NETWORK_ENABLED || !adPlacement || !container) return undefined;
     if (!adPlacement.scriptUrl && !directLinkUrl) return undefined;
-    if (AD_PROVIDER === "monetag" && (!adPlacement.scriptUrl || !adPlacement.zoneId)) return undefined;
 
     container.textContent = "";
 
@@ -273,25 +177,7 @@ export const AdPlacement = ({ placement = "pageTop", className = "" }) => {
       iframe.sandbox =
         "allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms";
       iframe.srcdoc = buildAdFrameHtml(adPlacement);
-      const handleAdMessage = (event) => {
-        if (event.source !== iframe.contentWindow || event.origin !== window.location.origin) return;
-
-        if (event.data?.type === "saptech-ad-filled") {
-          setIsReady(true);
-          window.removeEventListener("message", handleAdMessage);
-        } else if (event.data?.type === "saptech-ad-error") {
-          console.warn(`${providerNames[AD_PROVIDER] || "Ad"} placement script failed to load.`);
-          window.removeEventListener("message", handleAdMessage);
-        }
-      };
-
-      window.addEventListener("message", handleAdMessage);
       container.appendChild(iframe);
-
-      return () => {
-        window.removeEventListener("message", handleAdMessage);
-        container.textContent = "";
-      };
     }
 
     if (!adPlacement.scriptUrl && directLinkUrl) {
@@ -304,19 +190,14 @@ export const AdPlacement = ({ placement = "pageTop", className = "" }) => {
       container.appendChild(link);
     }
 
-    if (!adPlacement.scriptUrl && directLinkUrl) setIsReady(true);
+    setIsReady(true);
 
     return () => {
       container.textContent = "";
     };
   }, [adPlacement, directLinkUrl]);
 
-  if (
-    !AD_NETWORK_ENABLED ||
-    !adPlacement ||
-    (!adPlacement.scriptUrl && !directLinkUrl) ||
-    (AD_PROVIDER === "monetag" && (!adPlacement.scriptUrl || !adPlacement.zoneId))
-  ) {
+  if (!AD_NETWORK_ENABLED || !adPlacement || (!adPlacement.scriptUrl && !directLinkUrl)) {
     return null;
   }
 

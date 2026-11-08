@@ -6,7 +6,6 @@ const queueCertificateEmail = require('../utils/queueCertificateEmail');
 const { Nomination, AwardCategory } = require('../models/Award');
 const { getUploadedFileUrl } = require('../utils/uploadedFileUrl');
 const { cloudinary } = require('../config/cloudinary');
-const getAwardsYear = require('../utils/awardsYear');
 
 const getSignaturePublicId = (file) => file?.public_id || file?.file_id || file?.filename;
 
@@ -86,7 +85,7 @@ exports.generateCertificate = async (req, res) => {
         const certificateData = {
             nomineeName: nomination.nomineeName,
             categoryName: nomination.category.name,
-            awardYear: getAwardsYear(),
+            awardYear: new Date().getFullYear().toString(),
             issueDate: new Date(),
             certificateId: nomination.certificateId,
             nomineePhoto: nomination.nomineePhoto
@@ -223,7 +222,7 @@ exports.regenerateCertificate = async (req, res) => {
             nomineeName: nomination.nomineeName,
             recipientEmail: nomination.email,
             categoryName: nomination.category.name,
-            awardYear: getAwardsYear(),
+            awardYear: new Date().getFullYear().toString(),
             issueDate: new Date(),
             certificateId: nomination.certificateId || certificateService.generateCertificateId(
                 nomination._id.toString(),
@@ -304,7 +303,7 @@ exports.bulkGenerateCertificates = async (req, res) => {
                     nomineeName: nomination.nomineeName,
                     recipientEmail: nomination.email,
                     categoryName: nomination.category.name,
-                    awardYear: getAwardsYear(),
+                    awardYear: new Date().getFullYear().toString(),
                     issueDate: new Date(),
                     certificateId: nomination.certificateId
                 };

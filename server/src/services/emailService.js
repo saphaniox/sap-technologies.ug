@@ -3,7 +3,6 @@ const path = require("path");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { AsyncLocalStorage } = require("async_hooks");
-const getAwardsYear = require("../utils/awardsYear");
 
 const DEFAULT_MAILJET_API_URL = "https://api.mailjet.com/v3.1/send";
 const EMAIL_PROVIDER_SETTING_KEY = "email.providerMode";
@@ -311,7 +310,7 @@ const JOB_APPLICATION_STATUS_CONTENT = {
     title: "Application Reviewed",
     subject: "Your application has been reviewed",
     preheader: "Our team has reviewed your application.",
-    intro: "Our recruitment team has reviewed your application. Thank you for the time and care you put into applying to Saptech Uganda.",
+    intro: "Our recruitment team has reviewed your application. Thank you for the time and care you put into applying to SAPTech Uganda.",
     nextSteps: [
       "We are comparing your application with the role requirements and current hiring priorities.",
       "If we need a follow-up conversation, we will contact you using the details you provided.",
@@ -334,8 +333,8 @@ const JOB_APPLICATION_STATUS_CONTENT = {
     tone: "success",
     title: "Application Accepted",
     subject: "Congratulations — your application has been accepted",
-    preheader: "Your application has been accepted by Saptech Uganda.",
-    intro: "Congratulations. We are pleased to let you know that your application has been accepted. We appreciate your interest in joining Saptech Uganda.",
+    preheader: "Your application has been accepted by SAPTech Uganda.",
+    intro: "Congratulations. We are pleased to let you know that your application has been accepted. We appreciate your interest in joining SAPTech Uganda.",
     nextSteps: [
       "Our team will contact you with the next onboarding or offer steps.",
       "Please keep your email and phone available for follow-up communication.",
@@ -345,9 +344,9 @@ const JOB_APPLICATION_STATUS_CONTENT = {
   rejected: {
     tone: "warning",
     title: "Application Decision",
-    subject: "Update on your Saptech Uganda application",
+    subject: "Update on your SAPTech Uganda application",
     preheader: "We have an update on your job application.",
-    intro: "Thank you for your interest in Saptech Uganda and for taking the time to apply. After reviewing your application, we will not be moving forward with it for this role.",
+    intro: "Thank you for your interest in SAPTech Uganda and for taking the time to apply. After reviewing your application, we will not be moving forward with it for this role.",
     nextSteps: [
       "We genuinely appreciate the time you invested in your application.",
       "You are welcome to apply for future roles that match your skills and interests.",
@@ -362,7 +361,7 @@ const getJobApplicationStatusContent = (status) => (
     title: "Application Status Update",
     subject: `Application update: ${normalizeStatus(status)}`,
     preheader: "Your job application status has changed.",
-    intro: "There is an update on your job application with Saptech Uganda.",
+    intro: "There is an update on your job application with SAPTech Uganda.",
     nextSteps: [
       "Please review the update below.",
       "Our team will contact you if any further action is needed.",
@@ -523,9 +522,9 @@ class EmailService {
     return {
       providerMode: normalizeProviderMode(firstEnv("EMAIL_PROVIDER_MODE", "EMAIL_PROVIDER", "MAIL_PROVIDER", "MAILER_PROVIDER")),
       brand: {
-        name: process.env.EMAIL_FROM_NAME || process.env.BRAND_NAME || "Saptech Uganda",
-        awardsName: process.env.AWARDS_BRAND_NAME || `Saptech Awards ${getAwardsYear()}`,
-        legalName: process.env.COMPANY_LEGAL_NAME || "Saptech Uganda",
+        name: process.env.EMAIL_FROM_NAME || process.env.BRAND_NAME || "SAPTech Uganda",
+        awardsName: process.env.AWARDS_BRAND_NAME || "SAPTech Awards 2026",
+        legalName: process.env.COMPANY_LEGAL_NAME || "SAPTech Uganda",
         websiteUrl,
         logoUrl: process.env.EMAIL_LOGO_URL || `${websiteUrl.replace(/\/$/, "")}/images/logo.png`,
         tagline: cleanBrandTagline(process.env.EMAIL_BRAND_TAGLINE),
@@ -535,7 +534,7 @@ class EmailService {
         careersEmail
       },
       sender: {
-        fromName: process.env.EMAIL_FROM_NAME || process.env.BRAND_NAME || "Saptech Uganda",
+        fromName: process.env.EMAIL_FROM_NAME || process.env.BRAND_NAME || "SAPTech Uganda",
         fromEmail,
         replyTo: process.env.EMAIL_REPLY_TO || contactEmail,
         notifyEmail: process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL || contactEmail
@@ -644,9 +643,9 @@ class EmailService {
   applyRuntimeConfig(config) {
     const websiteUrl = cleanString(config.brand?.websiteUrl, "https://saptechug.com");
     this.brand = {
-      name: cleanString(config.brand?.name, "Saptech Uganda"),
-      awardsName: cleanString(config.brand?.awardsName, `Saptech Awards ${getAwardsYear()}`),
-      legalName: cleanString(config.brand?.legalName, "Saptech Uganda"),
+      name: cleanString(config.brand?.name, "SAPTech Uganda"),
+      awardsName: cleanString(config.brand?.awardsName, "SAPTech Awards 2026"),
+      legalName: cleanString(config.brand?.legalName, "SAPTech Uganda"),
       websiteUrl,
       logoUrl: cleanString(config.brand?.logoUrl, `${websiteUrl.replace(/\/$/, "")}/images/logo.png`),
       tagline: cleanBrandTagline(config.brand?.tagline),
@@ -1047,7 +1046,7 @@ class EmailService {
       ? `<img class="email-logo" src="${escapeHtml(this.brand.logoUrl)}" alt="${escapeHtml(companyName)} logo" width="104" style="display:block;width:104px;max-width:104px;height:auto;border:0;margin:0 auto 14px;background:#ffffff;border-radius:14px;padding:8px;">`
       : "";
     const standardClosing = templateTone === "admin"
-      ? "This is an internal notification for the Saptech Uganda team."
+      ? "This is an internal notification for the SAPTech Uganda team."
       : "Questions? Reply to this email and our team will be happy to help.";
     return `<!doctype html>
 <html lang="en">
@@ -1136,7 +1135,7 @@ class EmailService {
                 ${escapeHtml(this.brand.phone)} | <a href="mailto:${escapeHtml(this.replyToEmail)}" style="color:${color.accent};text-decoration:none;">${escapeHtml(this.replyToEmail)}</a><br>
                 <a href="${escapeHtml(this.brand.websiteUrl)}" style="color:${color.accent};text-decoration:none;">${escapeHtml(this.brand.websiteUrl)}</a>
               </p>
-              ${unsubscribeUrl ? `<p class="email-unsubscribe" style="margin:14px 0 0;color:#475569;font-size:12px;line-height:1.6;">You are receiving these updates because you subscribed to the Saptech Uganda newsletter. <a href="${escapeHtml(unsubscribeUrl)}" style="color:${color.accent};text-decoration:underline;">Unsubscribe</a></p>` : ""}
+              ${unsubscribeUrl ? `<p class="email-unsubscribe" style="margin:14px 0 0;color:#475569;font-size:12px;line-height:1.6;">You are receiving these updates because you subscribed to the SAPTech Uganda newsletter. <a href="${escapeHtml(unsubscribeUrl)}" style="color:${color.accent};text-decoration:underline;">Unsubscribe</a></p>` : ""}
               ${footerNote ? `<p style="margin:14px 0 0;color:#64748b;font-size:12px;line-height:1.6;">${escapeHtml(footerNote)}</p>` : ""}
               <p style="margin:10px 0 0;color:#64748b;font-size:11px;line-height:1.6;">&copy; ${new Date().getFullYear()} ${escapeHtml(this.brand.legalName)}. All rights reserved.</p>
             </td>
@@ -1378,15 +1377,15 @@ class EmailService {
       category: "contact_confirmation",
       html: () => this.buildEmail({
         title: "Message Received",
-        preheader: "Thank you for contacting Saptech Uganda.",
+        preheader: "Thank you for contacting SAPTech Uganda.",
         greeting: `Hello ${normalizeText(contactData.name, "there")}`,
-        intro: "Thank you for reaching out to Saptech Uganda. Our team has received your message and will respond as soon as possible.",
+        intro: "Thank you for reaching out to SAPTech Uganda. Our team has received your message and will respond as soon as possible.",
         sections: [
           { title: "Your submission", rows: [{ label: "Name", value: contactData.name }, { label: "Email", value: contactData.email }, { label: "Submitted", value: this.formatDate() }] },
           { title: "Message received", text: normalizeText(contactData.message, "No message provided") },
           { title: "What happens next", list: ["A team member will review your message.", "We will reply using the email address you provided.", "Urgent matters can be followed up by phone."] }
         ],
-        footerNote: "You are receiving this because you submitted a contact form on the Saptech Uganda website."
+        footerNote: "You are receiving this because you submitted a contact form on the SAPTech Uganda website."
       })
     });
   }
@@ -1398,9 +1397,9 @@ class EmailService {
       category: "contact_status",
       html: () => this.buildEmail({
         title: "Contact Request Update",
-        preheader: "There is an update on your message to Saptech Uganda.",
+        preheader: "There is an update on your message to SAPTech Uganda.",
         greeting: `Hello ${normalizeText(contactData.name, "there")}`,
-        intro: "There is an update on the message you sent to Saptech Uganda.",
+        intro: "There is an update on the message you sent to SAPTech Uganda.",
         sections: [
           {
             title: "Status details",
@@ -1412,7 +1411,7 @@ class EmailService {
           },
           { title: "Your message", text: normalizeText(contactData.message, "No message provided") }
         ],
-        cta: { label: "Contact Saptech Uganda", href: `mailto:${this.replyToEmail}` }
+        cta: { label: "Contact SAPTech Uganda", href: `mailto:${this.replyToEmail}` }
       })
     });
   }
@@ -1452,9 +1451,9 @@ class EmailService {
       category: "partnership_confirmation",
       html: () => this.buildEmail({
         title: "Partnership Request Received",
-        preheader: "Thank you for your interest in partnering with Saptech Uganda.",
+        preheader: "Thank you for your interest in partnering with SAPTech Uganda.",
         greeting: `Hello ${normalizeText(partnershipData.contactPerson, "there")}`,
-        intro: "Thank you for your interest in working with Saptech Uganda. We have received your partnership request and our team will review it carefully.",
+        intro: "Thank you for your interest in working with SAPTech Uganda. We have received your partnership request and our team will review it carefully.",
         sections: [
           {
             title: "Request summary",
@@ -1484,7 +1483,7 @@ class EmailService {
         title: "Partnership Request Update",
         preheader: "There is an update on your partnership request.",
         greeting: `Hello ${normalizeText(partnershipData.contactPerson, "there")}`,
-        intro: "There is an update on the partnership request you submitted to Saptech Uganda.",
+        intro: "There is an update on the partnership request you submitted to SAPTech Uganda.",
         sections: [
           {
             title: "Status details",
@@ -1505,22 +1504,22 @@ class EmailService {
     const unsubscribeLinks = this.createNewsletterUnsubscribeLinks(subscriberData.email);
     return this.deliver({
       to: subscriberData.email,
-      subject: "Welcome to Saptech Uganda updates",
+      subject: "Welcome to SAPTech Uganda updates",
       category: "newsletter",
       headers: unsubscribeLinks.oneClickUrl ? {
         "List-Unsubscribe": `<${unsubscribeLinks.oneClickUrl}>`,
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"
       } : {},
       html: () => this.buildEmail({
-        title: "Welcome to Saptech Updates",
-        preheader: "You are now subscribed to Saptech Uganda updates.",
+        title: "Welcome to SAPTech Updates",
+        preheader: "You are now subscribed to SAPTech Uganda updates.",
         greeting: "Welcome",
-        intro: "Thanks for subscribing. We will send occasional updates about useful technology, our services and products, and opportunities from the Saptech Uganda team.",
+        intro: "Thanks for subscribing. We will send occasional updates about useful technology, our services and products, and opportunities from the SAPTech Uganda team.",
         sections: [
           { title: "Subscription details", rows: [{ label: "Email", value: subscriberData.email }, { label: "Subscribed", value: this.formatDate() }] },
           { title: "What to expect", list: ["Product and service updates.", "Event and awards announcements.", "Career and partnership opportunities.", "Useful technology insights from our team."] }
         ],
-        cta: { label: "Visit Saptech Uganda", href: this.brand.websiteUrl },
+        cta: { label: "Visit SAPTech Uganda", href: this.brand.websiteUrl },
         unsubscribeUrl: unsubscribeLinks.pageUrl
       })
     });
@@ -1529,19 +1528,19 @@ class EmailService {
   async sendNewsletterUnsubscribeConfirmation(subscriberData) {
     return this.deliver({
       to: subscriberData.email,
-      subject: "You have been unsubscribed from Saptech Uganda updates",
+      subject: "You have been unsubscribed from SAPTech Uganda updates",
       category: "newsletter_unsubscribe",
       html: () => this.buildEmail({
         tone: "warning",
         title: "Newsletter Unsubscribed",
-        preheader: "You have been unsubscribed from Saptech Uganda updates.",
+        preheader: "You have been unsubscribed from SAPTech Uganda updates.",
         greeting: "Hello",
-        intro: "You have been unsubscribed from Saptech Uganda newsletter updates. You will no longer receive newsletter communications at this email address.",
+        intro: "You have been unsubscribed from SAPTech Uganda newsletter updates. You will no longer receive newsletter communications at this email address.",
         sections: [
           { title: "Subscription details", rows: [{ label: "Email", value: subscriberData.email }, { label: "Unsubscribed", value: this.formatDate(subscriberData.unsubscribedAt || new Date()) }] },
           { title: "Changed your mind?", text: "You can subscribe again from the website at any time." }
         ],
-        cta: { label: "Visit Saptech Uganda", href: this.brand.websiteUrl }
+        cta: { label: "Visit SAPTech Uganda", href: this.brand.websiteUrl }
       })
     });
   }
@@ -1549,13 +1548,13 @@ class EmailService {
   async sendUserSignupNotification(userData) {
     return this.deliver({
       to: userData.email,
-      subject: "Welcome to your Saptech Uganda account",
+      subject: "Welcome to your SAPTech Uganda account",
       category: "account_welcome",
       html: () => this.buildEmail({
         title: "Account Created",
-        preheader: "Your Saptech Uganda account is ready.",
+        preheader: "Your SAPTech Uganda account is ready.",
         greeting: `Hello ${normalizeText(userData.name, "there")}`,
-        intro: "Your account has been created successfully. You can now access your profile and use Saptech Uganda services more smoothly.",
+        intro: "Your account has been created successfully. You can now access your profile and use SAPTech Uganda services more smoothly.",
         sections: [
           {
             title: "Account details",
@@ -1581,13 +1580,13 @@ class EmailService {
   async sendUserLoginNotification(userData) {
     return this.deliver({
       to: userData.email,
-      subject: "New sign-in to your Saptech Uganda account",
+      subject: "New sign-in to your SAPTech Uganda account",
       category: "account_login",
       html: () => this.buildEmail({
         title: "New Account Sign-In",
-        preheader: "A successful sign-in was recorded on your Saptech Uganda account.",
+        preheader: "A successful sign-in was recorded on your SAPTech Uganda account.",
         greeting: `Hello ${normalizeText(userData.name, "there")}`,
-        intro: "We noticed a successful sign-in to your Saptech Uganda account. If this was you, no action is needed.",
+        intro: "We noticed a successful sign-in to your SAPTech Uganda account. If this was you, no action is needed.",
         sections: [
           {
             title: "Sign-in details",
@@ -1602,7 +1601,7 @@ class EmailService {
           {
             title: "If this was not you",
             list: [
-              "Reset your password immediately from the Saptech Uganda website.",
+              "Reset your password immediately from the SAPTech Uganda website.",
               "Contact our support team so we can help secure your account.",
               "Do not share passwords, reset codes, or account access with anyone."
             ]
@@ -1617,11 +1616,11 @@ class EmailService {
   async sendProfileUpdatedNotification(userData) {
     return this.deliver({
       to: userData.email,
-      subject: "Your Saptech Uganda profile was updated",
+      subject: "Your SAPTech Uganda profile was updated",
       category: "account_profile_updated",
       html: () => this.buildEmail({
         title: "Profile Updated",
-        preheader: "Your Saptech Uganda profile details were updated.",
+        preheader: "Your SAPTech Uganda profile details were updated.",
         greeting: `Hello ${normalizeText(userData.name, "there")}`,
         intro: "Your profile details were updated successfully. Keeping your profile accurate helps our team support you faster.",
         sections: [
@@ -1635,11 +1634,11 @@ class EmailService {
           },
           {
             title: "Security note",
-            text: "If you did not make this change, please contact Saptech Uganda support immediately."
+            text: "If you did not make this change, please contact SAPTech Uganda support immediately."
           }
         ],
         cta: { label: "Review account", href: `${this.brand.websiteUrl}/account` },
-        footerNote: "This email confirms a profile update on your Saptech Uganda account."
+        footerNote: "This email confirms a profile update on your SAPTech Uganda account."
       })
     });
   }
@@ -1647,11 +1646,11 @@ class EmailService {
   async sendProfilePictureUpdatedNotification(userData) {
     return this.deliver({
       to: userData.email,
-      subject: "Your Saptech Uganda profile photo was updated",
+      subject: "Your SAPTech Uganda profile photo was updated",
       category: "account_profile_photo_updated",
       html: () => this.buildEmail({
         title: "Profile Photo Updated",
-        preheader: "Your Saptech Uganda profile photo was changed.",
+        preheader: "Your SAPTech Uganda profile photo was changed.",
         greeting: `Hello ${normalizeText(userData.name, "there")}`,
         intro: "Your profile photo was updated successfully.",
         sections: [
@@ -1685,14 +1684,14 @@ class EmailService {
 
     const sends = recipients.map((recipient) => this.deliver({
       to: recipient,
-      subject: "Your Saptech Uganda email address was changed",
+      subject: "Your SAPTech Uganda email address was changed",
       category: recipient.toLowerCase() === oldEmail.toLowerCase() ? "account_email_changed_old" : "account_email_changed",
       html: () => this.buildEmail({
         tone: "warning",
         title: "Email Address Updated",
-        preheader: "The email address on your Saptech Uganda account was changed.",
+        preheader: "The email address on your SAPTech Uganda account was changed.",
         greeting: `Hello ${normalizeText(userData.name, "there")}`,
-        intro: "The email address on your Saptech Uganda account was changed successfully.",
+        intro: "The email address on your SAPTech Uganda account was changed successfully.",
         sections: [
           {
             title: "Change details",
@@ -1705,7 +1704,7 @@ class EmailService {
           {
             title: "If this was not you",
             list: [
-              "Contact Saptech Uganda support immediately.",
+              "Contact SAPTech Uganda support immediately.",
               "Reset your password if you still have access to the account.",
               "Do not share reset codes or passwords with anyone."
             ]
@@ -1727,14 +1726,14 @@ class EmailService {
   async sendAccountDeletedNotification(userData) {
     return this.deliver({
       to: userData.email,
-      subject: "Your Saptech Uganda account was deleted",
+      subject: "Your SAPTech Uganda account was deleted",
       category: "account_deleted",
       html: () => this.buildEmail({
         tone: "warning",
         title: "Account Deleted",
-        preheader: "Your Saptech Uganda account has been deleted.",
+        preheader: "Your SAPTech Uganda account has been deleted.",
         greeting: `Hello ${normalizeText(userData.name, "there")}`,
-        intro: "This confirms that your Saptech Uganda account has been deleted. You will no longer be able to use this account to access saved profile features.",
+        intro: "This confirms that your SAPTech Uganda account has been deleted. You will no longer be able to use this account to access saved profile features.",
         sections: [
           {
             title: "Account details",
@@ -1745,7 +1744,7 @@ class EmailService {
           },
           {
             title: "Need help?",
-            text: "If you did not request this deletion, contact Saptech Uganda as soon as possible."
+            text: "If you did not request this deletion, contact SAPTech Uganda as soon as possible."
           }
         ],
         cta: { label: "Contact support", href: `mailto:${this.replyToEmail}` }
@@ -1758,14 +1757,14 @@ class EmailService {
 
     return this.deliver({
       to: userData.email,
-      subject: `Your Saptech Uganda role was updated to ${role}`,
+      subject: `Your SAPTech Uganda role was updated to ${role}`,
       category: "account_role_updated",
       html: () => this.buildEmail({
         tone: role === "admin" ? "success" : "default",
         title: "Account Role Updated",
-        preheader: "There is an update to your Saptech Uganda account access.",
+        preheader: "There is an update to your SAPTech Uganda account access.",
         greeting: `Hello ${normalizeText(userData.name, "there")}`,
-        intro: "Your Saptech Uganda account role has been updated by an administrator.",
+        intro: "Your SAPTech Uganda account role has been updated by an administrator.",
         sections: [
           {
             title: "Role details",
@@ -1779,7 +1778,7 @@ class EmailService {
             title: "What this means",
             text: role === "admin"
               ? "You may now have access to additional admin tools. Please use them carefully and protect your login details."
-              : "Your account now uses standard user access. If you expected different access, contact the Saptech Uganda team."
+              : "Your account now uses standard user access. If you expected different access, contact the SAPTech Uganda team."
           }
         ],
         cta: { label: role === "admin" ? "Open admin dashboard" : "Open your account", href: `${this.brand.websiteUrl}/${role === "admin" ? "admin" : "account"}` }
@@ -1795,7 +1794,7 @@ class EmailService {
       html: () => this.buildEmail({
         title: "New User Registration",
         preheader: "A new user registered on the website.",
-        intro: "A new user account was created on Saptech Uganda.",
+        intro: "A new user account was created on SAPTech Uganda.",
         sections: [
           { title: "User details", rows: [{ label: "Name", value: userData.name }, { label: "Email", value: userData.email }, { label: "User ID", value: userData.id }, { label: "Registered", value: this.formatDate() }] }
         ],
@@ -1807,7 +1806,7 @@ class EmailService {
   async sendAdminAlert(alertData) {
     return this.deliver({
       to: this.notifyEmail,
-      subject: alertData.subject || "Saptech Uganda admin alert",
+      subject: alertData.subject || "SAPTech Uganda admin alert",
       category: "admin_alert",
       html: () => this.buildEmail({
         title: alertData.title || "Admin Alert",
@@ -1876,7 +1875,7 @@ class EmailService {
         title: "Product Inquiry Update",
         preheader: "Your product inquiry status has changed.",
         greeting: "Hello",
-        intro: "There is an update on your product inquiry with Saptech Uganda.",
+        intro: "There is an update on your product inquiry with SAPTech Uganda.",
         sections: [
           {
             title: "Status update",
@@ -1888,7 +1887,7 @@ class EmailService {
           },
           { title: "Team notes", text: normalizeText(inquiryData.adminNotes, "No additional notes were added.") }
         ],
-        cta: { label: "Contact Saptech Uganda", href: `mailto:${this.replyToEmail}` }
+        cta: { label: "Contact SAPTech Uganda", href: `mailto:${this.replyToEmail}` }
       })
     });
   }
@@ -1993,7 +1992,7 @@ class EmailService {
         title: "Quote Request Received",
         preheader: "Your service quote request was received.",
         greeting: `Hello ${normalizeText(quoteData.customerName, "there")}`,
-        intro: "Thank you for requesting a quote from Saptech Uganda. Our team will review your project and contact you with the next steps.",
+        intro: "Thank you for requesting a quote from SAPTech Uganda. Our team will review your project and contact you with the next steps.",
         sections: [
           { title: "Request summary", rows: [{ label: "Service", value: quoteData.serviceName }, { label: "Email", value: quoteData.customerEmail }, { label: "Submitted", value: this.formatDate() }] },
           { title: "Project details", text: normalizeText(quoteData.projectDetails, "No project details provided") },
@@ -2013,7 +2012,7 @@ class EmailService {
         title: "Service Quote Update",
         preheader: "Your service quote status has changed.",
         greeting: `Hello ${normalizeText(quoteData.customerName, "there")}`,
-        intro: "There is an update on your service quote request with Saptech Uganda.",
+        intro: "There is an update on your service quote request with SAPTech Uganda.",
         sections: [
           {
             title: "Status update",
@@ -2027,7 +2026,7 @@ class EmailService {
           },
           { title: "Team notes", text: normalizeText(quoteData.adminNotes, "No additional notes were added.") }
         ],
-        cta: { label: "Contact Saptech Uganda", href: `mailto:${this.replyToEmail}` }
+        cta: { label: "Contact SAPTech Uganda", href: `mailto:${this.replyToEmail}` }
       })
     });
   }
@@ -2044,19 +2043,18 @@ class EmailService {
   }
 
   async sendNominationSubmittedUser(nominationData) {
-    const awardsName = this.brand.awardsName;
     return this.deliver({
       to: nominationData.nominatorEmail,
-      fromName: awardsName,
-      subject: `Your ${awardsName} nomination was received`,
+      fromName: this.brand.awardsName,
+      subject: "Your SAPTech Awards 2026 nomination was received",
       category: "awards_nomination_confirmation",
       html: () => this.buildEmail({
-        brandName: awardsName,
+        brandName: this.brand.awardsName,
         tone: "awards",
         title: "Nomination Received",
-        preheader: `Your ${awardsName} nomination has been received.`,
+        preheader: "Your SAPTech Awards 2026 nomination has been received.",
         greeting: `Hello ${normalizeText(nominationData.nominatorName, "there")}`,
-        intro: `Thank you for submitting a nomination for ${awardsName}. The awards team will review it before publication or further consideration.`,
+        intro: "Thank you for submitting a nomination for SAPTech Awards 2026. The awards team will review it before publication or further consideration.",
         sections: [
           {
             title: "Nomination summary",
@@ -2075,18 +2073,17 @@ class EmailService {
   }
 
   async sendNominationSubmittedAdmin(nominationData) {
-    const awardsName = this.brand.awardsName;
     return this.deliver({
       to: this.notifyEmail,
       replyTo: nominationData.nominatorEmail,
-      fromName: awardsName,
-      subject: `New ${awardsName} nomination: ${normalizeText(nominationData.nomineeName, "Nominee")}`,
+      fromName: this.brand.awardsName,
+      subject: `New SAPTech Awards 2026 nomination: ${normalizeText(nominationData.nomineeName, "Nominee")}`,
       category: "awards_nomination_admin",
       html: () => this.buildEmail({
-        brandName: awardsName,
+        brandName: this.brand.awardsName,
         tone: "awards",
         title: "New Awards Nomination",
-        preheader: `A new ${awardsName} nomination was submitted.`,
+        preheader: "A new SAPTech Awards 2026 nomination was submitted.",
         intro: "A new nomination needs review in the awards admin dashboard.",
         sections: [
           {
@@ -2106,23 +2103,22 @@ class EmailService {
   }
 
   async sendNominationStatusUpdate(nominationData) {
-    const awardsName = this.brand.awardsName;
     const certificateHref = nominationData.certificateFile
       ? `${this.brand.websiteUrl}/awards`
       : undefined;
 
     return this.deliver({
       to: nominationData.nominatorEmail,
-      fromName: awardsName,
-      subject: `${awardsName} nomination update: ${normalizeStatus(nominationData.status)}`,
+      fromName: this.brand.awardsName,
+      subject: `SAPTech Awards 2026 nomination update: ${normalizeStatus(nominationData.status)}`,
       category: "awards_status",
       html: () => this.buildEmail({
-        brandName: awardsName,
+        brandName: this.brand.awardsName,
         tone: nominationData.status === "rejected" ? "warning" : "awards",
         title: "Nomination Status Update",
-        preheader: `Your ${awardsName} nomination status has changed.`,
+        preheader: "Your SAPTech Awards 2026 nomination status has changed.",
         greeting: `Hello ${normalizeText(nominationData.nominatorName, "there")}`,
-        intro: `There is an update on your ${awardsName} nomination.`,
+        intro: "There is an update on your SAPTech Awards 2026 nomination.",
         sections: [
           {
             title: "Status details",
@@ -2142,19 +2138,18 @@ class EmailService {
   }
 
   async sendNominationDeletedNotification(nominationData) {
-    const awardsName = this.brand.awardsName;
     return this.deliver({
       to: nominationData.nominatorEmail,
-      fromName: awardsName,
-      subject: `${awardsName} nomination update`,
+      fromName: this.brand.awardsName,
+      subject: "SAPTech Awards 2026 nomination update",
       category: "awards_deleted",
       html: () => this.buildEmail({
-        brandName: awardsName,
+        brandName: this.brand.awardsName,
         tone: "warning",
         title: "Nomination Removed",
-        preheader: `A ${awardsName} nomination was removed.`,
+        preheader: "A SAPTech Awards 2026 nomination was removed.",
         greeting: `Hello ${normalizeText(nominationData.nominatorName, "there")}`,
-        intro: `We are writing to inform you that a nomination you submitted has been removed from ${awardsName} records.`,
+        intro: "We are writing to inform you that a nomination you submitted has been removed from SAPTech Awards 2026 records.",
         sections: [
           {
             title: "Nomination details",
@@ -2222,7 +2217,7 @@ class EmailService {
         title: "Application Received",
         preheader: "Your job application was received.",
         greeting: `Hello ${normalizeText(applicationData.applicantName, "there")}`,
-        intro: "Thank you for applying to Saptech Uganda. Your application has been received and will be reviewed by our team.",
+        intro: "Thank you for applying to SAPTech Uganda. Your application has been received and will be reviewed by our team.",
         sections: [
           {
             title: "Application summary",
@@ -2287,7 +2282,7 @@ class EmailService {
   async sendJobApplicationManualEmail(applicationData) {
     const subject = normalizeText(
       applicationData.subject,
-      `Message from Saptech Uganda about your ${normalizeText(applicationData.jobTitle, "application")}`
+      `Message from SAPTech Uganda about your ${normalizeText(applicationData.jobTitle, "application")}`
     ).replace(/[\r\n]+/g, " ").slice(0, 160);
     const message = normalizeText(applicationData.message, "");
 
@@ -2301,7 +2296,7 @@ class EmailService {
       category: "job_application_manual",
       html: () => this.buildEmail({
         tone: "default",
-        title: "Message from Saptech Uganda",
+        title: "Message from SAPTech Uganda",
         preheader: subject,
         greeting: `Hello ${normalizeText(applicationData.applicantName, "there")}`,
         intro: "Our recruitment team has sent you a message about your job application.",
@@ -2319,13 +2314,13 @@ class EmailService {
             text: message
           }
         ],
-        cta: { label: "Reply to Saptech Uganda", href: `mailto:${this.replyToEmail}` }
+        cta: { label: "Reply to SAPTech Uganda", href: `mailto:${this.replyToEmail}` }
       })
     });
   }
 
   async sendCustomAdminEmail({ recipientEmail, recipientName, subject, message }) {
-    const cleanSubject = normalizeText(subject, "From Saptech Uganda")
+    const cleanSubject = normalizeText(subject, "From SAPTech Uganda")
       .replace(/[\r\n]+/g, " ")
       .slice(0, 160);
     const cleanMessage = normalizeText(message, "");
@@ -2354,7 +2349,7 @@ class EmailService {
     const recipientEmail = certificateData.recipientEmail || certificateData.email || certificateData.nominatorEmail;
     const recipientName = certificateData.recipientName || certificateData.nominatorName || certificateData.name || "there";
     const nomineeName = certificateData.nomineeName || recipientName;
-    const awardYear = cleanString(certificateData.awardYear, getAwardsYear(this.brand.awardsName));
+    const awardYear = cleanString(certificateData.awardYear, String(new Date().getFullYear()));
     const awardsName = this.brand.awardsName.replace(/\b20\d{2}\b/, awardYear);
     const certificateFile = certificateData.certificateFile || certificateData.filename;
     const certificatePath = certificateData.certificatePath
@@ -2369,6 +2364,10 @@ class EmailService {
       });
     }
 
+    const introText = attachments.length
+      ? `The certificate for ${nomineeName} is attached to this email. You can forward it to the recipient or keep it with your nomination records.`
+      : `The certificate for ${nomineeName} could not be attached. Please contact the awards team for help accessing it.`;
+
     return this.deliver({
       to: recipientEmail,
       fromName: awardsName,
@@ -2381,9 +2380,7 @@ class EmailService {
         title: "Certificate Ready",
         preheader: `The ${awardYear} certificate for ${nomineeName} is ready.`,
         greeting: `Hello ${normalizeText(recipientName, "there")}`,
-        intro: attachments.length
-          ? `The certificate for ${nomineeName} is attached to this email. You can forward it to the recipient or keep it with your nomination records.`
-          : `The certificate for ${nomineeName} could not be attached. Please contact the awards team for help accessing it.`,
+        intro: introText,
         sections: [
           {
             title: "Certificate details",
@@ -2410,20 +2407,20 @@ class EmailService {
   async sendPasswordResetCode(userEmail, userName, verificationCode) {
     return this.deliver({
       to: userEmail,
-      subject: "Your Saptech Uganda password reset code",
+      subject: "Your SAPTech Uganda password reset code",
       category: "password_reset",
       html: () => this.buildEmail({
         tone: "danger",
         title: "Password Reset Code",
-        preheader: "Use this code to reset your Saptech Uganda password.",
+        preheader: "Use this code to reset your SAPTech Uganda password.",
         greeting: `Hello ${normalizeText(userName, "there")}`,
-        intro: "We received a request to reset your Saptech Uganda account password. Use the verification code below to continue.",
+        intro: "We received a request to reset your SAPTech Uganda account password. Use the verification code below to continue.",
         sections: [
           {
             title: "Verification code",
             html: `<p style="margin:0;color:#0f172a;font-size:30px;letter-spacing:6px;font-weight:800;text-align:center;">${escapeHtml(verificationCode)}</p><p style="margin:12px 0 0;color:#64748b;font-size:13px;text-align:center;">This code expires in 10 minutes.</p>`
           },
-          { title: "Security reminder", list: ["Do not share this code with anyone.", "Saptech Uganda will never ask for your password reset code.", "If you did not request this, you can ignore this email."] }
+          { title: "Security reminder", list: ["Do not share this code with anyone.", "SAPTech Uganda will never ask for your password reset code.", "If you did not request this, you can ignore this email."] }
         ],
         footerNote: "This security email was sent because a password reset was requested for your account."
       })
@@ -2433,17 +2430,17 @@ class EmailService {
   async sendPasswordChangeConfirmation(userEmail, userName) {
     return this.deliver({
       to: userEmail,
-      subject: "Your Saptech Uganda password was changed",
+      subject: "Your SAPTech Uganda password was changed",
       category: "password_changed",
       html: () => this.buildEmail({
         tone: "success",
         title: "Password Changed",
         preheader: "Your password was changed successfully.",
         greeting: `Hello ${normalizeText(userName, "there")}`,
-        intro: "Your Saptech Uganda password was changed successfully.",
+        intro: "Your SAPTech Uganda password was changed successfully.",
         sections: [
           { title: "Account security", rows: [{ label: "Changed", value: this.formatDate() }, { label: "Account email", value: userEmail }] },
-          { title: "If this was not you", list: ["Contact Saptech Uganda immediately.", "Do not share any reset codes you receive.", "Review your account activity after logging in."] }
+          { title: "If this was not you", list: ["Contact SAPTech Uganda immediately.", "Do not share any reset codes you receive.", "Review your account activity after logging in."] }
         ],
         cta: { label: "Contact support", href: `mailto:${this.replyToEmail}` }
       })
