@@ -151,31 +151,12 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
       return;
     }
 
-    // Validate required fields for self-nominations
-    if (nominationForm.isSelfNomination) {
-      if (!nominationForm.nominatorEmail) {
-        showAlert.error("Email needed", "Please provide your email address so we can follow up.");
-        return;
-      }
-      if (!nominationForm.nominatorEmail) {
-        showAlert.error("Error", "Please provide your email address");
-        return;
-      }
-    }
-
     setLoading(prev => ({ ...prev, submitting: true }));
 
     try {
       const formData = new FormData();
 
-      // For self-nominations, auto-fill nominator name and organization with nominee data
       const submissionData = { ...nominationForm };
-      if (submissionData.isSelfNomination) {
-        submissionData.nominatorName = submissionData.nomineeName;
-        if (!submissionData.nominatorOrganization) {
-          submissionData.nominatorOrganization = submissionData.nomineeCompany || "";
-        }
-      }
 
       Object.keys(submissionData).forEach(key => {
         if (submissionData[key] !== null && submissionData[key] !== "") {
@@ -1323,25 +1304,23 @@ const NominationModal = ({ categories, nominationForm, onChange, onSubmit, onClo
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Your Full Name *</label>
+                  <label>Your Full Name (Optional)</label>
                   <input
                     type="text"
                     name="nominatorName"
                     value={nominationForm.nominatorName}
                     onChange={onChange}
-                    required={!isSelf}
                     placeholder="Enter your full name"
                   />
                 </div>
 
                 <div className="form-group">
-                  <label>Your Email *</label>
+                  <label>Your Email (Optional)</label>
                   <input
                     type="email"
                     name="nominatorEmail"
                     value={nominationForm.nominatorEmail}
                     onChange={onChange}
-                    required={!isSelf}
                     placeholder="your.email@example.com"
                   />
                 </div>
@@ -1380,13 +1359,12 @@ const NominationModal = ({ categories, nominationForm, onChange, onSubmit, onClo
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Your Email *</label>
+                  <label>Your Email (Optional)</label>
                   <input
                     type="email"
                     name="nominatorEmail"
                     value={nominationForm.nominatorEmail}
                     onChange={onChange}
-                    required
                     placeholder="your.email@example.com"
                   />
                 </div>

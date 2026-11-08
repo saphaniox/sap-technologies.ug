@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import apiService from "../services/api";
 import { showAlert, Swal } from "../utils/alerts";
 import { getImageUrl, PLACEHOLDERS } from "../utils/imageUrl";
 import { Icon } from "./IconLibrary";
+import AwardCandidateDrafts from "./AwardCandidateDrafts";
 import "../styles/AwardsAdmin.css";
 import "../styles/IconLibrary.css";
 
 const AwardsAdmin = () => {
   console.log(" AwardsAdmin component is rendering!");
+  const MotionDiv = motion.div;
 
   const [activeSubTab, setActiveSubTab] = useState("nominations");
   const [nominations, setNominations] = useState([]);
@@ -38,37 +40,12 @@ const AwardsAdmin = () => {
     limit: 10
   });
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingNomination, setEditingNomination] = useState(null);
-  const [statusSummary, setStatusSummary] = useState({});
   const [showPhotoEditModal, setShowPhotoEditModal] = useState(false);
   const [editingPhotoNomination, setEditingPhotoNomination] = useState(null);
   const [newPhoto, setNewPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
 
-  // Load data on component mount
-  useEffect(() => {
-    loadCategories();
-    loadNominations();
-    loadAwardsStats();
-  }, []);
-
-  // Reload nominations when filters change
-  useEffect(() => {
-    loadNominations();
-  }, [filters]);
-
-  // Reload data when active tab changes
-  useEffect(() => {
-    if (activeSubTab === "categories") {
-      loadCategories();
-    } else if (activeSubTab === "nominations") {
-      loadNominations();
-    } else if (activeSubTab === "stats") {
-      loadAwardsStats();
-    }
-  }, [activeSubTab]);
-
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     try {
       console.log(" Loading award categories...");
       const response = await apiService.getAwardsCategories();
@@ -82,24 +59,23 @@ const AwardsAdmin = () => {
       console.error(" Error loading categories:", error);
       setCategories([]);
     }
-  };
+  }, []);
 
-  const loadNominations = async () => {
+  const loadNominations = useCallback(async () => {
     setLoading(prev => ({ ...prev, nominations: true }));
     try {
       const response = await apiService.getAdminNominations(filters);
       setNominations(response.data.nominations);
       setPagination(response.data.pagination);
-      setStatusSummary(response.data.statusSummary || {});
     } catch (error) {
       console.error("Error loading nominations:", error);
       showAlert.error("Couldn't load nominations", "We had trouble fetching the nominations. Please try again.");
     } finally {
       setLoading(prev => ({ ...prev, nominations: false }));
     }
-  };
+  }, [filters]);
 
-  const loadAwardsStats = async () => {
+  const loadAwardsStats = useCallback(async () => {
     console.log(" Loading awards statistics...");
     setLoading(prev => ({ ...prev, stats: true }));
     try {
@@ -152,7 +128,30 @@ const AwardsAdmin = () => {
     } finally {
       setLoading(prev => ({ ...prev, stats: false }));
     }
-  };
+  }, []);
+
+  // Load data on component mount
+  useEffect(() => {
+    loadCategories();
+    loadNominations();
+    loadAwardsStats();
+  }, [loadCategories, loadNominations, loadAwardsStats]);
+
+  // Reload nominations when filters change
+  useEffect(() => {
+    loadNominations();
+  }, [loadNominations]);
+
+  // Reload data when active tab changes
+  useEffect(() => {
+    if (activeSubTab === "categories") {
+      loadCategories();
+    } else if (activeSubTab === "nominations") {
+      loadNominations();
+    } else if (activeSubTab === "stats") {
+      loadAwardsStats();
+    }
+  }, [activeSubTab, loadCategories, loadNominations, loadAwardsStats]);
 
   const handleUpdateStatus = async (nominationId, status, adminNotes = "") => {
     console.log(" Updating nomination status:", nominationId, "to", status);
@@ -313,7 +312,7 @@ const AwardsAdmin = () => {
       });
 
   // Clear API cache and reload in background to ensure data consistency
-  try { apiService.clearCache(); } catch (e) { /* ignore */ }
+  apiService.clearCache();
   await loadNominations();
   await loadAwardsStats();
     } catch (error) {
@@ -379,7 +378,7 @@ const AwardsAdmin = () => {
         formData.append("nomineePhoto", newPhoto);
       }
 
-      const response = await apiService.updateNomination(editingPhotoNomination._id, formData);
+      await apiService.updateNomination(editingPhotoNomination._id, formData);
 
       await Swal.fire({
         title: 'Photo updated!',
@@ -740,7 +739,7 @@ const AwardsAdmin = () => {
   );
 
   const renderNominationCard = (nomination) => (
-    <motion.div
+    <MotionDiv
       key={nomination._id}
       className="nomination-card"
       initial={{ opacity: 0, y: 20 }}
@@ -809,7 +808,9 @@ const AwardsAdmin = () => {
         <div className="nominator-info">
           <h4>Nominated By:</h4>
           <p>
-            {nomination.nominatorName} ({nomination.nominatorEmail})
+            {nomination.nominatorName || nomination.nominatorEmail
+              ? `${nomination.nominatorName || "Name not provided"} (${nomination.nominatorEmail || "email not provided"})`
+              : "Nominator not provided"}
             {nomination.nominatorOrganization && ` - ${nomination.nominatorOrganization}`}
           </p>
         </div>
@@ -862,10 +863,6 @@ const AwardsAdmin = () => {
                   confirmButtonText: 'Reject',
                   cancelButtonText: 'Cancel',
                   confirmButtonColor: '#ef4444',
-                  inputValidator: (value) => {
-                    // Optional, so no validation needed
-                    return null;
-                  }
                 });
 
                 if (adminNotes !== undefined) {
@@ -988,7 +985,7 @@ const AwardsAdmin = () => {
           {loading.deleting ? '⏳' : 'Delete'} Delete
         </button>
       </div>
-    </motion.div>
+    </MotionDiv>
   );
 
   const renderPagination = () => (
@@ -1028,6 +1025,12 @@ const AwardsAdmin = () => {
             onClick={() => setActiveSubTab("categories")}
           >
              Categories
+          </button>
+          <button
+            className={`sub-tab ${activeSubTab === "candidate-drafts" ? "active" : ""}`}
+            onClick={() => setActiveSubTab("candidate-drafts")}
+          >
+             Candidate Drafts
           </button>
           <button
             className={`sub-tab ${activeSubTab === "stats" ? "active" : ""}`}
@@ -1095,7 +1098,7 @@ const AwardsAdmin = () => {
           ) : (
             <div className="categories-grid">
               {categories.map((category) => (
-                <motion.div
+                <MotionDiv
                   key={category._id}
                   className="category-card"
                   initial={{ opacity: 0, y: 20 }}
@@ -1157,7 +1160,7 @@ const AwardsAdmin = () => {
                       {category.isActive ? ' Active' : ' Inactive'}
                     </span>
                   </div>
-                </motion.div>
+                </MotionDiv>
               ))}
 
               {categories.length === 0 && (
@@ -1169,6 +1172,10 @@ const AwardsAdmin = () => {
             </div>
           )}
         </div>
+      )}
+
+      {activeSubTab === "candidate-drafts" && (
+        <AwardCandidateDrafts categories={categories.filter((category) => category.isActive)} />
       )}
 
       {/* Category Form Modal */}

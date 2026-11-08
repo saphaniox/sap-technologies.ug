@@ -11,7 +11,7 @@ const ProductInquiry = require("./ProductInquiry");
 const ServiceQuote = require("./ServiceQuote");
 const Certificate = require("./Certificate");
 const AppSetting = require("./AppSetting");
-const { AwardCategory, Nomination } = require("./Award");
+const { AwardCategory, Nomination, AwardCandidateDraft } = require("./Award");
 
 module.exports = {
     User,
@@ -27,5 +27,6 @@ module.exports = {
     Certificate,
     AppSetting,
     AwardCategory,
-    Nomination
+    Nomination,
+    AwardCandidateDraft
 };

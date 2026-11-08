@@ -87,16 +87,17 @@ const nominationSchema = new mongoose.Schema({
     // Nominator Information
     nominatorName: {
         type: String,
-        required: [true, "Nominator name is required"],
         trim: true,
         maxlength: [100, "Nominator name cannot exceed 100 characters"]
     },
     nominatorEmail: {
         type: String,
-        required: [true, "Nominator email is required"],
         lowercase: true,
         trim: true,
-        match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please provide a valid email"]
+        validate: {
+            validator: value => !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+            message: "Please provide a valid email"
+        }
     },
     nominatorPhone: {
         type: String,
@@ -188,6 +189,92 @@ const nominationSchema = new mongoose.Schema({
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
 });
+
+const awardCandidateDraftSchema = new mongoose.Schema({
+    nomineeName: {
+        type: String,
+        required: true,
+        trim: true,
+        maxlength: 100
+    },
+    nomineeTitle: {
+        type: String,
+        trim: true,
+        maxlength: 150
+    },
+    nomineeCompany: {
+        type: String,
+        trim: true,
+        maxlength: 100
+    },
+    nomineeCountry: {
+        type: String,
+        required: true,
+        trim: true,
+        maxlength: 100
+    },
+    category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "AwardCategory",
+        required: true
+    },
+    rationale: {
+        type: String,
+        required: true,
+        trim: true,
+        maxlength: 1500
+    },
+    sources: [{
+        label: {
+            type: String,
+            required: true,
+            trim: true,
+            maxlength: 120
+        },
+        url: {
+            type: String,
+            required: true,
+            trim: true,
+            maxlength: 2048
+        }
+    }],
+    photoUrl: {
+        type: String,
+        trim: true,
+        maxlength: 2048
+    },
+    photoSourceUrl: {
+        type: String,
+        trim: true,
+        maxlength: 2048
+    },
+    photoLicense: {
+        type: String,
+        trim: true,
+        maxlength: 200
+    },
+    photoAttribution: {
+        type: String,
+        trim: true,
+        maxlength: 300
+    },
+    photoReuseConfirmed: {
+        type: Boolean,
+        default: false
+    },
+    eligibilityVerified: {
+        type: Boolean,
+        default: false
+    },
+    consentConfirmed: {
+        type: Boolean,
+        default: false
+    }
+}, {
+    timestamps: true
+});
+
+awardCandidateDraftSchema.index({ category: 1, nomineeName: 1 }, { unique: true });
 
 // Virtual for total votes count
 nominationSchema.virtual("totalVotes").get(function() {
@@ -292,8 +379,10 @@ nominationSchema.index({ nomineeName: "text", nominationReason: "text", achievem
 
 const AwardCategory = mongoose.model("AwardCategory", awardCategorySchema);
 const Nomination = mongoose.model("Nomination", nominationSchema);
+const AwardCandidateDraft = mongoose.model("AwardCandidateDraft", awardCandidateDraftSchema);
 
 module.exports = {
     AwardCategory,
-    Nomination
+    Nomination,
+    AwardCandidateDraft
 };

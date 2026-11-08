@@ -83,16 +83,14 @@ const validateNomination = [
         .withMessage("Impact description cannot exceed 1000 characters"),
     
     body("nominatorName")
+        .optional({ values: "falsy" })
         .trim()
-        .notEmpty()
-        .withMessage("Nominator name is required")
         .isLength({ min: 2, max: 100 })
         .withMessage("Nominator name must be between 2 and 100 characters"),
     
     body("nominatorEmail")
+        .optional({ values: "falsy" })
         .trim()
-        .notEmpty()
-        .withMessage("Nominator email is required")
         .isEmail()
         .withMessage("Please provide a valid email address"),
     
@@ -129,6 +127,81 @@ const validateCategory = [
         .trim()
         .isLength({ max: 10 })
         .withMessage("Icon cannot exceed 10 characters")
+];
+
+const validateCandidateDraft = [
+    body("nomineeName")
+        .trim()
+        .notEmpty()
+        .isLength({ min: 2, max: 100 }),
+    body("nomineeTitle")
+        .optional({ values: "falsy" })
+        .trim()
+        .isLength({ max: 150 }),
+    body("nomineeCompany")
+        .optional({ values: "falsy" })
+        .trim()
+        .isLength({ max: 100 }),
+    body("nomineeCountry")
+        .trim()
+        .notEmpty()
+        .isLength({ max: 100 }),
+    body("category")
+        .isMongoId()
+        .withMessage("A valid award category is required"),
+    body("rationale")
+        .trim()
+        .notEmpty()
+        .isLength({ max: 1500 }),
+    body("sources")
+        .isArray({ min: 1, max: 10 })
+        .withMessage("At least one source is required (maximum 10)"),
+    body("sources.*.label")
+        .trim()
+        .notEmpty()
+        .isLength({ max: 120 }),
+    body("sources.*.url")
+        .trim()
+        .isURL({ protocols: ["http", "https"], require_protocol: true })
+        .isLength({ max: 2048 }),
+    body("photoUrl")
+        .optional({ values: "falsy" })
+        .trim()
+        .isURL({ protocols: ["http", "https"], require_protocol: true })
+        .isLength({ max: 2048 }),
+    body("photoSourceUrl")
+        .optional({ values: "falsy" })
+        .trim()
+        .isURL({ protocols: ["http", "https"], require_protocol: true })
+        .isLength({ max: 2048 }),
+    body("photoLicense")
+        .optional({ values: "falsy" })
+        .trim()
+        .isLength({ max: 200 }),
+    body("photoAttribution")
+        .optional({ values: "falsy" })
+        .trim()
+        .isLength({ max: 300 }),
+    body("photoReuseConfirmed")
+        .optional()
+        .isBoolean(),
+    body("eligibilityVerified")
+        .optional()
+        .isBoolean(),
+    body("consentConfirmed")
+        .optional()
+        .isBoolean(),
+    body("photoUrl")
+        .custom((photoUrl, { req }) => {
+            if (!photoUrl) return true;
+            return Boolean(
+                req.body.photoSourceUrl &&
+                req.body.photoLicense &&
+                req.body.photoAttribution &&
+                req.body.photoReuseConfirmed === true
+            );
+        })
+        .withMessage("A photo requires a source, license, attribution, and confirmed reuse rights")
 ];
 
 const validateVote = [
@@ -211,6 +284,34 @@ router.get(
     "/admin/nominations",
     adminAuth,
     awardsController.getAdminNominations
+);
+
+router.get(
+    "/admin/candidate-drafts",
+    adminAuth,
+    awardsController.getCandidateDrafts
+);
+
+router.post(
+    "/admin/candidate-drafts",
+    adminAuth,
+    validateCandidateDraft,
+    awardsController.createCandidateDraft
+);
+
+router.patch(
+    "/admin/candidate-drafts/:id",
+    adminAuth,
+    param("id").isMongoId().withMessage("Invalid candidate draft ID"),
+    validateCandidateDraft,
+    awardsController.updateCandidateDraft
+);
+
+router.delete(
+    "/admin/candidate-drafts/:id",
+    adminAuth,
+    param("id").isMongoId().withMessage("Invalid candidate draft ID"),
+    awardsController.deleteCandidateDraft
 );
 
 // Update nomination status

@@ -934,6 +934,32 @@ class ApiService {
     return this.request(`/awards/admin/nominations${queryParams ? `?${queryParams}` : ""}`, { useCache: false });
   }
 
+  async getAwardCandidateDrafts() {
+    return this.request("/awards/admin/candidate-drafts", { useCache: false });
+  }
+
+  async createAwardCandidateDraft(candidate) {
+    return this.request("/awards/admin/candidate-drafts", {
+      method: "POST",
+      body: JSON.stringify(candidate),
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
+  async updateAwardCandidateDraft(draftId, candidate) {
+    return this.request(`/awards/admin/candidate-drafts/${draftId}`, {
+      method: "PATCH",
+      body: JSON.stringify(candidate),
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+
+  async deleteAwardCandidateDraft(draftId) {
+    return this.request(`/awards/admin/candidate-drafts/${draftId}`, {
+      method: "DELETE"
+    });
+  }
+
   async updateNominationStatus(nominationId, status, adminNotes = "") {
     return this.request(`/awards/admin/nominations/${nominationId}/status`, {
       method: "PATCH",

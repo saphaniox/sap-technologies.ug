@@ -1,4 +1,4 @@
-const { AwardCategory, Nomination } = require("../models");
+const { AwardCategory, Nomination, AwardCandidateDraft } = require("../models");
 const { validationResult } = require("express-validator");
 const path = require("path");
 const fs = require("fs").promises;
@@ -185,11 +185,12 @@ class AwardsController {
 
             // Check if category has any nominations
             const nominationCount = await Nomination.countDocuments({ category: categoryId });
-            
-            if (nominationCount > 0) {
+            const draftCount = await AwardCandidateDraft.countDocuments({ category: categoryId });
+
+            if (nominationCount > 0 || draftCount > 0) {
                 return res.status(400).json({
                     status: "error",
-                    message: `Cannot delete category. It has ${nominationCount} nomination(s). Please reassign or delete the nominations first.`
+                    message: `Cannot delete category. It has ${nominationCount} nomination(s) and ${draftCount} candidate draft(s). Please reassign or delete them first.`
                 });
             }
 
@@ -213,6 +214,128 @@ class AwardsController {
             });
         } catch (error) {
             logger.logError('AwardsController', error, { context: 'deleteCategory', categoryId: req.params.id });
+            next(error);
+        }
+    }
+
+    async getCandidateDrafts(req, res, next) {
+        try {
+            const drafts = await AwardCandidateDraft.find()
+                .populate("category", "name")
+                .sort({ nomineeCountry: 1, nomineeName: 1 })
+                .lean();
+
+            res.status(200).json({
+                status: "success",
+                data: { drafts }
+            });
+        } catch (error) {
+            logger.logError("AwardsController", error, { context: "getCandidateDrafts" });
+            next(error);
+        }
+    }
+
+    async createCandidateDraft(req, res, next) {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "Please check the candidate draft details",
+                    errors: errors.array()
+                });
+            }
+
+            const categoryExists = await AwardCategory.exists({ _id: req.body.category });
+            if (!categoryExists) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "Award category was not found"
+                });
+            }
+
+            const draft = await AwardCandidateDraft.create(req.body);
+            await draft.populate("category", "name");
+            res.status(201).json({
+                status: "success",
+                data: { draft }
+            });
+        } catch (error) {
+            if (error.code === 11000) {
+                return res.status(409).json({
+                    status: "error",
+                    message: "This person already has a draft in that category"
+                });
+            }
+            logger.logError("AwardsController", error, { context: "createCandidateDraft" });
+            next(error);
+        }
+    }
+
+    async updateCandidateDraft(req, res, next) {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "Please check the candidate draft details",
+                    errors: errors.array()
+                });
+            }
+
+            const categoryExists = await AwardCategory.exists({ _id: req.body.category });
+            if (!categoryExists) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "Award category was not found"
+                });
+            }
+
+            const draft = await AwardCandidateDraft.findByIdAndUpdate(
+                req.params.id,
+                { $set: req.body },
+                { new: true, runValidators: true }
+            ).populate("category", "name");
+
+            if (!draft) {
+                return res.status(404).json({
+                    status: "error",
+                    message: "Candidate draft not found"
+                });
+            }
+
+            res.status(200).json({
+                status: "success",
+                data: { draft }
+            });
+        } catch (error) {
+            if (error.code === 11000) {
+                return res.status(409).json({
+                    status: "error",
+                    message: "This person already has a draft in that category"
+                });
+            }
+            logger.logError("AwardsController", error, { context: "updateCandidateDraft", draftId: req.params.id });
+            next(error);
+        }
+    }
+
+    async deleteCandidateDraft(req, res, next) {
+        try {
+            const draft = await AwardCandidateDraft.findByIdAndDelete(req.params.id);
+            if (!draft) {
+                return res.status(404).json({
+                    status: "error",
+                    message: "Candidate draft not found"
+                });
+            }
+
+            res.status(200).json({
+                status: "success",
+                message: "Candidate draft deleted"
+            });
+        } catch (error) {
+            logger.logError("AwardsController", error, { context: "deleteCandidateDraft", draftId: req.params.id });
             next(error);
         }
     }
@@ -262,9 +385,7 @@ class AwardsController {
 
             const requiredFields = {
                 nomineeName,
-                category,
-                nominatorName,
-                nominatorEmail
+                category
             };
 
             const missingFields = Object.entries(requiredFields)
@@ -338,8 +459,8 @@ class AwardsController {
                     nominationReason: nominationReason?.trim() || "",
                     achievements: achievements?.trim(),
                     impactDescription: impactDescription?.trim(),
-                    nominatorName: nominatorName.trim(),
-                    nominatorEmail: nominatorEmail.toLowerCase().trim(),
+                    nominatorName: nominatorName?.trim(),
+                    nominatorEmail: nominatorEmail?.toLowerCase().trim(),
                     nominatorPhone: nominatorPhone?.trim(),
                     nominatorOrganization: nominatorOrganization?.trim()
                 });
@@ -393,23 +514,25 @@ class AwardsController {
             }
 
             // Queue email notification for async processing
-            try {
-                await emailService.queueNominationSubmissionEmail({
-                    nominatorName: nomination.nominatorName,
-                    nominatorEmail: nomination.nominatorEmail,
-                    nomineeName: nomination.nomineeName,
-                    categoryName: nomination.category?.name || 'Unknown Category'
-                });
-                logger.logInfo('AwardsController', 'Nomination email queued', {
-                    nominationId: nomination._id,
-                    nominatorEmail: nomination.nominatorEmail
-                });
-            } catch (emailError) {
-                logger.logWarning('AwardsController', 'Error queueing email notification', {
-                    error: emailError.message,
-                    nominationId: nomination._id
-                });
-                // Continue without failing the request
+            if (nomination.nominatorEmail) {
+                try {
+                    await emailService.queueNominationSubmissionEmail({
+                        nominatorName: nomination.nominatorName,
+                        nominatorEmail: nomination.nominatorEmail,
+                        nomineeName: nomination.nomineeName,
+                        categoryName: nomination.category?.name || 'Unknown Category'
+                    });
+                    logger.logInfo('AwardsController', 'Nomination email queued', {
+                        nominationId: nomination._id,
+                        nominatorEmail: nomination.nominatorEmail
+                    });
+                } catch (emailError) {
+                    logger.logWarning('AwardsController', 'Error queueing email notification', {
+                        error: emailError.message,
+                        nominationId: nomination._id
+                    });
+                    // Continue without failing the request
+                }
             }
 
             // Invalidate cache
@@ -853,7 +976,7 @@ class AwardsController {
             }
 
             // Send email notification to nominator (non-blocking)
-            if (nomination.category) {
+            if (nomination.category && nomination.nominatorEmail) {
                 emailService.sendNominationStatusUpdate({
                     nominatorName: nomination.nominatorName,
                     nominatorEmail: nomination.nominatorEmail,
