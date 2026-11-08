@@ -1,6 +1,5 @@
 import React, { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, Sphere, Box, Torus } from "@react-three/drei";
 
 // Simple floating shape for backgrounds
 function FloatingShape({ position, shape, color, speed = 1 }) {
@@ -8,38 +7,24 @@ function FloatingShape({ position, shape, color, speed = 1 }) {
 
   useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.rotation.x = state.clock.elapsedTime * speed * 0.5;
-      meshRef.current.rotation.y = state.clock.elapsedTime * speed * 0.3;
+      const elapsedTime = state.clock.elapsedTime;
+      meshRef.current.rotation.x = elapsedTime * speed * 0.5;
+      meshRef.current.rotation.y = elapsedTime * speed * 0.3;
+      meshRef.current.position.y = position[1] + Math.sin(elapsedTime * speed) * 0.1;
     }
   });
 
-  const ShapeComponent = {
-    sphere: () => (
-      <Sphere ref={meshRef} args={[0.3, 16, 16]}>
-        <meshStandardMaterial color={color} transparent opacity={0.6} />
-      </Sphere>
-    ),
-    box: () => (
-      <Box ref={meshRef} args={[0.5, 0.5, 0.5]}>
-        <meshStandardMaterial color={color} transparent opacity={0.6} />
-      </Box>
-    ),
-    torus: () => (
-      <Torus ref={meshRef} args={[0.4, 0.1, 8, 16]}>
-        <meshStandardMaterial color={color} transparent opacity={0.6} />
-      </Torus>
-    )
+  const ShapeGeometry = {
+    sphere: <sphereGeometry args={[0.3, 16, 16]} />,
+    box: <boxGeometry args={[0.5, 0.5, 0.5]} />,
+    torus: <torusGeometry args={[0.4, 0.1, 8, 16]} />
   };
 
   return (
-    <Float
-      speed={speed}
-      rotationIntensity={0.4}
-      floatIntensity={0.4}
-      position={position}
-    >
-      {ShapeComponent[shape]()}
-    </Float>
+    <mesh ref={meshRef} position={position}>
+      {ShapeGeometry[shape]}
+      <meshStandardMaterial color={color} transparent opacity={0.6} />
+    </mesh>
   );
 }
 

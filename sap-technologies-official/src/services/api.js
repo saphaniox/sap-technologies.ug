@@ -45,13 +45,15 @@ const uniqueApiUrls = (urls, { allowEmpty = false } = {}) => {
 };
 
 const getApiUrls = () => {
-  const primaryUrl = import.meta.env.VITE_API_PRIMARY_URL || import.meta.env.VITE_API_URL || DEFAULT_API_URL;
+  const isLocalDevelopment = isLocalhost && import.meta.env.DEV;
+  const configuredPrimaryUrl = import.meta.env.VITE_API_PRIMARY_URL || import.meta.env.VITE_API_URL;
+  const primaryUrl = configuredPrimaryUrl || (isLocalDevelopment ? "" : DEFAULT_API_URL);
   const configuredUrls = API_FALLBACK_ENABLED ? splitApiUrls(import.meta.env.VITE_API_URLS) : [];
   const fallbackUrl = API_FALLBACK_ENABLED
-    ? import.meta.env.VITE_API_FALLBACK_URL || DEFAULT_API_FALLBACK_URL
+    ? import.meta.env.VITE_API_FALLBACK_URL || (isLocalDevelopment ? "" : DEFAULT_API_FALLBACK_URL)
     : "";
 
-  if (isLocalhost && import.meta.env.DEV) {
+  if (isLocalDevelopment) {
     const localUrls = uniqueApiUrls([primaryUrl, ...configuredUrls, fallbackUrl], { allowEmpty: true });
     return localUrls.length ? localUrls : [""];
   }
