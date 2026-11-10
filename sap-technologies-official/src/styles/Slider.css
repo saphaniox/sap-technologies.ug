@@ -149,6 +149,7 @@
 .dot {
   width: 14px;
   height: 14px;
+  padding: 0;
   border-radius: 50%;
   background: var(--text-color-muted);
   cursor: pointer;
@@ -156,6 +157,8 @@
   border: 2px solid transparent;
   position: relative;
   opacity: 0.6;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .dot:hover {

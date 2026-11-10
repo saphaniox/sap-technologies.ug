@@ -291,8 +291,6 @@ function App() {
     checkAuthStatus();
     initializeAnimations();
 
-    localStorage.removeItem("showAwards");
-
     const styleElement = document.createElement("style");
     styleElement.textContent = microAnimationStyles;
     document.head.appendChild(styleElement);
@@ -562,7 +560,7 @@ function App() {
       />
       {renderHeader()}
 
-      <main>
+      <main id="main-content">
         <Hero />
         <Slider />
         <About />
@@ -590,7 +588,7 @@ function App() {
     return (
     <>
       {renderHeader()}
-      <main className="route-page-shell">
+      <main id="main-content" className="route-page-shell">
         {children}
         <AdPlacement placement={bottomPlacement} />
       </main>
@@ -604,6 +602,7 @@ function App() {
     <ErrorBoundary>
       <CartProvider>
       <div className="App">
+        <a href="#main-content" className="skip-link">Skip to main content</a>
         <AdNetwork />
         <Suspense fallback={null}>
         <Routes>
@@ -771,7 +770,7 @@ function CartFloatButton() {
       aria-label={`Open cart, ${cartCount} item${cartCount !== 1 ? "s" : ""}`}
       title="View cart"
     >
-      +
+      <span aria-hidden="true">🛒</span>
       <span className="cart-float-badge">{cartCount}</span>
     </button>
   );

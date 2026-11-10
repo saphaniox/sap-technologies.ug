@@ -101,11 +101,14 @@ const Slider = () => {
         </button>
 
         <div className="slider-dots">
-          {slides.map((_, index) => (
-            <span
+          {slides.map((slide, index) => (
+            <button
               key={index}
+              type="button"
               className={`dot ${index === currentSlide ? "active" : ""}`}
               onClick={() => goToSlide(index)}
+              aria-label={`Go to slide ${index + 1}: ${slide.title}`}
+              aria-current={index === currentSlide ? "true" : undefined}
             />
           ))}
         </div>
