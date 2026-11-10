@@ -19,10 +19,6 @@ const applicationFileSchema = new mongoose.Schema({
     type: Number,
     min: 0
   },
-  cloudinaryId: {
-    type: String,
-    trim: true
-  },
   uploadedAt: {
     type: Date,
     default: Date.now

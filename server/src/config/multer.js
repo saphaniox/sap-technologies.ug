@@ -1,18 +1,14 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const { useCloudinaryForUploads, storageConfigs } = require("./cloudinary");
 
-// Ensure upload directory exists (fallback for local storage)
+// Ensure upload directory exists.
 const uploadDir = path.join(__dirname, "../../uploads/profile-pics");
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Check if Cloudinary is configured
-const useCloudinary = useCloudinaryForUploads();
-
-// Configure LOCAL storage (fallback)
+// Store profile pictures on the VPS.
 const localStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, uploadDir);
@@ -23,9 +19,6 @@ const localStorage = multer.diskStorage({
         cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
     }
 });
-
-// Use Cloudinary if configured, otherwise use local storage
-const storage = useCloudinary ? storageConfigs.profilePics : localStorage;
 
 // File filter for images only
 const fileFilter = (req, file, cb) => {
@@ -38,7 +31,7 @@ const fileFilter = (req, file, cb) => {
 
 // Configure multer
 const upload = multer({
-    storage: storage,
+    storage: localStorage,
     limits: {
         fileSize: 5 * 1024 * 1024, // 5MB limit
     },

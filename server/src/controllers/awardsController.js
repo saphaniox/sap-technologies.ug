@@ -5,12 +5,11 @@ const fs = require("fs").promises;
 const emailService = require("../services/emailService");
 const certificateService = require("../services/certificateService");
 const queueCertificateEmail = require("../utils/queueCertificateEmail");
-const { useCloudinary } = require("../config/fileUpload");
 const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 
-// Helper function to get correct file URL (Cloudinary or local)
+// Helper function to get the URL for an upload served by the VPS.
 const getFileUrl = (file, folder = 'awards') => {
   return getUploadedFileUrl(file, folder);
 };
@@ -413,13 +412,11 @@ class AwardsController {
                         originalname: req.file.originalname,
                         size: req.file.size,
                         mimetype: req.file.mimetype,
-                        secure_url: req.file.secure_url ? 'present' : 'missing',
                         url: req.file.url ? 'present' : 'missing',
-                        public_id: req.file.public_id ? 'present' : 'missing',
                         path: req.file.path ? req.file.path.substring(0, 50) : 'missing'
                     });
                     
-                    if (!useCloudinary && !req.file.path) {
+                    if (!req.file.path) {
                         throw new Error('File path is missing');
                     }
                     nomineePhotoPath = getFileUrl(req.file, 'awards');
@@ -427,7 +424,7 @@ class AwardsController {
                     
                     logger.logInfo('AwardsController', 'Photo upload successful', { 
                         path: nomineePhotoPath,
-                        storage: useCloudinary ? 'cloudinary' : 'local'
+                        storage: 'vps'
                     });
                 } catch (fileError) {
                     console.error('❌ File processing error:', fileError.message);
@@ -475,7 +472,7 @@ class AwardsController {
                 });
 
                 // Clean up uploaded file if database save fails
-                if (req.file && req.file.path && !useCloudinary) {
+                if (req.file && req.file.path) {
                     try {
                         await fs.unlink(req.file.path);
                         logger.logInfo('AwardsController', 'Cleaned up uploaded file after db error', {
@@ -561,7 +558,7 @@ class AwardsController {
             });
 
             // Clean up uploaded file on unhandled errors
-            if (req.file && req.file.path && !useCloudinary) {
+            if (req.file && req.file.path) {
                 try {
                     await fs.unlink(req.file.path);
                     logger.logInfo('AwardsController', 'Cleaned up file after unhandled error');
@@ -962,7 +959,6 @@ class AwardsController {
                         const filename = path.basename(certificateResult.filepath);
                         nomination.certificateFile = filename;
                         nomination.certificateUrl = certificateResult.url;
-                        nomination.certificateCloudinaryId = certificateResult.cloudinaryId;
                         nomination.certificateGeneratedAt = new Date();
                         await nomination.save();
 
@@ -1047,8 +1043,7 @@ class AwardsController {
                     });
                 }
 
-                // Use Cloudinary URL if available, otherwise use local path
-                photoPath = req.file.path || `/uploads/awards/${req.file.filename}`;
+                photoPath = getFileUrl(req.file, "awards");
             }
 
             // Update nomination fields

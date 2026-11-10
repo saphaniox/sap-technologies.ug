@@ -2,7 +2,6 @@ const { Product } = require("../models");
 const { validationResult } = require("express-validator");
 const path = require("path");
 const fs = require("fs").promises;
-const { deleteFromCloudinary, extractPublicId } = require("../config/cloudinary");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 
 const debugProductController = (...args) => {
@@ -120,14 +119,6 @@ const normalizePrice = (value, fallback = { type: "contact-for-price" }) => {
 const deleteUploadedProductImage = async (imageUrl) => {
     if (!imageUrl) return;
 
-    if (imageUrl.includes("cloudinary.com")) {
-        const publicId = extractPublicId(imageUrl);
-        if (publicId) {
-            await deleteFromCloudinary(publicId, "image");
-        }
-        return;
-    }
-
     if (imageUrl.startsWith("/uploads/products/")) {
         const imgPath = path.join(__dirname, "../..", imageUrl);
         try {
@@ -138,7 +129,7 @@ const deleteUploadedProductImage = async (imageUrl) => {
     }
 };
 
-// Helper to get file URL (Cloudinary or local)
+// Helper to get the URL for a VPS-stored upload.
 const getFileUrl = (file, folder = 'products') => {
     return getUploadedFileUrl(file, folder);
 };

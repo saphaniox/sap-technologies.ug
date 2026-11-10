@@ -1,12 +1,11 @@
 const IoT = require("../models/IoT");
 const fsp = require("fs").promises;
 const path = require("path");
-const { deleteFromCloudinary, extractPublicId } = require("../config/cloudinary");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 
 /**
  * Get the correct file path/URL for uploaded file
- * Works with both Cloudinary and local storage
+ * Returns a URL served by the VPS.
  */
 const getFileUrl = (file, folder = 'iot') => {
   return getUploadedFileUrl(file, folder);
@@ -74,14 +73,6 @@ const deleteUploadedMedia = async (mediaUrl, resourceType = "image") => {
   if (!mediaUrl) return;
 
   try {
-    if (mediaUrl.includes("cloudinary.com")) {
-      const publicId = extractPublicId(mediaUrl);
-      if (publicId) {
-        await deleteFromCloudinary(publicId, resourceType);
-      }
-      return;
-    }
-
     if (mediaUrl.startsWith("/uploads/")) {
       const filePath = path.join(__dirname, "../..", mediaUrl);
       await fsp.unlink(filePath);
@@ -112,9 +103,9 @@ const normalizeIoTData = (data, existingProject = null) => {
   return data;
 };
 
-const hideProjectViews = (project) => {
+const hideProjectViews = (project, isAdmin = false) => {
   const projectData = project.toObject();
-  if (projectData.stats) {
+  if (!isAdmin && projectData.stats) {
     delete projectData.stats.views;
   }
   return projectData;
@@ -161,7 +152,7 @@ exports.getAllIoTProjects = async (req, res) => {
       status: "success",
       results: iotProjects.length,
       data: {
-        iotProjects: iotProjects.map(hideProjectViews)
+        iotProjects: iotProjects.map(project => hideProjectViews(project, req.user?.role === "admin"))
       }
     });
   } catch (error) {
@@ -193,7 +184,7 @@ exports.getIoTProjectById = async (req, res) => {
     res.status(200).json({
       status: "success",
       data: {
-        iotProject: hideProjectViews(iotProject)
+        iotProject: hideProjectViews(iotProject, req.user?.role === "admin")
       }
     });
   } catch (error) {

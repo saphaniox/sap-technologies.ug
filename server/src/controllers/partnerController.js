@@ -1,12 +1,10 @@
 const Partner = require("../models/Partner");
 const path = require("path");
 const fs = require("fs").promises;
-const { useCloudinary } = require("../config/fileUpload");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 
 /**
- * Get the correct file path/URL for uploaded file
- * Works with both Cloudinary and local storage
+ * Get the URL for an uploaded file served by the VPS.
  */
 const getFileUrl = (file, folder = 'partners') => {
   return getUploadedFileUrl(file, folder);
@@ -147,7 +145,7 @@ const updatePartner = async (req, res) => {
       return res.status(404).json({ message: "Partner not found" });
     }
 
-    // Store old logo path for cleanup
+    // Store old logo URL for cleanup.
     const oldLogoPath = partner.logo;
 
     // Update fields. Blank optional text fields are allowed so admins can keep
@@ -162,8 +160,7 @@ const updatePartner = async (req, res) => {
     if (req.file) {
       partner.logo = getFileUrl(req.file, 'partners');
       
-      // Delete old logo file (only for local storage)
-      if (!useCloudinary && oldLogoPath && oldLogoPath.startsWith("/uploads/partners/")) {
+      if (oldLogoPath && oldLogoPath.startsWith("/uploads/partners/")) {
         try {
           const oldFilePath = path.join(__dirname, "../../uploads/partners", path.basename(oldLogoPath));
           await fs.unlink(oldFilePath);

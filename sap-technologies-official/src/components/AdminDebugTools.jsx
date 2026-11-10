@@ -323,38 +323,6 @@ Note: Check browser console for image loading errors.
         }
     };
 
-    const testCloudinaryConnection = async () => {
-        setLoading(true);
-        setResults('Testing Cloudinary connection...');
-
-        try {
-            console.log(' Testing Cloudinary Connection...');
-
-            // Test by loading products and checking image URLs
-            const products = await apiService.getProducts();
-            const hasCloudinaryImages = products?.data?.products?.some(p =>
-                p.image && p.image.includes('cloudinary.com')
-            );
-
-            setResults(`
- Cloudinary Connection Test Results:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Cloudinary Images Found: ${hasCloudinaryImages ? ' Yes' : ' No'}
-Image Service: ${hasCloudinaryImages ? 'Cloudinary Active' : 'Local/Other'}
-
-Status: ${hasCloudinaryImages ? ' Connected' : ' Not using Cloudinary'}
-
-Note: Check environment variables for Cloudinary configuration.
-            `);
-
-        } catch (error) {
-            console.error('Cloudinary test error:', error);
-            setResults(` Cloudinary Test Failed: ${error.message}`);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     // Session/Cookie Tests
     const testSessionStorage = async () => {
         setLoading(true);
@@ -924,9 +892,6 @@ Performance: ${totalTime < 1000 ? ' Excellent' : totalTime < 2000 ? ' Good' : ' 
                 <h5 style={{ color: '#555', marginBottom: '8px', fontSize: '14px' }}> Image & Upload Tests</h5>
                 <button onClick={testImageService} disabled={loading} style={{ ...buttonStyle, background: '#8b5cf6', color: 'white' }}>
                     Test Image Service
-                </button>
-                <button onClick={testCloudinaryConnection} disabled={loading} style={{ ...buttonStyle, background: '#7c3aed', color: 'white' }}>
-                    Test Cloudinary
                 </button>
             </div>
 

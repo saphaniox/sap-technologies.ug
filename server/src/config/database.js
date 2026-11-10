@@ -1,28 +1,11 @@
 const mongoose = require("mongoose");
 const environmentConfig = require("./environment");
-const databaseMirrorPlugin = require("../plugins/databaseMirrorPlugin");
-const mirrorService = require("../services/databaseMirrorService");
-
-if (!mongoose.__sapMirrorPluginRegistered) {
-    mongoose.plugin(databaseMirrorPlugin);
-    mongoose.__sapMirrorPluginRegistered = true;
-}
 
 let activeDatabase = {
     cluster: null,
     uri: null,
     host: null,
     name: null
-};
-
-const getClusterCandidates = (dbConfig) => ([
-    { name: "primary", uri: dbConfig.primaryUri || dbConfig.uri },
-    { name: "secondary", uri: dbConfig.secondaryUri }
-]).filter(cluster => !!cluster.uri);
-
-const connectToCluster = async (cluster, options) => {
-    console.log(`Target cluster (${cluster.name}): ${mirrorService.maskMongoUri(cluster.uri)}`);
-    return mongoose.connect(cluster.uri, options);
 };
 
 const configureMongoose = () => {
@@ -82,7 +65,6 @@ const attachShutdownHandlers = () => {
         console.log(`\n${signal} received - initiating graceful database shutdown...`);
 
         try {
-            await mirrorService.closeMirrorConnection();
             await mongoose.connection.close();
             console.log("MongoDB connection closed successfully");
             console.log("Database cleanup completed");
@@ -112,54 +94,26 @@ const withTimeout = (promise, timeoutMs, message) => {
 const connectDB = async () => {
     try {
         const dbConfig = environmentConfig.getDatabaseConfig();
-        const clusters = getClusterCandidates(dbConfig);
-
-        if (clusters.length === 0) {
+        if (!dbConfig.uri) {
             throw new Error("No MongoDB URI configured");
         }
 
-        console.log("Attempting database connection with cluster failover...");
-
-        let conn = null;
-        let activeCluster = null;
-        let lastError = null;
-
-        for (const cluster of clusters) {
-            try {
-                conn = await connectToCluster(cluster, dbConfig.options);
-                activeCluster = cluster;
-                break;
-            } catch (error) {
-                lastError = error;
-                console.error(`MongoDB ${cluster.name} connection failed:`, error.message);
-            }
-        }
-
-        if (!conn || !activeCluster) {
-            throw lastError || new Error("Unable to connect to any MongoDB cluster");
-        }
+        console.log("Attempting database connection...");
+        const conn = await mongoose.connect(dbConfig.uri, dbConfig.options);
 
         activeDatabase = {
-            cluster: activeCluster.name,
-            uri: activeCluster.uri,
+            cluster: "primary",
+            uri: dbConfig.uri,
             host: conn.connection.host,
             name: conn.connection.name,
             configuredName: dbConfig.options.dbName || null
         };
 
-        const mirrorTarget = clusters.find(cluster => cluster.name !== activeCluster.name);
-        await mirrorService.initializeMirror({
-            activeCluster: activeCluster.name,
-            targetCluster: mirrorTarget?.name || null,
-            targetUri: mirrorTarget?.uri || null,
-            options: dbConfig.options
-        });
-
         configureMongoose();
         attachConnectionHandlers();
         attachShutdownHandlers();
 
-        console.log(`Secure MongoDB connection established on ${activeCluster.name}: ${conn.connection.host}`);
+        console.log(`Secure MongoDB connection established: ${conn.connection.host}`);
         console.log(`Database: ${conn.connection.name}`);
         console.log(`Configured Database: ${dbConfig.options.dbName || "not set"}`);
         console.log(`TLS Enabled: ${dbConfig.options.tls ? "Yes" : "No (Development)"}`);
@@ -197,8 +151,7 @@ const checkDatabaseHealth = async () => {
                 host: mongoose.connection.host,
                 name: mongoose.connection.name,
                 configuredName: activeDatabase.configuredName,
-                expectedNameMatched: !activeDatabase.configuredName || mongoose.connection.name === activeDatabase.configuredName,
-                mirror: mirrorService.getMirrorStatus()
+                expectedNameMatched: !activeDatabase.configuredName || mongoose.connection.name === activeDatabase.configuredName
             };
         }
 
@@ -206,7 +159,6 @@ const checkDatabaseHealth = async () => {
             status: "unhealthy",
             readyState: mongoose.connection.readyState,
             activeCluster: activeDatabase.cluster,
-            mirror: mirrorService.getMirrorStatus(),
             message: "Database not connected"
         };
     } catch (error) {
@@ -214,7 +166,6 @@ const checkDatabaseHealth = async () => {
             status: "error",
             readyState: mongoose.connection.readyState,
             activeCluster: activeDatabase.cluster,
-            mirror: mirrorService.getMirrorStatus(),
             message: error.message
         };
     }
@@ -227,7 +178,6 @@ const auditDatabaseSecurity = () => {
         strictQuery: mongoose.get("strictQuery"),
         connectionState: mongoose.connection.readyState,
         activeCluster: activeDatabase.cluster,
-        mirror: mirrorService.getMirrorStatus(),
         tls: mongoose.connection.options?.tls || false,
         tlsAllowInvalidCertificates: mongoose.connection.options?.tlsAllowInvalidCertificates || false,
         authSource: mongoose.connection.options?.authSource,

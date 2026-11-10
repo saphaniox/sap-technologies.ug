@@ -3,8 +3,6 @@ const QRCode = require('qrcode');
 const fs = require('fs').promises;
 const path = require('path');
 const { Certificate } = require('../models');
-const cloudinary = require('cloudinary').v2;
-const { useCloudinaryForUploads } = require('../config/cloudinary');
 const getAwardsYear = require('../utils/awardsYear');
 
 class CertificateService {
@@ -24,7 +22,6 @@ class CertificateService {
     constructor() {
         this.certificatesDir = path.join(__dirname, '../../uploads/certificates');
         this.signaturesDir = path.join(__dirname, '../../uploads/signatures');
-        this.useCloudinary = useCloudinaryForUploads();
         this.ensureCertificatesDirectory();
         this.ensureSignaturesDirectory();
     }
@@ -91,65 +88,13 @@ class CertificateService {
         });
     }
 
-    async uploadToCloudinary(pdfBuffer, filename) {
-        return new Promise((resolve, reject) => {
-            const uploadStream = cloudinary.uploader.upload_stream(
-                {
-                    folder: 'sap-technologies/certificates',
-                    resource_type: 'raw', // For PDFs
-                    public_id: filename.replace('.pdf', ''),
-                    format: 'pdf',
-                    access_mode: 'public'
-                },
-                (error, result) => {
-                    if (error) {
-                        console.error('❌ Cloudinary upload error:', error);
-                        reject(error);
-                    } else {
-                        console.log('☁️ Certificate uploaded to Cloudinary:', result.secure_url);
-                        resolve(result);
-                    }
-                }
-            );
-            
-            // Write buffer to stream
-            uploadStream.end(pdfBuffer);
-        });
-    }
-
     async saveCertificate(pdfBytes, filename) {
         const filepath = path.join(this.certificatesDir, filename);
-        
-        // Always save locally as backup
         await fs.writeFile(filepath, pdfBytes);
         console.log('💾 Certificate saved locally:', filepath);
-        
-        // Upload to Cloudinary if configured
-        if (this.useCloudinary) {
-            try {
-                const cloudinaryResult = await this.uploadToCloudinary(pdfBytes, filename);
-                return {
-                    filepath,
-                    url: cloudinaryResult.secure_url,
-                    cloudinaryId: cloudinaryResult.public_id,
-                    storage: 'cloudinary'
-                };
-            } catch (error) {
-                console.warn('⚠️ Cloudinary upload failed, using local storage:', error.message);
-                return {
-                    filepath,
-                    url: `/api/certificates/download/${filename}`,
-                    cloudinaryId: null,
-                    storage: 'local'
-                };
-            }
-        }
-        
         return {
             filepath,
-            url: `/api/certificates/download/${filename}`,
-            cloudinaryId: null,
-            storage: 'local'
+            url: `/api/certificates/download/${filename}`
         };
     }
 
@@ -425,7 +370,7 @@ class CertificateService {
             const pdfBytes = await pdfDoc.save();
             const filename = `certificate_${certificateId || Date.now()}.pdf`;
             
-            // Save certificate (Cloudinary + local backup)
+            // Save certificate on the VPS.
             const saveResult = await this.saveCertificate(pdfBytes, filename);
             const filepath = saveResult.filepath;
 
@@ -441,12 +386,10 @@ class CertificateService {
                     issueDate,
                     filename,
                     url: saveResult.url,
-                    cloudinaryId: saveResult.cloudinaryId,
-                    storage: saveResult.storage
                 });
             }
 
-            console.log(`✅ Winner certificate generated: ${filename} (${saveResult.storage})`);
+            console.log(`✅ Winner certificate generated: ${filename}`);
             return saveResult;
 
         } catch (error) {
@@ -460,32 +403,7 @@ class CertificateService {
         // Extract just the filename to avoid path issues
         const justFilename = path.basename(filename);
         const filepath = path.join(this.certificatesDir, justFilename);
-        
-        try {
-            // Try to get from local storage first
-            return await fs.readFile(filepath);
-        } catch (error) {
-            console.log(`⚠️ Certificate not found locally: ${justFilename}, checking database...`);
-            
-            // If not found locally, try to get from Cloudinary via database
-            if (this.useCloudinary) {
-                try {
-                    const cert = await Certificate.findOne({ filename: justFilename });
-                    if (cert && cert.url && cert.url.includes('cloudinary')) {
-                        console.log(`📥 Fetching certificate from Cloudinary: ${cert.url}`);
-                        const axios = require('axios');
-                        const response = await axios.get(cert.url, {
-                            responseType: 'arraybuffer'
-                        });
-                        return Buffer.from(response.data);
-                    }
-                } catch (dbError) {
-                    console.error('Error fetching from Cloudinary:', dbError.message);
-                }
-            }
-            
-            throw new Error(`Certificate not found: ${justFilename}`);
-        }
+        return fs.readFile(filepath);
     }
 
     // Generate finalist certificate
@@ -791,13 +709,11 @@ class CertificateService {
                     awardYear,
                     issueDate,
                     filename,
-                    url: saveResult.url,
-                    cloudinaryId: saveResult.cloudinaryId,
-                    storage: saveResult.storage
+                    url: saveResult.url
                 });
             }
 
-            console.log(`✅ Finalist certificate generated: ${filename} (${saveResult.storage})`);
+            console.log(`✅ Finalist certificate generated: ${filename}`);
             return saveResult;
 
         } catch (error) {
@@ -1112,13 +1028,11 @@ class CertificateService {
                     awardYear,
                     issueDate,
                     filename,
-                    url: saveResult.url,
-                    cloudinaryId: saveResult.cloudinaryId,
-                    storage: saveResult.storage
+                    url: saveResult.url
                 });
             }
 
-            console.log(`✅ Participation certificate generated: ${filename} (${saveResult.storage})`);
+            console.log(`✅ Participation certificate generated: ${filename}`);
             return saveResult;
 
         } catch (error) {
@@ -1241,35 +1155,14 @@ class CertificateService {
 
             let signatureImageBytes;
 
-            // Check if signature is stored in Cloudinary
-            if (signatureInfo.isCloudinary && signatureInfo.cloudinaryUrl) {
-                console.log('📥 Fetching signature from Cloudinary:', signatureInfo.cloudinaryUrl);
-                
-                try {
-                    const axios = require('axios');
-                    const response = await axios.get(signatureInfo.cloudinaryUrl, {
-                        responseType: 'arraybuffer'
-                    });
-                    
-                    signatureImageBytes = Buffer.from(response.data);
-                    console.log('✅ Signature fetched from Cloudinary successfully');
-                } catch (fetchError) {
-                    console.error('❌ Error fetching signature from Cloudinary:', fetchError.message);
-                    return false;
-                }
-            } else {
-                // Use local file
-                const signaturePath = path.join(this.signaturesDir, signatureInfo.filename);
-                
-                // Check if signature file exists
-                try {
-                    await fs.access(signaturePath);
-                    signatureImageBytes = await fs.readFile(signaturePath);
-                    console.log('✅ Signature loaded from local storage');
-                } catch (error) {
-                    console.warn('⚠️ Signature file not found locally, using default text signature');
-                    return false;
-                }
+            const signaturePath = path.join(this.signaturesDir, signatureInfo.filename);
+            try {
+                await fs.access(signaturePath);
+                signatureImageBytes = await fs.readFile(signaturePath);
+                console.log('✅ Signature loaded from local storage');
+            } catch (error) {
+                console.warn('⚠️ Signature file not found locally, using default text signature');
+                return false;
             }
             
             // Embed image based on file type
@@ -1319,12 +1212,6 @@ class CertificateService {
             const signatureInfoData = await fs.readFile(signatureInfoPath, 'utf8');
             const signatureInfo = JSON.parse(signatureInfoData);
             
-            // If it's a Cloudinary signature, we don't need to check local file
-            if (signatureInfo && signatureInfo.isCloudinary) {
-                console.log('✅ Cloudinary signature info loaded:', signatureInfo.cloudinaryUrl);
-                return signatureInfo;
-            }
-            
             // Validate that the signature file actually exists and has valid size (for local files)
             if (signatureInfo && signatureInfo.filename) {
                 const signatureFilePath = path.join(this.signaturesDir, signatureInfo.filename);
@@ -1357,17 +1244,7 @@ class CertificateService {
             const signatureInfo = await this.getCurrentSignature();
             
             if (signatureInfo) {
-                // Delete from Cloudinary if applicable
-                if (signatureInfo.isCloudinary && signatureInfo.cloudinaryPublicId) {
-                    try {
-                        const cloudinary = require('cloudinary').v2;
-                        await cloudinary.uploader.destroy(signatureInfo.cloudinaryPublicId);
-                        console.log('🗑️ Deleted signature from Cloudinary:', signatureInfo.cloudinaryPublicId);
-                    } catch (cloudError) {
-                        console.warn('⚠️ Could not delete signature from Cloudinary:', cloudError.message);
-                    }
-                } else {
-                    // Delete local signature image file
+                if (signatureInfo.filename) {
                     const signatureImagePath = path.join(this.signaturesDir, signatureInfo.filename);
                     try {
                         await fs.unlink(signatureImagePath);
@@ -1433,16 +1310,6 @@ class CertificateService {
                 const cert = await Certificate.findOneAndDelete({ filename: justFilename });
                 if (cert) {
                     console.log('🗑️ Deleted certificate record from database:', justFilename);
-                    
-                    // If it has Cloudinary info, try to delete from there too
-                    if (cert.cloudinaryId) {
-                        try {
-                            await cloudinary.uploader.destroy(cert.cloudinaryId, { resource_type: 'raw' });
-                            console.log('🗑️ Deleted certificate from Cloudinary:', cert.cloudinaryId);
-                        } catch (cloudError) {
-                            console.warn('⚠️ Could not delete from Cloudinary:', cloudError.message);
-                        }
-                    }
                 }
             } catch (dbError) {
                 console.log('⚠️ Certificate record not found in database:', justFilename);
@@ -1501,7 +1368,7 @@ class CertificateService {
             let photoImageBytes;
             let photoUrl;
 
-            // Check if photo is a URL (Cloudinary or other)
+            // Handle externally hosted photos for legacy certificate data.
             if (photoPath.startsWith('http://') || photoPath.startsWith('https://')) {
                 photoUrl = photoPath;
             } else if (photoPath.startsWith('/uploads/')) {

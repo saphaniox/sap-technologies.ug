@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import apiService from "../services/api";
 import { showAlert } from "../utils/alerts.jsx";
-import { getImageUrl, getOptimizedVideoUrl } from "../utils/imageUrl";
+import { getImageUrl } from "../utils/imageUrl";
 import { compressImageFile } from "../utils/mediaCompression";
 import "../styles/GalleryForm.css";
 
@@ -334,7 +334,7 @@ const GalleryForm = ({ isOpen, galleryItem, onClose, onSave }) => {
               <label>Existing media</label>
               <div className="media-preview-grid">
                 {existingMedia.map((media) => {
-                  const mediaUrl = media.type === "video" ? getOptimizedVideoUrl(media.url) : getImageUrl(media.url);
+                  const mediaUrl = getImageUrl(media.url);
                   return (
                     <div className="media-preview-card" key={media.url}>
                       {media.type === "video" ? (

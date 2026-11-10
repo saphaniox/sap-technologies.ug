@@ -4,7 +4,7 @@ import IoTForm from "./IoTForm";
 import ConfirmDialog from "./ConfirmDialog";
 import ImageSlider from "./ImageSlider";
 import { showAlert } from "../utils/alerts.jsx";
-import { getImageUrl, getOptimizedVideoUrl, PLACEHOLDERS } from "../utils/imageUrl";
+import { getImageUrl, PLACEHOLDERS } from "../utils/imageUrl";
 import { removeById, upsertById } from "../utils/realtimeCollection";
 import "../styles/IoT.css";
 
@@ -367,7 +367,7 @@ const IoTProjects = () => {
                   {project.videos && project.videos.length > 0 && (
                     <div className="iot-uploaded-videos">
                       {project.videos.map((video, idx) => {
-                        const videoUrl = getOptimizedVideoUrl(video.url || video);
+                        const videoUrl = getImageUrl(video.url || video);
                         if (!videoUrl) return null;
 
                         return (

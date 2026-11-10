@@ -4820,8 +4820,8 @@ IP: ${quote.metadata?.ipAddress || 'N/A'}
                                 </td>
                                 <td>{new Date(cert.generatedAt).toLocaleDateString()}</td>
                                 <td>
-                                  <span className={`badge badge-${cert.storage}`}>
-                                    {cert.storage === "cloudinary" ? " Cloud" : " Local"}
+                                  <span className="badge badge-vps">
+                                    VPS
                                   </span>
                                 </td>
                                 <td className="actions-cell">

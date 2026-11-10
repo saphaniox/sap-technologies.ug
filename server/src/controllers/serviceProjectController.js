@@ -1,12 +1,11 @@
 const { Service, Project } = require("../models");
 const fs = require("fs");
 const path = require("path");
-const { useCloudinary } = require("../config/fileUpload");
 const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 
-// Helper function to get correct file URL (Cloudinary or local)
+// Helper function to get the URL for a VPS-stored upload.
 const getFileUrl = (file, folder = 'services') => {
   return getUploadedFileUrl(file, folder);
 };
@@ -110,7 +109,7 @@ class ServiceController {
     try {
       const serviceData = req.body;
       
-      // Handle multiple file uploads with Cloudinary support
+      // Handle multiple file uploads.
       if (req.files && req.files.length > 0) {
         serviceData.images = req.files.map((file, index) => ({
           url: getFileUrl(file, 'services'),
@@ -239,7 +238,7 @@ class ServiceController {
 
       // Remove images marked for deletion
       if (imagesToDelete.length > 0) {
-        // Delete local files if not on Cloudinary
+        // Delete local files.
         currentImages.forEach(img => {
           if (img.url && !img.url.startsWith('http') && imagesToDelete.includes(img.url)) {
             const oldImagePath = path.join(__dirname, "../..", img.url);
@@ -589,7 +588,7 @@ class ProjectController {
     try {
       const projectData = req.body;
       
-      // Handle multiple file uploads with Cloudinary support
+      // Handle multiple file uploads.
       if (req.files && req.files.length > 0) {
         projectData.images = req.files.map((file, index) => ({
           url: getFileUrl(file, 'projects'),

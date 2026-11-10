@@ -1,5 +1,4 @@
 const Gallery = require("../models/Gallery");
-const { useCloudinary } = require("../config/fileUpload");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
@@ -48,7 +47,6 @@ const buildMediaFromFile = (file) => ({
   type: getMediaType(file),
   mimeType: file.mimetype || "",
   size: file.size || 0,
-  cloudinaryId: file.public_id || null,
   originalName: file.originalname || "",
   isCompressed: Boolean(file.isCompressed)
 });
@@ -62,7 +60,6 @@ const normalizeMedia = (item) => {
           type: mediaItem.type || getMediaType(mediaItem),
           mimeType: mediaItem.mimeType || "",
           size: mediaItem.size || 0,
-          cloudinaryId: mediaItem.cloudinaryId || null,
           originalName: mediaItem.originalName || "",
           isCompressed: Boolean(mediaItem.isCompressed)
         }))
@@ -74,7 +71,6 @@ const normalizeMedia = (item) => {
       type: "image",
       mimeType: "",
       size: 0,
-      cloudinaryId: item.cloudinaryId || null,
       originalName: "",
       isCompressed: false
     });
@@ -116,7 +112,6 @@ const deleteLocalMediaFiles = async (mediaItems = []) => {
 };
 
 const deleteUploadedLocalFiles = async (files = []) => {
-  if (useCloudinary) return;
   await Promise.all(files.map(async (file) => {
     if (!file?.path) return;
     try {
@@ -236,7 +231,6 @@ const createGalleryItem = async (req, res) => {
       description: normalizeText(description),
       category: normalizeText(category) || "other",
       image: primaryMedia?.url,
-      cloudinaryId: primaryMedia?.cloudinaryId || null,
       media,
       isActive: normalizeBoolean(isActive, true),
       displayOrder: normalizeOrder(displayOrder, 0)
@@ -314,7 +308,6 @@ const updateGalleryItem = async (req, res) => {
       const primaryMedia = getPrimaryMedia(nextMedia);
       updateData.media = nextMedia;
       updateData.image = primaryMedia?.url;
-      updateData.cloudinaryId = primaryMedia?.cloudinaryId || null;
     }
 
     const updatedItem = await Gallery.findByIdAndUpdate(

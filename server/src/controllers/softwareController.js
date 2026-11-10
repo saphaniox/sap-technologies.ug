@@ -1,7 +1,6 @@
 const Software = require("../models/Software");
 const path = require("path");
 const fs = require("fs").promises;
-const { deleteFromCloudinary, extractPublicId } = require("../config/cloudinary");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 
 const normalizeSoftwareImages = (images, fallbackAlt = "Software image") => {
@@ -62,14 +61,6 @@ const deleteUploadedImage = async (imageUrl, folder = "software") => {
   if (!imageUrl) return;
 
   try {
-    if (imageUrl.includes("cloudinary.com")) {
-      const publicId = extractPublicId(imageUrl);
-      if (publicId) {
-        await deleteFromCloudinary(publicId, "image");
-      }
-      return;
-    }
-
     if (imageUrl.startsWith("/uploads/")) {
       const imagePath = path.join(__dirname, "../..", imageUrl);
       await fs.unlink(imagePath);
@@ -85,7 +76,7 @@ const deleteUploadedImage = async (imageUrl, folder = "software") => {
 
 /**
  * Get the correct file path/URL for uploaded file
- * Works with both Cloudinary and local storage
+ * Returns a URL served by the VPS.
  */
 const getFileUrl = (file, folder = 'software') => {
   return getUploadedFileUrl(file, folder);
@@ -433,7 +424,7 @@ exports.deleteSoftware = async (req, res) => {
       });
     }
     
-    // Delete associated images from either Cloudinary or local storage.
+    // Delete associated files from VPS storage.
     const imageUrls = [
       ...normalizeSoftwareImages(software.images, software.name).map(img => img.url),
       software.image

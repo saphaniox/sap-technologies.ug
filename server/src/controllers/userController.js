@@ -5,13 +5,11 @@ const { User } = require("../models");
 const { AppError } = require("../middleware/errorHandler");
 const fs = require("fs");
 const path = require("path");
-const { useCloudinary } = require("../config/fileUpload");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 const emailService = require("../services/emailService");
 
 /**
- * Get the correct file path/URL for uploaded file
- * Works with both Cloudinary and local storage
+ * Get the URL for an uploaded file served by the VPS.
  */
 const getFileUrl = (file, folder = 'profile-pics') => {
     return getUploadedFileUrl(file, folder);
@@ -233,8 +231,7 @@ class UserController {
                 return next(new AppError("User not found", 404));
             }
 
-            // Delete old profile picture if exists (only for local storage)
-            if (!useCloudinary && user.profilePic) {
+            if (user.profilePic?.startsWith("/uploads/")) {
                 const oldPicPath = path.join(__dirname, "../..", user.profilePic);
                 
                 if (fs.existsSync(oldPicPath)) {

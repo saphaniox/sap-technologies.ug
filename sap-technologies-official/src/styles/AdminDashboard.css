@@ -3495,12 +3495,7 @@ html[data-theme="dark"] .saved-emails-empty {
   color: white;
 }
 
-.badge-cloudinary {
-  background: #3b82f6;
-  color: white;
-}
-
-.badge-local {
+.badge-vps {
   background: #10b981;
   color: white;
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import apiService from "../services/api";
 import { showAlert } from "../utils/alerts.jsx";
-import { getImageUrl, getOptimizedVideoUrl } from "../utils/imageUrl";
+import { getImageUrl } from "../utils/imageUrl";
 import { compressImageFiles } from "../utils/mediaCompression";
 import "../styles/AdminForms.css";
 
@@ -643,7 +643,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
                 <p><strong>Existing videos:</strong></p>
                 {existingVideos.map((video, index) => (
                   <div key={index} className="video-item">
-                    <video src={getOptimizedVideoUrl(video.url)} controls playsInline className="video-preview" preload="none" />
+                    <video src={getImageUrl(video.url)} controls playsInline className="video-preview" preload="none" />
                     <div className="video-info">
                       {video.mimeType && <span>{video.mimeType.split('/')[1]?.toUpperCase()}</span>}
                       {video.size > 0 && <span>{(video.size / (1024 * 1024)).toFixed(1)} MB</span>}

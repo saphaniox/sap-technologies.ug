@@ -82,9 +82,7 @@ const compressImage = (options = {}) => {
           return file;
         }
 
-        // Cloudinary storage returns remote URLs/public IDs after upload. Sharp
-        // should only process real local fallback files; Cloudinary handles
-        // remote optimization through upload/delivery transformations.
+        // Only process files stored locally on the VPS.
         if (!file.path || /^https?:\/\//i.test(file.path) || !fs.existsSync(file.path)) {
           return file;
         }

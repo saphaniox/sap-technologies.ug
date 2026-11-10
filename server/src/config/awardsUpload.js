@@ -1,18 +1,14 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const { useCloudinaryForUploads, storageConfigs } = require("./cloudinary");
 
-// Ensure awards upload directory exists (fallback for local storage)
+// Ensure awards upload directory exists.
 const uploadsDir = path.join(__dirname, "../../uploads/awards");
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Check if Cloudinary is configured
-const useCloudinary = useCloudinaryForUploads();
-
-// Configure LOCAL storage for awards photos (fallback)
+// Store awards photos on the VPS.
 const localStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, uploadsDir);
@@ -23,9 +19,6 @@ const localStorage = multer.diskStorage({
         cb(null, "nominee-" + uniqueSuffix + path.extname(file.originalname));
     }
 });
-
-// Use Cloudinary if configured, otherwise use local storage
-const storage = useCloudinary ? storageConfigs.awards : localStorage;
 
 // File filter for images only. Accept every image format the browser/server
 // identifies as image/* instead of limiting uploads to a small extension list.
@@ -39,7 +32,7 @@ const fileFilter = (req, file, cb) => {
 
 // Create multer upload instance
 const upload = multer({
-    storage: storage,
+    storage: localStorage,
     limits: {
         fileSize: 5 * 1024 * 1024, // 5MB limit for nominee photos
         files: 1 // Only allow one file per request

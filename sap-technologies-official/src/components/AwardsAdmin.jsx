@@ -216,8 +216,7 @@ const AwardsAdmin = () => {
           html: `
             <p>Certificate for <strong>${nomineeName}</strong> has been generated successfully.</p>
             <p><strong>Certificate ID:</strong> ${response.certificateId}</p>
-            <p><strong>Storage:</strong> ${response.storage === 'cloudinary' ? 'Cloudinary (CDN)' : 'Local Server'}</p>
-            ${response.cloudinaryUrl ? `<p class="certificate-path"><small>CDN URL: <code>${response.cloudinaryUrl}</code></small></p>` : ''}
+            <p><strong>Storage:</strong> VPS</p>
           `,
           icon: 'success',
           confirmButtonText: 'Download Certificate',

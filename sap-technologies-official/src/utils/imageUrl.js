@@ -4,7 +4,7 @@ const normalizeImagePath = (imagePath) => {
   if (!imagePath) return null;
 
   if (typeof imagePath === 'object') {
-    return imagePath.url || imagePath.secure_url || imagePath.src || imagePath.path || null;
+    return imagePath.url || imagePath.src || imagePath.path || null;
   }
 
   return String(imagePath);
@@ -33,35 +33,6 @@ export const getImageUrl = (imagePath) => {
 
 export const getImageUrlWithFallback = (imagePath, placeholder) => {
   return getImageUrl(imagePath) || placeholder;
-};
-
-export const isCloudinaryUrl = (path) => {
-  return path && typeof path === 'string' && path.includes('cloudinary.com');
-};
-
-export const getOptimizedVideoUrl = (videoPath, options = {}) => {
-  const url = getImageUrl(videoPath);
-  if (!url) return null;
-
-  const uploadMarker = '/video/upload/';
-  if (!isCloudinaryUrl(url) || !url.includes(uploadMarker)) {
-    return url;
-  }
-
-  const markerIndex = url.indexOf(uploadMarker);
-  const prefix = url.slice(0, markerIndex + uploadMarker.length);
-  const suffix = url.slice(markerIndex + uploadMarker.length);
-  const firstSegment = suffix.split('/')[0] || '';
-
-  if (/^(q_|f_|vc_|w_|c_|e_)/.test(firstSegment)) {
-    return url;
-  }
-
-  const width = Number.isFinite(Number(options.width)) ? Number(options.width) : 1280;
-  const quality = options.quality || 'auto:eco';
-  const transformation = `q_${quality},f_auto,vc_auto,w_${width},c_limit`;
-
-  return `${prefix}${transformation}/${suffix}`;
 };
 
 /**

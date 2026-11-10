@@ -25,7 +25,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Uploads (use cloud storage like AWS S3, Cloudinary in production)
+# Uploads are stored on a persistent VPS volume.
 uploads/
 uploads/**/*
 *.tmp
@@ -59,7 +59,6 @@ check-*.js
 seed-*.js
 verify-*.js
 migrate-*.js
-!scripts/migrate-cloudinary-media-to-local.js
 fix-*.js
 update-*.js
 assign-*.js

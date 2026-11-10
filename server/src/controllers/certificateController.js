@@ -5,17 +5,6 @@ const certificateService = require('../services/certificateService');
 const queueCertificateEmail = require('../utils/queueCertificateEmail');
 const { Nomination, AwardCategory } = require('../models/Award');
 const { getUploadedFileUrl } = require('../utils/uploadedFileUrl');
-const { cloudinary } = require('../config/cloudinary');
-
-const getSignaturePublicId = (file) => file?.public_id || file?.file_id || file?.filename;
-
-const getEmbeddableCloudinarySignatureUrl = (publicId) => cloudinary.url(publicId, {
-    secure: true,
-    resource_type: 'image',
-    type: 'upload',
-    format: 'png',
-    transformation: [{ width: 600, height: 200, crop: 'limit' }]
-});
 
 const ensureLocalSignatureCanEmbed = async (file) => {
     if (!file || !file.path || /^https?:\/\//i.test(file.path)) {
@@ -106,7 +95,6 @@ exports.generateCertificate = async (req, res) => {
         const filename = path.basename(certificateResult.filepath);
         nomination.certificateFile = filename;
         nomination.certificateUrl = certificateResult.url;
-        nomination.certificateCloudinaryId = certificateResult.cloudinaryId;
         await nomination.save();
 
         queueCertificateEmail(nomination, certificateResult, certificateData);
@@ -115,10 +103,9 @@ exports.generateCertificate = async (req, res) => {
             message: 'Certificate generated successfully',
             certificateId: nomination.certificateId,
             filename: filename,
-            downloadUrl: certificateResult.url, // Use Cloudinary URL if available
-            storage: certificateResult.storage,
-            localPath: `server/uploads/certificates/${filename}`,
-            cloudinaryUrl: certificateResult.storage === 'cloudinary' ? certificateResult.url : null
+            downloadUrl: certificateResult.url,
+            storage: 'vps',
+            localPath: `server/uploads/certificates/${filename}`
         });
 
     } catch (error) {
@@ -245,7 +232,6 @@ exports.regenerateCertificate = async (req, res) => {
         const filename = path.basename(certificateResult.filepath);
         nomination.certificateFile = filename;
         nomination.certificateUrl = certificateResult.url;
-        nomination.certificateCloudinaryId = certificateResult.cloudinaryId;
         nomination.certificateId = certificateData.certificateId;
         nomination.certificateGeneratedAt = new Date();
         await nomination.save();
@@ -257,8 +243,7 @@ exports.regenerateCertificate = async (req, res) => {
             certificateId: nomination.certificateId,
             filename: filename,
             downloadUrl: certificateResult.url,
-            storage: certificateResult.storage,
-            cloudinaryUrl: certificateResult.storage === 'cloudinary' ? certificateResult.url : null
+            storage: 'vps'
         });
 
     } catch (error) {
@@ -322,7 +307,6 @@ exports.bulkGenerateCertificates = async (req, res) => {
                 const filename = path.basename(certificateResult.filepath);
                 nomination.certificateFile = filename;
                 nomination.certificateUrl = certificateResult.url;
-                nomination.certificateCloudinaryId = certificateResult.cloudinaryId;
                 nomination.certificateGeneratedAt = new Date();
                 await nomination.save();
 
@@ -423,7 +407,7 @@ exports.getAllCertificates = async (req, res) => {
         const total = await Nomination.countDocuments(query);
         const certificates = await Nomination.find(query)
             .populate('category', 'name')
-            .select('nomineeName certificateId certificateFile certificateUrl certificateCloudinaryId status createdAt certificateGeneratedAt')
+            .select('nomineeName certificateId certificateFile certificateUrl status createdAt certificateGeneratedAt')
             .sort({ certificateGeneratedAt: -1 })
             .limit(limit)
             .skip((page - 1) * limit);
@@ -439,8 +423,7 @@ exports.getAllCertificates = async (req, res) => {
                     type: cert.status,
                     filename: cert.certificateFile,
                     downloadUrl: cert.certificateUrl || `/api/certificates/download/${path.basename(cert.certificateFile)}`,
-                    cloudinaryId: cert.certificateCloudinaryId,
-                    storage: cert.certificateUrl && cert.certificateUrl.includes('cloudinary') ? 'cloudinary' : 'local',
+                    storage: 'vps',
                     generatedAt: cert.certificateGeneratedAt || cert.createdAt,
                     verificationUrl: `${process.env.FRONTEND_URL || 'https://saptechug.com'}/verify/${cert.certificateId}`
                 })),
@@ -488,20 +471,9 @@ exports.deleteCertificate = async (req, res) => {
             console.log('Certificate file not found in storage, continuing with database cleanup');
         }
 
-        // Delete from Cloudinary if exists
-        if (nomination.certificateCloudinaryId) {
-            try {
-                const cloudinary = require('cloudinary').v2;
-                await cloudinary.uploader.destroy(nomination.certificateCloudinaryId);
-            } catch (error) {
-                console.log('Certificate not found in Cloudinary, continuing with cleanup');
-            }
-        }
-
         // Clear certificate data from nomination
         nomination.certificateFile = null;
         nomination.certificateUrl = null;
-        nomination.certificateCloudinaryId = null;
         nomination.certificateId = null;
         nomination.certificateGeneratedAt = null;
         await nomination.save();
@@ -587,33 +559,21 @@ exports.uploadSignature = async (req, res) => {
         // Delete existing signature if it exists
         await certificateService.deleteExistingSignature();
 
-        const rawUploadedUrl = getUploadedFileUrl(req.file, 'signatures');
-        const cloudinaryPublicId = getSignaturePublicId(req.file);
-        const isCloudinary = Boolean(rawUploadedUrl && rawUploadedUrl.startsWith('http'));
-        const uploadedUrl = isCloudinary && cloudinaryPublicId
-            ? getEmbeddableCloudinarySignatureUrl(cloudinaryPublicId)
-            : rawUploadedUrl;
+        const uploadedUrl = getUploadedFileUrl(req.file, 'signatures');
         
         // Save new signature info
         const signatureInfo = {
-            filename: req.file.filename || cloudinaryPublicId || path.basename(uploadedUrl || ''),
+            filename: req.file.filename || path.basename(uploadedUrl || ''),
             originalName: req.file.originalname,
-            mimetype: isCloudinary && cloudinaryPublicId ? 'image/png' : req.file.mimetype,
+            mimetype: req.file.mimetype,
             size: req.file.size,
             uploadedAt: new Date(),
-            uploadedBy: req.user._id,
-            // Store Cloudinary info if available
-            cloudinaryUrl: isCloudinary ? uploadedUrl : null,
-            cloudinaryPublicId: isCloudinary ? cloudinaryPublicId : null,
-            isCloudinary: isCloudinary
+            uploadedBy: req.user._id
         };
 
         await certificateService.saveSignatureInfo(signatureInfo);
 
-        console.log(`✅ Signature uploaded successfully: ${isCloudinary ? 'Cloudinary' : 'Local'} - ${req.file.filename} (${(req.file.size / 1024).toFixed(2)}KB)`);
-        if (isCloudinary) {
-            console.log(`   📍 Cloudinary URL: ${uploadedUrl}`);
-        }
+        console.log(`✅ Signature uploaded to VPS: ${req.file.filename} (${(req.file.size / 1024).toFixed(2)}KB)`);
 
         res.json({ 
             message: 'Signature uploaded successfully',
@@ -622,8 +582,8 @@ exports.uploadSignature = async (req, res) => {
                 originalName: req.file.originalname,
                 size: req.file.size,
                 sizeFormatted: `${(req.file.size / 1024).toFixed(2)}KB`,
-                storageType: isCloudinary ? 'cloudinary' : 'local',
-                url: isCloudinary ? uploadedUrl : null
+                storageType: 'vps',
+                url: uploadedUrl
             }
         });
 

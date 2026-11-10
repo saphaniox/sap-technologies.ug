@@ -1,16 +1,15 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const { useCloudinaryForUploads, storageConfigs } = require("./cloudinary");
 
-// Ensure upload directories exist (fallback for local storage)
+// Ensure upload directories exist on the VPS.
 const createUploadDir = (dirPath) => {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
   }
 };
 
-// Create all necessary upload directories (only used if Cloudinary not configured)
+// Create all upload directories used by VPS-backed file storage.
 const baseUploadDir = path.join(__dirname, "../../uploads");
 const profilePicsDir = path.join(baseUploadDir, "profile-pics");
 const servicesDir = path.join(baseUploadDir, "services");
@@ -38,10 +37,7 @@ createUploadDir(galleryDir);
 createUploadDir(jobsDir);
 createUploadDir(jobApplicationsDir);
 
-// Check if Cloudinary is configured
-const useCloudinary = useCloudinaryForUploads();
-
-// Configure storage for different upload types (LOCAL STORAGE FALLBACK)
+// Configure disk storage for uploads.
 const createLocalStorage = (uploadPath) => {
   return multer.diskStorage({
     destination: function (req, file, cb) {
@@ -98,19 +94,10 @@ const documentFilter = (req, file, cb) => {
   }
 };
 
-// Safety function: fallback to local storage if Cloudinary storage is null
-const getStorage = (cloudinaryStorage, localStoragePath) => {
-  if (useCloudinary && cloudinaryStorage) {
-    return cloudinaryStorage;
-  }
-  return createLocalStorage(localStoragePath);
-};
-
 // Configure multer instances for different purposes
-// Use Cloudinary if configured, otherwise use local storage
 
 const profileUpload = multer({
-  storage: getStorage(storageConfigs.profilePics, profilePicsDir),
+  storage: createLocalStorage(profilePicsDir),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
@@ -118,7 +105,7 @@ const profileUpload = multer({
 });
 
 const serviceUpload = multer({
-  storage: getStorage(storageConfigs.services, servicesDir),
+  storage: createLocalStorage(servicesDir),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
@@ -126,7 +113,7 @@ const serviceUpload = multer({
 });
 
 const projectUpload = multer({
-  storage: getStorage(storageConfigs.projects, projectsDir),
+  storage: createLocalStorage(projectsDir),
   limits: {
     fileSize: 20 * 1024 * 1024, // 20MB limit
   },
@@ -134,7 +121,7 @@ const projectUpload = multer({
 });
 
 const productUpload = multer({
-  storage: getStorage(storageConfigs.products, productsDir),
+  storage: createLocalStorage(productsDir),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
@@ -142,7 +129,7 @@ const productUpload = multer({
 });
 
 const signatureUpload = multer({
-  storage: getStorage(storageConfigs.signatures, signaturesDir),
+  storage: createLocalStorage(signaturesDir),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit for signatures
   },
@@ -150,7 +137,7 @@ const signatureUpload = multer({
 });
 
 const partnerUpload = multer({
-  storage: getStorage(storageConfigs.partners, partnersDir),
+  storage: createLocalStorage(partnersDir),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
@@ -158,7 +145,7 @@ const partnerUpload = multer({
 });
 
 const awardUpload = multer({
-  storage: getStorage(storageConfigs.awards, awardsDir),
+  storage: createLocalStorage(awardsDir),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
@@ -166,7 +153,7 @@ const awardUpload = multer({
 });
 
 const galleryUpload = multer({
-  storage: getStorage(storageConfigs.gallery, galleryDir),
+  storage: createLocalStorage(galleryDir),
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB per file so gallery videos can upload safely
   },
@@ -174,7 +161,7 @@ const galleryUpload = multer({
 });
 
 const jobPosterUpload = multer({
-  storage: getStorage(storageConfigs.jobs, jobsDir),
+  storage: createLocalStorage(jobsDir),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit for job posters
   },
@@ -182,7 +169,7 @@ const jobPosterUpload = multer({
 });
 
 const jobApplicationUpload = multer({
-  storage: getStorage(storageConfigs.jobApplications, jobApplicationsDir),
+  storage: createLocalStorage(jobApplicationsDir),
   limits: {
     fileSize: 8 * 1024 * 1024, // 8MB per application document
     files: 2
@@ -191,7 +178,7 @@ const jobApplicationUpload = multer({
 });
 
 const softwareUpload = multer({
-  storage: getStorage(storageConfigs.software, softwareDir),
+  storage: createLocalStorage(softwareDir),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
@@ -199,9 +186,9 @@ const softwareUpload = multer({
 });
 
 const iotUpload = multer({
-  storage: getStorage(storageConfigs.iot, iotDir),
+  storage: createLocalStorage(iotDir),
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit to avoid Render gateway timeouts
+    fileSize: 50 * 1024 * 1024, // 50MB limit for uploads
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) {
@@ -212,12 +199,7 @@ const iotUpload = multer({
   }
 });
 
-// Log storage mode
-if (useCloudinary) {
-  console.log('✅ File uploads configured with Cloudinary (cloud storage)');
-} else {
-  console.log(`✅ File uploads configured with local storage at ${baseUploadDir}`);
-}
+console.log(`✅ File uploads configured with VPS storage at ${baseUploadDir}`);
 
 module.exports = {
   profileUpload,
@@ -233,7 +215,5 @@ module.exports = {
   jobPosterUpload,
   jobApplicationUpload,
   resumeUpload: jobApplicationUpload,
-  // Legacy export for backward compatibility
-  upload: profileUpload,
-  useCloudinary // Export for use in controllers
+  upload: profileUpload
 };

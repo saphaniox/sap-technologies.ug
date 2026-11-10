@@ -37,8 +37,7 @@ const corsConfig = environmentConfig.getCORSConfig();
 app.use(cors(corsConfig));
 app.options(/.*/, cors(corsConfig));
 
-// Initialize database connection once. The same active cluster client is reused
-// for sessions so primary/secondary startup failover stays consistent.
+// Initialize the single MongoDB connection once and reuse its client for sessions.
 console.log("🚀 Initializing Saptech Uganda Server...");
 const databaseReady = connectDB()
     .then((conn) => {
@@ -150,7 +149,7 @@ if (process.env.NODE_ENV === 'production') {
     }
 } else {
     // In development, use MongoDB store too for session persistence
-    if (process.env.MONGODB_URI || process.env.MONGODB_SECONDARY_URI || process.env.MONGODB_LOCAL) {
+    if (process.env.MONGODB_URI || process.env.MONGODB_LOCAL) {
         try {
             sessionConfig.store = MongoStore.create({
                 clientPromise: databaseReady.then((conn) => conn.connection.getClient()),

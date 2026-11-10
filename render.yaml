@@ -53,14 +53,6 @@ services:
         sync: false
       - key: MONGODB_DB_NAME
         value: sap-technologies
-      - key: MONGODB_SECONDARY_URI
-        sync: false
-      - key: CLOUDINARY_CLOUD_NAME
-        sync: false
-      - key: CLOUDINARY_API_KEY
-        sync: false
-      - key: CLOUDINARY_API_SECRET
-        sync: false
       - key: GMAIL_USER
         sync: false
       - key: GMAIL_PASS

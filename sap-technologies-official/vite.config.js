@@ -139,14 +139,6 @@ export default defineConfig(({ mode, command }) => {
             }
           },
           {
-            urlPattern: /^https:\/\/res\.cloudinary\.com\//,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "cloudinary-images",
-              expiration: { maxEntries: 200, maxAgeSeconds: 2592000 } // 30 days
-            }
-          },
-          {
             // Cache the API server health/wake-up endpoint with StaleWhileRevalidate
             urlPattern: /^https:\/\/(?:api\.saptechug\.com|sap-technologies-ug\.onrender\.com)\/api\/health/,
             handler: "StaleWhileRevalidate",

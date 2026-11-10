@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import GalleryForm from "./GalleryForm";
 import ConfirmDialog from "./ConfirmDialog";
 import apiService from "../services/api";
-import { getImageUrl, getOptimizedVideoUrl } from "../utils/imageUrl";
+import { getImageUrl } from "../utils/imageUrl";
 import { showAlert } from "../utils/alerts.jsx";
 import "../styles/Gallery.css";
 
@@ -141,11 +141,9 @@ const Gallery = () => {
   };
 
   const openLightbox = (media, item) => {
-    const isVideo = getMediaType(media) === "video";
-
     setLightboxMedia({
       ...media,
-      url: isVideo ? getOptimizedVideoUrl(media.url) : getImageUrl(media.url),
+      url: getImageUrl(media.url),
       title: item.title || media.originalName || "Gallery media"
     });
   };
@@ -260,7 +258,7 @@ const Gallery = () => {
           <div className="gallery-grid">
             {galleryCards.map(({ id, item, media, mediaIndex, mediaTotal }) => {
               const isVideo = media.type === "video";
-              const mediaUrl = isVideo ? getOptimizedVideoUrl(media.url) : getImageUrl(media.url);
+              const mediaUrl = getImageUrl(media.url);
 
               return (
                 <div key={id} className="gallery-card">

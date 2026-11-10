@@ -12,6 +12,7 @@ const {
   getAdminStats
 } = require("../controllers/iotController");
 const { adminAuth } = require("../middleware/adminAuth");
+const { optionalAuthMiddleware } = require("../middleware/auth");
 const { iotUpload } = require("../config/fileUpload");
 const { compressionPresets } = require("../middleware/imageCompression");
 
@@ -40,7 +41,7 @@ const handleMulterError = (err, req, res, next) => {
 };
 
 // Public routes
-router.get("/", getAllIoTProjects);
+router.get("/", optionalAuthMiddleware, getAllIoTProjects);
 router.get("/categories", getCategories);
 
 // Admin routes (must come before /:id to avoid route conflicts)
@@ -50,7 +51,7 @@ router.put("/:id", adminAuth, iotUpload.fields([{name: 'images', maxCount: 10}, 
 router.delete("/:id", adminAuth, deleteIoTProject);
 
 // Public dynamic routes (must come after specific routes)
-router.get("/:id", getIoTProjectById);
+router.get("/:id", optionalAuthMiddleware, getIoTProjectById);
 router.post("/:id/like", likeProject);
 
 module.exports = router;

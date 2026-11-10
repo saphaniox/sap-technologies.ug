@@ -67,10 +67,6 @@ const jobSchema = new mongoose.Schema({
     trim: true,
     maxlength: [160, "Poster alt text cannot exceed 160 characters"]
   },
-  posterCloudinaryId: {
-    type: String,
-    default: null
-  },
   isActive: {
     type: Boolean,
     default: true

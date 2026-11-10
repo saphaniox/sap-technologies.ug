@@ -17,16 +17,6 @@ class EnvironmentConfig {
         
         this.optionalVars = [
             'MONGODB_LOCAL',
-            'MONGODB_SECONDARY_URI',
-            'MONGODB_MIRROR_ENABLED',
-            'MONGODB_MIRROR_RETRY_MS',
-            'MONGODB_MIRROR_TIMEOUT_MS',
-            'MONGODB_MIRROR_OUTBOX_REPLAY_MS',
-            'MONGODB_MIRROR_OUTBOX_BATCH_SIZE',
-            'MONGODB_MIRROR_CATCH_UP_ENABLED',
-            'MONGODB_MIRROR_CATCH_UP_INTERVAL_MS',
-            'MONGODB_MIRROR_CATCH_UP_BATCH_SIZE',
-            'MONGODB_MIRROR_CATCH_UP_PRUNE',
             'JWT_SECRET',
             'EMAIL_PROVIDER_MODE',
             'MAILJET_API_KEY',
@@ -130,7 +120,6 @@ class EnvironmentConfig {
      */
     getDatabaseConfig() {
         const primaryUri = process.env.MONGODB_URI || process.env.MONGODB_LOCAL;
-        const secondaryUri = process.env.MONGODB_SECONDARY_URI || process.env.MONGODB_MIRROR_URI;
         const getDatabaseNameFromUri = (uri) => {
             if (!uri) return "";
 
@@ -149,16 +138,13 @@ class EnvironmentConfig {
         const dbName = process.env.MONGODB_DB_NAME ||
             (shouldIgnoreDefaultTestDb ? "" : uriDbName) ||
             "sap-technologies";
-        const usesSrvUri = [primaryUri, secondaryUri].some(uri => uri?.startsWith('mongodb+srv://'));
+        const usesSrvUri = primaryUri?.startsWith('mongodb+srv://');
         const tlsEnabled = process.env.DB_TLS
             ? process.env.DB_TLS === 'true'
             : usesSrvUri;
         const validateTls = process.env.DB_SSL_VALIDATE !== 'false';
         const config = {
             uri: primaryUri,
-            primaryUri,
-            secondaryUri,
-            mirrorEnabled: process.env.MONGODB_MIRROR_ENABLED === 'true',
             options: {
                 // Security options
                 tls: tlsEnabled,

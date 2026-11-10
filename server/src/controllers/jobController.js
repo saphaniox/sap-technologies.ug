@@ -4,8 +4,6 @@ const { validationResult } = require("express-validator");
 const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
 const emailService = require("../services/emailService");
-const { useCloudinary } = require("../config/fileUpload");
-const { deleteFromCloudinary } = require("../config/cloudinary");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
 const path = require("path");
 const fs = require("fs").promises;
@@ -45,7 +43,7 @@ const shouldRemovePoster = (value) => {
 };
 
 const cleanupUploadedPoster = async (file) => {
-  if (!file || useCloudinary || !file.path) return;
+  if (!file?.path) return;
 
   try {
     await fs.unlink(file.path);
@@ -61,11 +59,6 @@ const getUploadedApplicationFiles = (req) => {
 
 const cleanupUploadedApplicationFiles = async (req) => {
   await Promise.all(getUploadedApplicationFiles(req).map(async (file) => {
-    if (useCloudinary && file?.public_id) {
-      await deleteFromCloudinary(file.public_id, "raw");
-      return;
-    }
-
     if (!file?.path) return;
 
     try {
@@ -92,13 +85,12 @@ const buildApplicationFile = (file) => {
     originalName: normalizeText(file.originalname),
     mimeType: file.mimetype,
     size: file.size,
-    cloudinaryId: file.public_id || null,
     uploadedAt: new Date()
   };
 };
 
 const cleanupStoredPoster = async (posterUrl) => {
-  if (!posterUrl || useCloudinary || !posterUrl.startsWith("/uploads/jobs/")) return;
+  if (!posterUrl || !posterUrl.startsWith("/uploads/jobs/")) return;
 
   try {
     const filePath = path.join(__dirname, "../../uploads/jobs", path.basename(posterUrl));
@@ -574,7 +566,6 @@ const createJob = async (req, res) => {
       applicationDeadline: applicationDeadline ? new Date(applicationDeadline) : undefined,
       poster: req.file ? getFileUrl(req.file, "jobs") : normalizeText(poster),
       posterAlt: normalizeText(posterAlt),
-      posterCloudinaryId: req.file?.public_id || null,
       isActive: normalizeBoolean(isActive, true),
       isFeatured: normalizeBoolean(isFeatured, false),
       displayOrder: normalizeOrder(displayOrder, 0)
@@ -641,12 +632,10 @@ const updateJob = async (req, res) => {
 
     if (req.file) {
       updateData.poster = getFileUrl(req.file, "jobs");
-      updateData.posterCloudinaryId = req.file.public_id || null;
       await cleanupStoredPoster(job.poster);
     } else if (shouldRemovePoster(req.body.removePoster)) {
       updateData.poster = "";
       updateData.posterAlt = "";
-      updateData.posterCloudinaryId = null;
       await cleanupStoredPoster(job.poster);
     } else if (req.body.poster !== undefined) {
       updateData.poster = normalizeText(req.body.poster);

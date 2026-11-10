@@ -177,10 +177,6 @@ const nominationSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    certificateCloudinaryId: {
-        type: String,
-        default: null
-    },
     certificateGeneratedAt: {
         type: Date
     }
