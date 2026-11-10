@@ -840,3 +840,54 @@
   -webkit-user-drag: none !important;
   -webkit-touch-callout: none !important;
 }
+
+html[data-theme="dark"] .iot-page-header {
+  background: linear-gradient(135deg, #111827 0%, #172554 100%);
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .iot-page-header::before {
+  opacity: 0.16;
+}
+
+html[data-theme="dark"] body .iot-page .iot-search-content {
+  background: #0f172a !important;
+  border-bottom-color: #263449;
+}
+
+html[data-theme="dark"] .iot-search-content h2 {
+  color: #f8fafc !important;
+}
+
+html[data-theme="dark"] .iot-search-content p {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .iot-search-grid span {
+  background: #162033;
+  border-color: #334155;
+  color: #e2e8f0;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .iot-page .btn-add-project,
+html[data-theme="dark"] .iot-page .iot-category,
+html[data-theme="dark"] .iot-page .tech-tag {
+  background: #1e3a8a;
+  color: #dbeafe;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .iot-page .btn-add-project:hover {
+  background: #1d4ed8;
+}
+
+html[data-theme="dark"] .iot-page .status-completed {
+  background: #1e3a8a;
+  color: #dbeafe;
+}
+
+html[data-theme="dark"] .iot-page .iot-loading-spinner {
+  border-color: #263449;
+  border-top-color: #60a5fa;
+}

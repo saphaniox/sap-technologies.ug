@@ -98,7 +98,30 @@
     margin-bottom: 22px;
   }
 
+  .ad-placement--page-top.ad-placement--ready {
+    position: fixed;
+    z-index: 1200;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    left: 10px;
+    width: auto;
+    margin: 0;
+    padding: 6px;
+    border: 1px solid rgb(148 163 184 / 35%);
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgb(15 23 42 / 20%);
+  }
+
+  .ad-placement--page-top .ad-placement-inner {
+    min-height: 0;
+  }
+
   .ad-placement-inner {
     min-height: min(var(--ad-placement-height, 90px), 100px);
+  }
+
+  [data-theme="dark"] .ad-placement--page-top.ad-placement--ready {
+    background: #0b1120;
   }
 }
