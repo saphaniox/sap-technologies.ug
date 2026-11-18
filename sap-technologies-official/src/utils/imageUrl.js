@@ -1,3 +1,5 @@
+import { publicBackendUrl } from "./publicBackendUrl";
+import { DIRECT_API_URL } from "../config/apiOrigin";
 import apiService from '../services/api';
 
 const normalizeImagePath = (imagePath) => {
@@ -24,7 +26,7 @@ export const getImageUrl = (imagePath) => {
     pathStr.startsWith('blob:') ||
     pathStr.startsWith('data:')
   ) {
-    return pathStr;
+    return publicBackendUrl(pathStr, apiService.baseURL, [DIRECT_API_URL]);
   }
 
   // Otherwise, it's a local path - prepend the API base URL

@@ -620,7 +620,7 @@ Note: Rate limiting may vary by endpoint.
             try {
                 const adminProducts = await apiService.getProductsAdmin({ page: 1, limit: 1 });
                 adminAccessWorking = adminProducts?.status === 'success';
-            } catch (e) {
+            } catch {
                 adminAccessWorking = false;
             }
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-// eslint-disable-next-line no-unused-vars
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import "../styles/BackToTop.css";
 
 const BackToTop = () => {
@@ -34,7 +33,7 @@ const BackToTop = () => {
   return (
     <AnimatePresence>
       {isVisible && (
-        <motion.button
+        <Motion.button
           className="back-to-top"
           onClick={scrollToTop}
           initial={{ opacity: 0, scale: 0.5, y: 20 }}
@@ -65,7 +64,7 @@ const BackToTop = () => {
               fill="currentColor"
             />
           </svg>
-        </motion.button>
+        </Motion.button>
       )}
     </AnimatePresence>
   );

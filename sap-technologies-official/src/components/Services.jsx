@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import Background3D from "./Background3D";
 import ServiceQuoteForm from "./ServiceQuoteForm";
 import ServiceForm from "./ServiceForm";
@@ -508,14 +508,14 @@ const Services = () => {
           <div className="services-hero">
             <div className="services-hero-copy">
               {/* Section title with animation */}
-              <motion.h2
+              <Motion.h2
                 variants={fadeInUp}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
               >
                 Our Services
-              </motion.h2>
+              </Motion.h2>
 
               {/* Introduction text */}
               <p className="services-intro">
@@ -549,15 +549,15 @@ const Services = () => {
           )}
 
           {/* Core Services - Always displayed */}
-          <motion.div
+          <Motion.div
             className="services-list"
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
           >
-            {defaultServices.map((service, index) => (
-              <motion.div
+            {defaultServices.map((service) => (
+              <Motion.div
                 key={service.id}
                 className="service"
                 variants={cardHover}
@@ -565,14 +565,14 @@ const Services = () => {
                 whileHover="hover"
               >
                 <div className="service-content">
-                  <motion.div
+                  <Motion.div
                     className="service-icon"
                     variants={iconSpin}
                     initial="rest"
                     whileHover="hover"
                   >
                     {service.icon}
-                  </motion.div>
+                  </Motion.div>
                   <div className="service-image">
                     {service.images && Array.isArray(service.images) && service.images.length > 0 ? (
                       <ImageSlider
@@ -583,15 +583,15 @@ const Services = () => {
                       <img src={service.image} alt={service.title} className="service-img" />
                     )}
                     <div className="service-overlay">
-                      <motion.button
+                      <Motion.button
                         className="learn-more-btn"
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handleLearnMore(service)}
                       >
                         Learn More
-                      </motion.button>
-                      <motion.button
+                      </Motion.button>
+                      <Motion.button
                         className="whatsapp-btn-service"
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
@@ -599,7 +599,7 @@ const Services = () => {
                         title="Contact us on WhatsApp"
                       >
                          WhatsApp
-                      </motion.button>
+                      </Motion.button>
                     </div>
 
                     {/* Admin Controls */}
@@ -621,14 +621,14 @@ const Services = () => {
                   <h3>{service.title}</h3>
                   <p>{service.description}</p>
                 </div>
-              </motion.div>
+              </Motion.div>
             ))}
-          </motion.div>
+          </Motion.div>
 
           {/* ADDITIONAL SERVICES - API CREATED */}
           {!loading && apiServices.length > 0 && (
             <>
-              <motion.h3
+              <Motion.h3
                 variants={fadeInUp}
                 initial="hidden"
                 whileInView="visible"
@@ -636,17 +636,17 @@ const Services = () => {
                 className="custom-services-title"
               >
                 Additional Services
-              </motion.h3>
+              </Motion.h3>
 
-              <motion.div
+              <Motion.div
                 className="services-list custom-services"
                 variants={staggerContainer}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
               >
-                {apiServices.map((service, index) => (
-                  <motion.div
+                {apiServices.map((service) => (
+                  <Motion.div
                     key={service.id}
                     className="service custom-service"
                     variants={cardHover}
@@ -654,14 +654,14 @@ const Services = () => {
                     whileHover="hover"
                   >
                     <div className="service-content">
-                      <motion.div
+                      <Motion.div
                         className="service-icon"
                         variants={iconSpin}
                         initial="rest"
                         whileHover="hover"
                       >
                         {service.icon}
-                      </motion.div>
+                      </Motion.div>
                       <div className="service-image">
                         {service.images && Array.isArray(service.images) && service.images.length > 0 ? (
                           <ImageSlider
@@ -672,15 +672,15 @@ const Services = () => {
                           <img src={service.image} alt={service.title} className="service-img" />
                         )}
                         <div className="service-overlay">
-                          <motion.button
+                          <Motion.button
                             className="learn-more-btn"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleLearnMore(service)}
                           >
                             Learn More
-                          </motion.button>
-                          <motion.button
+                          </Motion.button>
+                          <Motion.button
                             className="whatsapp-btn-service"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
@@ -688,7 +688,7 @@ const Services = () => {
                             title="Contact us on WhatsApp"
                           >
                              WhatsApp
-                          </motion.button>
+                          </Motion.button>
                         </div>
 
                         {/* Admin Controls */}
@@ -714,9 +714,9 @@ const Services = () => {
                       <h3>{service.title}</h3>
                       <p>{service.description}</p>
                     </div>
-                  </motion.div>
+                  </Motion.div>
                 ))}
-              </motion.div>
+              </Motion.div>
             </>
           )}
         </div>
@@ -725,14 +725,14 @@ const Services = () => {
       {/* Service Details Modal */}
       <AnimatePresence>
         {isModalOpen && selectedService && (
-          <motion.div
+          <Motion.div
             className="service-modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleCloseModal}
           >
-            <motion.div
+            <Motion.div
               className="service-modal"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -795,27 +795,27 @@ const Services = () => {
                   </div>
 
                   <div className="modal-actions">
-                    <motion.button
+                    <Motion.button
                       className="btn-primary"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleGetQuote(selectedService)}
                     >
                       Get Quote
-                    </motion.button>
-                    <motion.button
+                    </Motion.button>
+                    <Motion.button
                       className="btn-secondary"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={handleContactUs}
                     >
                       Contact Us
-                    </motion.button>
+                    </Motion.button>
                   </div>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+            </Motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
 

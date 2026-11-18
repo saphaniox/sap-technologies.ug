@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import "../styles/SeasonalGreeting.css";
 
 const getLaunchDate = () => {
@@ -65,7 +65,7 @@ const SeasonalGreeting = () => {
   return (
     <AnimatePresence>
       {isVisible && (
-        <motion.div
+        <Motion.div
           className="seasonal-greeting-wrapper"
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -94,7 +94,7 @@ const SeasonalGreeting = () => {
               </div>
 
               {/* Greeting Text */}
-              <motion.div
+              <Motion.div
                 className="seasonal-text"
                 initial={{ scale: 0.9 }}
                 animate={{ scale: 1 }}
@@ -107,7 +107,7 @@ const SeasonalGreeting = () => {
               >
                 <h2 className="seasonal-title">A Big Launch Is Coming</h2>
                 <p className="seasonal-subtitle">{launchLabel}</p>
-              </motion.div>
+              </Motion.div>
 
               <div className="countdown-grid" role="status" aria-live="polite">
                 <div className="countdown-item">
@@ -129,7 +129,7 @@ const SeasonalGreeting = () => {
               </div>
 
               {/* Message */}
-              <motion.p
+              <Motion.p
                 className="seasonal-message"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -138,7 +138,7 @@ const SeasonalGreeting = () => {
                 {timeLeft.isLaunched
                   ? "The wait is over. Our new system is now live. Explore what we have built for you."
                   : "Something powerful is about to drop. We are preparing a brand new system to transform how you work and grow. Stay tuned and be among the first to discover it."}
-              </motion.p>
+              </Motion.p>
 
               {/* Decorative Bottom */}
               <div className="seasonal-decorations bottom">
@@ -150,17 +150,17 @@ const SeasonalGreeting = () => {
               </div>
 
               {/* From SAPTech Uganda */}
-              <motion.div
+              <Motion.div
                 className="seasonal-from"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1, duration: 0.8 }}
               >
                 <p>- From all of us at <strong>SAPTech Uganda</strong></p>
-              </motion.div>
+              </Motion.div>
             </div>
           </div>
-        </motion.div>
+        </Motion.div>
       )}
     </AnimatePresence>
   );

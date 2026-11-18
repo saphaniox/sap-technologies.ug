@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
+import { hasWebGLSupport } from "../utils/webglSupport";
 import { Float, Text3D, Center, Environment, MeshDistortMaterial, Sphere } from "@react-three/drei";
 
 // Animated central sphere
@@ -96,6 +97,7 @@ function Hero3DScene() {
 
 // Hero 3D component
 function Hero3D({ className = "", height = "600px" }) {
+  if (!hasWebGLSupport()) return null;
   return (
     <div 
       className={`relative ${className}`}

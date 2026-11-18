@@ -2,7 +2,7 @@
 // Includes button ripples, cursor effects, loading spinners, toast notifications
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 
 // Button Ripple Effect Component
 export const RippleButton = ({ children, onClick, className = '', ...props }) => {
@@ -29,7 +29,7 @@ export const RippleButton = ({ children, onClick, className = '', ...props }) =>
   };
 
   return (
-    <motion.button
+    <Motion.button
       className={`ripple-button ${className}`}
       onClick={handleClick}
       whileHover={{ scale: 1.02 }}
@@ -37,7 +37,7 @@ export const RippleButton = ({ children, onClick, className = '', ...props }) =>
       {...props}
     >
       {children}
-    </motion.button>
+    </Motion.button>
   );
 };
 
@@ -81,7 +81,7 @@ export const LoadingSpinner = ({ type = 'rotate', size = 24, color = '#3b82f6' }
   };
 
   return (
-    <motion.div
+    <Motion.div
       className="loading-spinner"
       style={spinnerStyle}
       variants={spinnerVariants}
@@ -127,7 +127,7 @@ export const Toast = ({ message, type = 'info', onClose }) => {
   };
 
   return (
-    <motion.div
+    <Motion.div
       className={`toast toast-${type}`}
       variants={toastVariants}
       initial="hidden"
@@ -137,15 +137,15 @@ export const Toast = ({ message, type = 'info', onClose }) => {
       onClick={onClose}
     >
       <span className="toast-message">{message}</span>
-      <motion.button
+      <Motion.button
         className="toast-close"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={onClose}
       >
         ×
-      </motion.button>
-    </motion.div>
+      </Motion.button>
+    </Motion.div>
   );
 };
 
@@ -168,7 +168,7 @@ export const useCursorFollow = () => {
 // Floating Action Button with micro-interactions
 export const FloatingActionButton = ({ icon, onClick, tooltip }) => {
   return (
-    <motion.div
+    <Motion.div
       className="floating-action-button"
       whileHover={{
         scale: 1.1,
@@ -181,14 +181,14 @@ export const FloatingActionButton = ({ icon, onClick, tooltip }) => {
       onClick={onClick}
       title={tooltip}
     >
-      <motion.div
+      <Motion.div
         className="fab-icon"
         whileHover={{ rotate: 360 }}
         transition={{ duration: 0.3 }}
       >
         {icon}
-      </motion.div>
-    </motion.div>
+      </Motion.div>
+    </Motion.div>
   );
 };
 
@@ -196,7 +196,7 @@ export const FloatingActionButton = ({ icon, onClick, tooltip }) => {
 export const AnimatedProgressBar = ({ progress, color = '#3b82f6' }) => {
   return (
     <div className="progress-container">
-      <motion.div
+      <Motion.div
         className="progress-bar"
         initial={{ width: 0 }}
         animate={{ width: `${progress}%` }}
@@ -212,12 +212,12 @@ export const FlipCard = ({ front, back, className = '' }) => {
   const [isFlipped, setIsFlipped] = React.useState(false);
 
   return (
-    <motion.div
+    <Motion.div
       className={`flip-card ${className}`}
       onClick={() => setIsFlipped(!isFlipped)}
       whileHover={{ scale: 1.05 }}
     >
-      <motion.div
+      <Motion.div
         className="flip-card-inner"
         initial={false}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
@@ -225,8 +225,8 @@ export const FlipCard = ({ front, back, className = '' }) => {
       >
         <div className="flip-card-front">{front}</div>
         <div className="flip-card-back">{back}</div>
-      </motion.div>
-    </motion.div>
+      </Motion.div>
+    </Motion.div>
   );
 };
 
@@ -249,12 +249,12 @@ export const ParallaxElement = ({ children, speed = 0.5, direction = 'vertical' 
     : `translateX(${offset}px)`;
 
   return (
-    <motion.div
+    <Motion.div
       style={{ transform }}
       transition={{ type: "spring", stiffness: 100, damping: 20 }}
     >
       {children}
-    </motion.div>
+    </Motion.div>
   );
 };
 
@@ -281,7 +281,7 @@ export const MagneticButton = ({ children, strength = 20, ...props }) => {
   };
 
   return (
-    <motion.button
+    <Motion.button
       ref={buttonRef}
       className="magnetic-button"
       onMouseMove={handleMouseMove}
@@ -291,7 +291,7 @@ export const MagneticButton = ({ children, strength = 20, ...props }) => {
       {...props}
     >
       {children}
-    </motion.button>
+    </Motion.button>
   );
 };
 
@@ -314,13 +314,13 @@ export const TypewriterText = ({ text, speed = 50, delay = 0 }) => {
   return (
     <span className="typewriter-text">
       {displayText}
-      <motion.span
+      <Motion.span
         className="cursor"
         animate={{ opacity: [1, 0] }}
         transition={{ duration: 0.8, repeat: Infinity }}
       >
         |
-      </motion.span>
+      </Motion.span>
     </span>
   );
 };

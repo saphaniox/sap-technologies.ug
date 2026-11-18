@@ -1,96 +1,12 @@
-import { defineConfig, loadEnv } from "vite"
+import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import { VitePWA } from "vite-plugin-pwa"
 
-const clean = (value) => String(value || "").trim();
-const toBoolean = (value) => ["1", "true", "yes", "on"].includes(clean(value).toLowerCase());
-const escapeHtmlAttribute = (value) => clean(value)
-  .replaceAll("&", "&amp;")
-  .replaceAll('"', "&quot;")
-  .replaceAll("<", "&lt;")
-  .replaceAll(">", "&gt;");
-
-// https://vite.dev/config/
-export default defineConfig(({ mode, command }) => {
-  const env = loadEnv(mode, ".", "");
-  const provider = clean(env.VITE_AD_PROVIDER || env.VITE_AD_NETWORK || "monetag").toLowerCase();
-  const disabled = toBoolean(env.VITE_AD_DISABLED || env.VITE_ADS_DISABLED);
-  const enabledInDev = toBoolean(env.VITE_AD_ENABLE_IN_DEV || env.VITE_ADS_ENABLE_IN_DEV);
-  const autoEnabled = toBoolean(env.VITE_AD_AUTO || env.VITE_AD_AUTO_ADS || "true");
-  const monetagMultiTagEnabled = toBoolean(env.VITE_MONETAG_MULTITAG_ENABLED);
-  const monetagInPagePushEnabled = toBoolean(env.VITE_MONETAG_IN_PAGE_PUSH_ENABLED || "true");
-  const monetagVignetteEnabled = toBoolean(env.VITE_MONETAG_VIGNETTE_ENABLED || "true");
-  const monetagSafeFormatScripts = [
-    monetagInPagePushEnabled
-      ? {
-          src: env.VITE_MONETAG_IN_PAGE_PUSH_SCRIPT_URL || "https://nap5k.com/tag.min.js",
-          zoneId: env.VITE_MONETAG_IN_PAGE_PUSH_ZONE_ID || "12207486"
-        }
-      : null,
-    monetagVignetteEnabled
-      ? {
-          src: env.VITE_MONETAG_VIGNETTE_SCRIPT_URL || "https://ekhay.com/vignette.min.js?z=11767559",
-          zoneId: ""
-        }
-      : null
-  ].filter(Boolean).map((script) => ({ ...script, src: clean(script.src), zoneId: clean(script.zoneId) }));
-  const adsEnabled = provider !== "none" && provider !== "off" && provider !== "disabled" &&
-    !disabled && autoEnabled && (command === "build" || enabledInDev);
-  const adScriptUrl = clean(
-    provider === "monetag"
-      ? monetagMultiTagEnabled
-        ? env.VITE_AD_SCRIPT_URL || env.VITE_MONETAG_SCRIPT_URL || "https://quge5.com/88/tag.min.js"
-        : ""
-      : env.VITE_AD_SCRIPT_URL || (provider === "adsterra" ? env.VITE_ADSTERRA_SCRIPT_URL : "")
-  );
-  const adZoneId = clean(
-    provider === "monetag" && !monetagMultiTagEnabled
-      ? ""
-      : env.VITE_AD_ZONE_ID ||
-        env.VITE_MONETAG_ZONE_ID ||
-        env.VITE_ADSTERRA_ZONE_ID ||
-        (provider === "monetag" ? "278602" : "")
-  );
-  const adSdkName = clean(env.VITE_AD_SDK_NAME || env.VITE_MONETAG_SDK_NAME);
-  const adCfasync = clean(env.VITE_AD_CFASYNC || env.VITE_MONETAG_CFASYNC || "false");
-  const adPageScriptConfig = {
-    name: "route-gated-ad-script-config",
-    transformIndexHtml(html) {
-      const safeMonetagFormats = provider === "monetag" && !monetagMultiTagEnabled;
-      const scripts = safeMonetagFormats
-        ? monetagSafeFormatScripts
-        : adScriptUrl ? [{ src: adScriptUrl, zoneId: adZoneId }] : [];
-      if (!adsEnabled || !scripts.length) return html;
-
-      const pageAdConfig = JSON.stringify({
-        homeSectionPaths: [
-          "/",
-          "/about",
-          "/services",
-          "/portfolio",
-          "/products",
-          "/partners",
-          "/companies",
-          "/testimonials",
-          "/contact"
-        ],
-        scripts: scripts.map(({ src, zoneId }) => ({
-          src,
-          zoneId,
-          sdkName: adSdkName,
-          cfasync: adCfasync
-        }))
-      }).replaceAll("<", "\\u003c");
-      const configTag = `<meta name="saptech-page-ad-config" content="${escapeHtmlAttribute(pageAdConfig)}">`;
-
-      return html.replace("<head>", `<head>\n    ${configTag}`);
-    }
-  };
-
+// Page-wide ad scripts are disabled: only contained inline placements are allowed.
+export default defineConfig(() => {
   return {
   plugins: [
     react(),
-    adPageScriptConfig,
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: false,
@@ -158,6 +74,10 @@ export default defineConfig(({ mode, command }) => {
   server: {
     port: 5174,
     proxy: {
+      "/uploads": {
+        target: "http://localhost:5000",
+        changeOrigin: true
+      },
       "/api": {
         target: "http://localhost:5000",
         changeOrigin: true,

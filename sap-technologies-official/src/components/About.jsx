@@ -1,12 +1,11 @@
 /**
  * About Component
- * 
+ *
  * Showcases our company story, mission, team members, and key statistics.
  * Uses Framer Motion for smooth animations and engaging user experience.
  */
 import React from "react";
-// eslint-disable-next-line no-unused-vars
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { fadeInUp, fadeInLeft, fadeInRight, staggerContainer, scaleHover } from "../utils/animations";
 import "../styles/About.css";
 
@@ -22,23 +21,23 @@ const About = () => {
   return (
     <section id="about" className="about">
       <div className="container">
-        <motion.h2
+        <Motion.h2
           variants={fadeInUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
         >
           About Us
-        </motion.h2>
-        
-        <motion.div 
+        </Motion.h2>
+
+        <Motion.div
           className="about-content"
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
         >
-          <motion.div 
+          <Motion.div
             className="about-text"
             variants={fadeInLeft}
           >
@@ -47,9 +46,9 @@ const About = () => {
                 At SAPTech Uganda, we believe technology is the catalyst for progress and transformation. Founded in the heart of Kampala, we are more than just a tech company - we are visionaries, innovators and partners in your success. Our multidisciplinary team blends creativity, engineering excellence and deep industry expertise to deliver world-class solutions in web design, branding, electrical engineering, electronic circuits and custom software.
             </p>
                         <p>
-              Our team of experienced professionals combines creativity with technical 
-              expertise to create solutions that not only meet but exceed our clients&apos; 
-              expectations. We believe in the power of technology to transform businesses 
+              Our team of experienced professionals combines creativity with technical
+              expertise to create solutions that not only meet but exceed our clients&apos;
+              expectations. We believe in the power of technology to transform businesses
               and improve lives.
             </p>
             <p>
@@ -59,18 +58,18 @@ const About = () => {
               <em>Let&apos;s build the future together.</em>
             </p>
 
-          </motion.div>
+          </Motion.div>
 
-          <motion.div 
+          <Motion.div
             className="about-stats"
             variants={fadeInRight}
           >
-            <motion.div 
+            <Motion.div
               className="stats-grid"
               variants={staggerContainer}
             >
               {stats.map((stat, index) => (
-                <motion.div 
+                <Motion.div
                   key={index}
                   className="stat-item"
                   variants={scaleHover}
@@ -78,26 +77,26 @@ const About = () => {
                 >
                   <div className="stat-number">{stat.number}</div>
                   <div className="stat-label">{stat.label}</div>
-                </motion.div>
+                </Motion.div>
               ))}
-            </motion.div>
-          </motion.div>
-        </motion.div>
+            </Motion.div>
+          </Motion.div>
+        </Motion.div>
 
         {/* Mission, Vision & Core Values Section */}
-        <motion.div 
+        <Motion.div
           className="mission-vision-section"
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
         >
-          <motion.div className="mvv-grid" variants={staggerContainer}>
+          <Motion.div className="mvv-grid" variants={staggerContainer}>
             {/* Mission */}
-            <motion.div 
+            <Motion.div
               className="mvv-card mission-card"
               variants={fadeInUp}
-              whileHover={{ 
+              whileHover={{
                 y: -10,
                 boxShadow: "0 30px 60px rgba(102, 126, 234, 0.25)",
                 transition: { duration: 0.3 }
@@ -123,13 +122,13 @@ const About = () => {
                   better visibility, safer systems, and ideas that finally move from imagination into daily use.
                 </p>
               </div>
-            </motion.div>
+            </Motion.div>
 
             {/* Vision */}
-            <motion.div 
+            <Motion.div
               className="mvv-card vision-card"
               variants={fadeInUp}
-              whileHover={{ 
+              whileHover={{
                 y: -10,
                 boxShadow: "0 30px 60px rgba(16, 185, 129, 0.25)",
                 transition: { duration: 0.3 }
@@ -154,13 +153,13 @@ const About = () => {
                   help people compete, create, and serve better.
                 </p>
               </div>
-            </motion.div>
+            </Motion.div>
 
             {/* Core Values */}
-            <motion.div 
+            <Motion.div
               className="mvv-card values-card"
               variants={fadeInUp}
-              whileHover={{ 
+              whileHover={{
                 y: -10,
                 boxShadow: "0 30px 60px rgba(245, 158, 11, 0.25)",
                 transition: { duration: 0.3 }
@@ -177,7 +176,7 @@ const About = () => {
                   The standards we bring to every relationship
                 </p>
                 <div className="core-values-list">
-                  <motion.div 
+                  <Motion.div
                     className="value-item"
                     whileHover={{ x: 8, transition: { duration: 0.2 } }}
                   >
@@ -188,8 +187,8 @@ const About = () => {
                       <h4>Innovation</h4>
                       <p>We stay curious and practical, choosing ideas that genuinely improve the way people work, connect, and solve problems.</p>
                     </div>
-                  </motion.div>
-                  <motion.div 
+                  </Motion.div>
+                  <Motion.div
                     className="value-item"
                     whileHover={{ x: 8, transition: { duration: 0.2 } }}
                   >
@@ -200,8 +199,8 @@ const About = () => {
                       <h4>Excellence</h4>
                       <p>We care about the details: clean design, stable systems, clear communication, and work we can proudly stand behind.</p>
                     </div>
-                  </motion.div>
-                  <motion.div 
+                  </Motion.div>
+                  <Motion.div
                     className="value-item"
                     whileHover={{ x: 8, transition: { duration: 0.2 } }}
                   >
@@ -212,8 +211,8 @@ const About = () => {
                       <h4>Integrity</h4>
                       <p>We tell the truth, protect client trust, and make decisions that are fair, transparent, and responsible.</p>
                     </div>
-                  </motion.div>
-                  <motion.div 
+                  </Motion.div>
+                  <Motion.div
                     className="value-item"
                     whileHover={{ x: 8, transition: { duration: 0.2 } }}
                   >
@@ -224,8 +223,8 @@ const About = () => {
                       <h4>Impact</h4>
                       <p>We build for outcomes that matter: stronger businesses, safer processes, better access, and lasting value for communities.</p>
                     </div>
-                  </motion.div>
-                  <motion.div 
+                  </Motion.div>
+                  <Motion.div
                     className="value-item"
                     whileHover={{ x: 8, transition: { duration: 0.2 } }}
                   >
@@ -236,8 +235,8 @@ const About = () => {
                       <h4>Collaboration</h4>
                       <p>We work with clients, not around them. The best solutions come from listening, sharing ideas, and building together.</p>
                     </div>
-                  </motion.div>
-                  <motion.div 
+                  </Motion.div>
+                  <Motion.div
                     className="value-item"
                     whileHover={{ x: 8, transition: { duration: 0.2 } }}
                   >
@@ -248,12 +247,12 @@ const About = () => {
                       <h4>Client Care</h4>
                       <p>We treat every client&apos;s project with attention and respect, because good service should feel human from start to finish.</p>
                     </div>
-                  </motion.div>
+                  </Motion.div>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
-        </motion.div>
+            </Motion.div>
+          </Motion.div>
+        </Motion.div>
 
       </div>
     </section>
@@ -261,4 +260,3 @@ const About = () => {
 };
 
 export default About;
-

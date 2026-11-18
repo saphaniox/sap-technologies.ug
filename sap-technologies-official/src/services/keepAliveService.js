@@ -12,10 +12,7 @@
  * - Configurable intervals
  */
 
-const isLocalDevelopment = import.meta.env.DEV &&
-  typeof window !== "undefined" &&
-  ["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname);
-const API_BASE_URL = import.meta.env.VITE_API_URL || (isLocalDevelopment ? "" : "https://api.saptechug.com");
+import { BROWSER_API_BASE_URL as API_BASE_URL } from "../config/apiOrigin";
 
 class KeepAliveService {
   constructor() {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import apiService from "../services/api";
-import { useCart } from "../contexts/CartContext";
+import { useCart } from "../hooks/useCart";
 import ProductInquiryForm from "./ProductInquiryForm";
 import ProductForm from "./ProductForm";
 import ConfirmDialog from "./ConfirmDialog";

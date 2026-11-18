@@ -68,7 +68,7 @@ const Partners = () => {
     try {
       if (!silent) setLoading(true);
       const partners = await apiService.getPartners();
-      setPartners(partners);
+      setPartners(Array.isArray(partners) ? partners : []);
     } catch (error) {
       console.error("Error fetching partners:", error);
       if (!silent) setError("We're having trouble loading our partners. Please refresh and try again.");

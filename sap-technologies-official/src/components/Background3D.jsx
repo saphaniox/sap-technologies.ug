@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
+import { hasWebGLSupport } from "../utils/webglSupport";
 
 // Simple floating shape for backgrounds
 function FloatingShape({ position, shape, color, speed = 1 }) {
@@ -58,6 +59,7 @@ function Background3DScene() {
 
 // Simple 3D background component
 function Background3D({ className = "", height = "100%" }) {
+  if (!hasWebGLSupport()) return null;
   return (
     <div 
       className={`absolute inset-0 pointer-events-none ${className}`}

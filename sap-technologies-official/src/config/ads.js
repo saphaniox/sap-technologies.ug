@@ -133,5 +133,5 @@ export const AD_NETWORK_ENABLED =
   (env.PROD || enabledInDev) &&
   Boolean(AD_SCRIPT_URL || AD_DIRECT_LINK_URL || hasConfiguredPlacement);
 
-export const AD_AUTO_ENABLED =
-  AD_NETWORK_ENABLED && toBoolean(env.VITE_AD_AUTO || env.VITE_AD_AUTO_ADS, true);
+// Page-wide push, vignette, and automatic overlay ads are disabled.
+export const AD_AUTO_ENABLED = false;

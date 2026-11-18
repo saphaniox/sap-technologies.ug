@@ -1,6 +1,6 @@
 import React from "react";
-import { motion } from "framer-motion";
-import { useTheme } from "../contexts/ThemeContext";
+import { motion as Motion } from "framer-motion";
+import { useTheme } from "../hooks/useTheme";
 import "../styles/ThemeToggle.css";
 
 const SunIcon = () => (
@@ -57,7 +57,7 @@ const ThemeToggle = ({ className = "", showLabel = false }) => {
         </span>
       )}
 
-      <motion.button
+      <Motion.button
         type="button"
         aria-pressed={isDark}
         className={`theme-toggle ${isDark ? "dark" : "light"}`}
@@ -69,23 +69,23 @@ const ThemeToggle = ({ className = "", showLabel = false }) => {
       >
         <div className="theme-toggle-track">
           <div className="theme-toggle-icons">
-            <motion.span
+            <Motion.span
               className="theme-icon sun-icon"
               animate={isDark ? iconVariants.dark : iconVariants.light}
               transition={{ duration: 0.3 }}
             >
               <SunIcon />
-            </motion.span>
-            <motion.span
+            </Motion.span>
+            <Motion.span
               className="theme-icon moon-icon"
               animate={isDark ? iconVariants.dark : iconVariants.light}
               transition={{ duration: 0.3 }}
             >
               <MoonIcon />
-            </motion.span>
+            </Motion.span>
           </div>
 
-          <motion.div
+          <Motion.div
             className="theme-toggle-thumb"
             animate={toggleVariants[theme]}
             transition={{
@@ -94,16 +94,16 @@ const ThemeToggle = ({ className = "", showLabel = false }) => {
               damping: 30
             }}
           >
-            <motion.div
+            <Motion.div
               className="thumb-icon"
               animate={{ rotate: isDark ? 360 : 0 }}
               transition={{ duration: 0.5 }}
             >
               {isDark ? <MoonIcon /> : <SunIcon />}
-            </motion.div>
-          </motion.div>
+            </Motion.div>
+          </Motion.div>
         </div>
-      </motion.button>
+      </Motion.button>
     </div>
   );
 };

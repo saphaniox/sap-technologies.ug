@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import apiService from "../services/api";
 import { showAlert, Swal } from "../utils/alerts";
 import { getImageUrl, PLACEHOLDERS } from "../utils/imageUrl";
@@ -10,7 +10,7 @@ import "../styles/IconLibrary.css";
 
 const AwardsAdmin = () => {
   console.log(" AwardsAdmin component is rendering!");
-  const MotionDiv = motion.div;
+  const MotionDiv = Motion.div;
 
   const [activeSubTab, setActiveSubTab] = useState("nominations");
   const [nominations, setNominations] = useState([]);

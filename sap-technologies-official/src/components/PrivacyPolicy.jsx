@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import BackToTop from "./BackToTop";
 import { AdPlacement } from "./AdNetwork";
 import "../styles/LegalPages.css";
@@ -29,7 +29,7 @@ const PrivacyPolicy = ({ onClose, onNavigate, onTermsOfServiceOpen }) => {
 
   return (
     <div className="legal-modal" role="dialog" aria-modal="true" aria-labelledby="privacy-policy-title" onClick={onClose}>
-      <motion.div
+      <Motion.div
         className="legal-content"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -211,7 +211,7 @@ const PrivacyPolicy = ({ onClose, onNavigate, onTermsOfServiceOpen }) => {
         </div>
 
         <BackToTop />
-      </motion.div>
+      </Motion.div>
     </div>
   );
 };

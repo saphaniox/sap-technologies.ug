@@ -1,29 +1,29 @@
-const isLocalhost = typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' ||
-   window.location.hostname === '127.0.0.1' ||
-   window.location.hostname === '0.0.0.0');
-
+import authMethods from "./api/auth";
+import adminMethods from "./api/admin";
+import publicFormsMethods from "./api/publicForms";
+import catalogMethods from "./api/catalog";
+import awardsMethods from "./api/awards";
+import galleryMethods from "./api/gallery";
+import careersMethods from "./api/careers";
+import commerceMethods from "./api/commerce";
+import utilitiesMethods from "./api/utilities";
+import { API_PROXY_ENABLED, DIRECT_API_URL } from "../config/apiOrigin";
+import { mapBackendUrls } from "../utils/publicBackendUrl";
+const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '0.0.0.0');
 const DEFAULT_API_URL = "https://api.saptechug.com";
 const DEFAULT_API_FALLBACK_URL = "https://sap-technologies-ug.onrender.com";
 const RETRYABLE_API_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504, 521, 522, 523, 524]);
 const API_FALLBACK_ENABLED = String(import.meta.env.VITE_ENABLE_API_FALLBACK ?? "true").toLowerCase() !== "false";
 const FALLBACK_MUTATIONS = String(import.meta.env.VITE_API_FALLBACK_MUTATIONS ?? "true").toLowerCase() !== "false";
 const SAFE_READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
-
-const normalizeApiUrl = (url) => {
+const normalizeApiUrl = url => {
   const cleaned = String(url || "").trim();
   if (!cleaned) return "";
   return cleaned.replace(/\/+$/, "");
 };
-
-const splitApiUrls = (value) => String(value || "")
-  .split(",")
-  .map(normalizeApiUrl)
-  .filter(Boolean);
-
-const isBrowserSafeApiUrl = (url) => {
+const splitApiUrls = value => String(value || "").split(",").map(normalizeApiUrl).filter(Boolean);
+const isBrowserSafeApiUrl = url => {
   if (!url) return true;
-
   const isHttpsPage = typeof window !== 'undefined' && window.location.protocol === 'https:';
   if (!isHttpsPage) return true;
 
@@ -31,45 +31,35 @@ const isBrowserSafeApiUrl = (url) => {
   // before the browser turns them into a generic "Failed to fetch".
   return !url.toLowerCase().startsWith("http://");
 };
-
-const uniqueApiUrls = (urls, { allowEmpty = false } = {}) => {
+const uniqueApiUrls = (urls, {
+  allowEmpty = false
+} = {}) => {
   const seen = new Set();
-  return urls
-    .map(normalizeApiUrl)
-    .filter((url) => {
-      if (!url && !allowEmpty) return false;
-      if (seen.has(url)) return false;
-      seen.add(url);
-      return true;
-    });
+  return urls.map(normalizeApiUrl).filter(url => {
+    if (!url && !allowEmpty) return false;
+    if (seen.has(url)) return false;
+    seen.add(url);
+    return true;
+  });
 };
-
 const getApiUrls = () => {
+  if (API_PROXY_ENABLED) return [""];
   const isLocalDevelopment = isLocalhost && import.meta.env.DEV;
   const configuredPrimaryUrl = import.meta.env.VITE_API_PRIMARY_URL || import.meta.env.VITE_API_URL;
   const primaryUrl = configuredPrimaryUrl || (isLocalDevelopment ? "" : DEFAULT_API_URL);
   const configuredUrls = API_FALLBACK_ENABLED ? splitApiUrls(import.meta.env.VITE_API_URLS) : [];
-  const fallbackUrl = API_FALLBACK_ENABLED
-    ? import.meta.env.VITE_API_FALLBACK_URL || (isLocalDevelopment ? "" : DEFAULT_API_FALLBACK_URL)
-    : "";
-
+  const fallbackUrl = API_FALLBACK_ENABLED ? import.meta.env.VITE_API_FALLBACK_URL || (isLocalDevelopment ? "" : DEFAULT_API_FALLBACK_URL) : "";
   if (isLocalDevelopment) {
-    const localUrls = uniqueApiUrls([primaryUrl, ...configuredUrls, fallbackUrl], { allowEmpty: true });
+    const localUrls = uniqueApiUrls([primaryUrl, ...configuredUrls, fallbackUrl], {
+      allowEmpty: true
+    });
     return localUrls.length ? localUrls : [""];
   }
-
-  const configuredProductionUrls = uniqueApiUrls([
-    primaryUrl,
-    ...configuredUrls,
-    fallbackUrl
-  ]).filter(isBrowserSafeApiUrl);
-
+  const configuredProductionUrls = uniqueApiUrls([primaryUrl, ...configuredUrls, fallbackUrl]).filter(isBrowserSafeApiUrl);
   return configuredProductionUrls.length ? configuredProductionUrls : [DEFAULT_API_URL];
 };
-
 const API_BASE_URLS = getApiUrls();
 const API_BASE_URL = API_BASE_URLS[0] || "";
-
 class ApiService {
   constructor() {
     this.baseURLs = API_BASE_URLS;
@@ -86,9 +76,7 @@ class ApiService {
         baseURL: this.baseURL,
         baseURLs: this.baseURLs,
         fallbackEnabled: API_FALLBACK_ENABLED,
-        fallbackURL: API_FALLBACK_ENABLED
-          ? import.meta.env.VITE_API_FALLBACK_URL || DEFAULT_API_FALLBACK_URL
-          : "",
+        fallbackURL: API_FALLBACK_ENABLED ? import.meta.env.VITE_API_FALLBACK_URL || DEFAULT_API_FALLBACK_URL : "",
         fallbackMutations: FALLBACK_MUTATIONS,
         isLocalhost,
         env: import.meta.env.MODE,
@@ -98,27 +86,22 @@ class ApiService {
       });
     }
   }
-
   getCached(key) {
     const cached = this.cache.get(key);
     if (!cached) return null;
-
     const now = Date.now();
     if (now - cached.timestamp > this.cacheTimeout) {
       this.cache.delete(key);
       return null;
     }
-
     return cached.data;
   }
-
   setCache(key, data) {
     this.cache.set(key, {
       data,
       timestamp: Date.now()
     });
   }
-
   cloneData(data) {
     try {
       if (typeof structuredClone === 'function') {
@@ -127,36 +110,27 @@ class ApiService {
     } catch {
       // structuredClone may not exist in all environments
     }
-
     return JSON.parse(JSON.stringify(data));
   }
-
   getRequestBaseURLs(method, options = {}) {
     const fallbackEnabled = options.useApiFallback !== false;
-
     if (!fallbackEnabled || this.baseURLs.length <= 1) {
       return [this.baseURL];
     }
-
     return this.baseURLs;
   }
-
   canFallbackAfterHttpError(method, options = {}) {
     const normalizedMethod = String(method || "GET").toUpperCase();
     const isSafeRead = SAFE_READ_METHODS.has(normalizedMethod);
     const allowMutationFallback = FALLBACK_MUTATIONS || options.allowFallbackForMutation === true;
-
     return isSafeRead || allowMutationFallback;
   }
-
   isRetryableStatus(status) {
     return RETRYABLE_API_STATUSES.has(Number(status));
   }
-
   isRetryableApiError(error) {
     return Boolean(error?.isNetworkError || this.isRetryableStatus(error?.response?.status));
   }
-
   getStoredAuthToken() {
     try {
       return localStorage.getItem("sap_access_token") || "";
@@ -164,11 +138,9 @@ class ApiService {
       return "";
     }
   }
-
   setAuthToken(token) {
     this.authToken = token || "";
     this.clearAuthStatusCache();
-
     try {
       if (this.authToken) {
         localStorage.setItem("sap_access_token", this.authToken);
@@ -182,7 +154,7 @@ class ApiService {
 
   // Wake up the server (for free tier on Render)
   async wakeUpServer() {
-    await Promise.allSettled(this.baseURLs.map(async (baseURL) => {
+    await Promise.allSettled(this.baseURLs.map(async baseURL => {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
@@ -194,9 +166,7 @@ class ApiService {
           // Don't wait for the response
           priority: 'low'
         });
-
         clearTimeout(timeoutId);
-
         if (response.ok) {
           if (import.meta.env.DEV) console.log('Server is awake:', baseURL || 'local proxy');
         }
@@ -206,7 +176,6 @@ class ApiService {
       }
     }));
   }
-
   clearCache(key = null) {
     if (key) {
       this.cache.delete(key);
@@ -214,31 +183,23 @@ class ApiService {
       this.cache.clear();
     }
   }
-
   clearAuthStatusCache() {
     this.authStatusPromise = null;
     this.authStatusCache = null;
   }
-
   getCachedAuthStatus() {
     if (!this.authStatusCache) return null;
-
     const now = Date.now();
-    const maxAge = this.authStatusCache.isAuthenticated
-      ? this.cacheTimeout
-      : this.authStatusCacheTimeout;
-
+    const maxAge = this.authStatusCache.isAuthenticated ? this.cacheTimeout : this.authStatusCacheTimeout;
     if (now - this.authStatusCache.timestamp > maxAge) {
       this.authStatusCache = null;
       return null;
     }
-
     return {
       isAuthenticated: this.authStatusCache.isAuthenticated,
       user: this.authStatusCache.user
     };
   }
-
   setAuthStatusCache(status) {
     this.authStatusCache = {
       isAuthenticated: Boolean(status?.isAuthenticated),
@@ -246,7 +207,6 @@ class ApiService {
       timestamp: Date.now()
     };
   }
-
   async request(endpoint, options = {}) {
     // Ensure endpoint starts with /api unless it already does
     const apiEndpoint = endpoint.startsWith('/api') ? endpoint : `/api${endpoint}`;
@@ -272,7 +232,6 @@ class ApiService {
     if (fingerprint) {
       headers["X-Fingerprint"] = fingerprint;
     }
-
     if (this.authToken) {
       headers.Authorization = `Bearer ${this.authToken}`;
     }
@@ -282,30 +241,29 @@ class ApiService {
       ...headers,
       ...(options.headers || {})
     };
-
     const config = {
       method: method,
       headers: mergedHeaders,
-      credentials: "include", // Super important! This sends cookies so server knows who we are
+      credentials: "include",
+      // Super important! This sends cookies so server knows who we are
       // Avoid HTTP-level caching for GET requests so intermediaries and the browser
       // don't serve stale responses. Components should still rely on the in-memory
       // cache which we manage explicitly.
-      ...(method === 'GET' ? { cache: options.cacheMode || 'no-store' } : {}),
+      ...(method === 'GET' ? {
+        cache: options.cacheMode || 'no-store'
+      } : {})
     };
 
     // Add body if present
     if (options.body) {
       config.body = options.body;
     }
-
     let lastError = null;
-
     for (let attempt = 0; attempt < requestBaseURLs.length; attempt += 1) {
       const baseURL = requestBaseURLs[attempt];
       const url = `${baseURL}${apiEndpoint}`;
       const cacheKey = `${method}:${url}`;
       const hasFallbackAttempt = attempt < requestBaseURLs.length - 1;
-
       if (useCache) {
         const cached = this.getCached(cacheKey);
         if (cached) {
@@ -314,7 +272,6 @@ class ApiService {
           return this.cloneData(cached);
         }
       }
-
       try {
         // Actually make the request to our server
         const response = await fetch(url, config);
@@ -322,7 +279,6 @@ class ApiService {
         // Try to figure out what kind of response we got back
         const contentType = response.headers.get("Content-Type");
         let data;
-
         try {
           // Most of our API returns JSON, but sometimes it's just text
           if (contentType && contentType.includes("application/json")) {
@@ -341,7 +297,6 @@ class ApiService {
             status: response.status
           };
         }
-
         if (!response.ok) {
           // Handle authentication errors more gracefully
           if (response.status === 401) {
@@ -350,18 +305,13 @@ class ApiService {
           }
 
           // Create enhanced error with response data
-          const validationMessages = Array.isArray(data?.errors)
-            ? data.errors.map(item => typeof item === "string" ? item : item.msg || item.message).filter(Boolean)
-            : [];
-          const error = new Error(validationMessages.length
-            ? [...new Set(validationMessages)].join(". ")
-            : data?.message || `HTTP error! status: ${response.status}`);
+          const validationMessages = Array.isArray(data?.errors) ? data.errors.map(item => typeof item === "string" ? item : item.msg || item.message).filter(Boolean) : [];
+          const error = new Error(validationMessages.length ? [...new Set(validationMessages)].join(". ") : data?.message || `HTTP error! status: ${response.status}`);
           error.response = {
             status: response.status,
             statusText: response.statusText,
             data: data
           };
-
           if (hasFallbackAttempt && this.canFallbackAfterHttpError(method, options) && this.isRetryableApiError(error)) {
             lastError = error;
             if (import.meta.env.DEV) {
@@ -375,9 +325,9 @@ class ApiService {
             }
             continue;
           }
-
           throw error;
         }
+        if (API_PROXY_ENABLED) data = mapBackendUrls(data, "", [DIRECT_API_URL]);
 
         // Only cache successful GET responses with valid data
         if (useCache && response.ok && data) {
@@ -396,13 +346,11 @@ class ApiService {
             if (import.meta.env.DEV) console.warn('Failed to clear API cache after mutation', e);
           }
         }
-
         return data;
       } catch (error) {
         if (!error.response && !error.message?.includes("Authentication required")) {
           error.isNetworkError = true;
         }
-
         if (hasFallbackAttempt && this.isRetryableApiError(error)) {
           lastError = error;
           if (import.meta.env.DEV) {
@@ -420,923 +368,75 @@ class ApiService {
         // Only log errors that aren"t authentication-related to reduce console noise
         if (!error.message.includes("Authentication required")) {
           console.error("API request failed:", error);
-          console.error("Request details:", { endpoint, method, url });
+          console.error("Request details:", {
+            endpoint,
+            method,
+            url
+          });
         }
         throw error;
       }
     }
-
     throw lastError || new Error(`API request failed for ${apiEndpoint}`);
   }
 
   // Authentication methods - handle user login/logout/registration
   // These are the core methods that let users access their accounts
 
-  async login(credentials) {
-    // Send login request with email/password
-    const response = await this.request("/api/login", {
-      method: "POST",
-      body: JSON.stringify(credentials),
-    });
-
-    const token = response?.data?.accessToken;
-    if (token) {
-      this.setAuthToken(token);
-    }
-
-    return response;
-  }
-
-  async signup(userData) {
-    // Create new user account with name, email, password, and optional phone
-    const payload = {
-      name: userData.name?.trim(),
-      email: userData.email?.trim(),
-      password: userData.password
-    };
-
-    const phone = userData.phone?.trim();
-    if (phone) {
-      payload.phone = phone;
-    }
-
-    const response = await this.request("/api/signup", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-
-    const token = response?.data?.accessToken;
-    if (token) {
-      this.setAuthToken(token);
-    }
-
-    return response;
-  }
-
-  async logout() {
-    try {
-      return await this.request("/api/logout", {
-        method: "POST",
-      });
-    } finally {
-      this.setAuthToken("");
-    }
-  }
-
   // Password Reset Methods
-  async requestPasswordReset(email) {
-    // Request verification code for password reset
-    return this.request("/auth/forgot-password", {
-      method: "POST",
-      body: JSON.stringify({ email }),
-    });
-  }
-
-  async resetPassword(resetData) {
-    // Reset password with verification code
-    return this.request("/auth/reset-password", {
-      method: "POST",
-      body: JSON.stringify(resetData),
-    });
-  }
-
-  async resendResetCode(email) {
-    // Resend verification code
-    return this.request("/auth/resend-reset-code", {
-      method: "POST",
-      body: JSON.stringify({ email }),
-    });
-  }
-
-  async getAccount() {
-    return this.request("/api/account");
-  }
 
   // Check authentication status without throwing errors for unauthenticated users
-  async checkAuthStatus(options = {}) {
-    const force = Boolean(options.force);
-    if (!force) {
-      const cached = this.getCachedAuthStatus();
-      if (cached) return cached;
-
-      if (this.authStatusPromise) {
-        return this.authStatusPromise;
-      }
-    }
-
-    this.authStatusPromise = (async () => {
-      try {
-        const response = await this.request("/api/account", { useCache: false });
-        const status = { isAuthenticated: true, user: response?.data?.user };
-        this.setAuthStatusCache(status);
-        return status;
-      } catch (error) {
-        if (error.message.includes("Authentication required")) {
-          const status = { isAuthenticated: false, user: null };
-          this.setAuthStatusCache(status);
-          return status;
-        }
-        throw error;
-      } finally {
-        this.authStatusPromise = null;
-      }
-    })();
-
-    return this.authStatusPromise;
-  }
-
-  async updateAccount(userData) {
-    return this.request("/api/users/profile", {
-      method: "PUT",
-      body: JSON.stringify(userData),
-    });
-  }
-
-  async updateEmail(email) {
-    return this.request("/api/users/email", {
-      method: "PUT",
-      body: JSON.stringify({ email }),
-    });
-  }
-
-  async updatePassword(passwordData) {
-    return this.request("/api/users/password", {
-      method: "PUT",
-      body: JSON.stringify(passwordData),
-    });
-  }
-
-  async uploadProfilePic(file) {
-    const formData = new FormData();
-    formData.append("profilePic", file);
-
-    return this.request("/api/users/profile-pic", {
-      method: "POST",
-      headers: {}, // Remove Content-Type to let browser set it for FormData
-      body: formData,
-    });
-  }
-
-  async deleteAccount() {
-    return this.request("/api/users/account", {
-      method: "DELETE",
-    });
-  }
-
-  async getUserActivity() {
-    return this.request("/api/users/activity");
-  }
 
   // Admin endpoints
-  async getAdminDashboardStats() {
-    return this.request("/api/admin/dashboard/stats", { useCache: false });
-  }
-
-  async getSystemHealth() {
-    return this.request("/api/admin/system/health", { useCache: false });
-  }
-
-  async getAdminEmailSettings() {
-    return this.request("/api/admin/settings/email", { useCache: false });
-  }
-
-  async updateAdminEmailProvider(providerMode) {
-    const result = await this.request("/api/admin/settings/email/provider", {
-      method: "PUT",
-      body: JSON.stringify({ providerMode }),
-    });
-    this.clearCache();
-    return result;
-  }
-
-  async updateAdminEmailSettings(settings) {
-    const result = await this.request("/api/admin/settings/email", {
-      method: "PUT",
-      body: JSON.stringify(settings),
-    });
-    this.clearCache();
-    return result;
-  }
-
-  async sendCustomAdminEmail(emailData = {}) {
-    return this.request("/api/admin/email/send", {
-      method: "POST",
-      body: JSON.stringify(emailData),
-    });
-  }
-
-  async getSavedEmailMessages() {
-    return this.request("/api/admin/email/messages", { useCache: false });
-  }
-
-  async saveEmailMessage(emailData = {}) {
-    return this.request("/api/admin/email/messages", {
-      method: "POST",
-      body: JSON.stringify(emailData),
-    });
-  }
-
-  async deleteSavedEmailMessage(messageId) {
-    return this.request(`/api/admin/email/messages/${messageId}`, { method: "DELETE" });
-  }
-
-  async getAllUsers(params = {}) {
-    const query = new URLSearchParams(params).toString();
-    return this.request(`/api/admin/users${query ? `?${query}` : ""}`, { useCache: false });
-  }
-
-  async updateUserRole(userId, role) {
-    return this.request(`/api/admin/users/${userId}/role`, {
-      method: "PUT",
-      body: JSON.stringify({ role }),
-    });
-  }
-
-  async deleteUserAdmin(userId) {
-    return this.request(`/api/admin/users/${userId}`, {
-      method: "DELETE",
-    });
-  }
-
-  async getAllContacts(params = {}) {
-    const query = new URLSearchParams(params).toString();
-    return this.request(`/api/admin/contacts${query ? `?${query}` : ""}`, { useCache: false });
-  }
-
-  async updateContactStatus(contactId, status) {
-    return this.request(`/api/admin/contacts/${contactId}/status`, {
-      method: "PUT",
-      body: JSON.stringify({ status }),
-    });
-  }
-
-  async deleteContactAdmin(contactId) {
-    return this.request(`/api/admin/contacts/${contactId}`, {
-      method: "DELETE",
-    });
-  }
-
-  async getAllNewsletterSubscribers(params = {}) {
-    const query = new URLSearchParams(params).toString();
-    return this.request(`/api/admin/newsletter/subscribers${query ? `?${query}` : ""}`, { useCache: false });
-  }
-
-  async deleteNewsletterSubscriber(subscriberId) {
-    return this.request(`/api/admin/newsletter/subscribers/${subscriberId}`, {
-      method: "DELETE",
-    });
-  }
 
   // Contact form
-  async submitContact(contactData) {
-    return this.request("/api/contact", {
-      method: "POST",
-      body: JSON.stringify(contactData),
-    });
-  }
 
   // Newsletter subscription
-  async subscribeNewsletter(email) {
-    return this.request("/api/newsletter/subscribe", {
-      method: "POST",
-      body: JSON.stringify({ email }),
-    });
-  }
-
-  async unsubscribeNewsletter(token) {
-    return this.request("/api/newsletter/unsubscribe", {
-      method: "POST",
-      body: JSON.stringify({ token }),
-      useCache: false
-    });
-  }
 
   // Health check
-  async healthCheck() {
-    return this.request("/api/health");
-  }
 
   // Services management
-  async getAllServices(params = {}) {
-    const queryParams = new URLSearchParams(params).toString();
-    return this.request(`/api/admin/services?${queryParams}`, { useCache: false });
-  }
-
-  async getServiceById(serviceId) {
-    return this.request(`/api/admin/services/${serviceId}`, { useCache: false });
-  }
-
-  async createService(serviceData) {
-    const config = {
-      method: "POST",
-    };
-
-    // If serviceData is FormData, don"t set content-type header
-    if (serviceData instanceof FormData) {
-      config.body = serviceData;
-    } else {
-      config.body = JSON.stringify(serviceData);
-      config.headers = { "Content-Type": "application/json" };
-    }
-
-    const result = await this.request("/api/admin/services", config);
-    // Clear services cache after mutation
-    this.clearCache();
-    return result;
-  }
-
-  async updateService(serviceId, serviceData) {
-    const config = {
-      method: "PUT",
-    };
-
-    // If serviceData is FormData, don"t set content-type header
-    if (serviceData instanceof FormData) {
-      config.body = serviceData;
-    } else {
-      config.body = JSON.stringify(serviceData);
-      config.headers = { "Content-Type": "application/json" };
-    }
-
-    const result = await this.request(`/api/admin/services/${serviceId}`, config);
-    // Clear services cache after mutation
-    this.clearCache();
-    return result;
-  }
-
-  async deleteService(serviceId) {
-    const result = await this.request(`/api/admin/services/${serviceId}`, {
-      method: "DELETE",
-    });
-    // Clear services cache after mutation
-    this.clearCache();
-    return result;
-  }
-
-  async toggleServiceFeatured(serviceId) {
-    return this.request(`/api/admin/services/${serviceId}/featured`, {
-      method: "PATCH",
-    });
-  }
-
-  async getServiceCategories() {
-    return this.request("/api/admin/services/categories");
-  }
-
-  async getServiceStats() {
-    return this.request("/api/admin/services/stats", { useCache: false });
-  }
 
   // Projects management
-  async getAllProjects(params = {}) {
-    const queryParams = new URLSearchParams(params).toString();
-    return this.request(`/api/admin/projects?${queryParams}`, { useCache: false });
-  }
-
-  async getProjectById(projectId) {
-    return this.request(`/api/admin/projects/${projectId}`, { useCache: false });
-  }
-
-  async createProject(projectData) {
-    const config = {
-      method: "POST",
-    };
-
-    // If projectData is FormData, don"t set content-type header
-    if (projectData instanceof FormData) {
-      config.body = projectData;
-    } else {
-      config.body = JSON.stringify(projectData);
-      config.headers = { "Content-Type": "application/json" };
-    }
-
-    const result = await this.request("/api/admin/projects", config);
-    // Clear projects cache after mutation
-    this.clearCache();
-    return result;
-  }
-
-  async updateProject(projectId, projectData) {
-    const config = {
-      method: "PUT",
-    };
-
-    // If projectData is FormData, don"t set content-type header
-    if (projectData instanceof FormData) {
-      config.body = projectData;
-    } else {
-      config.body = JSON.stringify(projectData);
-      config.headers = { "Content-Type": "application/json" };
-    }
-
-    const result = await this.request(`/api/admin/projects/${projectId}`, config);
-    // Clear projects cache after mutation
-    this.clearCache();
-    return result;
-  }  async deleteProject(projectId) {
-    const result = await this.request(`/api/admin/projects/${projectId}`, {
-      method: "DELETE",
-    });
-    // Clear projects cache after mutation
-    this.clearCache();
-    return result;
-  }
-
-  async toggleProjectFeatured(projectId) {
-    return this.request(`/api/admin/projects/${projectId}/featured`, {
-      method: "PATCH",
-    });
-  }
-
-  async getProjectStats() {
-    return this.request("/api/admin/projects/stats", { useCache: false });
-  }
 
   // Public API methods (no authentication required)
-  async getPublicServices(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    return this.request(`/api/public/services${queryString ? `?${queryString}` : ""}`);
-  }
-
-  async getPublicProjects(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    return this.request(`/api/public/projects${queryString ? `?${queryString}` : ""}`, {
-      method: "GET"
-    });
-  }
-
-  async getPublicServiceById(serviceId) {
-    return this.request(`/api/public/services/${serviceId}`);
-  }
-
-  async getPublicProjectById(projectId) {
-    return this.request(`/api/public/projects/${projectId}`);
-  }
-
-  async getPublicServiceCategories() {
-    return this.request("/api/public/services/categories");
-  }
-
-  async getPublicProjectCategories() {
-    return this.request("/api/public/projects/categories");
-  }
 
   // Alias for backward compatibility
-  async getProjectCategories() {
-    return this.getPublicProjectCategories();
-  }
 
   // Partner methods
-  async getPartners() {
-    return this.request("/api/partners/public");
-  }
-
-  async getAdminPartners(params = {}) {
-    const query = new URLSearchParams(params).toString();
-    return this.request(`/api/partners${query ? `?${query}` : ""}`, { useCache: false });
-  }
-
-  async deletePartner(partnerId) {
-    return this.request(`/api/partners/${partnerId}`, {
-      method: "DELETE"
-    });
-  }
-
-  async getPartnershipRequests(params = {}) {
-    const query = new URLSearchParams(params).toString();
-    return this.request(`/api/partnership-requests${query ? `?${query}` : ""}`, { useCache: false });
-  }
 
   // Awards Admin methods
-  async getAwardsCategories() {
-    return this.request("/awards/categories", { useCache: false });
-  }
-
-  async createAwardsCategory(categoryData) {
-    return this.request("/awards/admin/categories", {
-      method: "POST",
-      body: JSON.stringify(categoryData),
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  async updateAwardsCategory(categoryId, categoryData) {
-    return this.request(`/awards/admin/categories/${categoryId}`, {
-      method: "PUT",
-      body: JSON.stringify(categoryData),
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  async deleteAwardsCategory(categoryId) {
-    return this.request(`/awards/admin/categories/${categoryId}`, {
-      method: "DELETE"
-    });
-  }
-
-  async getAdminNominations(params = {}) {
-    const queryParams = new URLSearchParams(params).toString();
-    return this.request(`/awards/admin/nominations${queryParams ? `?${queryParams}` : ""}`, { useCache: false });
-  }
-
-  async getAwardCandidateDrafts() {
-    return this.request("/awards/admin/candidate-drafts", { useCache: false });
-  }
-
-  async createAwardCandidateDraft(candidate) {
-    return this.request("/awards/admin/candidate-drafts", {
-      method: "POST",
-      body: JSON.stringify(candidate),
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  async updateAwardCandidateDraft(draftId, candidate) {
-    return this.request(`/awards/admin/candidate-drafts/${draftId}`, {
-      method: "PATCH",
-      body: JSON.stringify(candidate),
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  async deleteAwardCandidateDraft(draftId) {
-    return this.request(`/awards/admin/candidate-drafts/${draftId}`, {
-      method: "DELETE"
-    });
-  }
-
-  async updateNominationStatus(nominationId, status, adminNotes = "") {
-    return this.request(`/awards/admin/nominations/${nominationId}/status`, {
-      method: "PATCH",
-      body: JSON.stringify({ status, adminNotes }),
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  async addAdminVotes(nominationId, amount, reason) {
-    return this.post(`/awards/admin/nominations/${nominationId}/votes`, { amount, reason });
-  }
-
-  async updateNomination(nominationId, formData) {
-    return this.request(`/awards/admin/nominations/${nominationId}`, {
-      method: "PUT",
-      body: formData
-    });
-  }
-
-  async deleteNomination(nominationId) {
-    return this.request(`/awards/admin/nominations/${nominationId}`, {
-      method: "DELETE"
-    });
-  }
-
-  async getAwardsStats() {
-    return this.request("/api/awards/admin/stats", { useCache: false });
-  }
-
-  async createAdminNomination(formData) {
-    return this.request("/awards/nominations", {
-      method: "POST",
-      body: formData
-    });
-  }
 
   // Gallery methods
-  async getPublicGallery() {
-    return this.request("/api/gallery/public");
-  }
-
-  async getAdminGallery() {
-    return this.request("/api/gallery", { useCache: false });
-  }
-
-  async createGalleryItem(formData) {
-    return this.request("/api/gallery", {
-      method: "POST",
-      body: formData
-    });
-  }
-
-  async updateGalleryItem(galleryId, formData) {
-    return this.request(`/api/gallery/${galleryId}`, {
-      method: "PUT",
-      body: formData
-    });
-  }
-
-  async deleteGalleryItem(galleryId) {
-    return this.request(`/api/gallery/${galleryId}`, {
-      method: "DELETE"
-    });
-  }
 
   // Jobs methods
-  async getPublicJobs() {
-    return this.request("/api/jobs/public");
-  }
-
-  async getJob(jobId) {
-    return this.request(`/api/jobs/${jobId}`, { useCache: false });
-  }
-
-  async getAdminJobs() {
-    return this.request("/api/jobs", { useCache: false });
-  }
-
-  async createJob(jobData) {
-    const config = {
-      method: "POST"
-    };
-
-    if (jobData instanceof FormData) {
-      config.body = jobData;
-    } else {
-      config.body = JSON.stringify(jobData);
-      config.headers = { "Content-Type": "application/json" };
-    }
-
-    const result = await this.request("/api/jobs", config);
-    this.clearCache();
-    return result;
-  }
-
-  async updateJob(jobId, jobData) {
-    const config = {
-      method: "PUT"
-    };
-
-    if (jobData instanceof FormData) {
-      config.body = jobData;
-    } else {
-      config.body = JSON.stringify(jobData);
-      config.headers = { "Content-Type": "application/json" };
-    }
-
-    const result = await this.request(`/api/jobs/${jobId}`, config);
-    this.clearCache();
-    return result;
-  }
-
-  async deleteJob(jobId) {
-    return this.request(`/api/jobs/${jobId}`, {
-      method: "DELETE"
-    });
-  }
-
-  async applyForJob(jobId, applicationData) {
-    const config = {
-      method: "POST"
-    };
-
-    if (applicationData instanceof FormData) {
-      config.body = applicationData;
-    } else {
-      config.body = JSON.stringify(applicationData);
-      config.headers = { "Content-Type": "application/json" };
-    }
-
-    return this.request(`/api/jobs/${jobId}/apply`, config);
-  }
-
-  async getJobApplications(jobId, params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    return this.request(`/api/jobs/${jobId}/applications${queryString ? `?${queryString}` : ""}`, { useCache: false });
-  }
-
-  async getAllJobApplications(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    return this.request(`/api/jobs/admin/applications${queryString ? `?${queryString}` : ""}`, { useCache: false });
-  }
-
-  async updateApplicationStatus(applicationId, status, adminNotes = "") {
-    return this.request(`/api/jobs/applications/${applicationId}/status`, {
-      method: "PATCH",
-      body: JSON.stringify({ status, adminNotes }),
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  async sendJobApplicationEmail(applicationId, emailData = {}) {
-    return this.request(`/api/jobs/applications/${applicationId}/email`, {
-      method: "POST",
-      body: JSON.stringify(emailData),
-      headers: { "Content-Type": "application/json" }
-    });
-  }
 
   // Products methods
-  async getProducts(params = {}) {
-    const queryParams = new URLSearchParams(params).toString();
-    return this.request(`/api/products${queryParams ? `?${queryParams}` : ""}`);
-  }
-
-  async getProduct(productId) {
-    return this.request(`/api/products/${productId}`);
-  }
-
-  async getProductCategories() {
-    return this.request("/api/products/categories");
-  }
 
   // Products Admin methods
-  async getProductsAdmin(params = {}) {
-    const queryParams = new URLSearchParams(params).toString();
-    return this.request(`/api/products/admin/products${queryParams ? `?${queryParams}` : ""}`, { useCache: false });
-  }
-
-  async createProduct(formData) {
-    const result = await this.request("/api/products/admin/products", {
-      method: "POST",
-      body: formData
-    });
-    // Clear products cache after mutation
-    this.clearCache();
-    return result;
-  }
-
-  async updateProduct(productId, formData) {
-    const result = await this.request(`/api/products/admin/products/${productId}`, {
-      method: "PUT",
-      body: formData
-    });
-    // Clear products cache after mutation
-    this.clearCache();
-    return result;
-  }
-
-  async deleteProduct(productId) {
-    const result = await this.request(`/api/products/admin/products/${productId}`, {
-      method: "DELETE"
-    });
-    // Clear products cache after mutation
-    this.clearCache();
-    return result;
-  }
-
-  async updateProductOrder(products) {
-    return this.request("/api/products/admin/products-order", {
-      method: "PUT",
-      body: JSON.stringify({ products }),
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  async getProductAnalytics() {
-    return this.request("/api/products/admin/analytics", { useCache: false });
-  }
 
   // Product Inquiry methods
-  async submitProductInquiry(inquiryData) {
-    return this.request("/api/products/inquiries", {
-      method: "POST",
-      body: JSON.stringify(inquiryData),
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  async submitCartInquiry(cartData) {
-    return this.request("/api/products/cart-inquiry", {
-      method: "POST",
-      body: JSON.stringify(cartData),
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  async getProductInquiries(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    return this.request(`/api/products/admin/inquiries?${queryString}`, { useCache: false });
-  }
-
-  async updateInquiryStatus(inquiryId, data) {
-    return this.request(`/api/products/admin/inquiries/${inquiryId}`, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  async deleteInquiry(inquiryId) {
-    return this.request(`/api/products/admin/inquiries/${inquiryId}`, {
-      method: "DELETE"
-    });
-  }
-
-  async getInquiryStats() {
-    return this.request("/api/products/admin/inquiries/stats", { useCache: false });
-  }
 
   // Service Quote methods
-  async submitServiceQuote(quoteData) {
-    return this.request("/api/services/quotes", {
-      method: "POST",
-      body: JSON.stringify(quoteData),
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  async getServiceQuotes(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    return this.request(`/api/services/admin/quotes?${queryString}`, { useCache: false });
-  }
-
-  async updateQuoteStatus(quoteId, data) {
-    return this.request(`/api/services/admin/quotes/${quoteId}`, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
-  async deleteQuote(quoteId) {
-    return this.request(`/api/services/admin/quotes/${quoteId}`, {
-      method: "DELETE"
-    });
-  }
-
-  async getQuoteStats() {
-    return this.request("/api/services/admin/quotes/stats", { useCache: false });
-  }
 
   // User methods
-  async getCurrentUser() {
-    const authStatus = await this.checkAuthStatus();
-    return authStatus.user || null;
-  }
 
   // Check if current user is admin
-  async isAdmin() {
-    try {
-      const user = await this.getCurrentUser();
-      return user && user.role === "admin";
-    } catch {
-      return false;
-    }
-  }
 
   // Generic HTTP methods
-  async get(endpoint, options = {}) {
-    return this.request(endpoint, {
-      method: "GET",
-      ...options
-    });
-  }
-
-  async post(endpoint, body, options = {}) {
-    const config = {
-      method: "POST",
-      ...options
-    };
-
-    // Handle FormData vs JSON
-    if (body instanceof FormData) {
-      config.body = body;
-      // Remove Content-Type header for FormData to let browser set it
-      if (config.headers && config.headers["Content-Type"]) {
-        delete config.headers["Content-Type"];
-      }
-    } else if (body) {
-      config.body = JSON.stringify(body);
-    }
-
-    return this.request(endpoint, config);
-  }
-
-  async put(endpoint, body, options = {}) {
-    const config = {
-      method: "PUT",
-      ...options
-    };
-
-    if (body instanceof FormData) {
-      config.body = body;
-      if (config.headers && config.headers["Content-Type"]) {
-        delete config.headers["Content-Type"];
-      }
-    } else if (body) {
-      config.body = JSON.stringify(body);
-    }
-
-    return this.request(endpoint, config);
-  }
-
-  async delete(endpoint, options = {}) {
-    return this.request(endpoint, {
-      method: "DELETE",
-      ...options
-    });
-  }
 
   // Certificate verification method (public endpoint)
-  async verifyCertificate(certificateId) {
-    return this.request(`/api/certificates/verify/${certificateId}`, {
-      method: "GET"
-    });
-  }
 
   // Global search across products, services, projects
-  async search(q, type = 'all', limit = 20) {
-    const params = new URLSearchParams({ q, type, limit: String(limit) });
-    return this.request(`/api/search?${params}`, { useCache: false });
+}
+// Keep one service instance and the existing public method contract.
+for (const methods of [authMethods, adminMethods, publicFormsMethods, catalogMethods, awardsMethods, galleryMethods, careersMethods, commerceMethods, utilitiesMethods]) {
+  for (const [name, method] of Object.entries(methods)) {
+    Object.defineProperty(ApiService.prototype, name, {
+      value: method,
+      writable: true,
+      configurable: true
+    });
   }
 }
 

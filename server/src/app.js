@@ -22,12 +22,14 @@ const {
     securityLogger,
     detectSuspiciousActivity
 } = require("./config/security");
-const { connectDB, checkDatabaseHealth, auditDatabaseSecurity } = require("./config/database");
+const { connectDB } = require("./config/database");
 const { errorHandler } = require("./middleware/errorHandler");
 const { trackVisitor } = require("./middleware/visitorTracking");
 const { uploadAccess } = require("./middleware/uploadAccess");
+const { apiCachePolicy } = require("./middleware/apiCachePolicy");
 const { authMiddleware, adminMiddleware } = require("./middleware/auth");
 const apiRoutes = require("./routes");
+const systemController = require("./controllers/systemController");
 
 const app = express();
 app.disable("x-powered-by");
@@ -311,63 +313,12 @@ if (process.env.NODE_ENV !== 'production') {
 // Rate limiting for newsletter endpoint
 app.use("/api/newsletter", rateLimits.contact);
 
-// Enhanced health check endpoint with security info
-app.get("/health", async (req, res) => {
-    const securityStatus = {
-        headers: !!res.get("X-Frame-Options"),
-        rateLimiting: true,
-        sanitization: true,
-        cors: true,
-        session: !!req.sessionID
-    };
+app.use("/api", apiCachePolicy);
 
-    // Check database health
-    const dbHealth = await checkDatabaseHealth();
-
-    res.status(200).json({
-        status: "success",
-        message: "Server is running with enhanced security",
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || "development",
-        security: securityStatus,
-        database: dbHealth,
-        version: "2.0.0-secure"
-    });
-});
-
-// Also make health check available at /api/health for consistency
-app.get("/api/health", async (req, res) => {
-    const securityStatus = {
-        headers: !!res.get("X-Frame-Options"),
-        rateLimiting: true,
-        sanitization: true,
-        cors: true,
-        session: !!req.sessionID
-    };
-
-    // Check database health
-    const dbHealth = await checkDatabaseHealth();
-
-    res.status(200).json({
-        status: "success",
-        message: "Server is awake",
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || "development",
-        security: securityStatus,
-        database: dbHealth,
-        version: "2.0.0-secure"
-    });
-});
-
-// Database security audit endpoint (admin only)
-app.get("/api/admin/security-audit", rateLimits.admin, authMiddleware, adminMiddleware, (req, res) => {
-    const auditReport = auditDatabaseSecurity();
-    res.status(200).json({
-        status: "success",
-        message: "Database security audit completed",
-        data: auditReport
-    });
-});
+// Operational endpoints share controllers with the API and retain existing rate limits.
+app.get("/health", systemController.getHealth);
+app.get("/api/health", systemController.getApiHealth);
+app.get("/api/admin/security-audit", rateLimits.admin, authMiddleware, adminMiddleware, systemController.getSecurityAudit);
 
 // API routes with security validation
 app.use("/api", (req, res, next) => {
@@ -375,28 +326,6 @@ app.use("/api", (req, res, next) => {
     req.requestId = require("crypto").randomUUID();
     req.startTime = Date.now();
 
-    // Add Cache-Control headers for public read-only GET endpoints so CDN/browser
-    // can cache them and avoid hitting the Render server on every page load.
-    if (req.method === "GET") {
-        const path = req.path.toLowerCase();
-        const isPublicListing =
-            path.startsWith("/products") ||
-            path.startsWith("/public/") ||
-            path.startsWith("/partners") ||
-            path.startsWith("/awards") ||
-            path.startsWith("/software") ||
-            path.startsWith("/iot") ||
-            path.startsWith("/certificates");
-        const isAuthOrMutable =
-            path.startsWith("/account") ||
-            path.startsWith("/admin") ||
-            path.startsWith("/users") ||
-            path.startsWith("/visitor");
-        if (isPublicListing && !isAuthOrMutable) {
-            res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=60");
-        }
-    }
-    
     securityLogger.info("API request started", {
         requestId: req.requestId,
         method: req.method,
@@ -494,66 +423,6 @@ app.use((error, req, res, next) => {
     }
     
     errorHandler(error, req, res, next);
-});
-
-// Start server with security monitoring
-const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-    securityLogger.info("Server started with enhanced security", {
-        port: PORT,
-        environment: process.env.NODE_ENV || "development",
-        timestamp: new Date().toISOString()
-    });
-    
-    console.log(`
-🚀 Saptech Uganda Secure Server Started!
-
-📍 Server running on: http://localhost:${PORT}
-🌍 Environment: ${process.env.NODE_ENV || "development"}
-📊 Health check: http://localhost:${PORT}/health
-
-🛡️  Security Features Enabled:
-   ✅ Rate Limiting (Multiple tiers)
-   ✅ Input Sanitization & Validation
-   ✅ Security Headers (Helmet)
-   ✅ CORS Protection
-   ✅ MongoDB Injection Protection
-   ✅ HTTP Parameter Pollution Protection
-   ✅ Request Logging & Monitoring
-   ✅ Suspicious Activity Detection
-   ✅ File Upload Security
-   ✅ Session Security
-
-🔗 Secure API Endpoints:
-   • API Info: http://localhost:${PORT}/api
-   • Auth (Rate Limited): http://localhost:${PORT}/api/auth/*
-   • Contacts (Rate Limited): http://localhost:${PORT}/api/contacts/*
-   • Admin (Restricted): http://localhost:${PORT}/api/admin/*
-
-📝 Frontend URL: ${process.env.FRONTEND_URL || "https://saptechug.com"}
-
-🏗️  Architecture: Secure Model-View-Controller (MVC)
-💾 Database: MongoDB with Injection Protection
-🔐 Security Level: Enterprise Grade
-    `);
-});
-
-// Enhanced graceful shutdown with cleanup
-process.on("SIGTERM", () => {
-    securityLogger.info("SIGTERM signal received: closing HTTP server");
-    server.close(() => {
-        securityLogger.info("HTTP server closed gracefully");
-        console.log("HTTP server closed");
-    });
-});
-
-process.on("SIGINT", () => {
-    securityLogger.info("SIGINT signal received: closing HTTP server");
-    server.close(() => {
-        securityLogger.info("HTTP server closed gracefully");
-        console.log("HTTP server closed");
-        process.exit(0);
-    });
 });
 
 module.exports = app;

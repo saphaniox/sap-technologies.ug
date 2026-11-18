@@ -11,6 +11,7 @@
     "indexnow": "node scripts/submit-indexnow.mjs",
     "postbuild": "node scripts/prerender-static-routes.mjs",
     "lint": "eslint .",
+    "test:api": "node --test scripts/api-routing.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

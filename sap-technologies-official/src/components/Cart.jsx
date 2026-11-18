@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useCart } from "../contexts/CartContext";
+import { useCart } from "../hooks/useCart";
 import apiService from "../services/api";
 import { getImageUrl, PLACEHOLDERS } from "../utils/imageUrl";
 import "../styles/Cart.css";

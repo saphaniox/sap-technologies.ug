@@ -92,7 +92,7 @@ const Gallery = () => {
     try {
       if (!silent) setLoading(true);
       const data = await apiService.getPublicGallery();
-      const galleryItems = data.data || [];
+      const galleryItems = Array.isArray(data?.data) ? data.data : [];
       setItems(galleryItems);
     } catch (err) {
       console.error("Error fetching gallery:", err);

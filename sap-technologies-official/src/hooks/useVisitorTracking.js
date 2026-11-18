@@ -1,22 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
-const DEFAULT_API_URL = "https://api.saptechug.com";
+import { BROWSER_API_BASE_URL as API_BASE_URL } from "../config/apiOrigin";
 
-// Get API base URL
-const getApiUrl = () => {
-  const isLocalhost = typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' ||
-     window.location.hostname === '127.0.0.1' ||
-     window.location.hostname === '0.0.0.0');
-
-  if (isLocalhost && import.meta.env.DEV) {
-    return import.meta.env.VITE_API_URL || "";
-  }
-  return import.meta.env.VITE_API_URL || DEFAULT_API_URL;
-};
-
-const API_BASE_URL = getApiUrl();
 const TRACKING_ENDPOINT = `${API_BASE_URL}/api/visitor/track`;
 
 const getStoredSessionItem = (key) => {

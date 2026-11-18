@@ -105,7 +105,7 @@ Your server will never sleep again! UptimeRobot is now monitoring it 24/7.
 If you want even MORE reliability, combine UptimeRobot with the standalone service:
 
 ### Deploy to Render.com (Also Free):
-See: [../keep-alive-deployment/README.md](../keep-alive-deployment/README.md)
+See: [../../keep-alive-deployment/README.md](../../keep-alive-deployment/README.md)
 
 ### Why use both?
 - **Double protection**: If one fails, the other keeps working

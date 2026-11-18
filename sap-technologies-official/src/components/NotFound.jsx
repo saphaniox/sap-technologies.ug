@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { fadeInUp, staggerContainer } from "../utils/animations";
 import "../styles/NotFound.css";
@@ -7,28 +7,28 @@ import "../styles/NotFound.css";
 const NotFound = () => {
   return (
     <section className="not-found">
-      <motion.div
+      <Motion.div
         className="not-found-container"
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
       >
-        <motion.div className="not-found-code" variants={fadeInUp}>
+        <Motion.div className="not-found-code" variants={fadeInUp}>
           404
-        </motion.div>
+        </Motion.div>
 
-        <motion.h1 variants={fadeInUp}>Page Not Found</motion.h1>
+        <Motion.h1 variants={fadeInUp}>Page Not Found</Motion.h1>
 
-        <motion.p variants={fadeInUp}>
+        <Motion.p variants={fadeInUp}>
           Oops! The page you&apos;re looking for doesn&apos;t exist or has been moved.
-        </motion.p>
+        </Motion.p>
 
-        <motion.div variants={fadeInUp}>
+        <Motion.div variants={fadeInUp}>
           <Link to="/" className="not-found-btn">
             ← Back to Home
           </Link>
-        </motion.div>
-      </motion.div>
+        </Motion.div>
+      </Motion.div>
     </section>
   );
 };

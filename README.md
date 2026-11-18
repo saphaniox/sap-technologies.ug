@@ -2,6 +2,8 @@
 
 This repository contains the complete application:
 
+See [Architecture and repository guide](docs/ARCHITECTURE.md) for MVC responsibilities, folder boundaries, and verification commands. Operational guides live in [docs/deployment](docs/deployment), and reference screenshots live in [docs/screenshots](docs/screenshots).
+
 - `sap-technologies-official/` — React and Vite client
 - `server/` — Express API server
 
@@ -42,16 +44,16 @@ Use this repository for the frontend and both backend deployments.
 5. Use **Output Directory** `sap-technologies-official/dist`.
 6. Add the client environment variables from `sap-technologies-official/.env.example` in the Vercel project settings.
 
-For the backend URLs, set:
+Production browser requests use the website origin through the `/api/*` and `/uploads/*` rewrites in both Vercel configuration files. Set:
 
 ```env
-VITE_API_URL=https://your-coolify-api-domain.com
+VITE_API_PROXY=true
 VITE_ENABLE_API_FALLBACK=false
 VITE_API_FALLBACK_URL=
 VITE_API_FALLBACK_MUTATIONS=false
 ```
 
-`VITE_API_URL` is the primary Coolify API. Fallback is disabled by default. Only set `VITE_ENABLE_API_FALLBACK=true` and `VITE_API_FALLBACK_URL` when the Render service is active and healthy. Browser-level connection failures can fall back to Render for all requests when fallback is enabled. Keep `VITE_API_FALLBACK_MUTATIONS=false` unless you also want retryable HTTP errors such as 502/503 during write actions to fall back to Render.
+Update the rewrite destinations when changing the API host. For a host without these rewrites, explicitly set `VITE_API_PROXY=false` and configure `VITE_API_URL` with an HTTPS backend URL. Browser fallback configuration applies only to that direct API mode.
 
 Do not put backend secrets such as database URLs, JWT secrets, Mailjet keys, or Gmail app passwords in Vercel client environment variables.
 
@@ -86,7 +88,7 @@ In Coolify, add the backend environment variables from `server/.env.example`. At
 - A persistent VPS volume mounted at `/app/uploads` for uploaded media
 - Mailjet and Gmail secrets if email sending is enabled
 
-After Coolify deploys, copy the public Coolify API URL into Vercel as `VITE_API_URL`.
+After Coolify deploys, update the API and upload rewrite destinations in both Vercel configuration files to the public Coolify API URL. Direct API mode instead uses `VITE_API_URL`.
 
 The Coolify API URL used in Vercel must be `https://...`, not `http://...`. Browsers block an HTTPS frontend from sending login, newsletter, contact, or admin requests to an insecure HTTP API.
 

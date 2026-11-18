@@ -4,7 +4,7 @@
  * Provides a polished contact form for users to reach out to SAPTech Uganda.
  */
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import apiService from "../services/api";
 import { fadeInUp, fadeInLeft, fadeInRight, staggerContainer } from "../utils/animations";
 import { showAlert, LoadingButton } from "../utils/alerts.jsx";
@@ -90,7 +90,7 @@ const Contact = () => {
   return (
     <section id="contact" className="contact">
       <div className="container">
-        <motion.div
+        <Motion.div
           className="contact-heading"
           variants={fadeInUp}
           initial="hidden"
@@ -100,10 +100,10 @@ const Contact = () => {
           <span className="contact-eyebrow">Contact Us</span>
           <h2>Get in Touch</h2>
           <p>Ready to start your next project? We&apos;d love to hear from you.</p>
-        </motion.div>
+        </Motion.div>
 
         <div className="contact-content">
-          <motion.div
+          <Motion.div
             className="contact-info"
             variants={fadeInLeft}
             initial="hidden"
@@ -121,7 +121,7 @@ const Contact = () => {
               project, support request, or partnership idea.
             </p>
 
-            <motion.div
+            <Motion.div
               className="contact-items"
               variants={staggerContainer}
               initial="hidden"
@@ -129,7 +129,7 @@ const Contact = () => {
               viewport={{ once: true }}
             >
               {contactInfo.map((item) => (
-                <motion.a
+                <Motion.a
                   key={item.title}
                   className="contact-item"
                   href={item.link}
@@ -144,17 +144,17 @@ const Contact = () => {
                     <strong>{item.title}</strong>
                     <span>{item.info}</span>
                   </span>
-                </motion.a>
+                </Motion.a>
               ))}
-            </motion.div>
+            </Motion.div>
 
             <div className="contact-response">
               <span>Typical response</span>
               <strong>Within 24 hours</strong>
             </div>
-          </motion.div>
+          </Motion.div>
 
-          <motion.form
+          <Motion.form
             onSubmit={handleSubmit}
             className="contact-form"
             variants={fadeInRight}
@@ -168,9 +168,9 @@ const Contact = () => {
             </div>
 
             <div className="contact-form-grid">
-              <motion.div className="form-group" variants={fadeInUp}>
+              <Motion.div className="form-group" variants={fadeInUp}>
                 <label htmlFor="contact-name">Your Name</label>
-                <motion.input
+                <Motion.input
                   id="contact-name"
                   type="text"
                   name="name"
@@ -185,11 +185,11 @@ const Contact = () => {
                   whileFocus={{ scale: 1.01, borderColor: "#3b82f6" }}
                   transition={{ duration: 0.2 }}
                 />
-              </motion.div>
+              </Motion.div>
 
-              <motion.div className="form-group" variants={fadeInUp}>
+              <Motion.div className="form-group" variants={fadeInUp}>
                 <label htmlFor="contact-email">Your Email</label>
-                <motion.input
+                <Motion.input
                   id="contact-email"
                   type="email"
                   name="email"
@@ -204,13 +204,13 @@ const Contact = () => {
                   whileFocus={{ scale: 1.01, borderColor: "#3b82f6" }}
                   transition={{ duration: 0.2 }}
                 />
-              </motion.div>
+              </Motion.div>
 
-              <motion.div className="form-group" variants={fadeInUp}>
+              <Motion.div className="form-group" variants={fadeInUp}>
                 <label htmlFor="contact-phone">
                   Your Phone Number <span>(optional)</span>
                 </label>
-                <motion.input
+                <Motion.input
                   id="contact-phone"
                   type="tel"
                   name="phone"
@@ -225,11 +225,11 @@ const Contact = () => {
                   whileFocus={{ scale: 1.01, borderColor: "#3b82f6" }}
                   transition={{ duration: 0.2 }}
                 />
-              </motion.div>
+              </Motion.div>
 
-              <motion.div className="form-group" variants={fadeInUp}>
+              <Motion.div className="form-group" variants={fadeInUp}>
                 <label htmlFor="contact-subject">Subject</label>
-                <motion.input
+                <Motion.input
                   id="contact-subject"
                   type="text"
                   name="subject"
@@ -244,11 +244,11 @@ const Contact = () => {
                   whileFocus={{ scale: 1.01, borderColor: "#3b82f6" }}
                   transition={{ duration: 0.2 }}
                 />
-              </motion.div>
+              </Motion.div>
 
-              <motion.div className="form-group full-width" variants={fadeInUp}>
+              <Motion.div className="form-group full-width" variants={fadeInUp}>
                 <label htmlFor="contact-message">Your Message</label>
-                <motion.textarea
+                <Motion.textarea
                   id="contact-message"
                   name="message"
                   placeholder="Your Message"
@@ -262,7 +262,7 @@ const Contact = () => {
                   whileFocus={{ scale: 1.01, borderColor: "#3b82f6" }}
                   transition={{ duration: 0.2 }}
                 />
-              </motion.div>
+              </Motion.div>
             </div>
 
             <LoadingButton
@@ -274,11 +274,11 @@ const Contact = () => {
             >
               {isSubmitting ? "Sending..." : "Send Message"}
             </LoadingButton>
-          </motion.form>
+          </Motion.form>
         </div>
 
         {formMessage && (
-          <motion.div
+          <Motion.div
             className={`form-message ${formMessage.includes("error") || formMessage.includes("Error") ? "error" : "success"}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -286,7 +286,7 @@ const Contact = () => {
             transition={{ duration: 0.3 }}
           >
             {formMessage}
-          </motion.div>
+          </Motion.div>
         )}
       </div>
     </section>

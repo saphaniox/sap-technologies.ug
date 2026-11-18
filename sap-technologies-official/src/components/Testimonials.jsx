@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-// eslint-disable-next-line no-unused-vars
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import { fadeInUp, staggerContainer } from "../utils/animations";
 import "../styles/Testimonials.css";
 
@@ -89,15 +88,15 @@ const Testimonials = () => {
   return (
     <section id="testimonials" className="testimonials">
       <div className="container">
-        <motion.h2
+        <Motion.h2
           variants={fadeInUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
         >
           What Our Clients Say
-        </motion.h2>
-        <motion.p
+        </Motion.h2>
+        <Motion.p
           className="testimonials-subtitle"
           variants={fadeInUp}
           initial="hidden"
@@ -105,9 +104,9 @@ const Testimonials = () => {
           viewport={{ once: true }}
         >
           Real feedback from businesses we&apos;ve empowered across Uganda and beyond.
-        </motion.p>
+        </Motion.p>
 
-        <motion.div
+        <Motion.div
           className="testimonials-carousel"
           variants={staggerContainer}
           initial="hidden"
@@ -117,7 +116,7 @@ const Testimonials = () => {
           onFocusCapture={pauseAutoSlide}
         >
           <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
+            <Motion.div
               key={active}
               className="testimonial-card"
               custom={direction}
@@ -143,7 +142,7 @@ const Testimonials = () => {
                   <span>{t.company}</span>
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           </AnimatePresence>
 
           <div className="testimonials-nav">
@@ -160,7 +159,7 @@ const Testimonials = () => {
             </div>
             <button className="nav-btn" onClick={() => next()} aria-label="Next testimonial">&#8594;</button>
           </div>
-        </motion.div>
+        </Motion.div>
       </div>
     </section>
   );

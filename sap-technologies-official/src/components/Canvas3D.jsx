@@ -1,3 +1,4 @@
+import { hasWebGLSupport } from "../utils/webglSupport";
 import React, { useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { 
@@ -224,7 +225,7 @@ function Scene3D({ showText = false, text = "SAPTech Uganda", enableControls = f
 }
 
 // 3D Canvas wrapper component
-function Canvas3D({ 
+function Canvas3D({
   children, 
   className = "", 
   height = "100vh",
@@ -234,6 +235,7 @@ function Canvas3D({
   alpha = true,
   ...props 
 }) {
+  if (!hasWebGLSupport()) return null;
   return (
     <div className={`relative ${className}`} style={{ height }}>
       <Canvas

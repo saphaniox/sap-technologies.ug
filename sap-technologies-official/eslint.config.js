@@ -26,4 +26,10 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    // Shared utilities intentionally expose UI components alongside their helpers.
+    // They are not component-only Fast Refresh boundaries.
+    files: ['src/utils/alerts.jsx', 'src/utils/microAnimations.jsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 ])

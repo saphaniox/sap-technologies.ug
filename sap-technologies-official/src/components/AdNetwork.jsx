@@ -1,13 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
 import {
   AD_CFASYNC,
   AD_DIRECT_LINK_URL,
   AD_NETWORK_ENABLED,
   AD_PLACEMENTS,
   AD_PROVIDER,
-  AD_ROUTE_TRIGGER_DELAY,
-  AD_ROUTE_TRIGGER_FUNCTION,
   AD_SERVICE_WORKER_URL,
   AD_SDK_NAME
 } from "../config/ads";
@@ -75,8 +72,6 @@ const buildAdFrameHtml = (placement) => {
 };
 
 const AdNetwork = () => {
-  const location = useLocation();
-
   useEffect(() => {
     if (!AD_SERVICE_WORKER_URL || typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
@@ -94,60 +89,7 @@ const AdNetwork = () => {
     });
   }, []);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    if (!AD_NETWORK_ENABLED) return;
-
-    const configElement = document.querySelector('meta[name="saptech-page-ad-config"]');
-    if (!configElement?.content) return;
-
-    try {
-      const config = JSON.parse(configElement.content);
-      const scripts = Array.isArray(config.scripts) ? config.scripts : [];
-      scripts.forEach((scriptConfig, index) => {
-        if (!scriptConfig?.src) return;
-
-        const selector = `script[data-saptech-page-ad="${index}"]`;
-        if (document.querySelector(selector)) {
-          return;
-        }
-
-        const script = document.createElement("script");
-        script.src = scriptConfig.src;
-        script.async = true;
-        script.dataset.saptechPageAd = String(index);
-        if (scriptConfig.zoneId) script.dataset.zone = scriptConfig.zoneId;
-        if (scriptConfig.sdkName) script.dataset.sdk = scriptConfig.sdkName;
-        if (scriptConfig.cfasync) script.dataset.cfasync = scriptConfig.cfasync;
-        script.addEventListener("error", () => script.remove(), { once: true });
-        document.head.appendChild(script);
-      });
-    } catch (error) {
-      console.warn("Page ad configuration could not be read:", error);
-    }
-  }, [location.pathname, location.search]);
-
-  useEffect(() => {
-    if (
-      !AD_NETWORK_ENABLED ||
-      !AD_ROUTE_TRIGGER_FUNCTION ||
-      typeof window === "undefined"
-    ) return undefined;
-
-    const timer = window.setTimeout(() => {
-      const trigger = window[AD_ROUTE_TRIGGER_FUNCTION];
-
-      if (typeof trigger === "function") {
-        Promise.resolve(trigger()).catch((error) => {
-          console.warn(`${providerNames[AD_PROVIDER] || "Ad"} route ad could not be shown:`, error);
-        });
-      }
-    }, AD_ROUTE_TRIGGER_DELAY);
-
-    return () => window.clearTimeout(timer);
-  }, [location.pathname, location.search]);
-
+  // Do not load page-wide ad scripts or trigger overlay ads on navigation.
   return null;
 };
 

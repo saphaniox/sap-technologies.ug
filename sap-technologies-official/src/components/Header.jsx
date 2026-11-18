@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { flushSync } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
 import { getImageUrl } from "../utils/imageUrl";
 import apiService from "../services/api";
 import "../styles/Header.css";
 
-const Motion = motion;
 
 const toArray = (value) => {
   if (Array.isArray(value)) return value;

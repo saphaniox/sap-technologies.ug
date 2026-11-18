@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import "../styles/Hero.css";
 
 // Three.js is 854 kB — lazy-load so it never blocks the initial paint
@@ -81,7 +81,7 @@ const Hero = () => {
   };
 
   return (
-    <motion.section
+    <Motion.section
       id="home"
       className="hero"
       initial={{ opacity: 0 }}
@@ -90,7 +90,7 @@ const Hero = () => {
     >
 <div className="floating-particles" aria-hidden="true">
         {particles.map((particle) => (
-          <motion.div
+          <Motion.div
             key={particle.id}
             className="particle"
             style={{
@@ -104,54 +104,54 @@ const Hero = () => {
         ))}
       </div>
 
-      <motion.div
+      <Motion.div
         className="hero-content"
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3, duration: 0.8 }}
       >
-        <motion.div
+        <Motion.div
           className="welcome-badge"
           whileHover={{ scale: 1.1 }}
         >
           <span>WELCOME TO SAPTECH UGANDA</span>
-        </motion.div>
+        </Motion.div>
 
-        <motion.h1 className="hero-title">
+        <Motion.h1 className="hero-title">
           <span className="title-line">Professional in </span>
           <span className="title-line highlight">
             <span className="typewriter-text">{currentText}</span>
-            <motion.span
+            <Motion.span
               className="cursor"
               animate={{ opacity: [0, 1, 0] }}
               transition={{ duration: 1, repeat: Infinity }}
             >
               |
-            </motion.span>
+            </Motion.span>
           </span>
           <span className="title-line">Solutions</span>
-        </motion.h1>
+        </Motion.h1>
 
-        <motion.div className="hero-buttons">
-          <motion.button
+        <Motion.div className="hero-buttons">
+          <Motion.button
             className="btn btn-primary"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleGetStarted}
           >
             Get Started →
-          </motion.button>
-          <motion.button
+          </Motion.button>
+          <Motion.button
             className="btn btn-secondary"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleViewProjects}
           >
             View Our Featured Projects
-          </motion.button>
-        </motion.div>
-      </motion.div>
-    </motion.section>
+          </Motion.button>
+        </Motion.div>
+      </Motion.div>
+    </Motion.section>
   );
 };
 
