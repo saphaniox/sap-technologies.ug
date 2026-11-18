@@ -10,7 +10,7 @@ class ErrorBoundary extends React.Component {
     };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     // Update state so the next render will show the fallback UI
     return { hasError: true };
   }
@@ -25,7 +25,7 @@ class ErrorBoundary extends React.Component {
     });
 
     // Log to error reporting service in production
-    if (process.env.NODE_ENV === "production") {
+    if (import.meta.env.PROD) {
       // Example: Send to error reporting service
       // logErrorToService(error, errorInfo);
     }
@@ -52,7 +52,7 @@ class ErrorBoundary extends React.Component {
               </button>
             </div>
 
-            {process.env.NODE_ENV === "development" && (
+            {import.meta.env.DEV && (
               <details className="error-details">
                 <summary>Error Details (Development)</summary>
                 <div className="error-stack">

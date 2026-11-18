@@ -634,7 +634,7 @@ const IoTForm = ({ isOpen, onClose, project, onSuccess }) => {
                 className="file-input"
                 disabled={newVideoFiles.length >= 3}
               />
-              <small className="form-hint">Add up to 3 videos, 50MB each. MP4, WebM, MOV, and AVI are supported.</small>
+              <small className="form-hint">Add up to 3 videos, 50MB each. For reliable browser playback, use MP4 (H.264) or WebM. Other formats may require downloading.</small>
             </div>
 
             {/* Existing uploaded videos */}

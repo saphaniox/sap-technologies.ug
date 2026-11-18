@@ -25,6 +25,7 @@ const {
 const { connectDB, checkDatabaseHealth, auditDatabaseSecurity } = require("./config/database");
 const { errorHandler } = require("./middleware/errorHandler");
 const { trackVisitor } = require("./middleware/visitorTracking");
+const { uploadAccess } = require("./middleware/uploadAccess");
 const { authMiddleware, adminMiddleware } = require("./middleware/auth");
 const apiRoutes = require("./routes");
 
@@ -238,8 +239,8 @@ app.use("/api/products/inquiries", rateLimits.inquiry);
 app.use("/api/services/quotes", rateLimits.serviceQuote);
 
 // Static files with security headers - FIX FOR IMAGE LOADING
-app.use("/uploads", express.static(path.join(__dirname, "../uploads"), {
-    setHeaders: (res, filePath) => {
+app.use("/uploads", uploadAccess, express.static(path.join(__dirname, "../uploads"), {
+    setHeaders: (res) => {
         // Set appropriate MIME types and security headers for uploads
         // Allow ALL configured origins for image serving
         const origin = res.req.headers.origin;
@@ -263,18 +264,11 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads"), {
             "Cache-Control": "public, max-age=31536000", // 1 year cache for uploaded images
             "Cross-Origin-Resource-Policy": "cross-origin",
             "Access-Control-Allow-Credentials": "true",
-            "Access-Control-Allow-Methods": "GET, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type"
+            "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Range",
+            "Access-Control-Expose-Headers": "Accept-Ranges, Content-Range, Content-Length"
         });
         
-        // Only allow certain file types to be served
-        const ext = filePath.substring(filePath.lastIndexOf(".")).toLowerCase();
-        const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".pdf", ".webp", ".doc", ".docx", ".rtf", ".txt", ".odt"];
-        if (!allowedExtensions.includes(ext)) {
-            securityLogger.warn(`Blocked attempt to access disallowed file type: ${ext}`, { path: filePath, ip: res.req.ip });
-            res.status(403).end();
-            return;
-        }
     }
 }));
 

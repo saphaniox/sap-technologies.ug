@@ -94,7 +94,7 @@ export function formatErrorForDisplay(error, title = '', context = '') {
  * @param {string} context - Where the error occurred
  */
 export function logError(error, context = '') {
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     console.error(`[${context}]`, error);
   }
 }
