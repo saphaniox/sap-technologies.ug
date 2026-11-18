@@ -139,6 +139,13 @@ const nominationSchema = new mongoose.Schema({
         ipAddress: String
     }],
     
+    adminVotes: { type: Number, default: 0, min: 0 },
+    voteAdjustments: [{
+        amount: { type: Number, required: true, min: 1 },
+        reason: { type: String, required: true, trim: true, maxlength: 300 },
+        addedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+        addedAt: { type: Date, default: Date.now }
+    }],
     // Admin Notes
     adminNotes: {
         type: String,
@@ -274,7 +281,7 @@ awardCandidateDraftSchema.index({ category: 1, nomineeName: 1 }, { unique: true 
 
 // Virtual for total votes count
 nominationSchema.virtual("totalVotes").get(function() {
-    return this.publicVotes.length;
+    return this.publicVotes ? this.publicVotes.length + (this.adminVotes || 0) : this.votes || 0;
 });
 
 // Virtual for nominee full display name
@@ -303,7 +310,7 @@ nominationSchema.pre("save", function(next) {
 
 // Pre-save middleware to update votes count
 nominationSchema.pre("save", function(next) {
-    this.votes = this.publicVotes.length;
+    this.votes = this.publicVotes.length + (this.adminVotes || 0);
     next();
 });
 
@@ -326,7 +333,7 @@ nominationSchema.statics.getByCategoryWithStats = async function(categoryId, sta
         },
         {
             $addFields: {
-                totalVotes: { $size: "$publicVotes" },
+                totalVotes: { $add: [{ $size: "$publicVotes" }, { $ifNull: ["$adminVotes", 0] }] },
                 categoryName: { $arrayElemAt: ["$categoryInfo.name", 0] }
             }
         },
@@ -337,26 +344,29 @@ nominationSchema.statics.getByCategoryWithStats = async function(categoryId, sta
 };
 
 // Instance method to add vote
-nominationSchema.methods.addVote = function(voterData) {
-    // Check if email already voted
-    const existingVote = this.publicVotes.find(vote => vote.voterEmail === voterData.voterEmail);
-    if (existingVote) {
+nominationSchema.methods.addVote = async function(voterData) {
+    const voterEmail = voterData.voterEmail.toLowerCase().trim();
+    // The duplicate check and write must happen together, including simultaneous requests.
+    const updated = await this.constructor.findOneAndUpdate({
+        _id: this._id,
+        status: "approved",
+        "publicVotes.voterEmail": { $ne: voterEmail }
+    }, {
+        $push: { publicVotes: { ...voterData, voterEmail, votedAt: new Date() } },
+        $inc: { votes: 1 }
+    }, { new: true, runValidators: true });
+    if (!updated) {
         throw new Error("This email has already voted for this nomination");
     }
-    
-    this.publicVotes.push({
-        voterEmail: voterData.voterEmail,
-        voterName: voterData.voterName,
-        ipAddress: voterData.ipAddress,
-        votedAt: new Date()
-    });
-    
-    return this.save();
+    this.publicVotes = updated.publicVotes;
+    this.votes = updated.votes;
+    this.adminVotes = updated.adminVotes || 0;
+    return updated;
 };
 
 // Instance method to check if email has voted
 nominationSchema.methods.hasVoted = function(email) {
-    return this.publicVotes.some(vote => vote.voterEmail === email.toLowerCase());
+    return this.publicVotes.some(vote => vote.voterEmail === email.toLowerCase().trim());
 };
 
 // Indexes for performance optimization - AwardCategory

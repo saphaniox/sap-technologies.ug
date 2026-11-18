@@ -155,40 +155,26 @@ const PartnerForm = ({ isOpen, onClose, partner, onSave }) => {
       }
 
       const url = partner
-        ? `${apiService.baseURL}/api/partners/${partner._id}`
-        : `${apiService.baseURL}/api/partners`;
+        ? `/api/partners/${partner._id}`
+        : "/api/partners";
 
       const method = partner ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      const savedPartner = await apiService.request(url, {
         method,
         body: formDataToSend,
         credentials: "include"
       });
 
-      if (response.ok) {
-        const savedPartner = await response.json();
-        await showAlert.success(
-          partner ? "Partner updated" : "Partner added",
-          logoFile ? "The image uploaded successfully." : "The partner was saved successfully."
-        );
-        onSave(savedPartner);
-        onClose();
-      } else {
-        const errorData = await response.json();
-        const message = errorData.errors
-          ? errorData.errors.join(", ")
-          : errorData.message || "Couldn't save the partner. Please try again.";
-        if (errorData.errors) {
-          setErrors({ submit: message });
-        } else {
-          setErrors({ submit: message });
-        }
-        await showAlert.error("Couldn't save partner", message);
-      }
+      await showAlert.success(
+        partner ? "Partner updated" : "Partner added",
+        logoFile ? "The image uploaded successfully." : "The partner was saved successfully."
+      );
+      onSave(savedPartner);
+      onClose();
     } catch (error) {
       console.error("Error saving partner:", error);
-      const message = "A network error occurred. Please check your connection and try again.";
+      const message = error.message || "Couldn't save the partner. Please try again.";
       setErrors({ submit: message });
       await showAlert.error("Upload failed", message);
     } finally {

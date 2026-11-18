@@ -15,11 +15,13 @@ const contactSchema = new mongoose.Schema({
         trim: true,
         match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please provide a valid email"]
     },
+    subject: { type: String, trim: true, maxlength: 200 },
+    phone: { type: String, trim: true, maxlength: 20 },
     message: {
         type: String,
         required: [true, "Message is required"],
         trim: true,
-        maxlength: [1000, "Message cannot exceed 1000 characters"]
+        maxlength: [2000, "Message cannot exceed 2000 characters"]
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,

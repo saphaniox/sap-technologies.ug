@@ -127,8 +127,8 @@ const Account = ({ onClose }) => {
       return;
     }
 
-    if (formData.newPassword.length < 6) {
-      setMessage("Your new password needs to be at least 6 characters");
+    if (formData.newPassword.length < 8 || !/[a-z]/.test(formData.newPassword) || !/[A-Z]/.test(formData.newPassword) || !/[0-9]/.test(formData.newPassword) || !/[^a-zA-Z0-9\s]/.test(formData.newPassword)) {
+      setMessage("Use at least 8 characters with uppercase and lowercase letters, a number, and a symbol");
       setTimeout(() => setMessage(""), 5000);
       return;
     }
@@ -425,7 +425,7 @@ const Account = ({ onClose }) => {
                       value={formData.newPassword}
                       onChange={handleInputChange}
                       required
-                      minLength="6"
+                      minLength="8"
                     />
                   </div>
                   <div className="form-group">
@@ -436,7 +436,7 @@ const Account = ({ onClose }) => {
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
                       required
-                      minLength="6"
+                      minLength="8"
                     />
                   </div>
                   <button type="submit" className="btn-primary">Change Password</button>

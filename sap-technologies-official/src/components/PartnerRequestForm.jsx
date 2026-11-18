@@ -28,7 +28,7 @@ const PartnerRequestForm = ({ isOpen, onClose }) => {
     setError("");
 
     try {
-      const response = await fetch(`${apiService.baseURL}/api/partnership-requests`, {
+      await apiService.request("/api/partnership-requests", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -42,27 +42,20 @@ const PartnerRequestForm = ({ isOpen, onClose }) => {
         })
       });
 
-      if (response.ok) {
-        setSuccess(true);
-        setTimeout(() => {
-          onClose();
-          setSuccess(false);
-          setFormData({
-            companyName: "",
-            contactEmail: "",
-            website: "",
-            description: "",
-            contactPerson: ""
-          });
-        }, 2000);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || "We couldn't submit your partnership request. Please try again.");
-        // Auto-dismiss error after 5 seconds
-        setTimeout(() => setError(""), 5000);
-      }
-    } catch {
-      setError("A network error occurred. Please check your connection and try again.");
+      setSuccess(true);
+      setTimeout(() => {
+        onClose();
+        setSuccess(false);
+        setFormData({
+          companyName: "",
+          contactEmail: "",
+          website: "",
+          description: "",
+          contactPerson: ""
+        });
+      }, 2000);
+    } catch (error) {
+      setError(error.message || "We couldn't submit your partnership request. Please try again.");
       // Auto-dismiss error after 5 seconds
       setTimeout(() => setError(""), 5000);
     } finally {

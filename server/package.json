@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "src/app.js",
   "scripts": {
+    "test:forms": "node --test src/middleware/forms.test.cjs src/middleware/uploadAccess.test.cjs",
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
     "dev:inspect": "nodemon --inspect src/app.js",

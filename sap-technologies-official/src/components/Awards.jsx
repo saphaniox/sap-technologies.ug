@@ -73,7 +73,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
     loadCategories();
 
     // Countdown timer - SAPTECH Awards 2026 deadline: December 25, 2026, 23:59:59
-    const deadline = new Date("2026-12-25T23:59:59").getTime();
+    const deadline = new Date("2026-12-25T23:59:59+03:00").getTime();
 
     const timer = setInterval(() => {
       const now = new Date().getTime();
@@ -116,7 +116,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
         page: pagination.currentPage,
         limit: 12,
         sortBy,
-        sortOrder: "desc"
+        sortOrder: sortBy === "nomineeName" ? "asc" : "desc"
       });
 
       if (selectedCategory) params.append("category", selectedCategory);
@@ -243,8 +243,10 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
 
       showSuccess(" Vote Submitted! Thank you for your support!");
       loadNominations(); // Refresh to show updated vote count
+      return true;
     } catch (error) {
-      showAlert.error("Vote didn't go through", error.message || "Something went wrong submitting your vote. Please try again.");
+      await showAlert.error("Vote didn't go through", error.message || "Something went wrong submitting your vote. Please try again.");
+      return false;
     }
   };
 
@@ -577,7 +579,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
                   key={category._id}
                   type="button"
                   className={`category-card ${selectedCategory === category._id ? 'active' : ''}`}
-                  onClick={() => setSelectedCategory(selectedCategory === category._id ? "" : category._id)}
+                  onClick={() => { setSelectedCategory(selectedCategory === category._id ? "" : category._id); setPagination(prev => ({ ...prev, currentPage: 1 })); }}
                   aria-pressed={selectedCategory === category._id}
                   aria-label={`Filter nominations by ${category.name}`}
                 >
@@ -690,14 +692,14 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
                 type="text"
                 placeholder="Search nominations..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => { setSearchTerm(e.target.value); setPagination(prev => ({ ...prev, currentPage: 1 })); }}
                 className="search-input"
                 aria-label="Search nominations"
               />
 
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={(e) => { setSortBy(e.target.value); setPagination(prev => ({ ...prev, currentPage: 1 })); }}
                 className="sort-select"
                 aria-label="Sort nominations"
               >
@@ -709,7 +711,7 @@ const Awards = ({ onClose, showStandaloneChrome = true }) => {
               {uniqueCountries.length > 1 && (
                 <select
                   value={filterCountry}
-                  onChange={(e) => setFilterCountry(e.target.value)}
+                  onChange={(e) => { setFilterCountry(e.target.value); setPagination(prev => ({ ...prev, currentPage: 1 })); }}
                   className="filter-select"
                   aria-label="Filter nominations by country"
                 >
@@ -837,12 +839,18 @@ const NominationCard = ({ nomination, onVote }) => {
   const [voterEmail, setVoterEmail] = useState("");
   const [showVoteForm, setShowVoteForm] = useState(false);
 
-  const handleVoteSubmit = (e) => {
+  const [submittingVote, setSubmittingVote] = useState(false);
+  const handleVoteSubmit = async (e) => {
     e.preventDefault();
-    if (voterEmail.trim()) {
-      onVote(nomination._id, voterEmail.trim());
-      setVoterEmail("");
-      setShowVoteForm(false);
+    if (!voterEmail.trim() || submittingVote) return;
+    setSubmittingVote(true);
+    try {
+      if (await onVote(nomination._id, voterEmail.trim())) {
+        setVoterEmail("");
+        setShowVoteForm(false);
+      }
+    } finally {
+      setSubmittingVote(false);
     }
   };
 
@@ -887,9 +895,10 @@ const NominationCard = ({ nomination, onVote }) => {
               <button
                 type="button"
                 className="vote-btn"
+                disabled={nomination.status !== "approved"}
                 onClick={() => setShowVoteForm(true)}
               >
-                Vote
+                {nomination.status === "approved" ? "Vote" : "Voting closed"}
               </button>
             ) : (
               <form onSubmit={handleVoteSubmit} className="vote-form">
@@ -901,8 +910,8 @@ const NominationCard = ({ nomination, onVote }) => {
                   required
                   aria-label="Your email address"
                 />
-                <button type="submit">Submit Vote</button>
-                <button type="button" onClick={() => setShowVoteForm(false)}>Cancel</button>
+                <button type="submit" disabled={submittingVote}>{submittingVote ? "Submitting..." : "Submit Vote"}</button>
+                <button type="button" disabled={submittingVote} onClick={() => setShowVoteForm(false)}>Cancel</button>
               </form>
             )}
           </div>

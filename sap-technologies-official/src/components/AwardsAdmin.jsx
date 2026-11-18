@@ -48,7 +48,7 @@ const AwardsAdmin = () => {
   const loadCategories = useCallback(async () => {
     try {
       console.log(" Loading award categories...");
-      const response = await apiService.getAwardsCategories();
+      const response = await apiService.get("/awards/admin/categories", { useCache: false });
       console.log(" Categories response:", response);
 
       // Backend returns: { status: "success", data: { categories: [...] } }
@@ -152,6 +152,48 @@ const AwardsAdmin = () => {
       loadAwardsStats();
     }
   }, [activeSubTab, loadCategories, loadNominations, loadAwardsStats]);
+
+  const handleAddVotes = async (nomination) => {
+    const { value: amountInput } = await Swal.fire({
+      title: `Add votes for ${nomination.nomineeName}`,
+      input: "number",
+      inputLabel: `Current public total: ${nomination.votes || 0} votes`,
+      inputAttributes: { min: "1", max: "1000000", step: "1" },
+      showCancelButton: true,
+      confirmButtonText: "Continue",
+      inputValidator: value => {
+        const amount = Number(value);
+        return Number.isInteger(amount) && amount > 0 && amount <= 1000000
+          ? undefined : "Enter a whole number between 1 and 1,000,000";
+      }
+    });
+    if (!amountInput) return;
+    const amount = Number(amountInput);
+    const { value: reason } = await Swal.fire({
+      title: `Add ${amount.toLocaleString()} votes?`,
+      text: `The public total will increase from ${(nomination.votes || 0).toLocaleString()} to ${((nomination.votes || 0) + amount).toLocaleString()}.`,
+      input: "textarea",
+      inputLabel: "Reason (admin history only)",
+      inputAttributes: { maxLength: "300" },
+      showCancelButton: true,
+      confirmButtonText: "Add votes",
+      inputValidator: value => value.trim().length >= 5 && value.trim().length <= 300
+        ? undefined : "Enter a reason between 5 and 300 characters"
+    });
+    if (!reason) return;
+    setLoading(prev => ({ ...prev, updating: true }));
+    try {
+      const response = await apiService.addAdminVotes(nomination._id, amount, reason.trim());
+      const updated = response.data.nomination;
+      setNominations(prev => prev.map(item => item._id === updated._id ? updated : item));
+      await Promise.all([loadNominations(), loadAwardsStats()]);
+      await showAlert.success("Votes added", `${amount.toLocaleString()} votes added to the public total.`);
+    } catch (error) {
+      await showAlert.error("Couldn't add votes", error.message || "Please try again.");
+    } finally {
+      setLoading(prev => ({ ...prev, updating: false }));
+    }
+  };
 
   const handleUpdateStatus = async (nominationId, status, adminNotes = "") => {
     console.log(" Updating nomination status:", nominationId, "to", status);
@@ -364,11 +406,11 @@ const AwardsAdmin = () => {
       formData.append("nomineeCompany", editingPhotoNomination.nomineeCompany || "");
       formData.append("nomineeCountry", editingPhotoNomination.nomineeCountry);
       formData.append("category", editingPhotoNomination.category._id);
-      formData.append("nominationReason", editingPhotoNomination.nominationReason);
+      formData.append("nominationReason", editingPhotoNomination.nominationReason || "");
       formData.append("achievements", editingPhotoNomination.achievements || "");
       formData.append("impactDescription", editingPhotoNomination.impactDescription || "");
-      formData.append("nominatorName", editingPhotoNomination.nominatorName);
-      formData.append("nominatorEmail", editingPhotoNomination.nominatorEmail);
+      formData.append("nominatorName", editingPhotoNomination.nominatorName || "");
+      formData.append("nominatorEmail", editingPhotoNomination.nominatorEmail || "");
       formData.append("nominatorPhone", editingPhotoNomination.nominatorPhone || "");
       formData.append("nominatorOrganization", editingPhotoNomination.nominatorOrganization || "");
 
@@ -827,9 +869,26 @@ const AwardsAdmin = () => {
             <p>Reviewed: {new Date(nomination.reviewedAt).toLocaleDateString()}</p>
           )}
         </div>
+        {nomination.voteAdjustments?.length > 0 && (
+          <details className="admin-notes">
+            <summary>Vote adjustment history ({nomination.voteAdjustments.length})</summary>
+            <ul>
+              {[...nomination.voteAdjustments].reverse().map(adjustment => (
+                <li key={adjustment._id}>
+                  +{adjustment.amount.toLocaleString()} votes — {adjustment.reason}
+                  {" · "}{new Date(adjustment.addedAt).toLocaleString()}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
       </div>
 
       <div className="nomination-actions">
+        <button type="button" className="action-btn approve-btn" disabled={loading.updating}
+          onClick={() => handleAddVotes(nomination)}>
+          Add votes
+        </button>
         {nomination.status === "pending" && (
           <>
             <button

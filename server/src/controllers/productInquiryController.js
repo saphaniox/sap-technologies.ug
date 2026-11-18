@@ -5,7 +5,7 @@ class ProductInquiryController {
   // Create a new product inquiry
   static async createInquiry(req, res) {
     try {
-      let { productId, customerEmail, customerPhone, preferredContact, message } = req.body;
+      let { productId, customerName, quantity = 1, customerEmail, customerPhone, preferredContact, message } = req.body;
 
       // Auto-fill user data if logged in
       if (req.user) {
@@ -39,6 +39,8 @@ class ProductInquiryController {
       const inquiry = new ProductInquiry({
         product: productId,
         productName: product.name,
+        customerName: customerName?.trim() || req.user?.name || "",
+        quantity: Number(quantity),
         customerEmail: customerEmail.toLowerCase().trim(),
         customerPhone: customerPhone?.trim() || "",
         preferredContact: preferredContact || "email",
@@ -65,7 +67,7 @@ class ProductInquiryController {
             customerEmail: inquiry.customerEmail,
             customerPhone: inquiry.customerPhone || "Not provided",
             preferredContact: inquiry.preferredContact,
-            message: inquiry.message || "No additional message",
+            message: `Name: ${inquiry.customerName || "Not provided"}\nQuantity requested: ${inquiry.quantity}\n${inquiry.message || "No additional message"}`,
             inquiryDate: inquiry.createdAt
           });
 
@@ -136,6 +138,8 @@ class ProductInquiryController {
         const inquiry = new ProductInquiry({
           product: productId,
           productName: productName || "Unknown Product",
+          customerName: customerName?.trim() || "",
+          quantity: Number(quantity || 1),
           customerEmail: normalizedEmail,
           customerPhone: customerPhone?.trim() || "",
           preferredContact: preferredContact || "email",

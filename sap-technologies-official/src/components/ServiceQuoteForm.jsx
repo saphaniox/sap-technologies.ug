@@ -84,7 +84,7 @@ const ServiceQuoteForm = ({ service, onClose, onSubmit }) => {
       newErrors.customerEmail = "Email is invalid";
     }
 
-    if (formData.preferredContact === "phone" && !formData.customerPhone.trim()) {
+    if (["phone", "both"].includes(formData.preferredContact) && !formData.customerPhone.trim()) {
       newErrors.customerPhone = "Phone is required when phone contact is preferred";
     }
 

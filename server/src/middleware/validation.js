@@ -136,7 +136,7 @@ const validateContact = [
         .trim()
         .isLength({ min: 2, max: 100 })
         .withMessage("Name must be between 2 and 100 characters")
-        .matches(/^[a-zA-Z\s\-"\.]+$/)
+        .matches(/^[\p{L}\s\-'\.]+$/u)
         .withMessage("Name contains invalid characters")
         .customSanitizer(sanitizeInput),
     body("email")
@@ -148,8 +148,13 @@ const validateContact = [
           }
           return true;
         }),
+    body("phone")
+        .optional({ values: "falsy" })
+        .trim()
+        .matches(/^\+?[0-9\s\-()]{7,20}$/)
+        .withMessage("Please provide a valid phone number"),
     body("subject")
-        .optional()
+        .optional({ values: "falsy" })
         .trim()
         .isLength({ min: 3, max: 200 })
         .withMessage("Subject must be between 3 and 200 characters")
@@ -213,7 +218,7 @@ const validateProfileUpdate = [
         .trim()
         .isLength({ min: 2, max: 50 })
         .withMessage("Name must be between 2 and 50 characters")
-        .matches(/^[a-zA-Z\s\-"\.]+$/)
+        .matches(/^[\p{L}\s\-'\.]+$/u)
         .withMessage("Name contains invalid characters")
         .customSanitizer(sanitizeInput),
     body("phone")
@@ -531,7 +536,7 @@ const validatePartnershipRequest = [
           return true;
         }),
     body("website")
-        .optional()
+        .optional({ values: "falsy" })
         .trim()
         .isURL({
           protocols: ['http', 'https'],
@@ -551,7 +556,7 @@ const validatePartnershipRequest = [
         .trim()
         .isLength({ min: 2, max: 200 })
         .withMessage("Contact person name must be between 2 and 200 characters")
-        .matches(/^[a-zA-Z\s\-"\.]+$/)
+        .matches(/^[\p{L}\s\-'\.]+$/u)
         .withMessage("Contact person name contains invalid characters")
         .customSanitizer(sanitizeInput),
     handleValidationErrors

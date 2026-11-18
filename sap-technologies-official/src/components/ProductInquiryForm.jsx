@@ -67,7 +67,7 @@ const ProductInquiryForm = ({ product, onClose, onSubmit }) => {
       return;
     }
 
-    if (formData.preferredContact === "phone" && !formData.customerPhone) {
+    if (["phone", "both"].includes(formData.preferredContact) && !formData.customerPhone.trim()) {
       setError("Please provide a phone number if you'd like us to call you");
       setLoading(false);
       return;

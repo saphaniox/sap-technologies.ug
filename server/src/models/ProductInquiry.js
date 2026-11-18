@@ -10,6 +10,8 @@ const productInquirySchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  customerName: { type: String, trim: true, maxlength: 100 },
+  quantity: { type: Number, min: 1, default: 1, validate: Number.isInteger },
   customerEmail: {
     type: String,
     required: true,
@@ -28,7 +30,7 @@ const productInquirySchema = new mongoose.Schema({
   },
   message: {
     type: String,
-    maxlength: 1000
+    maxlength: 1200
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,

@@ -8,6 +8,7 @@ const queueCertificateEmail = require("../utils/queueCertificateEmail");
 const cache = require("../services/cacheService");
 const logger = require("../utils/logger");
 const { getUploadedFileUrl } = require("../utils/uploadedFileUrl");
+const { PUBLIC_STATUSES, PUBLIC_FIELDS, publicNominationQuery } = require("../utils/awardsPublic");
 
 // Helper function to get the URL for an upload served by the VPS.
 const getFileUrl = (file, folder = 'awards') => {
@@ -15,6 +16,14 @@ const getFileUrl = (file, folder = 'awards') => {
 };
 
 class AwardsController {
+    async getAdminCategories(req, res, next) {
+        try {
+            const categories = await AwardCategory.find({}).sort({ name: 1 });
+            res.json({ status: "success", data: { categories } });
+        } catch (error) {
+            next(error);
+        }
+    }
     // =====================
     // CATEGORY MANAGEMENT
     // =====================
@@ -404,6 +413,13 @@ class AwardsController {
             }
 
             // Handle photo upload with enhanced error handling
+            if (!await AwardCategory.exists({ _id: category, isActive: true })) {
+                if (req.file?.path) await fs.unlink(req.file.path).catch(() => {});
+                return res.status(400).json({ status: "error", message: "Please select an active award category" });
+            }
+            if (!req.file) {
+                return res.status(400).json({ status: "error", message: "Please upload a nominee photo" });
+            }
             let nomineePhotoPath = "";
             if (req.file) {
                 try {
@@ -581,56 +597,17 @@ class AwardsController {
     // Get all nominations with filters
     async getNominations(req, res, next) {
         try {
-            const { 
-                category, 
-                status = "approved", 
-                country, 
-                page = 1, 
-                limit = 20, 
-                sortBy = "votes",
-                sortOrder = "desc",
-                search
-            } = req.query;
-
-            // Create cache key based on query params
-            const cacheKey = `${category || 'all'}:${status}:${country || 'all'}:${page}:${limit}:${sortBy}:${sortOrder}:${search || 'all'}`;
-            
-            // Try to get from cache
+            const { filter, sort, page, limit } = publicNominationQuery(req.query);
+            const cacheKey = JSON.stringify({ filter, sort, page, limit, query: req.query });
             const cachedNominations = cache.getCachedNominations(cacheKey);
             if (cachedNominations) {
-                logger.logDebug('AwardsController', 'Serving cached nominations', { cacheKey });
-                return res.status(200).json({
-                    status: "success",
-                    data: cachedNominations,
-                    cached: true
-                });
+                return res.status(200).json({ status: "success", data: cachedNominations, cached: true });
             }
-
-            // Build filter object
-            const filter = {};
-            if (category) filter.category = category;
-            if (status) filter.status = status;
-            if (country) filter.nomineeCountry = new RegExp(country, "i");
-            if (search) {
-                filter.$or = [
-                    { nomineeName: new RegExp(search, "i") },
-                    { nomineeTitle: new RegExp(search, "i") },
-                    { nomineeCompany: new RegExp(search, "i") },
-                    { nominationReason: new RegExp(search, "i") }
-                ];
-            }
-
-            // Build sort object
-            const sort = {};
-            sort[sortBy] = sortOrder === "desc" ? -1 : 1;
-            if (sortBy !== "createdAt") {
-                sort.createdAt = -1; // Secondary sort
-            }
-
-            const skip = (parseInt(page) - 1) * parseInt(limit);
+            const skip = (page - 1) * limit;
 
             const nominations = await Nomination.find(filter)
-                .populate("category", "name description icon")
+                .select(PUBLIC_FIELDS)
+                .populate("category", "name description icon iconName")
                 .sort(sort)
                 .skip(skip)
                 .limit(parseInt(limit))
@@ -672,12 +649,14 @@ class AwardsController {
             let nomination;
             if (id.match(/^[0-9a-fA-F]{24}$/)) {
                 // ObjectId
-                nomination = await Nomination.findById(id)
-                    .populate("category", "name description icon");
+                nomination = await Nomination.findOne({ _id: id, status: { $in: PUBLIC_STATUSES } })
+                    .select(PUBLIC_FIELDS)
+                    .populate("category", "name description icon iconName");
             } else {
                 // Slug
-                nomination = await Nomination.findOne({ slug: id })
-                    .populate("category", "name description icon");
+                nomination = await Nomination.findOne({ slug: id, status: { $in: PUBLIC_STATUSES } })
+                    .select(PUBLIC_FIELDS)
+                    .populate("category", "name description icon iconName");
             }
 
             if (!nomination) {
@@ -794,6 +773,10 @@ class AwardsController {
     // Check if email has voted for nomination
     async checkVoteStatus(req, res, next) {
         try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ status: "error", message: "Validation failed", errors: errors.array() });
+            }
             const { id } = req.params;
             const { email } = req.query;
 
@@ -1034,13 +1017,11 @@ class AwardsController {
 
             // Handle photo upload if provided
             let photoPath = nomination.nomineePhoto;
+            let oldPhotoPath;
             if (req.file) {
-                // Delete old photo if exists and is local
+                // Keep the old photo until its replacement has saved successfully.
                 if (nomination.nomineePhoto && !nomination.nomineePhoto.startsWith('http')) {
-                    const oldPhotoPath = path.join(__dirname, '../../uploads/awards', path.basename(nomination.nomineePhoto));
-                    fs.unlink(oldPhotoPath, (err) => {
-                        if (err) console.error('Error deleting old photo:', err);
-                    });
+                    oldPhotoPath = path.join(__dirname, '../../uploads/awards', path.basename(nomination.nomineePhoto));
                 }
 
                 photoPath = getFileUrl(req.file, "awards");
@@ -1070,6 +1051,12 @@ class AwardsController {
                 updateData,
                 { new: true, runValidators: true }
             ).populate("category");
+
+            if (oldPhotoPath) {
+                await fs.unlink(oldPhotoPath).catch(err => {
+                    if (err.code !== "ENOENT") console.error("Error deleting old photo:", err);
+                });
+            }
 
             // Invalidate nominations cache after update
             cache.invalidateNominations();

@@ -84,10 +84,10 @@ const ForgotPassword = ({ isOpen, onClose }) => {
       return;
     }
 
-    if (newPassword.length < 6) {
+    if (newPassword.length < 8 || newPassword.length > 128 || !/[a-z]/.test(newPassword) || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword) || !/[^a-zA-Z0-9\s]/.test(newPassword)) {
       await showAlert.warning(
-        "Password too short",
-        "Your new password needs to be at least 6 characters long.",
+        "Choose a stronger password",
+        "Use 8-128 characters with uppercase and lowercase letters, a number, and a symbol.",
         { confirmButtonText: "OK" }
       );
       return;
@@ -259,7 +259,7 @@ const ForgotPassword = ({ isOpen, onClose }) => {
                   placeholder="Enter new password"
                   required
                   disabled={isSubmitting}
-                  minLength="6"
+                  minLength="8"
                 />
                 <button
                   type="button"
@@ -284,7 +284,7 @@ const ForgotPassword = ({ isOpen, onClose }) => {
                   placeholder="Confirm new password"
                   required
                   disabled={isSubmitting}
-                  minLength="6"
+                  minLength="8"
                 />
               </div>
             </div>

@@ -3,6 +3,7 @@ const multer = require("multer");
 const router = express.Router();
 const { body, param, query } = require("express-validator");
 const awardsController = require("../controllers/awardsController");
+const { addAdminVotes, adminVoteValidation } = require("../controllers/awardVoteController");
 const { adminAuth } = require("../middleware/adminAuth");
 const { emailValidationMiddleware } = require("../utils/emailValidator");
 const awardsUpload = require("../config/awardsUpload");
@@ -95,7 +96,7 @@ const validateNomination = [
         .withMessage("Please provide a valid email address"),
     
     body("nominatorPhone")
-        .optional()
+        .optional({ values: "falsy" })
         .trim()
         .matches(/^[\+]?[0-9\s\-\(\)]{10,15}$/)
         .withMessage("Please provide a valid phone number"),
@@ -127,6 +128,16 @@ const validateCategory = [
         .trim()
         .isLength({ max: 10 })
         .withMessage("Icon cannot exceed 10 characters")
+];
+
+const validateNominationUpdate = [
+    ...Object.entries({ nomineeName: 100, nomineeTitle: 150, nomineeCompany: 100,
+        nomineeCountry: 100, nominationReason: 1000, achievements: 1500,
+        impactDescription: 1000, nominatorName: 100, nominatorOrganization: 100 })
+        .map(([field, max]) => body(field).optional().isString().bail().trim().isLength({ max })),
+    body("category").optional().isMongoId().withMessage("Invalid category ID"),
+    body("nominatorEmail").optional({ values: "falsy" }).isEmail().withMessage("Please provide a valid email address"),
+    body("nominatorPhone").optional({ values: "falsy" }).matches(/^[\+]?[0-9\s\-\(\)]{10,15}$/).withMessage("Please provide a valid phone number")
 ];
 
 const validateCandidateDraft = [
@@ -280,6 +291,7 @@ router.get(
 // =====================
 
 // Get all nominations for admin (including pending)
+router.get("/admin/categories", adminAuth, awardsController.getAdminCategories);
 router.get(
     "/admin/nominations",
     adminAuth,
@@ -315,6 +327,12 @@ router.delete(
 );
 
 // Update nomination status
+router.post(
+    "/admin/nominations/:id/votes",
+    adminAuth,
+    adminVoteValidation,
+    addAdminVotes
+);
 router.patch(
     "/admin/nominations/:id/status",
     adminAuth,
@@ -331,6 +349,7 @@ router.put(
     awardsUpload(), // Use the middleware function
     handleMulterError,
     compressionPresets.thumbnailWatermarked,
+    validateNominationUpdate,
     awardsController.updateNomination
 );
 

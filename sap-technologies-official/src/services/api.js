@@ -350,7 +350,12 @@ class ApiService {
           }
 
           // Create enhanced error with response data
-          const error = new Error(data?.message || `HTTP error! status: ${response.status}`);
+          const validationMessages = Array.isArray(data?.errors)
+            ? data.errors.map(item => typeof item === "string" ? item : item.msg || item.message).filter(Boolean)
+            : [];
+          const error = new Error(validationMessages.length
+            ? [...new Set(validationMessages)].join(". ")
+            : data?.message || `HTTP error! status: ${response.status}`);
           error.response = {
             status: response.status,
             statusText: response.statusText,
@@ -966,6 +971,10 @@ class ApiService {
       body: JSON.stringify({ status, adminNotes }),
       headers: { "Content-Type": "application/json" }
     });
+  }
+
+  async addAdminVotes(nominationId, amount, reason) {
+    return this.post(`/awards/admin/nominations/${nominationId}/votes`, { amount, reason });
   }
 
   async updateNomination(nominationId, formData) {

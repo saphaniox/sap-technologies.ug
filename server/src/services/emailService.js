@@ -1362,7 +1362,7 @@ class EmailService {
         preheader: "A visitor submitted the contact form.",
         intro: "A new message was submitted through the website contact page.",
         sections: [
-          { title: "Contact details", rows: this.adminRows("Contact page", { ...contactData, date: new Date() }).concat([{ label: "Name", value: contactData.name }]) },
+          { title: "Contact details", rows: this.adminRows("Contact page", { ...contactData, date: new Date() }).concat([{ label: "Name", value: contactData.name }, { label: "Subject", value: contactData.subject || "Not provided" }, { label: "Phone", value: contactData.phone || "Not provided" }]) },
           { title: "Message", text: normalizeText(contactData.message, "No message provided") }
         ],
         cta: { label: "Reply by email", href: `mailto:${encodeURIComponent(contactData.email || "")}` }

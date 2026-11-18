@@ -4,6 +4,8 @@
 const User = require('../models/User');
 const emailService = require('../services/emailService');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
+const { isStrongPassword } = require('../middleware/validation');
 
 class PasswordResetController {
     /**
@@ -94,10 +96,10 @@ class PasswordResetController {
             }
 
             // Validate password strength
-            if (newPassword.length < 6) {
+            if (typeof newPassword !== "string" || newPassword.length > 128 || !isStrongPassword(newPassword)) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Password must be at least 6 characters long'
+                    message: 'Use 8-128 characters with uppercase and lowercase letters, a number, and a symbol'
                 });
             }
 
@@ -118,8 +120,8 @@ class PasswordResetController {
                 });
             }
 
-            // Update password (will be automatically hashed by pre-save hook)
-            user.password = newPassword;
+            // User's save hook does not hash passwords; match registration/login.
+            user.password = await bcrypt.hash(newPassword, 12);
             user.passwordResetToken = undefined;
             user.passwordResetExpires = undefined;
             user.passwordChangedAt = Date.now();

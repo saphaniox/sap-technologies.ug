@@ -3,9 +3,10 @@ const router = express.Router();
 const ServiceQuoteController = require("../controllers/serviceQuoteController");
 const { authMiddleware, adminMiddleware, optionalAuthMiddleware } = require("../middleware/auth");
 const { rateLimits } = require("../config/security");
+const { validateQuote } = require("../middleware/inquiryValidation");
 
 // Public route - Create quote request (with rate limiting)
-router.post("/quotes", optionalAuthMiddleware, rateLimits.contact, (req, res) => ServiceQuoteController.createQuote(req, res));
+router.post("/quotes", optionalAuthMiddleware, rateLimits.contact, validateQuote, (req, res) => ServiceQuoteController.createQuote(req, res));
 
 // Admin routes - Manage quotes
 router.get("/admin/quotes", authMiddleware, adminMiddleware, (req, res) => ServiceQuoteController.getAllQuotes(req, res));

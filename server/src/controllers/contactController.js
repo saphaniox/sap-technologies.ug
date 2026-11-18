@@ -11,7 +11,7 @@ class ContactController {
     // Submit contact form
     async submitContact(req, res, next) {
         try {
-            let { name, email, message } = req.body;
+            let { name, email, message, subject, phone } = req.body;
 
             // Auto-fill user data if logged in
             if (req.user) {
@@ -33,6 +33,8 @@ class ContactController {
                 name,
                 email,
                 message,
+                subject,
+                phone,
                 user: req.body.user, // Link to user if logged in
                 ipAddress: req.ip || req.connection.remoteAddress,
                 userAgent: req.get("User-Agent")
@@ -46,13 +48,13 @@ class ContactController {
             // Send through Mailjet, with automatic Gmail SMTP fallback.
             if (emailService.isConfigured) {
                 notificationPromises.push(
-                    emailService.sendContactNotification({ name, email, message })
+                    emailService.sendContactNotification({ name, email, message, subject, phone })
                         .catch(error => console.error("Admin email notification failed:", error))
                 );
                 
                 // Send confirmation email to user
                 notificationPromises.push(
-                    emailService.sendContactConfirmation({ name, email, message })
+                    emailService.sendContactConfirmation({ name, email, message, subject, phone })
                         .catch(error => console.error("User confirmation email failed:", error))
                 );
             }
