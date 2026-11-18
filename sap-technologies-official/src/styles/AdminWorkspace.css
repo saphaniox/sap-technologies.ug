@@ -1,0 +1,201 @@
+/* Dashboard-specific layout and theme rules, isolated from public-page components. */
+html[data-theme] .admin-modal {
+  --admin-bg: var(--surface-1, #fff);
+  --admin-subtle: var(--surface-2, #f8fafc);
+  --admin-text: var(--text-strong, #102033);
+  --admin-muted: var(--text-soft, #64748b);
+  --admin-line: var(--theme-border, #dce3ec);
+  --admin-accent: #2563eb;
+  --admin-active: #eff6ff;
+  padding: clamp(12px, 2vw, 28px);
+  height: 100dvh;
+  overflow: hidden;
+  background: rgb(2 6 23 / 65%);
+}
+html[data-theme="dark"] .admin-modal {
+  --admin-line: #334155;
+  --admin-accent: #93c5fd;
+  --admin-active: #1e3355;
+}
+html[data-theme] .admin-modal .admin-content {
+  width: 100%;
+  max-width: 1560px;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  padding: 0 !important;
+  margin: 0 auto;
+  border: 1px solid var(--admin-line);
+  border-radius: 18px;
+  background: var(--admin-bg) !important;
+  color: var(--admin-text);
+}
+html[data-theme] .admin-modal .admin-header {
+  display: flex;
+  gap: 20px;
+  padding: 18px 24px;
+  border-radius: 0;
+  border-bottom: 1px solid var(--admin-line);
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  box-shadow: none;
+  overflow: visible;
+}
+.admin-modal .admin-header::before { display: none; }
+.admin-modal .admin-heading { min-width: 0; margin-right: auto; }
+.admin-modal .admin-workspace-label {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--admin-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+html[data-theme] .admin-modal .admin-header h2 {
+  font-size: clamp(17px, 1.7vw, 23px);
+  line-height: 1.25;
+  color: var(--admin-text) !important;
+  text-shadow: none;
+  overflow-wrap: anywhere;
+}
+.admin-modal .admin-user-info { gap: 10px; color: var(--admin-muted); }
+.admin-modal .admin-user-info > span:first-child { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-modal .admin-badge { background: var(--admin-active); color: var(--admin-accent); border: 1px solid var(--admin-line); box-shadow: none; font-size: 10px; padding: 5px 9px; }
+html[data-theme] .admin-modal .admin-header > .close-btn,
+html[data-theme] .admin-modal .hamburger-btn {
+  position: static;
+  inset: auto;
+  margin: 0;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  border: 1px solid var(--admin-line);
+  border-radius: 10px;
+  background: var(--admin-subtle);
+  color: var(--admin-text);
+  transform: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+html[data-theme] .admin-modal .hamburger-btn { display: none; flex-direction: column; gap: 4px; }
+.admin-modal .hamburger-btn span { background: currentColor; width: 20px; height: 2px; }
+html[data-theme] .admin-modal .admin-main {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  padding: 0 !important;
+  border-radius: 0;
+  background: var(--admin-bg) !important;
+  box-shadow: none;
+}
+html[data-theme] .admin-modal .admin-sidebar {
+  width: 246px;
+  background: var(--admin-bg) !important;
+  border-right: 1px solid var(--admin-line);
+  overscroll-behavior: contain;
+  scrollbar-color: var(--admin-line) transparent;
+}
+.admin-modal .sidebar-nav { padding: 16px 12px; gap: 5px; }
+html[data-theme] .admin-modal .nav-btn {
+  color: var(--admin-muted);
+  min-height: 44px;
+  padding: 11px 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-size: 13px;
+  white-space: normal;
+  line-height: 1.4;
+}
+html[data-theme] .admin-modal .nav-btn:hover { color: var(--admin-text); background: var(--admin-subtle); }
+html[data-theme] .admin-modal .nav-btn.active { color: var(--admin-accent); background: var(--admin-active); border-color: var(--admin-line); box-shadow: none; }
+html[data-theme] .admin-modal .tab-content {
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(16px, 2vw, 28px);
+  background: var(--admin-subtle) !important;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.admin-modal :is(.executive-overview, .settings-section, .awards-admin, .visitor-analytics) { min-height: 0; min-width: 0; }
+.admin-modal :is(.executive-overview, .visitor-analytics) { padding: 0; }
+html[data-theme] .admin-modal .executive-overview {
+  background: transparent !important;
+  border: 0;
+  box-shadow: none;
+}
+html[data-theme] .admin-modal .executive-hero {
+  background: var(--admin-bg) !important;
+  border: 1px solid var(--admin-line);
+  color: var(--admin-text);
+}
+html[data-theme] .admin-modal .executive-hero p,
+html[data-theme] .admin-modal .executive-refresh,
+html[data-theme] .admin-modal .intelligence-panel p,
+html[data-theme] .admin-modal .dashboard-empty-state {
+  color: var(--admin-muted);
+}
+html[data-theme] .admin-modal .executive-eyebrow { color: var(--admin-accent); }
+html[data-theme] .admin-modal .executive-refresh { background: var(--admin-subtle); border-color: var(--admin-line); }
+html[data-theme] .admin-modal .executive-refresh strong { color: var(--admin-text); }
+html[data-theme] .admin-modal .intelligence-panel {
+  background: var(--admin-bg) !important;
+  border-color: var(--admin-line);
+  color: var(--admin-text);
+}
+html[data-theme] .admin-modal :is(.stat-card, .executive-kpi, .status-breakdown-card, .dashboard-panel, .admin-info-panel, .ops-panel, .ops-metric-card, .email-config-card, .saved-email-card, .nomination-card, .category-card, .applicant-detail-card) {
+  min-width: 0;
+  background: var(--admin-bg) !important;
+  color: var(--admin-text);
+  border: 1px solid var(--admin-line);
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 3%);
+}
+.admin-modal :is(.stat-card, .nomination-card, .category-card):hover { transform: none; }
+html[data-theme] .admin-modal :is(.data-table, .table-container, .table-responsive, .certificates-table-container) {
+  width: 100%; max-width: 100%; overflow-x: auto; border: 1px solid var(--admin-line); border-radius: 12px; background: var(--admin-bg) !important;
+}
+html[data-theme] .admin-modal :is(.data-table, .table-container, .certificates-table-container) table {
+  width: 100%; background: var(--admin-bg); color: var(--admin-text); border-collapse: collapse;
+}
+html[data-theme] .admin-modal :is(.data-table, .table-container, .certificates-table-container) th {
+  background: var(--admin-bg) !important; color: var(--admin-muted) !important; padding: 13px 16px; font-size: 11px; letter-spacing: .04em; border-bottom: 1px solid var(--admin-line);
+}
+html[data-theme] .admin-modal :is(.data-table, .table-container, .certificates-table-container) td {
+  background: transparent; color: var(--admin-text); border-bottom: 1px solid var(--admin-line); padding: 14px 16px; font-size: 13px;
+}
+html[data-theme] .admin-modal :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]) {
+  max-width: 100%; min-width: 0; background: var(--theme-input-bg) !important; color: var(--theme-input-text) !important; border-color: var(--admin-line) !important;
+}
+.admin-modal :is(button, a, input, select, textarea, summary):focus-visible { outline: 3px solid var(--admin-accent); outline-offset: 3px; }
+.admin-modal :is(.section-header, .tab-panel-header, .admin-section-header, .controls-section, .filters-row, .header-controls) { flex-wrap: wrap; gap: 16px; }
+.admin-modal :is(.admin-section-header h2, .section-header h3) { text-shadow: none; }
+.admin-modal :is(.sub-tabs, .subtab-navigation, .filter-row, .form-actions, .nomination-actions, .pagination) { flex-wrap: wrap; }
+.admin-modal :is(.stats-grid, .executive-kpis, .ops-metrics-grid, .dashboard-intelligence-grid, .ops-panels-grid) > * { min-width: 0; }
+.admin-modal :is(.modal-content, .applicant-modal) { max-width: min(900px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow-y: auto; }
+@media (max-width: 1024px) {
+  html[data-theme] .admin-modal .hamburger-btn { display: inline-flex; }
+  html[data-theme] .admin-modal .admin-sidebar { position: absolute; inset: 0 auto 0 0; height: 100%; width: min(290px, 85vw); z-index: 200; }
+  .admin-modal .sidebar-overlay { position: absolute; inset: 0; border: 0; border-radius: 0; padding: 0; width: 100%; height: 100%; }
+  .admin-modal .admin-user-info { display: none; }
+  .admin-modal .admin-header { gap: 12px; }
+}
+@media (max-width: 640px) {
+  html[data-theme] .admin-modal { padding: 0; }
+  html[data-theme] .admin-modal .admin-content { border: 0; border-radius: 0; }
+  html[data-theme] .admin-modal .admin-header { padding: max(12px, env(safe-area-inset-top)) 12px 12px; gap: 8px; }
+  html[data-theme] .admin-modal .tab-content { padding: 16px 12px max(20px, env(safe-area-inset-bottom)); }
+  .admin-modal .admin-workspace-label { font-size: 9px; letter-spacing: .05em; }
+  .admin-modal .admin-heading h2 { font-size: 16px; }
+  .admin-modal .admin-theme-toggle { gap: 0; flex-shrink: 0; }
+  .admin-modal .theme-toggle { padding: 2px; }
+  .admin-modal :is(.executive-kpis, .stats-grid, .ops-metrics-grid, .dashboard-intelligence-grid, .ops-panels-grid, .nomination-header, .settings-grid) { grid-template-columns: minmax(0, 1fr); }
+  .admin-modal :is(.admin-section-header, .tab-panel-header, .nomination-header, .controls-section) { flex-direction: column; align-items: stretch; }
+  .admin-modal :is(.search-input, .filter-select, .filters input, .filters select) { width: 100%; }
+  .admin-modal :is(.section-header h2, .admin-section-header h2) { font-size: 20px; }
+  .admin-modal :is(.executive-hero, .stat-card) { padding: 16px; }
+  .admin-modal .sub-tabs { gap: 6px; }
+  .admin-modal .sub-tab { min-height: 40px; padding: 9px 12px; font-size: 12px; }
+}

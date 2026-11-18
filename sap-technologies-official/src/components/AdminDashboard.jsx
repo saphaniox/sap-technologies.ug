@@ -13,7 +13,9 @@ import JobForm from "./JobForm";
 import AdminDebugTools from "./AdminDebugTools";
 import AwardsAdmin from "./AwardsAdmin";
 import VisitorAnalytics from "./VisitorAnalytics";
+import ThemeToggle from "./ThemeToggle";
 import "../styles/AdminDashboard.css";
+import "../styles/AdminWorkspace.css";
 
 const getPartnerDisplayName = (partner) => partner?.name?.trim() || "Logo-only partner";
 const getPartnerInitial = (partner) => getPartnerDisplayName(partner).charAt(0).toUpperCase();
@@ -270,6 +272,18 @@ const mergeEmailConfigForm = (config = {}, emailDelivery = {}) => {
 };
 
 const AdminDashboard = ({ user, onClose }) => {
+  const [compactNavigation, setCompactNavigation] = useState(() => window.matchMedia("(max-width: 1024px)").matches);
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 1024px)");
+    const update = () => setCompactNavigation(media.matches);
+    media.addEventListener("change", update);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      media.removeEventListener("change", update);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
   // Main navigation state - tracks which admin section is currently active
   const [activeTab, setActiveTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false); // sidebar collapsed by default on mobile
@@ -2406,20 +2420,24 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
   }
 
   return (
-    <div className="admin-modal">
+    <div className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-dashboard-title">
       <div className="admin-content">
         <div className="admin-header">
-          <button className="hamburger-btn" onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle navigation">
+          <button type="button" className="hamburger-btn" onClick={() => setSidebarOpen(!sidebarOpen)} aria-label={sidebarOpen ? "Close navigation" : "Open navigation"} aria-expanded={sidebarOpen} aria-controls="admin-navigation">
             <span></span>
             <span></span>
             <span></span>
           </button>
-          <h2>Admin-Dashboard - SAPTech Uganda</h2>
+          <div className="admin-heading">
+            <span className="admin-workspace-label">SAPTech Uganda</span>
+            <h2 id="admin-dashboard-title">Admin dashboard</h2>
+          </div>
+          <ThemeToggle className="admin-theme-toggle" />
           <div className="admin-user-info">
             <span>Welcome, {user?.name}</span>
             <span className="admin-badge">ADMIN</span>
           </div>
-          <button className="close-btn" onClick={onClose}>&times;</button>
+          <button type="button" className="close-btn" aria-label="Close admin dashboard" onClick={onClose}>&times;</button>
         </div>
 
         {message && (
@@ -2429,9 +2447,9 @@ ${request.adminNotes ? `Admin Notes:\n${request.adminNotes}` : ""}`);
         )}
 
         <div className="admin-main">
-          {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
-          <aside className={`admin-sidebar ${sidebarOpen ? "open" : ""}`}>
-            <nav className="sidebar-nav">
+          {sidebarOpen && <button type="button" className="sidebar-overlay" aria-label="Close navigation" onClick={() => setSidebarOpen(false)} />}
+          <aside id="admin-navigation" className={`admin-sidebar ${sidebarOpen ? "open" : ""}`} inert={compactNavigation && !sidebarOpen}>
+            <nav className="sidebar-nav" aria-label="Admin sections">
               <button className={`nav-btn ${activeTab === "overview" ? "active" : ""}`}
                 onClick={() => { setActiveTab("overview"); setSidebarOpen(false); }}>
                 <span className="nav-icon" aria-hidden="true">{"\uD83D\uDCCA"}</span>

@@ -18,7 +18,7 @@ export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
     try {
       const savedTheme = localStorage.getItem("sap-technologies-theme");
-      return savedTheme || "dark";
+      return savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
     } catch (error) {
       console.warn("Failed to load theme from localStorage:", error);
       return "dark";
@@ -54,13 +54,16 @@ export const ThemeProvider = ({ children }) => {
         metaThemeColor.setAttribute("content", theme === "dark" ? "#0f172a" : "#ffffff");
       }
 
-      // Save to localStorage
-      localStorage.setItem("sap-technologies-theme", theme);
-
       // Dispatch custom event for any components that need to listen
       window.dispatchEvent(new CustomEvent("themeChanged", { detail: { theme } }));
     } catch (error) {
       console.warn("Failed to apply theme:", error);
+    }
+    // Storage can be unavailable in private/restricted browsing; the theme still works.
+    try {
+      localStorage.setItem("sap-technologies-theme", theme);
+    } catch {
+      // Keep the selected theme for this session.
     }
   }, [theme]);
 

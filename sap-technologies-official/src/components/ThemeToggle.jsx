@@ -58,6 +58,8 @@ const ThemeToggle = ({ className = "", showLabel = false }) => {
       )}
 
       <motion.button
+        type="button"
+        aria-pressed={isDark}
         className={`theme-toggle ${isDark ? "dark" : "light"}`}
         onClick={toggleTheme}
         whileHover={{ scale: 1.05 }}
