@@ -85,6 +85,7 @@ const Careers = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [jobToDelete, setJobToDelete] = useState(null);
   const [expandedJobId, setExpandedJobId] = useState(null);
+  const [posterToView, setPosterToView] = useState(null);
   const [applicationJobId, setApplicationJobId] = useState(null);
 
   useEffect(() => {
@@ -104,6 +105,20 @@ const Careers = () => {
 
     return () => window.clearTimeout(timer);
   }, [jobId, loading, jobs.length]);
+
+  useEffect(() => {
+    if (!posterToView) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setPosterToView(null);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [posterToView]);
 
   const checkUserAuth = async () => {
     try {
@@ -342,13 +357,18 @@ const Careers = () => {
                 className={`job-card ${hasJobPoster(job) ? "has-poster" : "uses-logo-poster"} ${expandedJobId === job._id ? "expanded" : ""}`}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="job-poster">
+                <button
+                  type="button"
+                  className="job-poster"
+                  onClick={() => setPosterToView({ src: getJobPosterUrl(job), alt: job.posterAlt || `${job.title} job poster`, title: job.title })}
+                  aria-label={`View full poster for ${job.title}`}
+                >
                   <img
                     src={getJobPosterUrl(job)}
                     alt={job.posterAlt || `${job.title} job poster`}
                     loading="lazy"
                   />
-                </div>
+                </button>
                 <div className="job-main" onClick={() => toggleJobExpand(job._id)}>
                   <div className="job-title-section">
                     <h3>{job.title}</h3>
@@ -364,9 +384,14 @@ const Careers = () => {
                     )}
                     <button
                       className={`expand-btn ${expandedJobId === job._id ? "active" : ""}`}
-                      aria-label={expandedJobId === job._id ? "Collapse" : "Expand"}
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        toggleJobExpand(job._id);
+                      }}
+                      aria-expanded={expandedJobId === job._id}
                     >
-                      ▼
+                      {expandedJobId === job._id ? "Read less" : "Read more"}
                     </button>
                     <button
                       type="button"
@@ -492,6 +517,18 @@ const Careers = () => {
           job={applyingJob}
           onClose={closeApplication}
         />
+      )}
+      {posterToView && (
+        <div className="job-poster-lightbox" role="dialog" aria-modal="true" aria-label={`${posterToView.title} poster`}>
+          <button type="button" className="job-poster-backdrop" onClick={() => setPosterToView(null)} aria-label="Close poster viewer" />
+          <div className="job-poster-viewer">
+            <img src={posterToView.src} alt={posterToView.alt} />
+            <div className="job-poster-viewer-actions">
+              <a href={posterToView.src} download aria-label={`Download ${posterToView.title} poster`}>Download poster</a>
+              <button type="button" onClick={() => setPosterToView(null)}>Close</button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
     </>
