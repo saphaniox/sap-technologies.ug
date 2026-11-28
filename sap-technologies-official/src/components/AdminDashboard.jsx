@@ -724,7 +724,6 @@ const AdminDashboard = ({
         <div className="admin-content">
           <div className="admin-header">
             <h2>Admin Dashboard - SAPTech Uganda</h2>
-            <button className="close-btn" onClick={onClose}>&times;</button>
           </div>
           <div className="loading">Loading admin dashboard...</div>
         </div>
@@ -735,7 +734,6 @@ const AdminDashboard = ({
         <div className="admin-content">
           <div className="admin-header">
             <h2>Admin Dashboard - SAPTech Uganda</h2>
-            <button className="close-btn" onClick={onClose}>&times;</button>
           </div>
           <div className="error-message">{error}</div>
         </div>
@@ -758,7 +756,6 @@ const AdminDashboard = ({
             <span>Welcome, {user?.name}</span>
             <span className="admin-badge">ADMIN</span>
           </div>
-          <button type="button" className="close-btn" aria-label="Close admin dashboard" onClick={onClose}>&times;</button>
         </div>
 
         {message && <div className={`message ${/(failed|couldn't|error)/i.test(message) ? "error" : "success"}`}>
