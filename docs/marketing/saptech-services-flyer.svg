@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-labelledby="title desc" font-family="Arial, sans-serif">
   <title id="title">SAPTech Uganda service flyer</title><desc id="desc">A quick guide to SAPTech Uganda's business technology services.</desc>
   <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#071729"/><stop offset="1" stop-color="#07515a"/></linearGradient><linearGradient id="accent"><stop stop-color="#35d5c3"/><stop offset="1" stop-color="#e8bf6c"/></linearGradient><pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="#d5fff8" stroke-opacity=".06"/></pattern></defs>
   <rect width="1080" height="1080" fill="url(#bg)"/><rect width="1080" height="1080" fill="url(#grid)"/><circle cx="950" cy="170" r="190" fill="#23c9b5" opacity=".1"/>
