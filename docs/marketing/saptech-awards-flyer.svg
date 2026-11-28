@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" role="img" aria-labelledby="title desc">
+  <title id="title">SAPTECH Awards 2026 nomination flyer</title><desc id="desc">Nominate innovators, engineers, leaders, students and organizations for the SAPTECH Awards.</desc>
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#08172d"/><stop offset=".58" stop-color="#14284a"/><stop offset="1" stop-color="#07545c"/></linearGradient><linearGradient id="gold"><stop stop-color="#fff0b5"/><stop offset="1" stop-color="#d6a64f"/></linearGradient><pattern id="lines" width="56" height="56" patternUnits="userSpaceOnUse"><path d="M56 0H0V56" fill="none" stroke="#fff" stroke-opacity=".045"/></pattern></defs>
+  <rect width="1080" height="1080" fill="url(#bg)"/><rect width="1080" height="1080" fill="url(#lines)"/><circle cx="915" cy="105" r="185" fill="#e5b95c" opacity=".08"/>
+  <g transform="translate(922 152)" fill="none" stroke="url(#gold)" stroke-width="5"><path d="M-30-38h60v18c0 34-13 55-30 65-17-10-30-31-30-65z"/><path d="M-30-26h-24v14c0 25 12 36 33 38m51-52h24v14c0 25-12 36-33 38M0 45v23m-20 0h40"/></g>
+  <text x="68" y="83" fill="#a9efe5" font-family="Arial,sans-serif" font-size="20" font-weight="700" letter-spacing="4">SAPTECH UGANDA PRESENTS</text>
+  <text x="68" y="173" fill="#fff" font-family="Arial,sans-serif" font-size="65" font-weight="800">SAPTECH AWARDS</text><text x="68" y="250" fill="url(#gold)" font-family="Arial,sans-serif" font-size="69" font-weight="800">2026</text>
+  <text x="70" y="307" fill="#c8f4ec" font-family="Arial,sans-serif" font-size="24" font-weight="700" letter-spacing="2">TECHNOLOGY • INNOVATION • LEADERSHIP</text>
+  <text x="70" y="378" fill="#fff" font-family="Arial,sans-serif" font-size="37" font-weight="700">Recognize the people</text><text x="70" y="425" fill="#fff" font-family="Arial,sans-serif" font-size="37" font-weight="700">shaping tomorrow.</text>
+  <text x="72" y="481" fill="#bfd0df" font-family="Arial,sans-serif" font-size="22">Nominate an individual, team, organization or project</text><text x="72" y="513" fill="#bfd0df" font-family="Arial,sans-serif" font-size="22">making a meaningful difference.</text>
+  <text x="72" y="585" fill="#e8c46f" font-family="Arial,sans-serif" font-size="19" font-weight="700" letter-spacing="3">CATEGORIES INCLUDE</text>
+  <g font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#f4f8fb">
+    <rect x="70" y="616" width="454" height="65" rx="13" fill="#153653" stroke="#37cfc0" stroke-opacity=".45"/><circle cx="103" cy="648" r="8" fill="#37cfc0"/><text x="128" y="656">Technology &amp; innovation</text>
+    <rect x="556" y="616" width="454" height="65" rx="13" fill="#153653" stroke="#dfb65d" stroke-opacity=".45"/><circle cx="589" cy="648" r="8" fill="#dfb65d"/><text x="614" y="656">Engineering &amp; research</text>
+    <rect x="70" y="698" width="454" height="65" rx="13" fill="#153653" stroke="#dfb65d" stroke-opacity=".45"/><circle cx="103" cy="730" r="8" fill="#dfb65d"/><text x="128" y="738">Leadership &amp; entrepreneurship</text>
+    <rect x="556" y="698" width="454" height="65" rx="13" fill="#153653" stroke="#37cfc0" stroke-opacity=".45"/><circle cx="589" cy="730" r="8" fill="#37cfc0"/><text x="614" y="738">Education &amp; student projects</text>
+    <rect x="70" y="780" width="940" height="65" rx="13" fill="#153653" stroke="#37cfc0" stroke-opacity=".45"/><circle cx="103" cy="812" r="8" fill="#37cfc0"/><text x="128" y="820">Community impact &amp; organizations</text>
+  </g>
+  <rect x="70" y="882" width="940" height="130" rx="20" fill="url(#gold)"/><text x="108" y="930" fill="#102039" font-family="Arial,sans-serif" font-size="26" font-weight="800">KNOW SOMEONE DOING MEANINGFUL WORK?</text><text x="108" y="978" fill="#102039" font-family="Arial,sans-serif" font-size="29" font-weight="800">Submit a nomination  →  saptechug.com/awards</text>
+  <text x="70" y="1048" fill="#9fb8c7" font-family="Arial,sans-serif" font-size="17" letter-spacing="2">CELEBRATING IMPACT ACROSS UGANDA AND BEYOND</text>
+</svg>

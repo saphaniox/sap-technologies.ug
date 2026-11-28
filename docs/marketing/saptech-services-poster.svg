@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350" role="img" aria-labelledby="title desc">
+  <title id="title">SAPTech Uganda services poster</title>
+  <desc id="desc">Technology and engineering services for businesses and communities.</desc>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#071729"/><stop offset=".55" stop-color="#0b2940"/><stop offset="1" stop-color="#064e59"/></linearGradient>
+    <linearGradient id="glow" x2="1" y2="1"><stop stop-color="#27d3c2"/><stop offset="1" stop-color="#e5bb67"/></linearGradient>
+    <pattern id="grid" width="54" height="54" patternUnits="userSpaceOnUse"><path d="M54 0H0V54" fill="none" stroke="#b7f3ea" stroke-opacity=".06"/></pattern>
+    <filter id="shadow" x="-.2" y="-.2" width="1.4" height="1.5"><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#020b15" flood-opacity=".28"/></filter>
+  </defs>
+  <rect width="1080" height="1350" fill="url(#bg)"/><rect width="1080" height="1350" fill="url(#grid)"/>
+  <circle cx="950" cy="238" r="270" fill="#16b8ab" opacity=".08"/><circle cx="950" cy="238" r="185" fill="none" stroke="#e6bd6d" stroke-opacity=".25" stroke-width="2"/>
+  <g fill="none" stroke="url(#glow)" stroke-width="4" opacity=".8"><path d="M0 315h125l30-30h80l38 38h84"/><path d="M1080 420h-106l-38 38h-70l-28-28h-70"/><circle cx="237" cy="285" r="8" fill="#27d3c2"/><circle cx="858" cy="430" r="8" fill="#e5bb67"/></g>
+  <text x="76" y="102" fill="#dffaf6" font-family="Arial,sans-serif" font-size="25" font-weight="700" letter-spacing="5">ENGINEERING • SOFTWARE • IoT</text>
+  <text x="76" y="181" fill="#fff" font-family="Arial,sans-serif" font-size="57" font-weight="800" letter-spacing="1">SAPTECH <tspan fill="#38d5c4">UGANDA</tspan></text>
+  <rect x="76" y="220" width="90" height="7" rx="3.5" fill="url(#glow)"/>
+  <text x="76" y="387" fill="#fff" font-family="Arial,sans-serif" font-size="77" font-weight="800">Turn your idea</text>
+  <text x="76" y="478" fill="#fff" font-family="Arial,sans-serif" font-size="77" font-weight="800">into a <tspan fill="#42d9c8">working</tspan></text>
+  <text x="76" y="569" fill="#fff" font-family="Arial,sans-serif" font-size="77" font-weight="800">solution.</text>
+  <text x="80" y="627" fill="#b9d0dd" font-family="Arial,sans-serif" font-size="28">Practical technology for business, home and industry.</text>
+  <g filter="url(#shadow)">
+    <rect x="76" y="700" width="928" height="320" rx="26" fill="#102f45" stroke="#8bd9d0" stroke-opacity=".26"/>
+    <g font-family="Arial,sans-serif" fill="#f7fbff">
+      <circle cx="135" cy="778" r="21" fill="#16b8ab"/><path d="M125 778h20m-10-10v20" stroke="#062332" stroke-width="4"/>
+      <text x="180" y="788" font-size="30" font-weight="700">Websites &amp; custom software</text>
+      <circle cx="135" cy="853" r="21" fill="#e7bd68"/><path d="M124 853h22m-11-11v22m-8-15 16 8" stroke="#182334" stroke-width="3"/>
+      <text x="180" y="863" font-size="30" font-weight="700">IoT &amp; automation systems</text>
+      <circle cx="135" cy="928" r="21" fill="#16b8ab"/><path d="M135 914v28m-11-21 22 14m0-14-22 14" stroke="#062332" stroke-width="3"/>
+      <text x="180" y="938" font-size="30" font-weight="700">Electrical &amp; engineering</text>
+      <circle cx="135" cy="993" r="21" fill="#e7bd68"/><path d="M124 993h22m-16-8 11 16" stroke="#182334" stroke-width="3"/>
+      <text x="180" y="1003" font-size="30" font-weight="700">Branding &amp; digital transformation</text>
+    </g>
+  </g>
+  <text x="76" y="1090" fill="#f0c96f" font-family="Arial,sans-serif" font-size="25" font-weight="700" letter-spacing="4">PLAN  •  BUILD  •  GROW</text>
+  <rect x="76" y="1130" width="928" height="142" rx="22" fill="url(#glow)"/>
+  <text x="112" y="1191" fill="#062333" font-family="Arial,sans-serif" font-size="32" font-weight="800">LET’S BUILD WHAT’S NEXT</text>
+  <text x="112" y="1237" fill="#092b38" font-family="Arial,sans-serif" font-size="25" font-weight="700">saptechug.com  •  +256 706 564 628</text>
+  <text x="76" y="1310" fill="#b9d0dd" font-family="Arial,sans-serif" font-size="21">Kampala, Uganda  |  info@saptechug.com</text>
+</svg>
