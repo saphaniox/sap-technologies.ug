@@ -718,33 +718,102 @@
     min-width: auto;
   }
 }
-/* Dark Mode Support for Activity Log */
-[data-theme="dark"] .activity-item {
-  background: rgba(255, 255, 255, 0.05);
-  border-left-color: var(--primary-color);
-  border-bottom-color: rgba(255, 255, 255, 0.1);
+/* Account panels use theme tokens throughout so each tab follows the active theme. */
+html[data-theme="dark"] .account-content {
+  --account-panel: #182230;
+  --account-panel-raised: #202d3e;
+  --account-line: #354255;
+  --account-text: #e5edf7;
+  --account-muted: #a8b5c7;
 }
 
-[data-theme="dark"] .activity-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+html[data-theme="light"] .account-content {
+  --account-panel: #f8f9fa;
+  --account-panel-raised: #ffffff;
+  --account-line: #e2e8f0;
+  --account-text: #2d3748;
+  --account-muted: #64748b;
 }
 
-[data-theme="dark"] .activity-action {
-  color: var(--text-color);
+.profile-picture-section,
+.profile-info,
+.security-section,
+.activity-tab,
+.danger-tab {
+  background: var(--account-panel, #f8f9fa);
+  border-color: var(--account-line, #e2e8f0);
 }
 
-[data-theme="dark"] .activity-timestamp {
-  color: rgba(255, 255, 255, 0.6);
+.profile-info h3,
+.security-section h3,
+.activity-tab h3,
+.info-display .info-item span,
+.activity-action,
+.activity-text {
+  color: var(--account-text, #2d3748);
 }
 
-[data-theme="dark"] .activity-details {
-  border-top-color: rgba(255, 255, 255, 0.1);
+.info-display .info-item,
+.activity-list,
+.edit-form,
+.update-form {
+  background: var(--account-panel-raised, #ffffff);
+  border-color: var(--account-line, #e2e8f0);
 }
 
-[data-theme="dark"] .activity-ip {
-  color: rgba(255, 255, 255, 0.7);
+.info-display .info-item {
+  border-bottom-color: var(--account-line, #e2e8f0);
 }
 
-[data-theme="dark"] .activity-browser {
-  color: rgba(255, 255, 255, 0.5);
+.info-display label,
+.activity-ip {
+  color: var(--account-muted, #64748b);
+}
+
+.form-group label {
+  color: var(--account-text, #2d3748);
+}
+
+.form-group input {
+  background: var(--account-panel-raised, #ffffff);
+  color: var(--account-text, #2d3748);
+  border-color: var(--account-line, #e2e8f0);
+}
+
+.form-group input:focus {
+  background: var(--account-panel, #f8fafc);
+}
+
+.activity-item {
+  background: var(--account-panel, #f8f9fa);
+  border-bottom-color: var(--account-line, #e2e8f0);
+}
+
+.activity-item:hover {
+  background: var(--account-panel-raised, #ffffff);
+}
+
+.activity-timestamp,
+.activity-browser {
+  color: var(--account-muted, #718096);
+}
+
+.activity-details {
+  color: var(--account-muted, #a0aec0);
+  border-top-color: var(--account-line, #e2e8f0);
+}
+
+.danger-section {
+  background: color-mix(in srgb, #e53e3e 12%, var(--account-panel, #f8f9fa));
+  border-color: color-mix(in srgb, #e53e3e 45%, var(--account-line, #e2e8f0));
+}
+
+.danger-info p {
+  color: var(--account-text, #742a2a);
+}
+
+.loading {
+  color: var(--account-muted, #4a5568);
+  background: var(--account-panel, #f7fafc);
+  border-color: var(--account-line, #e2e8f0);
 }
