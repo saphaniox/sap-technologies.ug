@@ -4,6 +4,12 @@ const DEFAULT_MONETAG_ZONE_ID = "278602";
 
 const clean = (value) => String(value || "").trim();
 
+const toBoolean = (value, fallback = false) => {
+  const text = clean(value).toLowerCase();
+  if (!text) return fallback;
+  return ["1", "true", "yes", "on"].includes(text);
+};
+
 const toPositiveInteger = (value, fallback) => {
   const parsed = Number.parseInt(clean(value), 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
@@ -114,7 +120,18 @@ export const AD_PLACEMENTS = Object.fromEntries(
   ])
 );
 
-// Advertising is disabled in the app so third-party scripts cannot show push,
-// pop-up, vignette, or other interruptive ads regardless of deployment env vars.
-export const AD_NETWORK_ENABLED = false;
+const disabled = toBoolean(env.VITE_AD_DISABLED || env.VITE_ADS_DISABLED, false);
+const enabledInDev = toBoolean(env.VITE_AD_ENABLE_IN_DEV || env.VITE_ADS_ENABLE_IN_DEV, false);
+const hasConfiguredPlacement = Object.values(AD_PLACEMENTS).some(
+  (placement) => placement.scriptUrl || placement.directLinkUrl
+);
+
+// Keep configured page placements enabled while the app-level push/vignette
+// scripts and route-triggered overlays remain disabled in AdNetwork.
+export const AD_NETWORK_ENABLED =
+  AD_PROVIDER !== "none" &&
+  !disabled &&
+  (env.PROD || enabledInDev) &&
+  Boolean(AD_SCRIPT_URL || AD_DIRECT_LINK_URL || hasConfiguredPlacement);
+
 export const AD_AUTO_ENABLED = false;
